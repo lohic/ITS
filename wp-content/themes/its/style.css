@@ -1,0 +1,27 @@
+@charset "UTF-8";
+/*
+Theme Name: INSTITUT TRIBUNE SOCIALISTE
+Theme URI: http://www.institut-tribune-socialiste.fr
+Description: Thème pour l'institut tribune socialiste.
+Version: 1.0
+Author: Formidable
+ 
+Creation Theme by Formidable
+ 
+*/
+
+
+/*corps de la page web */
+
+
+
+body {
+font-size: 14px;
+background:#F2F2F2;
+}
+
+#page {
+margin: 0 auto;
+width:1000px;
+background:#FFF;
+}
