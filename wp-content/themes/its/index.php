@@ -1,7 +1,4 @@
-<?php get_header(); ?>
-
-<!-- GABARIT PAGE.PHP -->
-
+<?php get_header();?>
 
 <div id="content">
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
@@ -24,5 +21,6 @@
 <?php include (TEMPLATEPATH . "/searchform.php"); ?>
 <?php endif; ?>
 </div>
+
 
 <?php get_footer(); ?>

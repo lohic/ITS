@@ -1,6 +1,6 @@
-<form method="get" id="searchform" action="<?php bloginfo('home'); ?>/">
-<div>
-<input type="text" value="<?php the_search_query(); ?>" name="s" id="s" />
-<input type="submit" id="searchsubmit" value="Chercher" />
-</div>
+<form role="search" method="get" id="searchform" action="<?php echo home_url( '/' ); ?>">
+    <div>
+        <input type="text" value="Votre recherche" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="" />
+    </div>
 </form>
