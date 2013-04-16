@@ -3,31 +3,14 @@
 <?php get_sidebar(); ?>
 </div>
         <footer class="row pt2 pb2">
-            <ul id="menu_footer_1" class="pl3 little_small col">
-                <li><a href="#">Présentation</a></li>
-                <li><a href="#">Actualités</a></li>
-                <li><a href="#">Regards d'aujourd'hui</a></li>
-                <li><a href="#">ATS</a></li>
-                <li><a href="#">IED</a></li>
-                <li><a href="#">AAVPF</a></li>
-                <li><a href="#">Liens</a></li>
-            </ul>
-            <ul id="menu_footer_2" class="little_small col">
-                <li><a href="#">PSU 60-90</a></li>
-                <li><a href="#">ESU 60-71</a></li>
-                <li><a href="#">Images d'archives</a></li>
-                <li><a href="#">Lexique</a></li>
-                <li><a href="#">Chronologie</a></li>
-                <li><a href="#">Bibliographie</a></li>
-                <li><a href="#">Biographies</a></li>
-            </ul>
-            <ul id="menu_footer_3" class="little_small col">
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Soutenir le fond</a></li>
-                <li><a href="#">Contribuer au fond</a></li>
-                <li><a href="#">Newsletter</a></li>
-            </ul>
-            <section id="nuage" class="pr3 smallest col">
+        	<?php wp_nav_menu( array('menu'=>'Première colonne footer', 'container' => 'false', 'menu_id' => 'menu_footer_1', 'menu_class' => 'pl3 little_small col'));?>
+        	<?php wp_nav_menu( array('menu'=>'Deuxième colonne footer', 'container' => 'false', 'menu_id' => 'menu_footer_2', 'menu_class' => 'little_small col'));?>
+        	<div>
+	        	<a href="#" id="facebook" title="facebook"><img src="<?php bloginfo( 'template_url' ); ?>/img/icn_facebook.png" alt="facebook"/></a>
+	        	<a href="#" id="twitter" title="twitter"><img src="<?php bloginfo( 'template_url' ); ?>/img/icn_twitter.png" alt="twitter"/></a>
+	        	<?php wp_nav_menu( array('menu'=>'Troisième colonne footer', 'container' => 'false', 'menu_id' => 'menu_footer_3', 'menu_class' => 'little_small col'));?>
+	        </div>    
+	        <section id="nuage" class="pr3 smallest col">
                 <a href="#">Afrique</a> <a href="#">Agriculture</a> <a href="#">Algérie</a> <a href="#">Amérique latine</a> <a href="#">Associations</a> <a href="#">Autogestion</a> 
                 <a href="#">Chine</a> <a href="#">Classes sociales</a> <a href="#">Consommation</a> <a href="#">Constitution</a> <a href="#">Cuba</a> <a href="#">Culture</a> 
                 <a href="#">Démocratie locale</a> <a href="#">Décentralisation</a> <a href="#">Ecologie</a> <a href="#">Economie</a> <a href="#">Enseignement</a> 

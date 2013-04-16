@@ -1,10 +1,5 @@
 <aside class="pl2 pr3 col">
-    <ul id="menu_sidebar" class="small mb3">
-        <li><a href="#">Biographies</a></li>
-        <li><a href="#">Bibliographie</a></li>
-        <li><a href="#">Lexique</a></li>
-        <li><a href="#">Chronologie</a></li>
-    </ul>
+	<?php wp_nav_menu( array('menu'=>'Menu Sidebar', 'container' => 'false', 'menu_id' => 'menu_sidebar', 'menu_class' => 'small mb3'));?>
 
     <section id="nuage_sidebar" class="small mb3">
         <a href="#">Afrique</a> <a href="#">Agriculture</a> <a href="#">Algérie</a> <a href="#">Amérique latine</a> <a href="#">Associations</a> <a href="#">Autogestion</a> 

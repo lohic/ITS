@@ -28,7 +28,7 @@
 	<div id="page">
 		<header>
 			<h1><a href="<?php bloginfo('url'); ?>"><span class="invisible">ITS</span></a></h1>
-			<ul id="sur_menu" class="very_smallest">
+			<ul id="sur_menu" class="very_smaller">
 				<li><a href="#">Appel aux documents</a></li>
 				<li><a href="#">Soutenir le fond</a></li>
 			</ul>
@@ -36,27 +36,18 @@
 		        <?php get_search_form(); ?>
 		    </div>
 		    <div id="logo" class="pr3">
-		    	<h1 class="very_bigger mb1">Institut<br/>Tribune<br/>Socialiste</h1>
+		    	<h1 class="very_bigger">Institut<br/>Tribune<br/>Socialiste</h1>
 		    	<h2 class="biggest mt0">Des idées pour un socialisme du XXIe?</h2>
 		    	<img src="<?php bloginfo( 'template_url' ); ?>/img/petit_logo.png" alt="ITS, Institut Tribune Socialiste"/>
 		    </div>
-		    <nav id="menus" class="big pr3">
+		    <nav id="menus" class="small pr3">
 				<?php
 				if ( has_nav_menu( 'main_menu' ) ) {
 					wp_nav_menu( array('theme_location'=>'main_menu'));
 				}
 				?>
-				<ul id="menu">
-			    	<li><a href="#">Accueil</a></li>
-			    	<li><a href="#">Présentation</a></li>
-			    	<li><a href="#">Actualités</a></li>
-			    	<li><a href="#">PSU 60-90</a></li>
-			    	<li><a href="#">ESU 60-71</a></li>
-			    </ul>
-			    <ul id="menu_secondaire">
-			    	<li><a href="#">Liens</a></li>
-			    	<li><a href="#">Contact</a></li>
-			    </ul>
+				<?php wp_nav_menu( array('menu'=>'Menu Principal', 'container' => 'false', 'menu_id' => 'menu', 'menu_class' => ''));?>
+				<?php wp_nav_menu( array('menu'=>'Menu Secondaire', 'container' => 'false', 'menu_id' => 'menu_secondaire', 'menu_class' => ''));?>
 			</nav>
 		</header> 
 <!-- FIN HEADER -->
