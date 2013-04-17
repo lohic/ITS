@@ -1,15 +1,14 @@
 <aside class="pl2 pr3 col">
-	<?php wp_nav_menu( array('menu'=>'Menu Sidebar', 'container' => 'false', 'menu_id' => 'menu_sidebar', 'menu_class' => 'small mb3'));?>
+	<?php wp_nav_menu( array('menu'=>'Menu Sidebar', 'container' => 'false', 'menu_id' => 'menu_sidebar', 'menu_class' => 'small mb2'));?>
 
     <section id="nuage_sidebar" class="small mb3">
-        <a href="#">Afrique</a> <a href="#">Agriculture</a> <a href="#">Algérie</a> <a href="#">Amérique latine</a> <a href="#">Associations</a> <a href="#">Autogestion</a> 
-        <a href="#">Chine</a> <a href="#">Classes sociales</a> <a href="#">Consommation</a> <a href="#">Constitution</a> <a href="#">Cuba</a> <a href="#">Culture</a> 
-        <a href="#">Démocratie locale</a> <a href="#">Décentralisation</a> <a href="#">Ecologie</a> <a href="#">Economie</a> <a href="#">Enseignement</a> 
-        <a href="#">Europe</a> <a href="#">Femmes</a> <a href="#">Finances</a> <a href="#">Immigration</a> <a href="#">International</a> <a href="#">Israël</a> 
-        <a href="#">Jeunes</a> <a href="#">Loisirs</a> <a href="#">Mixité</a> <a href="#">Mouvements</a> <a href="#">Moyen-­Orient</a> <a href="#">Nucléaire</a> 
-        <a href="#">Parti</a> <a href="#">Palestine</a> <a href="#">Recherche</a> <a href="#">Régions</a> <a href="#">Retraites</a> <a href="#">Santé</a> 
-        <a href="#">Socialisme</a> <a href="#">Syndicats</a> <a href="#">Temps de travail</a> <a href="#">Ville-­Urbanisme</a> <a href="#">UNEF 60/71</a> <a href="#">URSS</a> 
-        <a href="#">Université</a> <a href="#">Vietnam</a> <a href="#">Yougoslavie</a>
+        <a href="#">Agriculture</a> <a href="#">Associations</a> <a href="#">Autogestion</a> <a href="#">Classes sociales</a> <a href="#">Consommation</a> 
+        <a href="#">Constitution</a> <a href="#">Culture</a> <a href="#">Démocratie locale</a> <a href="#">Décentralisation</a> <a href="#">Ecologie</a> 
+        <a href="#">Economie</a> <a href="#">Enseignement</a> <a href="#">Europe</a> <a href="#">Femmes</a> <a href="#">Finances</a> 
+        <a href="#">Immigration</a> <a href="#">International</a> <a href="#">Jeunes</a> <a href="#">Loisirs</a> <a href="#">Mixité</a> 
+        <a href="#">Mouvements</a> <a href="#">Nucléaire</a> <a href="#">Parti</a> <a href="#">Recherche</a> <a href="#">Régions</a> 
+        <a href="#">Retraites</a> <a href="#">Santé</a> <a href="#">Socialisme</a> <a href="#">Syndicats</a> <a href="#">Temps de travail</a> 
+        <a href="#">Ville-­Urbanisme</a> <a href="#">Université</a>
     </section>
 
     <section id="soutien" class="mb3">
