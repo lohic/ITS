@@ -34,9 +34,9 @@
                     <img src="<?php bloginfo( 'template_url' ); ?>/img/visuel.png" alt="image"/>
                 </div>
                 <article class="pl3 col">
-                    <h3 class="very_biggest mb0">l'ITS expose ses affiches</h3>
+                    <h3 class="very_biggest mb0 titre">l'ITS expose ses affiches</h3>
                     <h4 class="normal mt0 mb1">17 janvier 2031 - Auteur</h4>
-                    <div class="pb2 mb1">
+                    <div class="pb1 mb1">
                         <p class="small mb0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
                         quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
                         eu fugiat nulla pariatur.</p>
@@ -50,7 +50,7 @@
             <h2 class="smaller"><span></span>Regards d'aujourd'hui</h2>
             <div class="row">
                 <article class="col">
-                    <h3 class="very_biggest mb0">Défendons la laïcité</h3>
+                    <h3 class="very_biggest mb0 titre">Défendons la laïcité</h3>
                     <h4 class="normal mt0 mb1">Juin 1960 - Auteur</h4>
                     <div class="pb2 mb1">
                         <p class="small mb0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 

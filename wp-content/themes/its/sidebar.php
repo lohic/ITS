@@ -2,13 +2,14 @@
 	<?php wp_nav_menu( array('menu'=>'Menu Sidebar', 'container' => 'false', 'menu_id' => 'menu_sidebar', 'menu_class' => 'small mb2'));?>
 
     <section id="nuage_sidebar" class="small mb3">
-        <a href="#">Agriculture</a> <a href="#">Associations</a> <a href="#">Autogestion</a> <a href="#">Classes sociales</a> <a href="#">Consommation</a> 
-        <a href="#">Constitution</a> <a href="#">Culture</a> <a href="#">Démocratie locale</a> <a href="#">Décentralisation</a> <a href="#">Ecologie</a> 
-        <a href="#">Economie</a> <a href="#">Enseignement</a> <a href="#">Europe</a> <a href="#">Femmes</a> <a href="#">Finances</a> 
-        <a href="#">Immigration</a> <a href="#">International</a> <a href="#">Jeunes</a> <a href="#">Loisirs</a> <a href="#">Mixité</a> 
-        <a href="#">Mouvements</a> <a href="#">Nucléaire</a> <a href="#">Parti</a> <a href="#">Recherche</a> <a href="#">Régions</a> 
-        <a href="#">Retraites</a> <a href="#">Santé</a> <a href="#">Socialisme</a> <a href="#">Syndicats</a> <a href="#">Temps de travail</a> 
-        <a href="#">Ville-­Urbanisme</a> <a href="#">Université</a>
+    	<?php 
+    		$categories = get_categories( array('parent'=>'0', 'hide_empty'=>'0') ); 
+    		foreach ($categories as $categorie){
+    	?>
+				<a href="<?php echo get_category_link($categorie->term_id);?>"><?php echo $categorie->name;?></a>&nbsp;
+    	<?php
+    		}
+    	?>
     </section>
 
     <section id="soutien" class="mb3">

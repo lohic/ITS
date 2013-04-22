@@ -50,6 +50,17 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'signikalight';
+    src: url('fonts/signika-light.eot');
+    src: url('fonts/signika-light.eot?#iefix') format('embedded-opentype'),
+         url('fonts/signika-light.woff') format('woff'),
+         url('fonts/signika-light.otf') format('truetype'),
+         url('fonts/signika-light.svg#signikalight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 html {
 	font-size: 62.5%;
 }
@@ -72,6 +83,11 @@ body {
 
 .very_biggest{
 	font-size:3.6em;
+	line-height:1em;
+}
+
+.little_very_biggest{
+	font-size:3em;
 	line-height:1em;
 }
 
@@ -143,28 +159,34 @@ textarea{
 	font-style:normal;
 }
 
-textarea{
-	font-family:"futura-pt", sans-serif;
-	font-weight:500;
-	font-style:normal;
-}
-
 #logo h1, #sur_menu li a, #menu_sidebar li a, aside section > h3 > a, footer a, #actualites .row .col + article > h4, 
-#regards .row > article > h4, #meme_theme h3, #meme_theme a.recherche, #agenda article > h3, #agenda article > h4{
+#regards .row > article > h4, #meme_theme h3, #meme_theme a.recherche, #agenda article > h3, #agenda article > h4, h3.date, #frise ul + a,
+#frise ul > li > a, .pagination a, #sous_categories > ul > li > a{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
 }
 
-#actualites .row .col + article > h3, #regards .row > article > h3{
+h3.titre, h2.titre, h2.titre a, #entete h1{
 	font-family:"futura-pt", sans-serif;
 	font-weight:800;
 	font-style:normal;
 }
 
+#entete h1 a{
+	font-family:"futura-pt", sans-serif;
+	font-weight:800;
+	font-style:italic;
+}
+
+h2.titre a{
+	line-height:1.1em;
+}
+
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
-#actualites a.suite:hover, #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, #meme_theme li:hover a, footer a:hover, 
-footer #nuage a:hover{
+#actualites a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, 
+#meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
+#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover{
 	color:#188e7c;
 }
 
@@ -172,7 +194,8 @@ footer #nuage a:hover{
 	color:#fff;
 }
 
-#menus li > a, #regards a.suite span, #actualites a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, footer #nuage a {
+#menus li > a, #regards a.suite span, #actualites a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, 
+footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a {
 	-webkit-transition: color .2s ease-out;
 	-moz-transition: color .2s ease-out;
 	-o-transition: color .2s ease-out;
@@ -359,40 +382,49 @@ source https://github.com/stubbornella/oocss/blob/master/core/spacing/space.css
 .pa1, .pas { padding: 10px; }
 .pa2, .pam { padding: 20px; }
 .pa3, .pal { padding: 30px; }
+.pa4, .pasl { padding: 40px; }
 
 .mt0, .mtn { margin-top: 0; }
 .mt1, .mts { margin-top: 10px; }
 .mt2, .mtm { margin-top: 20px; }
 .mt3, .mtl { margin-top: 30px; }
+.mt4, .mtsl { margin-top: 40px; }
 .mr0, .mrn { margin-right: 0; }
 .mr1, .mrs { margin-right: 10px; }
 .mr2, .mrm { margin-right: 20px; }
 .mr3, .mrl { margin-right: 30px; }
+.mr4, .mrsl { margin-right: 40px; }
 .mb0, .mbn { margin-bottom: 0; }
 .mb1, .mbs { margin-bottom: 10px; }
 .mb2, .mbm { margin-bottom: 20px; }
 .mb3, .mbl { margin-bottom: 30px; }
+.mb4, .mbsl { margin-bottom: 40px; }
 .ml0, .mln { margin-left: 0; }
 .ml1, .mls { margin-left: 10px; }
 .ml2, .mlm { margin-left: 20px; }
 .ml3, .mll { margin-left: 30px; }
+.ml4, .mlsl { margin-left: 40px; }
 
 .pt0, .ptn { padding-top: 0; }
 .pt1, .pts { padding-top: 10px; }
 .pt2, .ptm { padding-top: 20px; }
 .pt3, .ptl { padding-top: 30px; }
+.pt4, .ptsl { padding-top: 40px; }
 .pr0, .prn { padding-right: 0; }
 .pr1, .prs { padding-right: 10px; }
 .pr2, .prm { padding-right: 20px; }
 .pr3, .prl { padding-right: 30px; }
+.pr4, .prsl { padding-right: 40px; }
 .pb0, .pbn { padding-bottom: 0; }
 .pb1, .pbs { padding-bottom: 10px; }
 .pb2, .pbm { padding-bottom: 20px; }
 .pb3, .pbl { padding-bottom: 30px; }
+.pb4, .pbsl { padding-bottom: 40px; }
 .pl0, .pln { padding-left: 0; }
 .pl1, .pls { padding-left: 10px; }
 .pl2, .plm { padding-left: 20px; }
 .pl3, .pll { padding-left: 30px; }
+.pl4, .plsl { padding-left: 40px; }
 
 
 /* ----------------------------- */
@@ -434,12 +466,12 @@ header{
 
 header > h1{
 	background: url("img/logo.png") no-repeat scroll 0 0 transparent;
-    height: 272px;
+    height: 222px;
     left: 0;
     position: absolute;
     top: 0;
-    width: 319px;
-    z-index:1;
+    width: 259px;
+    z-index: 1;
 }
 
 #sur_menu li{
@@ -527,20 +559,13 @@ header > h1{
 	display:block;
 }
 
-#menu_sidebar li a:hover{
-	color:#009966;
-}
-
 #nuage_sidebar a{
 	background: url("img/puce_sidebar.png") no-repeat scroll right 10px transparent;
     color: #666666;
     font-size: 1.05em;
     font-weight: 600;
     padding-right: 7px;
-}
-
-#nuage_sidebar a:hover{
-	color:#009966;
+    margin-right: -4px;
 }
 
 aside section > h3 > a{
@@ -577,7 +602,6 @@ footer{
 
 footer #nuage{
 	width:370px;
-	padding-top:5px;
 }
 
 footer li{
@@ -646,14 +670,22 @@ textarea {
 	border-right:4px solid #ededed;
 }
 
-#agenda h2, #actualites h2, #regards h2{
+#agenda h2, #actualites h2, #regards h2, h4.tag{
 	text-transform: uppercase;
 	margin-bottom:16px;
 	font-family:"signikabold", "futura-pt", "Helvetica", sans-serif;
 	font-weight:normal;
 }
 
-#agenda h2 > span, #actualites h2 > span, #regards h2 > span{
+.post_archive h4.tag{
+	margin-bottom: 10px;
+}
+
+.post h4.tag{
+	margin-bottom: 0px;
+}
+
+#agenda h2 > span, #actualites h2 > span, #regards h2 > span, h4.tag span{
 	display:block;
 	float:left;
 	margin-right:8px;
@@ -707,11 +739,20 @@ textarea {
 	width:300px;
 }
 
-#actualites .row .col + article > h3, #regards .row > article > h3{
+h3.titre, h2.titre, h2.titre a{
 	text-transform: uppercase;
 	color:#ff3333;
 	margin-bottom:2px;
 	margin-top:-5px;
+}
+
+h2.titre, h2.titre a{
+	margin-bottom:0;
+}
+
+.post h2.titre{
+	margin-top:0px;
+	margin-bottom: 2px;
 }
 
 #actualites .row .col + article > h4, #regards .row > article > h4{
@@ -722,9 +763,9 @@ textarea {
 	background:url('img/grand_sep.png') repeat-x left bottom;
 }
 
-#actualites article > div > p, #regards article > div > p{
+#actualites article > div > p, #regards article > div > p, .post_content p{
 	line-height:1.2em;
-	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
 #regards .row > article{
@@ -735,20 +776,19 @@ textarea {
 	width:680px;
 }
 
-#regards a.suite, #actualites a.suite, #meme_theme li{
+a.suite, #meme_theme li{
 	color:#FF3333;
 	background:url('img/chevron_rouge.png') no-repeat left center;
 	padding-left:12px;
 	font-family: "signikabold", "futura-pt", Arial, sans-serif;
 }
 
-#regards a.suite span, #actualites a.suite span, #meme_theme li a{
+a.suite span, #meme_theme li a{
 	text-decoration: underline;
 	color:#FF3333;
 }
 
-
-#regards a.suite:hover, #actualites a.suite:hover, #meme_theme li:hover{
+a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover{
 	background:url('img/chevron_vert.png') no-repeat left center;
 }
 
@@ -784,6 +824,163 @@ textarea {
 	background-color:#188e7c;
 }
 
+.post + #meme_theme{
+	border-top:4px solid #EDEDED;
+	border-bottom: 1px solid #CCCCCC;
+	width:680px;
+	position:relative;
+}
+
+.post + #meme_theme h3{
+	display: inline-block;
+}
+
+.post + #meme_theme a.recherche {
+    position: absolute;
+    right: 0;
+    top: 11px;
+}
+
+.post + #meme_theme li a{
+	color:#666;
+}
+
+.post + #meme_theme li{
+	background: url("img/chevron_gris.png") no-repeat scroll left 6px transparent;
+	margin-bottom: 0;
+}
+
+.post_archive, .post .post_content, .post, .comments-template, #sous_categories, .pagination{
+    width: 680px;
+}
+
+.post_archive, .post .post_content, .pagination{
+	background: url("img/sep_articles.png") no-repeat scroll left bottom transparent;
+}
+
+article + .pagination{
+	background: none;
+}
+
+.post{
+	border-bottom: 1px solid #CCCCCC;
+}
+
+.post a.suite{
+	display: inline-block;
+}
+
+.comments-template{
+	border-top:4px solid #EDEDED;
+}
+
+h3.date{
+	text-transform: uppercase;
+}
+
+h3.date span{
+	padding-left:11px;
+	background: url("img/puce_auteur.png") no-repeat left center;	
+}
+
+p.categories_et_tags a, p.categories_et_tags{
+    font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	color:#000;
+}
+
+.categories_et_tags span.tags{
+	text-transform: uppercase;
+	font-size:0.85em;
+	padding-left:6px;
+	background: url("img/puce_tags.png") no-repeat left 4px;
+}
+
+.categories_et_tags > span.categories a:last-child:after{
+	content:'';
+}
+
+#entete h1:before, .pagination a.precedent:before{
+	content:' « ';
+}
+
+#entete h1:after, .pagination a.suivant:after, .categories_et_tags > span.categories > a:after{
+	content:' » ';
+}
+
+#entete h1{
+	color:#FF3333;
+	text-transform: uppercase;
+}
+
+#entete h1 a{
+	border-bottom: 10px solid #FF3333;
+    color: #FF3333;
+    display: inline-block;
+    letter-spacing: 0.025em;
+    padding-bottom: 2px;
+}
+
+#frise, #sous_categories{
+	background: #EDEDED;
+	border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+}
+
+#frise{
+	width:650px;
+}
+
+#frise ul{
+	padding-right: 15px;
+    width: 57%;
+}
+
+#frise ul > li, #frise ul + a{
+	vertical-align: middle;
+	height: 31px;
+	padding-right: 17px;
+}
+
+#frise ul + a{
+	background: url("img/puce_sidebar.png") no-repeat scroll left center transparent;
+    padding-left: 20px;
+    color:#333;
+}
+
+#frise ul > li > a{
+	color:#666;
+}
+
+#sous_categories > ul > li{
+	display:inline-block;
+	width:185px;
+}
+
+#sous_categories > ul > li > a{
+	color:#666;
+}
+
+.pagination{
+	padding-bottom:5px;
+	text-align: right;
+}
+
+.pagination a{
+	text-transform: uppercase;
+	color:#666;
+	margin-left: 10px;
+}
+
+.pagination a.actif{
+	color:#f23a3a;
+	border-bottom:1px solid #f23a3a;
+}
+
+p#breadcrumbs, p#breadcrumbs a, p#breadcrumbs strong{
+	color:#333;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-weight: normal;
+}
 
 /* ----------------------------- */
 /* ==iefix */
