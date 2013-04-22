@@ -56,6 +56,7 @@
 			<div class="post_content small">
 				<?php the_excerpt(); ?>
 			</div>
+			<?php create_attachement_list(get_the_ID());?>
 		</article>
 <?php endwhile; ?>
 <?php endif; ?>

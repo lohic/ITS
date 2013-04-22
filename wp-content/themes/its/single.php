@@ -11,10 +11,10 @@
 			<p class="mb1 smaller categories_et_tags"><span class="categories"><?php echo get_category_parents($categorie[0]->term_id,'true','');?></span> <span class="tags"><?php the_tags('',', ',''); ?></span></p>
 			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 			<h3 class="little_small mb4 mt0 date"><?php the_field('date_article');?> <span><?php the_field('auteur_article');?></span></h3>
-			<div class="post_content normal pb2">
+			<div class="post_content normal pb2 mb2">
 				<?php get_template_part( 'content', 'get_post_format()' ); ?>
 			</div>
-			<a href="#" class="small suite mt2"><span>Article de Monique Bonnet, Tribune Socialiste, Février 1968, N°360</span></a>
+			<?php create_attachement_list(get_the_ID());?>
 		</article>
 
 		<section id="meme_theme" class="pt1 pb4">

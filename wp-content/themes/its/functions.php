@@ -173,3 +173,32 @@ function newsletter_image($ref, $size){
 	
 	return $retour;
 }
+
+
+if( ! function_exists ( 'create_attachement_list') ) {
+	function create_attachement_list($identifiant = '', $titre = ''){
+		if($identifiant == ''){
+			$identifiant = get_the_ID();
+		}
+
+		if ( $documents = get_children ( array (
+			'post_parent'	=> $identifiant,
+			'post_type'		=> 'attachment',
+			'numberposts'	=> -1 ,
+			'post_status'	=> null,
+			'post_mime_type'=> 'application/zip, application/msword, application/vnd.ms-excel, application/pdf, application/rtf',
+			'orderby'		=> 'menu_order',
+			'order'			=> 'ASC',
+		) ) ) {
+			echo '<ul class="liste_attachements">'."\n";
+			
+			$media_count = 0;
+			
+			foreach ( $documents as $document ){
+				echo '<li class="telechargement small">' . wp_get_attachment_link ( $document->ID , '', false , false ) . '</li>'."\n";
+			}
+		
+			echo '</ul>'."\n";
+		}
+	}
+}

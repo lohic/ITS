@@ -186,7 +186,7 @@ h2.titre a{
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
 #actualites a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
-#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover{
+#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover{
 	color:#188e7c;
 }
 
@@ -195,7 +195,7 @@ h2.titre a{
 }
 
 #menus li > a, #regards a.suite span, #actualites a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, 
-footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a {
+footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a, li.telechargement a {
 	-webkit-transition: color .2s ease-out;
 	-moz-transition: color .2s ease-out;
 	-o-transition: color .2s ease-out;
@@ -776,19 +776,19 @@ h2.titre, h2.titre a{
 	width:680px;
 }
 
-a.suite, #meme_theme li{
+a.suite, #meme_theme li, li.telechargement{
 	color:#FF3333;
 	background:url('img/chevron_rouge.png') no-repeat left center;
 	padding-left:12px;
 	font-family: "signikabold", "futura-pt", Arial, sans-serif;
 }
 
-a.suite span, #meme_theme li a{
+a.suite span, #meme_theme li a, li.telechargement a{
 	text-decoration: underline;
 	color:#FF3333;
 }
 
-a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover{
+a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover{
 	background:url('img/chevron_vert.png') no-repeat left center;
 }
 
@@ -980,6 +980,10 @@ p#breadcrumbs, p#breadcrumbs a, p#breadcrumbs strong{
 	color:#333;
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	font-weight: normal;
+}
+
+.post_archive ul.liste_attachements{
+	margin-top:5px;
 }
 
 /* ----------------------------- */
