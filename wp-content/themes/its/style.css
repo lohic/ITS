@@ -186,8 +186,20 @@ h2.titre a{
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
 #actualites a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
-#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover{
+#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *{
 	color:#188e7c;
+}
+
+article.post_archive.resume:hover h4.tag span{
+	background:#188e7c;
+}
+
+article.post_archive.resume:hover h3.date span{
+	background: url("img/puce_auteur_actif.png") no-repeat scroll left center transparent;
+}
+
+article.post_archive.resume:hover .categories_et_tags span.tags {
+    background: url("img/puce_tags_actif.png") no-repeat scroll left 4px transparent;
 }
 
 #menus li > a:hover, #menus #menu_secondaire a:hover{
@@ -788,7 +800,7 @@ a.suite span, #meme_theme li a, li.telechargement a{
 	color:#FF3333;
 }
 
-a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover{
+a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
 	background:url('img/chevron_vert.png') no-repeat left center;
 }
 
@@ -856,6 +868,10 @@ a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telecharge
 
 .post_archive, .post .post_content, .pagination{
 	background: url("img/sep_articles.png") no-repeat scroll left bottom transparent;
+}
+
+.post_content.resume p{
+	display:inline;
 }
 
 article + .pagination{
