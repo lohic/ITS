@@ -3,7 +3,7 @@
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
-    		//if (function_exists('mybread')) mybread();
+    		if (function_exists('mybread')) mybread();
 		?>
 
     	<div id="entete">

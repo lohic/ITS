@@ -141,7 +141,7 @@ body {
 	font-size:1em;
 }
 
-#menus li > a, #nuage_sidebar a, footer #nuage a{
+#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments{
 	font-family:"futura-pt", sans-serif;
 	font-weight:300;
 	font-style:normal;
@@ -161,10 +161,16 @@ textarea{
 
 #logo h1, #sur_menu li a, #menu_sidebar li a, aside section > h3 > a, footer a, #actualites .row .col + article > h4, 
 #regards .row > article > h4, #meme_theme h3, #meme_theme a.recherche, #agenda article > h3, #agenda article > h4, h3.date, #frise ul + a,
-#frise ul > li > a, .pagination a, #sous_categories > ul > li > a{
+#frise ul > li > a, .pagination a, #sous_categories > ul > li > a, h3#comments span, .commentmetadata p, #respond{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
+}
+
+h3#comments .titre{
+	font-family:"futura-pt", sans-serif;
+	font-weight:700;
+	font-style:italic;
 }
 
 h3.titre, h2.titre, h2.titre a, #entete h1{
@@ -919,7 +925,7 @@ p.categories_et_tags a, p.categories_et_tags{
 	content:' « ';
 }
 
-#entete h1:after, .pagination a.suivant:after, .categories_et_tags > span.categories > a:after{
+#entete h1:after, .pagination a.suivant:after, .categories_et_tags > span.categories > a:after, #respond:after{
 	content:' » ';
 }
 
@@ -992,7 +998,7 @@ p.categories_et_tags a, p.categories_et_tags{
 	border-bottom:1px solid #f23a3a;
 }
 
-p#breadcrumbs, p#breadcrumbs a, p#breadcrumbs strong{
+#breadcrumbs, #breadcrumbs a, #breadcrumbs strong{
 	color:#333;
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	font-weight: normal;
@@ -1000,6 +1006,26 @@ p#breadcrumbs, p#breadcrumbs a, p#breadcrumbs strong{
 
 .post_archive ul.liste_attachements{
 	margin-top:5px;
+}
+
+#comments, .commentmetadata, .commenttext, .commentmetadata a, #respond{
+	color:#666;
+}
+
+.commenttext{
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+}
+
+.commentlist li{
+	background:#EDEDED;
+	border-top:1px solid #CCCCCC;
+	border-bottom:1px solid #CCCCCC;
+	padding-top:8px;
+	margin-bottom: 18px;
+}
+
+#commentform{
+	display: none;
 }
 
 /* ----------------------------- */

@@ -222,8 +222,8 @@ function myget_category_parents($id, $link = false,$separator = '/',$nicename = 
 //Le rendu
 function mybread() {
 	// variables gloables
-	global $wp_query;$ped=get_query_var('paged');$rendu = '<div xmlns:v="http://rdf.data-vocabulary.org/#" class="smaller mb3">';  
-	$debutlien = '<span typeof="v:Breadcrumb"><a title="'. get_bloginfo('name') .'" id="breadh" href="'.home_url().'" rel="v:url" property="v:title">'. get_bloginfo('name') .'</a></span>';
+	global $wp_query;$ped=get_query_var('paged');$rendu = '<div xmlns:v="http://rdf.data-vocabulary.org/#" class="smaller mb3" id="breadcrumbs">';  
+	$debutlien = '<span typeof="v:Breadcrumb"><a title="'. get_bloginfo('name') .'" id="breadh" href="'.home_url().'" rel="v:url" property="v:title">Accueil</a></span>';
 	$debut = '<span typeof="v:Breadcrumb">Accueil de '. get_bloginfo('name') .'</span>';
 
 	// si l'utilisateur a défini une page comme page d'accueil
