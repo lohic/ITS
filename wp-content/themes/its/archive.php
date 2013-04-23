@@ -3,9 +3,7 @@
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
-    		if ( function_exists('yoast_breadcrumb') ) {
-				yoast_breadcrumb('<p id="breadcrumbs" class="smaller mb3">','</p>');
-			} 
+    		//if (function_exists('mybread')) mybread();
 		?>
 
     	<div id="entete">
@@ -51,7 +49,7 @@
 			$categorie = get_the_category();
 			$resume = get_field("resume_article");
 			$liste_tags = "";
-			$$liste_tags = "";
+			$tag_principal = "";
 			$tags = get_the_tags();
 			foreach ($tags as $tag){
 				if(get_field('tag_principal','post_tag_'.$tag->term_id)=="Oui"){

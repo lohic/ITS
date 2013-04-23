@@ -144,4 +144,5 @@ function mybread() {
   
   
   // POUR L'UTILISER :
-if (function_exists('mybread')) mybread();
+//if (function_exists('mybread')) mybread();
+
