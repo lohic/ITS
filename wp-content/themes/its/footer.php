@@ -12,7 +12,7 @@
 	        </div>    
 	        <section id="nuage" class="pr3 smallest col">
                 <?php 
-		    		$categories = get_categories( array('parent'=>'0', 'hide_empty'=>'0') ); 
+		    		$categories = get_categories( array('parent'=>'50', 'hide_empty'=>'0') ); 
 		    		foreach ($categories as $categorie){
 		    	?>
 						<a href="<?php echo get_category_link($categorie->term_id);?>"><?php echo $categorie->name;?></a>&nbsp;

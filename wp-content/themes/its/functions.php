@@ -208,15 +208,20 @@ if( ! function_exists ( 'create_attachement_list') ) {
 //***Fil d'arianne
 //Récupérer les catégories parentes
 function myget_category_parents($id, $link = false,$separator = '/',$nicename = false,$visited = array()) {
-	$chain = '';$parent = &get_category($id);
-	if (is_wp_error($parent))return $parent;
-	if ($nicename)$name = $parent->name;
-	else $name = $parent->cat_name;
-	if ($parent->parent && ($parent->parent != $parent->term_id ) && !in_array($parent->parent, $visited)) {
-		$visited[] = $parent->parent;$chain .= myget_category_parents( $parent->parent, $link, $separator, $nicename, $visited );}
-	if ($link) $chain .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $parent->term_id ) . '" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
-	else $chain .= $name.$separator;
-	return $chain;
+	$chain = '';
+	$parent = &get_category($id);
+	if($parent->category_nicename!="categories-meres"){
+		if (is_wp_error($parent))return $parent;
+		if ($nicename)$name = $parent->name;
+		else $name = $parent->cat_name;
+		if ($parent->parent && ($parent->parent != $parent->term_id ) && !in_array($parent->parent, $visited)) {
+			$visited[] = $parent->parent;
+			$chain .= myget_category_parents( $parent->parent, $link, $separator, $nicename, $visited );
+		}
+		if ($link) $chain .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $parent->term_id ) . '" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
+		else $chain .= $name.$separator;
+		return $chain;
+	}
 }
 
 //Le rendu
@@ -254,7 +259,7 @@ function mybread() {
 	else {$rendu .= $debutlien;}
 
     // les catégories
-	if ( is_category() ) {
+	if ( is_category()) {
 		$cat_obj = $wp_query->get_queried_object();$thisCat = $cat_obj->term_id;$thisCat = get_category($thisCat);$parentCat = get_category($thisCat->parent);
 		if ($thisCat->parent != 0) $rendu .= " &raquo; ".myget_category_parents($parentCat, true, " &raquo; ", true);
 		if ($thisCat->parent == 0) {$rendu .= " &raquo; ";}
