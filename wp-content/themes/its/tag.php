@@ -6,7 +6,22 @@
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-			<h1 class="very_biggest mb4"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
+			<?php 
+				$tag = get_tags(array('slug'=>get_query_var('tag')));
+				$value = get_field('titre_tag','post_tag_'.$tag[0]->term_id);
+				if($value){
+			?>
+					<h1 class="very_biggest mb4 sans"><?php echo $value;?></h1>
+					<div class="normal pb3 mb2" id="texte_tag"><?php the_field('texte_tag','post_tag_'.$tag[0]->term_id);?></div>
+			<?php 
+				}
+				else{
+			?>
+					<h1 class="very_biggest mb4"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
+			<?php	 
+				}
+			?>
+			
 			<section class="pagination smaller mb2">
 				<a href="#" class="precedent">Prev</a>
 				<a href="#" class="actif">1</a>

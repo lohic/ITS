@@ -882,7 +882,7 @@ a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telecharge
     width: 680px;
 }
 
-.post_archive, .post .post_content, .pagination{
+.post_archive, .post .post_content, .pagination, #texte_tag{
 	background: url("img/sep_articles.png") no-repeat scroll left bottom transparent;
 }
 
@@ -943,6 +943,10 @@ p.categories_et_tags a, p.categories_et_tags{
 	content:' » ';
 }
 
+#entete h1.sans:after, #entete h1.sans:before{
+	content:'';
+}
+
 #entete h1{
 	color:#FF3333;
 	text-transform: uppercase;
@@ -954,6 +958,14 @@ p.categories_et_tags a, p.categories_et_tags{
     display: inline-block;
     letter-spacing: 0.025em;
     padding-bottom: 2px;
+}
+
+#texte_tag{
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+} 
+
+#texte_tag p{
+	margin-bottom: 10px;
 }
 
 #frise, #sous_categories{
