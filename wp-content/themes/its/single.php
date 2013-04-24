@@ -4,6 +4,9 @@
 
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
+    	<?php 
+    		if (function_exists('mybread')) mybread();
+		?>
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 		<?php 
 			$categorie = get_the_category();
@@ -20,7 +23,7 @@
 			}
 			$liste_tags = substr($liste_tags, 0, -2);
 		?>
-		<article class="pt2 pb2 post" id="post-<?php the_ID(); ?>">
+		<article class="pt1 pb2 post" id="post-<?php the_ID(); ?>">
 			<h4 class="smaller mb0 tag"><span></span><?php echo $tag_principal; ?></h4>
 			<p class="mb1 smaller categories_et_tags"><span class="categories"><?php echo get_category_parents($categorie[0]->term_id,'true','');?></span> <span class="tags"><?php echo $liste_tags; ?></span></p>
 			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>

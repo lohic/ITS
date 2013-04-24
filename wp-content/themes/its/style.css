@@ -492,6 +492,12 @@ header > h1{
     z-index: 1;
 }
 
+header > h1 > a{
+	height: 222px;
+	width: 259px;
+	display: block;
+}
+
 #sur_menu li{
 	float:left;
 	margin-right:15px;
@@ -693,6 +699,10 @@ textarea {
 	margin-bottom:16px;
 	font-family:"signikabold", "futura-pt", "Helvetica", sans-serif;
 	font-weight:normal;
+}
+
+h4.tag a{
+	color:#000;
 }
 
 .post_archive h4.tag{
@@ -1010,6 +1020,11 @@ p.categories_et_tags a, p.categories_et_tags{
 
 #comments, .commentmetadata, .commenttext, .commentmetadata a, #respond{
 	color:#666;
+}
+
+.commentmetadata a{
+	padding-left:6px;
+	background: url('img/puce_tags.png') no-repeat left 10px;
 }
 
 .commenttext{
