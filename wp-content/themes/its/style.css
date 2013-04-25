@@ -787,6 +787,10 @@ h2.titre, h2.titre a{
 	text-transform: uppercase;
 }
 
+#actualites .row .col + article > h4 > span:before, #regards .row > article > h4 > span:before{
+	content:'•';
+}
+
 #actualites article > div, #regards article > div{
 	background:url('img/grand_sep.png') repeat-x left bottom;
 }
