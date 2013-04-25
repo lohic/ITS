@@ -108,6 +108,7 @@ body {
 
 .big{
 	font-size:1.8em;
+	line-height:1.2em;
 }
 
 .normal{
@@ -117,7 +118,7 @@ body {
 
 .small{
 	font-size:1.5em;
-	line-height:1.3em;
+	line-height:1.25em;
 }
 
 .little_small{
@@ -189,7 +190,7 @@ h2.titre a{
 	line-height:1.1em;
 }
 
-#agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
+#agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > div > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
 #actualites a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *{
@@ -724,16 +725,19 @@ h4.tag a{
 }
 
 #agenda{
-	height:200px;
+	height:208px;
+	position: absolute;
+    z-index: 2;
 }
 
 #agenda article{
-	background: url("img/fd_agenda.png") repeat scroll 0 0 transparent;
+	/*background: url("img/fd_agenda.png") repeat scroll 0 0 transparent;*/
+	background:#f6f6f6;
     border: 1px solid #E5E5E5;
     float: left;
-    min-height: 145px;
+    min-height: 152px;
     margin-right: 31px;
-    width: 184px;
+    width: 164px;
 }
 
 #agenda article:hover{
@@ -742,25 +746,80 @@ h4.tag a{
 	box-shadow: 0 0px 8px #ccc;  
 }
 
-
-
 #agenda article > h3{
 	color:#ff3333;
 	text-transform: uppercase;
-	margin-bottom:7px;
+	margin-bottom:3px;
 }
 
-#agenda article > h4, #agenda article > p{
+#agenda article #complet{
+	display:none;
+}
+
+#agenda article:hover #complet{
+	display:block;  
+}
+
+#agenda article:hover #resume{
+	display:none;  
+}
+
+
+#agenda article > h4, #agenda article > div > p{
 	color:#333;
 }
 
-#agenda article > p{
-	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+#agenda article > div > p{
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	margin-top:4px;
 }
 
+#navigation_agenda{
+	position: absolute;
+    right: 30px;
+    top: 10px;
+}
+
+#navigation_agenda li{
+	display:block;
+	float:left;
+	margin-left: 8px;
+	background: url('img/points_nav.png') no-repeat 0px 0px;
+	height:11px;
+	width:10px;
+	position: relative;
+	z-index:1;
+}
+
+#navigation_agenda li.actif{
+	background: url('img/points_nav.png') no-repeat 0px -11px;
+}
+
+#navigation_agenda li.precedent, #navigation_agenda li.suivant{
+	height:12px;
+	margin-top: -1px;
+}
+
+#navigation_agenda li.precedent{
+	background: url('img/icn_precedent_nav.png') no-repeat 0px 0px;
+}
+
+#navigation_agenda li.suivant{
+	background: url('img/icn_suivant_nav.png') no-repeat 0px 0px;
+}
+
+#navigation_agenda li#curseur{
+	background: url("img/curseur_nav.png") no-repeat scroll 0 0 transparent;
+    height: 15px;
+    left: 32px;
+    position: absolute;
+    top: -2px;
+    width: 54px;
+    z-index: 0;
+}
+
 #actualites{
-	margin:60px 0px;
+	margin:268px 0px 60px;
 }
 
 #actualites .row .col:first-child{

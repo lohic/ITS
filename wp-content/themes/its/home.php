@@ -3,28 +3,35 @@
 <div class="row mb3">
     <div id="centre" class="col">
         <section id="agenda" class="pl3">
+        	<ul id="navigation_agenda">
+        		<li id="curseur"></li>
+				<li class="precedent"></li>
+				<li></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li class="suivant"></li>
+        	</ul>
             <h2 class="smaller"><span></span>Agenda</h2>
-            <a href="#">
-                <article class="pa1">
-                    <h3 class="bigger">Assemblée générale IED</h3>
-                    <h4 class="normal">lundi 4 février à 18h, au 40 rue de Malte</h4>
-                    <p class="smaller">Assemblée générale de l'Institut Edouard Depreux</p>
-                </article>
-            </a>
-            <a href="#">
-                <article class="pa1">
-                    <h3 class="bigger">Assemblée générale IED</h3>
-                    <h4 class="normal">lundi 4 février à 18h, au 40 rue de Malte</h4>
-                    <p class="smaller">Assemblée générale de l'Institut Edouard Depreux</p>
-                </article>
-            </a>
-            <a href="#">
-                <article class="pa1">
-                    <h3 class="bigger">Assemblée générale IED</h3>
-                    <h4 class="normal">lundi 4 février à 18h, au 40 rue de Malte</h4>
-                    <p class="smaller">Assemblée générale de l'Institut Edouard Depreux</p>
-                </article>
-            </a>
+			<?php
+				$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>'51', 'orderby' => 'DESC', 'posts_per_page'=>-1));
+                while( $my_query->have_posts() ) : $my_query->the_post();?>
+                    <a href="<?php the_permalink(); ?>">
+		                <article class="pt1 pb1 pl2 pr2">
+		                    <h3 class="big"><?php the_title();?></h3>
+		                    <h4 class="small"><?php the_field('date_article');?></h4>
+		                    <div class="small" id="resume"><?php the_field('resume_article');?></div>
+		                    <div class="small" id="complet"><?php the_content();?></div>
+		                </article>
+		            </a>
+                <?php endwhile;
+            ?>
         </section>
 
         <section id="actualites" class="pl3">
