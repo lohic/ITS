@@ -193,7 +193,8 @@ h2.titre a{
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > div > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
 #actualites a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.suite:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
-#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *{
+#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *,
+#frise.biographie a:hover{
 	color:#188e7c;
 }
 
@@ -789,6 +790,7 @@ h4.tag a{
 	width:10px;
 	position: relative;
 	z-index:1;
+	cursor: pointer;
 }
 
 #navigation_agenda li.actif{
@@ -953,6 +955,10 @@ a.suite:hover, #meme_theme li:hover, .post + #meme_theme li:hover, li.telecharge
 	display:inline;
 }
 
+article.biographie h2, article.biographie h4.tag{
+	margin-bottom: 5px;
+}
+
 article + .pagination{
 	background: none;
 }
@@ -1052,6 +1058,10 @@ p.categories_et_tags a, p.categories_et_tags{
 	padding-right: 17px;
 }
 
+#frise.biographie ul > li{
+	padding-right: 15px;
+}
+
 #frise ul + a{
 	background: url("img/puce_sidebar.png") no-repeat scroll left center transparent;
     padding-left: 20px;
@@ -1060,6 +1070,15 @@ p.categories_et_tags a, p.categories_et_tags{
 
 #frise ul > li > a{
 	color:#666;
+}
+
+#frise.biographie{
+	width:665px;
+	padding-left: 15px;
+}
+
+#frise.biographie li.actif a{
+	color:#ff0000;
 }
 
 #sous_categories > ul > li{
