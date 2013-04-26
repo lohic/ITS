@@ -70,9 +70,19 @@
 		
 		// vars
 		var tr = $(this).closest('tr.field_option_flexible_content'),
-			new_tr = tr.clone(false),
-			id = new_tr.attr('data-id'),
+			new_tr = null,
+			id = tr.attr('data-id'),
 			new_id = acf.helpers.uniqid();
+		
+			
+		// save select values
+		tr.find('select').each(function(){
+			$(this).attr( 'data-val', $(this).val() );
+		});
+		
+		
+		// clone tr
+		new_tr = tr.clone(false);
 		
 		
 		// update id / names
@@ -97,6 +107,12 @@
 		
 		// add new tr
 		tr.after(new_tr);
+		
+		
+		// set select values
+		new_tr.find('select').each(function(){
+			$(this).val( $(this).attr('data-val') ).trigger('change');
+		});
 		
 		
 		// update new_field label / name
