@@ -49,6 +49,7 @@ function my_connection_types() {
 		'title' => 'Lire aussi'
 	) );
 }
+add_action( 'p2p_init', 'my_connection_types' );
 
 
 if( ! function_exists (my_register_post_types)) {
