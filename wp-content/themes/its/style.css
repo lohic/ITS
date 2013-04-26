@@ -1081,6 +1081,20 @@ p.categories_et_tags a, p.categories_et_tags{
 	color:#ff0000;
 }
 
+.post_content.biographie{
+	display:table;
+}
+
+.post_content.biographie > div{
+	display:table-cell;
+	vertical-align: top;
+}
+
+.attachment-biographie{
+	padding-left: 30px;
+	width:200px;
+}
+
 #sous_categories > ul > li{
 	display:inline-block;
 	width:185px;

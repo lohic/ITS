@@ -103,8 +103,17 @@
 						<article class="pt2 pb2 post_archive biographie" id="post-<?php the_ID(); ?>">
 							<h2 class="little_very_biggest mb0 titre"><?php the_field('prenom'); ?> <?php the_title(); ?></h2>
 							<h4 class="smaller tag"><span></span><?php echo $liste_tags; ?></h4>
-							<div class="post_content small">
-								<?php the_content(); ?>
+							<div class="post_content small biographie">
+								<div>
+									<?php the_content(); ?>
+								</div>
+								<?php 
+								if ( has_post_thumbnail() ) { 
+								?>
+									<div><?php the_post_thumbnail('biographie');?></div>
+	  							<?php
+								}
+								?>
 							</div>
 							<?php create_attachement_list(get_the_ID());?>
 						</article>

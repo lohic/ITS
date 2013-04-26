@@ -12,7 +12,25 @@
 				if($value){
 			?>
 					<h1 class="very_biggest mb4 sans"><?php echo $value;?></h1>
-					<div class="normal pb3 mb2" id="texte_tag"><?php the_field('texte_tag','post_tag_'.$tag[0]->term_id);?></div>
+					<div class="normal pb2 mb2" id="texte_tag"><?php the_field('texte_tag','post_tag_'.$tag[0]->term_id);?></div>
+					<?php 
+                        $articles = get_field('articles_relatifs','post_tag_'.$tag[0]->term_id);
+                        if($articles!=false){
+                    ?>
+                    		<div class="normal pb3" id="relatif_tag">
+                    			<ul class="liste_attachements">
+                   	<?php
+                            		foreach($articles as $article){
+                    ?>
+                                        <li class="telechargement"><a href="<?php echo get_permalink($article->ID); ?>"><?php echo get_the_title($article->ID);?></a></li>
+                    <?php
+                            		} 
+                    ?>
+                    			</ul>
+							</div>
+                    <?php
+                        }
+                    ?>
 			<?php 
 				}
 				else{
@@ -36,7 +54,6 @@
 		</div>
 		
 		<?php get_template_part( 'boucle', '' );?>
-
 
 		<section class="pagination smaller mt1">
 			<a href="#" class="precedent">Prev</a>

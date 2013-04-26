@@ -13,6 +13,7 @@ if ( ! function_exists( 'its_setup' ) ){
 		add_image_size('newsletter-2x'		, 261, 165, true);
 		add_image_size('newsletter-3x'		, 400, 165, true);
 		add_image_size('remontee_its'		, 300, 270, true);
+		add_image_size('biographie'		, 200, 200, true);
 		
 		// on enregistre la barre latérale	
 		if ( function_exists('register_sidebar') )
