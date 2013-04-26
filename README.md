@@ -11,3 +11,8 @@ Liste des plugins et librairies utiles pour le projet :
 Timeline :
 
 - http://almende.github.io/chap-links-library/timeline.html
+
+
+Paginate Links :
+
+- http://codex.wordpress.org/Function_Reference/paginate_links
