@@ -24,7 +24,7 @@ class acf_remote_update
 	function __construct( $options )
 	{
 		// Add slug
-		$options['slug'] = current( explode('/', $options['basename']) );
+		$options['slug'] = array_shift( explode('/', $options['basename']) );
 		
 		
 		// devine settins

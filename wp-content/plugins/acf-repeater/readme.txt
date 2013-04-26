@@ -7,7 +7,7 @@ Requires at least: 3.0
 Tested up to: 3.5.1
 Stable tag: trunk
 Homepage: http://www.advancedcustomfields.com/add-ons/repeater-field/
-Version: 1.0.0
+Version: 0.1.1
 
 
 == Copyright ==
@@ -56,18 +56,6 @@ function my_register_fields()
 
 
 == Changelog ==
-
-= 1.0.1 =
-* [Updated] Updated sub field type list to remove 'Tab' as this does not work as a sub field
-
-= 1.0.0 =
-* [Updated] Updated update_field parameters
-* Official Release
-
-= 0.1.2 =
-* [IMPORTANT] This update requires the latest ACF v4 files available on GIT - https://github.com/elliotcondon/acf4
-* [Added] Added category to field to appear in the 'Layout' optgroup
-* [Updated] Updated dir / path code to use acf filter
 
 = 0.1.1 =
 * [IMPORTANT] This update requires the latest ACF v4 files available on GIT - https://github.com/elliotcondon/acf4
