@@ -43,14 +43,16 @@
                 <div class="col">
                 	<?php echo get_the_post_thumbnail($remontee_its->ID,'remontee_its');?>
                 </div>
-                <article class="pl3 col">
-                    <h3 class="very_biggest mb0 titre"><?php echo get_the_title($remontee_its->ID);?></h3>
-                    <h4 class="normal mt0 mb1"><?php the_field('date_article', $remontee_its->ID); ?><span><?php the_field('auteur_article', $remontee_its->ID); ?></span></h4>
-                    <div class="pb1 mb1">
-                        <p class="small mb0"><?php echo $remontee_its->post_content;?></p>
-                    </div>
-                    <a href="<?php echo get_permalink($remontee_its->ID);?>" class="small suite"><span>lire la suite</span></a>
-                </article>
+                <a href="<?php echo get_permalink($remontee_its->ID);?>" class="pl3 col">
+	                <article>
+	                    <h3 class="very_biggest mb0 titre"><?php echo get_the_title($remontee_its->ID);?></h3>
+	                    <h4 class="normal mt0 mb1"><?php the_field('date_article', $remontee_its->ID); ?><span><?php the_field('auteur_article', $remontee_its->ID); ?></span></h4>
+	                    <div class="pb1 mb1">
+	                        <p class="small mb1"><?php echo $remontee_its->post_content;?></p>
+	                    </div>
+	                    <p class="small suite"><span>lire la suite</span></p>
+	                </article>
+                </a>
             </div>
         </section>
 

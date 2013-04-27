@@ -8,7 +8,7 @@
 		<div id="entete">
 			<section id="frise" class="normal mt4 mb3 pl1 row biographie">
 				<ul class="row">
-					<li <?php if($_GET['lettre']=="a"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=a">A</a></li>
+					<li <?php if($_GET['lettre']=="a" || !isset($_GET['lettre'])){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=a">A</a></li>
 					<li <?php if($_GET['lettre']=="b"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=b">B</a></li>
 					<li <?php if($_GET['lettre']=="c"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=c">C</a></li>
 					<li <?php if($_GET['lettre']=="d"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=d">D</a></li>
