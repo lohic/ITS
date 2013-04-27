@@ -194,7 +194,7 @@ h2.titre a{
 #actualites a.col:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.col:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *,
-#frise.biographie a:hover{
+#frise.biographie a:hover, section.sidebar li a:hover{
 	color:#188e7c;
 }
 
@@ -215,7 +215,7 @@ article.post_archive.resume:hover .categories_et_tags span.tags {
 }
 
 #menus li > a, #regards a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, 
-footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a, li.telechargement a {
+footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a, li.telechargement a, section.sidebar li a {
 	-webkit-transition: color .2s ease-out;
 	-moz-transition: color .2s ease-out;
 	-o-transition: color .2s ease-out;
@@ -594,18 +594,18 @@ header > h1 > a{
     margin-right: -4px;
 }
 
-aside section > h3 > a{
+aside section h3 {
 	color:#fff;
 	text-transform: uppercase;
 }
 
-aside section > h3 > a > span{
+aside section h3 > span{
 	background-color: #FF3333;
     display: inline-block;
-    padding: 3px 6px 2px;
+    padding: 3px 6px 0px;
 }
 
-aside section > h3:hover > a > span{
+aside section h3:hover > span{
 	background-color:#188e7c;
 }
 
@@ -614,8 +614,17 @@ aside section > h3:hover > a > span{
     text-transform: uppercase;
 }
 
-#soutien p, #slider p{
+section.sidebar p, section.sidebar li{
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+}
+
+section.sidebar li{
+	font-size:1.3em;
+	color:#000;
+}
+
+section.sidebar li a{
+	color:#666;
 }
 
 /* ----------------------------- */
