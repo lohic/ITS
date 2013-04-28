@@ -162,7 +162,8 @@ textarea{
 
 #logo h1, #sur_menu li a, #menu_sidebar li a, aside section > h3 > a, footer a, #actualites .row .col + a > article > h4, 
 #regards .row > article > h4, #meme_theme h3, #meme_theme a.recherche, #agenda article > h3, #agenda article > h4, h3.date, #frise ul + a,
-#frise ul > li > a, .pagination a, .pagination span.current, .pagination span.dots, #sous_categories > ul > li > a, h3#comments span, .commentmetadata p, #respond{
+#frise ul > li > a, .pagination a, .pagination span.current, .pagination span.dots, #sous_categories > ul > li > a, h3#comments span, 
+.commentmetadata p, #respond, aside section h3 > span{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
@@ -194,7 +195,7 @@ h2.titre a{
 #actualites a.col:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.col:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *,
-#frise.biographie a:hover, section.sidebar li a:hover{
+#frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover{
 	color:#188e7c;
 }
 
@@ -602,7 +603,7 @@ aside section h3 {
 aside section h3 > span{
 	background-color: #FF3333;
     display: inline-block;
-    padding: 3px 6px 0px;
+    padding: 1px 6px;
 }
 
 aside section h3:hover > span{
@@ -1221,6 +1222,26 @@ p.categories_et_tags a, p.categories_et_tags{
 
 #commentform{
 	display: none;
+}
+
+#entete{
+	position:relative;
+}
+
+.nombre_resultat{
+	bottom: 4px;
+    color: #333333;
+    font-family: "signikabold","futura-pt",Arial,sans-serif;
+    left: 0;
+    position: absolute;
+    text-transform: uppercase;
+}
+
+h4.resultats{
+	color:#333;
+	text-transform: uppercase;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-weight: normal;
 }
 
 /* ----------------------------- */
