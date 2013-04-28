@@ -7,7 +7,7 @@ Requires at least: 3.0
 Tested up to: 3.5.1
 Stable tag: trunk
 Homepage: http://www.advancedcustomfields.com/add-ons/flexible-content-field/
-Version: 0.1.6
+Version: 1.0.1
 
 
 == Copyright ==
@@ -57,6 +57,18 @@ function my_register_fields()
 
 
 == Changelog ==
+
+= 1.0.1 =
+* [Updated] Updated sub field type list to remove 'Tab' and 'Flexible Content' as these do not work as sub fields
+
+= 1.0.0 =
+* [Updated] Updated update_field parameters
+* Official Release
+
+= 0.1.7 =
+* [IMPORTANT] This update requires the latest ACF v4 files available on GIT - https://github.com/elliotcondon/acf4
+* [Added] Added category to field to appear in the 'Layout' optgroup
+* [Updated] Updated dir / path code to use acf filter
 
 = 0.1.6 =
 * [Fixed] Fix JS bug preventing a new field to be added to a new field group - https://github.com/elliotcondon/acf4/issues/41

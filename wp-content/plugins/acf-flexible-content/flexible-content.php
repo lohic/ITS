@@ -20,6 +20,7 @@ class acf_field_flexible_content extends acf_field
 		// vars
 		$this->name = 'flexible_content';
 		$this->label = __("Flexible Content",'acf');
+		$this->category = __("Layout",'acf');
 		
 		
 		// do not delete!
@@ -28,58 +29,12 @@ class acf_field_flexible_content extends acf_field
 
     	// settings
 		$this->settings = array(
-			'path' => $this->get_path(),
-			'dir' => $this->get_dir(),
-			'version' => '0.1.6'
+			'path' => apply_filters('acf/helpers/get_path', __FILE__),
+			'dir' => apply_filters('acf/helpers/get_dir', __FILE__),
+			'version' => '1.0.1'
 		);
 		
 	}
-	
-	
-	/*
-    *  get_path
-    *
-    *  @description: calculates the path (works for plugin / theme folders)
-    *  @since: 3.6
-    *  @created: 30/01/13
-    */
-    
-    function get_path()
-    {
-        return trailingslashit(dirname(__FILE__));
-    }
-    
-    
-    
-    /*
-    *  get_dir
-    *
-    *  @description: calculates the directory (works for plugin / theme folders)
-    *  @since: 3.6
-    *  @created: 30/01/13
-    */
-    
-    function get_dir()
-    {
-        $dir = trailingslashit(dirname(__FILE__));
-        
-        
-        // sanitize for Win32 installs
-        $dir = str_replace('\\' ,'/', $dir); 
-        
-        
-        // if file is in plugins folder
-        $wp_plugin_dir = str_replace('\\' ,'/', WP_PLUGIN_DIR); 
-        $dir = str_replace($wp_plugin_dir, WP_PLUGIN_URL, $dir);
-        
-        
-        // if file is in wp-content folder
-        $wp_content_dir = str_replace('\\' ,'/', WP_CONTENT_DIR); 
-        $dir = str_replace($wp_content_dir, WP_CONTENT_URL, $dir);
-        
-        
-        return $dir;
-    }
     
     
 	/*
@@ -313,7 +268,7 @@ class acf_field_flexible_content extends acf_field
 										</td>
 								<?php endif; ?>
 								
-								<td>
+								<td class="sub_field field_type-<?php echo $sub_field['type']; ?> field_key-<?php echo $sub_field['key']; ?>" data-field_type="<?php echo $sub_field['type']; ?>" data-field_key="<?php echo $sub_field['key']; ?>" data-field_name="<?php echo $sub_field['name']; ?>">
 									<?php
 									
 									// add value
@@ -355,6 +310,7 @@ class acf_field_flexible_content extends acf_field
 						</tbody>
 						
 					</table>
+					
 				</div>
 			<?php endforeach; ?>
 			</div>
@@ -442,7 +398,7 @@ class acf_field_flexible_content extends acf_field
 											</td>
 									<?php endif; ?>
 									
-									<td>
+									<td class="sub_field field_type-<?php echo $sub_field['type']; ?> field_key-<?php echo $sub_field['key']; ?>" data-field_type="<?php echo $sub_field['type']; ?>" data-field_key="<?php echo $sub_field['key']; ?>" data-field_name="<?php echo $sub_field['name']; ?>">
 										<?php
 										
 										// add value
@@ -484,7 +440,8 @@ class acf_field_flexible_content extends acf_field
 							</tbody>
 							
 						</table>
-						</div>
+						
+					</div>
 					<?php
 					
 					endforeach; 
@@ -554,7 +511,7 @@ class acf_field_flexible_content extends acf_field
 		
 		// get name of all fields for use in field type drop down
 		$fields_names = apply_filters('acf/registered_fields', array());
-		unset( $fields_names['flexible_content'], $fields_names['tab'] );
+		unset( $fields_names[ __("Layout",'acf') ]['flexible_content'], $fields_names[ __("Layout",'acf') ]['tab'] );
 		
 		
 		// loop through layouts and create the options for them
@@ -717,7 +674,8 @@ class acf_field_flexible_content extends acf_field
 											'name'	=>	'fields[' . $fake_name . '][type]',
 											'value'	=>	$sub_field['type'],
 											'class'	=>	'type',
-											'choices'	=>	$fields_names
+											'choices'	=>	$fields_names,
+											'optgroup' 	=> 	true
 										));
 										?>
 									</td>
@@ -829,7 +787,7 @@ class acf_field_flexible_content extends acf_field
 	*  @return	$value - the modified value
 	*/
 	
-	function update_value( $value, $field, $post_id )
+	function update_value( $value, $post_id, $field )
 	{
 		// vars
 		$sub_fields = array();
@@ -871,7 +829,7 @@ class acf_field_flexible_content extends acf_field
 					$sub_field['name'] = $field['name'] . '_' . $i . '_' . $sub_field['name'];
 					
 					// save sub field value
-					do_action('acf/update_value', $v, $sub_field, $post_id );
+					do_action('acf/update_value', $v, $post_id, $sub_field );
 				}
 			}
 		}
