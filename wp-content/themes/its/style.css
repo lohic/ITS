@@ -784,17 +784,25 @@ h4.tag a{
 	margin-top:4px;
 }
 
-#navigation_agenda{
+#navigation_curseur{
 	position: absolute;
     right: 30px;
     top: 10px;
 }
 
-#navigation_agenda li{
+#navigation_curseur.large{
+	border-top: 3px solid #EDEDED;
+    padding-top: 20px;
+    position: relative;
+    right: inherit;
+    top: inherit;
+}
+
+#navigation_curseur li{
 	display:block;
 	float:left;
 	margin-left: 8px;
-	background: url('img/points_nav.png') no-repeat 0px 0px;
+	background: url('img/points_nav.png') no-repeat center 0px;
 	height:11px;
 	width:10px;
 	position: relative;
@@ -802,31 +810,62 @@ h4.tag a{
 	cursor: pointer;
 }
 
-#navigation_agenda li.actif{
-	background: url('img/points_nav.png') no-repeat 0px -11px;
+#navigation_curseur.large li{
+	margin-left: 0;
+    margin-right: 11.6px;
 }
 
-#navigation_agenda li.precedent, #navigation_agenda li.suivant{
+#navigation_curseur.large li:last-child{
+	margin-right: 0px;
+}
+
+#navigation_curseur li.actif{
+	background: url('img/points_nav.png') no-repeat center -11px;
+}
+
+#navigation_curseur li.super_actif {
+    background: url("img/points_nav.png") no-repeat scroll 0 -22px transparent;
+    height: 13px;
+    margin-right: 9.6px;
+    margin-top: -1px;
+    width: 12px;
+}
+
+#navigation_curseur li.precedent, #navigation_curseur li.suivant{
 	height:12px;
 	margin-top: -1px;
 }
 
-#navigation_agenda li.precedent{
+#navigation_curseur li.precedent{
 	background: url('img/icn_precedent_nav.png') no-repeat 0px 0px;
 }
 
-#navigation_agenda li.suivant{
+#navigation_curseur li.suivant{
 	background: url('img/icn_suivant_nav.png') no-repeat 0px 0px;
 }
 
-#navigation_agenda li#curseur{
-	background: url("img/curseur_nav.png") no-repeat scroll 0 0 transparent;
+#navigation_curseur li#curseur, #navigation_curseur li#curseur_large{
+	background: none repeat scroll 0 0 #CCCCCC;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
     height: 15px;
     left: 32px;
     position: absolute;
     top: -2px;
     width: 54px;
     z-index: 0;
+}
+
+#navigation_curseur li#curseur_large{
+	left: 13px;
+    top: 18px;
+    width: 264px;
+}
+
+#relatif_tag{
+	border-bottom: 1px solid #CCCCCC;
+	width: 680px;
 }
 
 #actualites{
@@ -1075,6 +1114,14 @@ p.categories_et_tags a, p.categories_et_tags{
 	padding-right: 17px;
 }
 
+#frise.large ul > li{
+	padding-right:14px;
+}
+
+#frise ul > li.actif a{
+	color:#ff3333;
+}
+
 #frise.biographie ul > li{
 	padding-right: 15px;
 }
@@ -1119,6 +1166,10 @@ p.categories_et_tags a, p.categories_et_tags{
 
 #sous_categories > ul > li > a{
 	color:#666;
+}
+
+#sous_categories > ul > li > a.actif{
+	color:#FF3333;
 }
 
 .pagination{

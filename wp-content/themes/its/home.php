@@ -3,7 +3,7 @@
 <div class="row mb3">
     <div id="centre" class="col">
         <section id="agenda" class="pl3">
-        	<ul id="navigation_agenda">
+        	<ul id="navigation_curseur">
         		<li id="curseur"></li>
 				<li class="precedent"></li>
 				<li></li>

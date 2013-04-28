@@ -40,6 +40,68 @@
 				}
 			?>
 			
+			<ul id="navigation_curseur" class="large mb1">
+        		<li id="curseur_large"></li>
+				<li class="precedent"></li>
+				<li class="super_actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li class="actif"></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li></li>
+				<li class="suivant"></li>
+        	</ul>
+
+        	<section id="frise" class="normal mt2 mb1 pl3 row large">
+				<ul class="row">
+					<li class="actif"><a href="#">1960</a></li>
+					<li><a href="#">1961</a></li>
+					<li><a href="#">1962</a></li>
+					<li><a href="#">1963</a></li>
+					<li><a href="#">1964</a></li>
+					<li><a href="#">1965</a></li>
+					<li><a href="#">1966</a></li>
+					<li><a href="#">1967</a></li>
+					<li><a href="#">1968</a></li>
+					<li><a href="#">1969</a></li>
+					<li><a href="#">1970</a></li>
+					<li><a href="#">1971</a></li>
+				</ul>
+			</section>
+			<section id="sous_categories" class="small mb2 pt1 pb1">
+				<ul>
+					<li class="pl3"><a href="#">L'Enseignement</a></li>
+					<li class="pl3"><a href="#">L'Agriculture</a></li>
+					<li class="pl3"><a href="#">Le Logement</a></li>
+					<li class="pl3"><a href="#">L'Urbanisme</a></li>
+					<li class="pl3"><a href="#">L'économie</a></li>
+				</ul>
+			</section>
+
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
