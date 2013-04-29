@@ -15,23 +15,24 @@
 				<li></li>
 				<li></li>
 				<li></li>
-				<li></li>
 				<li class="suivant"></li>
         	</ul>
             <h2 class="smaller"><span></span>Agenda</h2>
-			<?php
-				$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>'51', 'orderby' => 'DESC', 'posts_per_page'=>-1));
-                while( $my_query->have_posts() ) : $my_query->the_post();?>
-                    <a href="<?php the_permalink(); ?>">
-		                <article class="pt1 pb1 pl2 pr2">
-		                    <h3 class="big"><?php the_title();?></h3>
-		                    <h4 class="small"><?php the_field('date_article');?></h4>
-		                    <div class="small" id="resume"><?php the_field('resume_article');?></div>
-		                    <div class="small" id="complet"><?php the_content();?></div>
-		                </article>
-		            </a>
-                <?php endwhile;
-            ?>
+            <div class="conteneur">
+				<?php
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>'51', 'orderby' => 'DESC', 'posts_per_page'=>-1));
+	                while( $my_query->have_posts() ) : $my_query->the_post();?>
+	                    <a href="<?php the_permalink(); ?>">
+			                <article class="pt1 pb1 pl2 pr2">
+			                    <h3 class="big"><?php the_title();?></h3>
+			                    <h4 class="small"><?php the_field('date_article');?></h4>
+			                    <div class="small" id="resume"><?php the_field('resume_article');?></div>
+			                    <div class="small" id="complet"><?php the_content();?></div>
+			                </article>
+			            </a>
+	                <?php endwhile;
+	            ?>
+	        </div>
         </section>
 
         <section id="actualites" class="pl3">

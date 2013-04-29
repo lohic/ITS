@@ -736,9 +736,15 @@ h4.tag a{
 }
 
 #agenda{
-	height:208px;
-	position: absolute;
+	height: 500px;
+    overflow: hidden;
+    position: absolute;
+    width: 711px;
     z-index: 2;
+}
+
+#agenda .conteneur{
+	width: 1711px;
 }
 
 #agenda article{
