@@ -40,6 +40,17 @@
 }
 
 @font-face {
+    font-family: 'signikasemibold';
+    src: url('fonts/signika-semibold.eot');
+    src: url('fonts/signika-semibold.eot?#iefix') format('embedded-opentype'),
+         url('fonts/signika-semibold.woff') format('woff'),
+         url('fonts/signika-semibold.ttf') format('truetype'),
+         url('fonts/signika-semibold.svg#signikasemibold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
     font-family: 'signikaregular';
     src: url('fonts/signika-regular.eot');
     src: url('fonts/signika-regular.eot?#iefix') format('embedded-opentype'),
@@ -150,7 +161,7 @@ body {
 
 #logo h2{
 	font-family:"futura-pt", sans-serif;
-	font-weight:300;
+	font-weight:400;
 	font-style:italic;
 }
 
@@ -160,12 +171,16 @@ textarea{
 	font-style:normal;
 }
 
-#logo h1, #sur_menu li a, #menu_sidebar li a, aside section > h3 > a, footer a, #actualites .row .col + a > article > h4, 
-#regards .row > article > h4, #meme_theme h3, #meme_theme a.recherche, #agenda article > h3, #agenda article > h4, h3.date, #frise ul + a,
-#frise ul > li > a, .pagination a, .pagination span.current, .pagination span.dots, #sous_categories > ul > li > a, h3#comments span, 
-.commentmetadata p, #respond, aside section h3 > span{
+#sur_menu li a, #logo h1, #menu_sidebar li a, #actualites .row .col + a > article > h4, #agenda article > h4, h3.date, #meme_theme h3, #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
+	font-style:normal;
+}
+
+aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise ul + a,
+#frise ul > li > a , h3#comments span, .commentmetadata p, #respond, aside section h3 > span{
+	font-family:"futura-pt", sans-serif;
+	font-weight:500;
 	font-style:normal;
 }
 
@@ -454,7 +469,7 @@ source https://github.com/stubbornella/oocss/blob/master/core/spacing/space.css
 #sur_menu{
 	position:absolute;
 	top:19px;
-	right:200px;
+	right:170px;
 }
 
 #recherche{
@@ -528,7 +543,7 @@ header > h1 > a{
 	display:block;
 	float:left;
 	padding:5px 15px;
-	font-weight:bold;
+	font-weight:700;
 	position:relative;
 	z-index:2;
 }
@@ -590,7 +605,7 @@ header > h1 > a{
 	background: url("img/puce_sidebar.png") no-repeat scroll right 10px transparent;
     color: #666666;
     font-size: 1.05em;
-    font-weight: 600;
+    font-weight: 500;
     padding-right: 7px;
     margin-right: -4px;
 }
@@ -936,7 +951,7 @@ a.suite, #meme_theme li, li.telechargement, p.suite{
 	color:#FF3333;
 	background:url('img/chevron_rouge.png') no-repeat left center;
 	padding-left:12px;
-	font-family: "signikabold", "futura-pt", Arial, sans-serif;
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
 a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
