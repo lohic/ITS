@@ -105,7 +105,7 @@
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>get_query_var('tag'), 'category__not_in'=>'52', 'posts_per_page' => 1, 'paged' => $paged));
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>get_query_var('tag'), 'category__not_in'=>'52', 'paged' => $paged));
 
 					$big = 99999999; // need an unlikely integer
 

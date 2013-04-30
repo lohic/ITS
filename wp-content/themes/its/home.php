@@ -26,8 +26,18 @@
 			                <article class="pt1 pb1 pl2 pr2">
 			                    <h3 class="big"><?php the_title();?></h3>
 			                    <h4 class="small"><?php the_field('date_article');?></h4>
-			                    <div class="small" id="resume"><?php the_field('resume_article');?></div>
-			                    <div class="small" id="complet"><?php the_content();?></div>
+			                    <div class="small" id="resume">
+			                    	<?php 
+			                    		$resume = strip_tags(get_field('resume_article'),'<p><ul><li><ol><div><span><h1><h2><h3><h4><h5><h6>');
+        								echo $resume;
+        							?>
+    							</div>
+			                    <div class="small" id="complet">
+									<?php 
+			                    		$texte = strip_tags(get_the_content());
+        								echo '<p>'.$texte.'</p>';
+        							?>
+			                    </div>
 			                </article>
 			            </a>
 	                <?php endwhile;

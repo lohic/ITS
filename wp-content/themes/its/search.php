@@ -15,7 +15,7 @@
 					$lachaine.=$query_split[1]." ";
 				}
 			?>
-			<h4 class="resultats smaller mb1">Résultat(s) de recherche pour:</h4> 
+			<h4 class="resultats smaller mb1">Résultat(s) de recherche pour :</h4> 
 			<h1 class="very_biggest mb2"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php echo $lachaine;?></a></h1>
 			<?php if ( have_posts() ) : 	
 				global $wp_query;
@@ -26,7 +26,7 @@
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'posts_per_page' => 1, 'paged' => $paged));
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
 
 					$big = 99999999; // need an unlikely integer
 
