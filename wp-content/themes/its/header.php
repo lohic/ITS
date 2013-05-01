@@ -20,7 +20,8 @@
 	<link rel="pingback" href="<?php bloginfo('pingback_url'); ?>" />
 	<script type="text/javascript" src="http://use.typekit.com/lwg4aka.js"></script>
 	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
- 
+ 	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/scripts.js"></script>
 	<?php wp_get_archives('type=monthly&format=link'); ?>
 	<?php wp_head(); ?>
 </head>

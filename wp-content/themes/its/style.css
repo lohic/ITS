@@ -763,7 +763,8 @@ h4.tag a{
 }
 
 #agenda .conteneur{
-	width: 1711px;
+	left: 30px;
+    position: absolute;
 }
 
 #agenda article{
@@ -876,7 +877,7 @@ h4.tag a{
     -moz-border-radius: 8px;
     border-radius: 8px;
     height: 15px;
-    left: 32px;
+    left: 14px;
     position: absolute;
     top: -2px;
     width: 54px;
