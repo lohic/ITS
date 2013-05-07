@@ -4,36 +4,37 @@
     <div id="centre" class="col pl3 pr3">
     	<?php 
     		if (function_exists('mybread')) mybread();
+    		$laCat = get_query_var('cat');
 		?>
 		<div id="entete">
 			<section id="frise" class="normal mt4 mb3 pl1 row biographie">
 				<ul class="row">
-					<li <?php if($_GET['lettre']=="a" || !isset($_GET['lettre'])){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=a">A</a></li>
-					<li <?php if($_GET['lettre']=="b"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=b">B</a></li>
-					<li <?php if($_GET['lettre']=="c"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=c">C</a></li>
-					<li <?php if($_GET['lettre']=="d"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=d">D</a></li>
-					<li <?php if($_GET['lettre']=="e"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=e">E</a></li>
-					<li <?php if($_GET['lettre']=="f"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=f">F</a></li>
-					<li <?php if($_GET['lettre']=="g"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=g">G</a></li>
-					<li <?php if($_GET['lettre']=="h"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=h">H</a></li>
-					<li <?php if($_GET['lettre']=="i"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=i">I</a></li>
-					<li <?php if($_GET['lettre']=="j"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=j">J</a></li>
-					<li <?php if($_GET['lettre']=="k"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=k">K</a></li>
-					<li <?php if($_GET['lettre']=="l"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=l">L</a></li>
-					<li <?php if($_GET['lettre']=="m"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=m">M</a></li>
-					<li <?php if($_GET['lettre']=="n"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=n">N</a></li>
-					<li <?php if($_GET['lettre']=="o"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=o">O</a></li>
-					<li <?php if($_GET['lettre']=="p"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=p">P</a></li>
-					<li <?php if($_GET['lettre']=="q"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=q">Q</a></li>
-					<li <?php if($_GET['lettre']=="r"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=r">R</a></li>
-					<li <?php if($_GET['lettre']=="s"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=s">S</a></li>
-					<li <?php if($_GET['lettre']=="t"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=t">T</a></li>
-					<li <?php if($_GET['lettre']=="u"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=u">U</a></li>
-					<li <?php if($_GET['lettre']=="v"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=v">V</a></li>
-					<li <?php if($_GET['lettre']=="w"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=w">W</a></li>
-					<li <?php if($_GET['lettre']=="x"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=x">X</a></li>
-					<li <?php if($_GET['lettre']=="y"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=y">Y</a></li>
-					<li <?php if($_GET['lettre']=="z"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=z">Z</a></li>
+					<li <?php if($_GET['lettre']=="a" || !isset($_GET['lettre'])){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=a">A</a></li>
+					<li <?php if($_GET['lettre']=="b"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=b">B</a></li>
+					<li <?php if($_GET['lettre']=="c"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=c">C</a></li>
+					<li <?php if($_GET['lettre']=="d"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=d">D</a></li>
+					<li <?php if($_GET['lettre']=="e"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=e">E</a></li>
+					<li <?php if($_GET['lettre']=="f"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=f">F</a></li>
+					<li <?php if($_GET['lettre']=="g"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=g">G</a></li>
+					<li <?php if($_GET['lettre']=="h"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=h">H</a></li>
+					<li <?php if($_GET['lettre']=="i"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=i">I</a></li>
+					<li <?php if($_GET['lettre']=="j"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=j">J</a></li>
+					<li <?php if($_GET['lettre']=="k"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=k">K</a></li>
+					<li <?php if($_GET['lettre']=="l"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=l">L</a></li>
+					<li <?php if($_GET['lettre']=="m"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=m">M</a></li>
+					<li <?php if($_GET['lettre']=="n"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=n">N</a></li>
+					<li <?php if($_GET['lettre']=="o"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=o">O</a></li>
+					<li <?php if($_GET['lettre']=="p"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=p">P</a></li>
+					<li <?php if($_GET['lettre']=="q"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=q">Q</a></li>
+					<li <?php if($_GET['lettre']=="r"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=r">R</a></li>
+					<li <?php if($_GET['lettre']=="s"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=s">S</a></li>
+					<li <?php if($_GET['lettre']=="t"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=t">T</a></li>
+					<li <?php if($_GET['lettre']=="u"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=u">U</a></li>
+					<li <?php if($_GET['lettre']=="v"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=v">V</a></li>
+					<li <?php if($_GET['lettre']=="w"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=w">W</a></li>
+					<li <?php if($_GET['lettre']=="x"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=x">X</a></li>
+					<li <?php if($_GET['lettre']=="y"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=y">Y</a></li>
+					<li <?php if($_GET['lettre']=="z"){ echo 'class="actif"';}?>><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=z">Z</a></li>
 				</ul>
 			</section>
 			
@@ -67,7 +68,7 @@
 				<?php 
 					if($prev!=""){
 				?>
-						<a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=<?php echo $prev;?>" class="precedent">Prev</a>
+						<a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=<?php echo $prev;?>" class="precedent">Prev</a>
 				<?php
 					}
 				?>
@@ -75,7 +76,7 @@
 				<?php 
 					if($next!=""){
 				?>
-						<a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=<?php echo $next;?>" class="suivant">Next</a>
+						<a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=<?php echo $next;?>" class="suivant">Next</a>
 				<?php
 					}
 				?>
@@ -87,7 +88,7 @@
 			$postids=$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE SUBSTR($wpdb->posts.post_title,1,1) = %s ORDER BY $wpdb->posts.post_title",$first_char)); 
 
 			if ($postids) {
-				$args=array('post__in' => $postids, 'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => -1, 'cat'=>'52', 'order' => 'ASC', 'caller_get_posts'=> 1);
+				$args=array('post__in' => $postids, 'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => -1, 'category_name'=>'biographies', 'order' => 'ASC', 'caller_get_posts'=> 1);
 				$my_query = null;
 				$my_query = new WP_Query($args);
 				if( $my_query->have_posts() ) {
@@ -126,7 +127,7 @@
 			<?php 
 				if($prev!=""){
 			?>
-					<a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=<?php echo $prev;?>" class="precedent">Prev</a>
+					<a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=<?php echo $prev;?>" class="precedent">Prev</a>
 			<?php
 				}
 			?>
@@ -134,7 +135,7 @@
 			<?php 
 				if($next!=""){
 			?>
-					<a href="<?php bloginfo('url'); ?>?cat=52&amp;lettre=<?php echo $next;?>" class="suivant">Next</a>
+					<a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;lettre=<?php echo $next;?>" class="suivant">Next</a>
 			<?php
 				}
 			?>

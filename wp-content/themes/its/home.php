@@ -7,7 +7,7 @@
         		<li id="curseur"></li>
 				<li class="precedent"></li>
 				<?php
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>'51', 'orderby' => 'DESC', 'posts_per_page'=>-1));
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'category_name'=>'agenda', 'orderby' => 'DESC', 'posts_per_page'=>-1));
 					$index = 1;
 					while( $my_query->have_posts() ) : $my_query->the_post();
 				?>
