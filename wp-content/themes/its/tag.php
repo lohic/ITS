@@ -117,7 +117,12 @@
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>get_query_var('tag'), 'category__not_in'=>'52', 'paged' => $paged));
+					if(isset($_GET['annee'])){
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'tag'=>get_query_var('tag'), 'category__not_in'=>'52', 'paged' => $paged));
+					}
+					else{
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>'1960', 'tag'=>get_query_var('tag'), 'category__not_in'=>'52', 'paged' => $paged));
+					}
 
 					$big = 99999999; // need an unlikely integer
 
