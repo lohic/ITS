@@ -82,23 +82,23 @@ if( ! function_exists (my_register_post_types)) {
 if( ! function_exists (my_register_taxonomies)) {
 	function my_register_taxonomies() {
 	
-		/*$labels = array(
-			'name' => _x( 'Projects categories', 'taxonomy general name' ),
-			'singular_name' => _x( 'Projects categorie', 'taxonomy singular name' ),
+		$labels = array(
+			'name' => _x( 'Organisations', 'taxonomy general name' ),
+			'singular_name' => _x( 'Organisation', 'taxonomy singular name' ),
 			'parent_item' => null,
 			'parent_item_colon' => null,
 			//'show_ui' => false,
-			'menu_name' => __( 'Projects categories' ),
+			'menu_name' => __( 'Organisations' ),
 		); 
 	
-		register_taxonomy('project_category','project',array(
+		register_taxonomy('organisation','post',array(
 			'hierarchical' => true,
 			'labels' => $labels,
 			'show_ui' => true,
 			'query_var' => true,
 			'show_in_nav_menus' => true,
-			'rewrite' => array( 'slug' => 'project_category' ),
-		));*/
+			'rewrite' => array( 'slug' => 'organismation' ),
+		));
 	}
 }
 
