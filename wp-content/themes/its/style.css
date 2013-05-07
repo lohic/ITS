@@ -823,6 +823,7 @@ h4.tag a{
     position: relative;
     right: inherit;
     top: inherit;
+    width: 680px;
 }
 
 #navigation_curseur li{
@@ -839,7 +840,7 @@ h4.tag a{
 
 #navigation_curseur.large li{
 	margin-left: 0;
-    margin-right: 11.6px;
+    margin-right: 10.9px;
 }
 
 #navigation_curseur.large li:last-child{
@@ -858,16 +859,16 @@ h4.tag a{
     width: 12px;
 }
 
-#navigation_curseur li.precedent, #navigation_curseur li.suivant{
+#navigation_curseur li.precedent, #navigation_curseur li.suivant, #navigation_curseur li.precedent_tag, #navigation_curseur li.suivant_tag{
 	height:12px;
 	margin-top: -1px;
 }
 
-#navigation_curseur li.precedent{
+#navigation_curseur li.precedent, #navigation_curseur li.precedent_tag{
 	background: url('img/icn_precedent_nav.png') no-repeat 0px 0px;
 }
 
-#navigation_curseur li.suivant{
+#navigation_curseur li.suivant, #navigation_curseur li.suivant_tag{
 	background: url('img/icn_suivant_nav.png') no-repeat 0px 0px;
 }
 
@@ -887,7 +888,7 @@ h4.tag a{
 #navigation_curseur li#curseur_large{
 	left: 13px;
     top: 18px;
-    width: 264px;
+    width: 256px;
 }
 
 #relatif_tag{
@@ -1130,9 +1131,24 @@ p.categories_et_tags a, p.categories_et_tags{
 	width:650px;
 }
 
+#frise.large{
+	height: 30px;
+    overflow: hidden;
+    position: relative;
+    width: 680px;
+}
+
 #frise ul{
 	padding-right: 15px;
     width: 57%;
+}
+
+#frise.large ul {
+    left: 0;
+    position: absolute;
+    top: 0;
+    padding-right: 0;
+    width: auto;
 }
 
 #frise ul > li, #frise ul + a{
@@ -1142,7 +1158,7 @@ p.categories_et_tags a, p.categories_et_tags{
 }
 
 #frise.large ul > li{
-	padding-right:14px;
+	padding-right:19px;
 }
 
 #frise ul > li.actif a{
