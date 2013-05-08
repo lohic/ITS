@@ -12,7 +12,7 @@
 				$search_query = array();
 				foreach($query_args as $key => $string) {
 					$query_split = explode("=", $string);
-					$lachaine.=$query_split[1]." ";
+					$lachaine.=urldecode($query_split[1])." ";
 				}
 			?>
 			<h4 class="resultats smaller mb1">Résultat(s) de recherche pour :</h4> 
@@ -21,26 +21,15 @@
 				global $wp_query;
 				$total_results = $wp_query->found_posts;
 			?>
-			<?php endif; ?>
 			<p class="nombre_resultat smaller"><?php echo $total_results;?> résultat(s)</p>
+			<?php else : ?>
+			<p class="nombre_resultat smaller">Aucun article trouvé. Essayer une autre recherche ?</p>
+			<?php endif; ?>
+			
 			<section class="pagination smaller mb2">
-				<?php
-					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
-
-					$big = 99999999; // need an unlikely integer
-
-					echo paginate_links( array(
-						'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-						'format' => '?paged=%#%',
-						'current' => max( 1, get_query_var('paged') ),
-						'total' => $my_query->max_num_pages,
-						'prev_text'    => '« Previous',
-						'next_text'    => 'Next »',
-					) );
-				?>
+				<?php previous_posts_link('« Previous') ?>
+				<?php next_posts_link('Next »','') ?>
 			</section>
-
 		</div>
 		
 		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
@@ -109,22 +98,13 @@
 				</div>
 			</article>
 		<?php endwhile; ?>
+		<section class="pagination smaller mb2">
+			<?php previous_posts_link('« Previous') ?>
+			<?php next_posts_link('Next »','') ?>
+		</section>
 		<?php else : ?>
-				<h2 class="center">Aucun article trouvé. Essayer une autre recherche ?</h2>
+				
 				<?php include (TEMPLATEPATH . '/searchform.php'); ?>
 		<?php endif; ?>
-
-		<section class="pagination smaller mt1">
-			<?php
-				echo paginate_links( array(
-					'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-					'format' => '?paged=%#%',
-					'current' => max( 1, get_query_var('paged') ),
-					'total' => $my_query->max_num_pages,
-					'prev_text'    => '« Previous',
-					'next_text'    => 'Next »',
-				) );
-			?>
-		</section>
 	</div>
 <?php get_footer(); ?>

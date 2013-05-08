@@ -19,22 +19,34 @@
 				</ul>
 				<a href="#">Regards d'aujourd'hui</a>
 			</section>
-			<section id="sous_categories" class="small mb2 pt1 pb1">
-				<ul>
-				<?php
+			
+			<?php
+				$les_categories = get_ancestors( get_query_var('cat'), 'category' );
+				$thisCat = get_category($les_categories[0]);
+				if($thisCat->slug=="categories-meres"){
 					$categories = get_categories( array('parent'=>get_query_var('cat'), 'hide_empty'=>'0')); 
-					if(empty($categories)){
-						$les_categories = get_ancestors( get_query_var('cat'), 'category' );
-						$categories = get_categories( array('parent'=>$les_categories[0], 'hide_empty'=>'0'));
-					}
-					foreach ($categories as $categorie){
-				?>
-						<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
-				<?php
-					}
-				?>
-				</ul>
-			</section>
+				}
+				else{
+					$categories = get_categories( array('parent'=>$les_categories[0], 'hide_empty'=>'0'));
+				}
+
+				if(!empty($categories)){
+			?>
+					<section id="sous_categories" class="small mb2 pt1 pb1">
+						<ul>
+			<?php
+						foreach ($categories as $categorie){
+			?>
+							<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
+			<?php
+						}
+			?>
+						</ul>
+					</section>
+			<?php						
+				}
+			?>
+			
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;

@@ -560,14 +560,14 @@ header > h1 > a{
 	padding-right: 0px;
 }
 
-#recherche input[type="submit"]{
+#searchform input[type="submit"]{
 	border:none;
 	background:url('img/loupe.png') no-repeat;
 	width:16px;
 	height:16px;
 }
 
-#recherche input[type="text"]{
+#searchform input[type="text"]{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	font-size:1.2em;
 	border: 1px solid #D5D5D5;
@@ -612,6 +612,10 @@ header > h1 > a{
     font-weight: 500;
     padding-right: 7px;
     margin-right: -4px;
+}
+
+#nuage_sidebar a.actif{
+	color:#ff3333;
 }
 
 aside section h3 {
@@ -1218,6 +1222,7 @@ p.categories_et_tags a, p.categories_et_tags{
 .pagination{
 	padding-bottom:5px;
 	text-align: right;
+	height: 18px;
 }
 
 .pagination a, .pagination span.current, .pagination span.dots{
