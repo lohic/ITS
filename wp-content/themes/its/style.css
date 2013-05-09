@@ -165,13 +165,14 @@ body {
 	font-style:italic;
 }
 
-textarea{
+textarea, #form_contact2 input[type="submit"]{
 	font-family:"futura-pt", sans-serif;
 	font-weight:400;
 	font-style:normal;
 }
 
-#sur_menu li a, #logo h1, #menu_sidebar li a, #actualites .row .col + a > article > h4, #agenda article > h4, h3.date, #meme_theme h3, #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3{
+#sur_menu li a, #logo h1, #menu_sidebar li a, #actualites .row .col + a > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
+#meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
@@ -546,6 +547,10 @@ header > h1 > a{
 	font-weight:700;
 	position:relative;
 	z-index:2;
+}
+
+#menus li.current-menu-item > a, #menus #menu_secondaire li.current-menu-item > a{
+	color:#ff3333;
 }
 
 #menus #menu_secondaire a{
@@ -1072,9 +1077,13 @@ h3.date span{
 	background: url("img/puce_auteur.png") no-repeat left center;	
 }
 
-p.categories_et_tags a, p.categories_et_tags{
+p.categories_et_tags a, p.categories_et_tags, p.tags{
     font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	color:#000;
+}
+
+p.tags{
+	color:#999;
 }
 
 .categories a:first-child{
@@ -1086,6 +1095,13 @@ p.categories_et_tags a, p.categories_et_tags{
 	font-size:0.85em;
 	padding-left:6px;
 	background: url("img/puce_tags.png") no-repeat left 4px;
+}
+
+p.tags span.tags{
+	text-transform: uppercase;
+    color: #000000;
+    font-size: 0.7em;
+    padding-left: 0;
 }
 
 .categories_et_tags > span.categories a:last-child:after{
@@ -1289,6 +1305,53 @@ h4.resultats{
 	text-transform: uppercase;
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	font-weight: normal;
+}
+
+#form_contact2{
+	margin-top: 20px;
+}
+
+#frm_field_15_container, #frm_field_16_container{
+	clear: none;
+    float: left;
+    width: 270px;
+}
+
+#form_contact2 input[type="text"], #form_contact2 input[type="password"], #form_contact2 input[type="email"], #form_contact2 input[type="number"], 
+#form_contact2 input[type="url"], #form_contact2 input[type="tel"], #form_contact2 textarea{
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+#form_contact2 input[type="email"]{
+	width:166px;
+}
+
+.with_frm_style .frm_left_container label.frm_primary_label {
+    padding-top: 2px;
+}
+
+.with_frm_style #form_contact2 textarea{
+	width:570px;
+	padding:3px 10px;
+	line-height:1.7em;
+	color:#333333;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-size:1em;
+}
+
+#frm_field_13_container label{
+	color:#333;
+	font-family: "signikasemibold","futura-pt",Arial,sans-serif;
+}
+
+.with_frm_style p.submit {
+    text-align: right;
+}
+
+#form_contact2 input[type="submit"]{
+    text-transform: uppercase;	
 }
 
 /* ----------------------------- */

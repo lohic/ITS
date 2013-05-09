@@ -11,7 +11,7 @@
 		<?php 
 			$categorie = get_the_category();
 			$liste_tags = "";
-			$categories="";
+			//$categories="";
 			$tag_principal = "";
 			$tags = get_the_tags();
 
@@ -24,7 +24,7 @@
 				}
 			}
 			$liste_tags = substr($liste_tags, 0, -2);
-			$categories = get_category_parents($categorie[0]->term_id,'true','');
+			//$categories = get_category_parents($categorie[0]->term_id,'true','');
 			if($tag_principal==""){
 				$tag_principal="Institut Tribune Socialiste";
 			}
@@ -32,28 +32,13 @@
 		<article class="pt1 pb2 post" id="post-<?php the_ID(); ?>">
 			<h4 class="smaller mb0 tag"><span></span><?php echo $tag_principal; ?></h4>
 
-			<?php
-			if($categories!="" || $liste_tags!=""){
-		?>
-				<p class="mb1 smaller categories_et_tags">
-				<?php 
-					if($categorie!=""){ 
-						echo '<span class="categories">'.$categories.'</span>&nbsp';
-					}
-					if($liste_tags!=""){
-						echo '<span class="tags">'.$liste_tags.'</span>';
-					}
-				?>
-				</p>
-		<?php
-			}
-		?>
+		
 			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 
 		<?php
 			if(get_field('date_article') || get_field('auteur_article')){
 		?>
-				<h3 class="little_small mb4 mt0 date">
+				<h3 class="little_small mb2 mt0 date">
 		<?php 		
 				if(get_field('date_article')){
 					echo get_field('date_article').'&nbsp';
@@ -68,12 +53,20 @@
 		?>
 			<div class="post_content normal pb2 mb2">
 				<?php get_template_part( 'content', 'get_post_format()' ); ?>
+				<?php create_attachement_list(get_the_ID());?>
 			</div>
-			<?php create_attachement_list(get_the_ID());?>
+			<?php
+				if($liste_tags!=""){
+			?>
+					<p class="normal tags">Mots-clés : <span class="tags"><?php echo $liste_tags;?></span></p>
+			<?php
+				}
+			?>
 		</article>
 
 		<section id="meme_theme" class="pt1 pb4">
-            <h3 class="small mb2">Archives sur le thème : <?php echo $categorie[0]->cat_name;?></h3>
+            <!--<h3 class="small mb2">Archives sur le thème : <?php echo $categorie[0]->cat_name;?></h3>-->
+            <h3 class="small mb1">Archives en relation</h3>
             <ul id="liste_liens" class="small">
 				<?php
 					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>$categorie[0]->term_id, 'orderby' => 'rand', 'posts_per_page'=>5));

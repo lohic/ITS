@@ -195,12 +195,12 @@ if( ! function_exists ( 'create_attachement_list') ) {
 			'orderby'		=> 'menu_order',
 			'order'			=> 'ASC',
 		) ) ) {
-			echo '<ul class="liste_attachements">'."\n";
+			echo '<ul class="liste_attachements mt2">'."\n";
 			
 			$media_count = 0;
 			
 			foreach ( $documents as $document ){
-				echo '<li class="telechargement small">' . wp_get_attachment_link ( $document->ID , '', false , false ) . '</li>'."\n";
+				echo '<li class="telechargement">' . wp_get_attachment_link ( $document->ID , '', false , false ) . '</li>'."\n";
 			}
 		
 			echo '</ul>'."\n";

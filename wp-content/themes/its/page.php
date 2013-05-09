@@ -6,7 +6,7 @@
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-			<h1 class="very_biggest"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h1>
+			<h1 class="very_biggest sans"><?php the_title(); ?></h1>
 		</div>
 		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 			<article class="pt2 pb2 post_archive" id="post-<?php the_ID(); ?>">
