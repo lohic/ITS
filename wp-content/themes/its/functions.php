@@ -74,7 +74,22 @@ if( ! function_exists (my_register_post_types)) {
 				'supports' => array('title','custom-fields'),
 				//'taxonomies' => 
 			)
-		);		
+		);	
+		register_post_type(
+			'image',
+			array(
+				'label' => __('Images'),
+				'singular_label' => __('Image'),
+				'public' => true,
+				'show_ui' => true,
+				'show_in_nav_menus'=> false,
+				'capability_type' => 'post',
+				'rewrite' => array("slug" => "image"),
+				'hierarchical' => false,
+				'query_var' => false,
+				'supports' => array('title','editor','thumbnail'),
+			)
+		);			
 	}
 }
 

@@ -116,6 +116,7 @@
 								}
 								?>
 							</div>
+							<div class="clear"></div>
 							<?php create_attachement_list(get_the_ID());?>
 						</article>
 				<?php endwhile;

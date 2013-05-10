@@ -131,108 +131,108 @@ Template Name: Page archive d'images
 		
 		<section id="liste_images">
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, noir, vert, indochine, picart</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, bleu, derbe, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, rouge, berlin, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1 sans">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="<?php bloginfo( 'template_url' ); ?>/img/petite_affiche.png" alt=""></div>
+				<div class="miniature"><img src="<?php bloginfo( 'template_url' ); ?>/img/petite_affiche.png" alt=""/></div>
 				<p>1960, noir, vert, indochine, picart</p>
 				<div class="grand_format">
-					<img src="<?php bloginfo( 'template_url' ); ?>/img/grande_affiche.png" alt="" class="mb1">
+					<img src="<?php bloginfo( 'template_url' ); ?>/img/grande_affiche.png" alt="" class="mb1"/>
 					<h4 class="little_small">Le racisme divise</h4>
 					<h5 class="little_small"><span>1963</span>Auteur inconnu</h5>
 				</div>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, bleu, derbe, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, rouge, berlin, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1 sans">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, noir, vert, indochine, picart</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, bleu, derbe, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, rouge, berlin, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1 sans">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, noir, vert, indochine, picart</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, bleu, derbe, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, rouge, berlin, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1 sans">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, noir, vert, indochine, picart</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, bleu, derbe, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, rouge, berlin, auteur inconnu</p>
 			</figure>
 			<figure class="mb1">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 			<figure class="mb1 sans">
-				<div class="miniature"><img src="" alt=""></div>
+				<div class="miniature"><img src="" alt=""/></div>
 				<p>1960, affiche, noir, blanc, pays basque</p>
 			</figure>
 		</section>
