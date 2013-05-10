@@ -40,7 +40,7 @@
 		    </div>
 		    <div id="logo" class="pr3">
 		    	<h1 class="very_bigger">Institut<br/>Tribune<br/>Socialiste</h1>
-		    	<h2 class="biggest mt0">Des idées pour un socialisme du XXIe?</h2>
+		    	<h2 class="biggest mt0"><?php bloginfo('description') ?></h2>
 		    	<img src="<?php bloginfo( 'template_url' ); ?>/img/petit_logo.png" alt="ITS, Institut Tribune Socialiste"/>
 		    </div>
 		    <nav id="menus" class="small pr3">

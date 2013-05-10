@@ -93,7 +93,7 @@ body {
 }
 
 .very_biggest{
-	font-size:3.6em;
+	font-size:3.3em;
 	line-height:1em;
 }
 
@@ -975,6 +975,10 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 	color:#FF3333;
 }
 
+.post_archive li.telechargement a{
+	font-size:1.5em;
+}
+
 a.suite:hover, a.col:hover p.suite, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
 	background:url('img/chevron_vert.png') no-repeat left center;
 }
@@ -1047,6 +1051,24 @@ a.suite:hover, a.col:hover p.suite, #meme_theme li:hover, .post + #meme_theme li
 
 .post_content.resume p{
 	display:inline;
+}
+
+.post_content img.alignleft{
+	float:left;
+	margin:1em 1em 1em 0em;
+}
+
+.post_content img.alignright{
+	float:right;
+	margin:1em 0em 1em 1em;
+}
+
+.post_content img.aligncenter{
+	margin:1em;
+}
+
+.clear{
+	clear:both;
 }
 
 article.biographie h2, article.biographie h4.tag{
