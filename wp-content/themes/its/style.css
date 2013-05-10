@@ -153,7 +153,7 @@ body {
 	font-size:1em;
 }
 
-#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments{
+#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, #filtres p.filtre, #filtres > section > div > p, #filtres #filtres_actifs li:after{
 	font-family:"futura-pt", sans-serif;
 	font-weight:300;
 	font-style:normal;
@@ -165,7 +165,8 @@ body {
 	font-style:italic;
 }
 
-textarea, #form_contact2 input[type="submit"]{
+textarea, #form_contact2 input[type="submit"], 
+#liste_images figure > div.grand_format h4, #liste_images figure > div.grand_format h5{
 	font-family:"futura-pt", sans-serif;
 	font-weight:400;
 	font-style:normal;
@@ -1352,6 +1353,120 @@ h4.resultats{
 
 #form_contact2 input[type="submit"]{
     text-transform: uppercase;	
+}
+
+#liste_images figure{
+	display: inline-block;
+    margin-right: 13px;
+    width: 124px;
+    position: relative;
+}
+
+#liste_images figure.sans{
+	margin-right: 0;
+}
+
+#liste_images figure > div.miniature{
+	width: 124px;
+	height: 124px;
+	background: #f3f3f3;
+	margin-bottom: 5px;
+}
+
+#liste_images figure > div.miniature img{
+	margin:auto;
+}
+
+#liste_images figure > div.grand_format{
+	position:absolute;
+	left:94px;
+	top: 94px;
+	z-index: 1;
+	background: #333;
+	padding: 13px;
+	border: 1px solid  #666;
+	display:none;
+}
+
+#liste_images figure:hover > div.grand_format{
+	display:block;
+}
+
+#liste_images figure > div.grand_format h4, #liste_images figure > div.grand_format h5{
+	color:#fff;
+}
+
+#liste_images figure > div.grand_format h4{
+	text-transform: uppercase;
+	margin-bottom: 3px;
+}
+
+#liste_images figure > div.grand_format h5 span:after{
+	content:'•';
+}
+
+#liste_images figure p{
+	text-transform: uppercase;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+}
+
+#filtres{
+	border-top: 1px solid  #ccc;
+	border-bottom: 1px solid  #ccc;
+	color:#666;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+}
+
+#filtres > div{
+	border-top: 3px solid  #ededed;
+	padding-top: 7px;
+}
+
+#filtres > div.bordure{
+	border-top: none;
+	border-bottom: 3px solid  #ededed;
+	padding-top: 0;
+}
+
+#filtres > section{
+	margin-bottom: 7px;
+}
+
+#filtres > section > div:first-child{
+	width:175px;
+}
+
+#filtres > section li{
+	display:inline-block;
+	margin-right: 7px;
+}
+
+#filtres p.filtre{
+	background: url("img/chevrons_filtre.png") no-repeat scroll 15px 8px transparent;
+    display: inline-block;
+}
+
+#filtres #filtres_actifs{
+	display:inline-block;
+}
+
+#filtres #filtres_actifs li{
+	background: none repeat scroll 0 0 #F8F8F8;
+    border: 1px solid #E5E5E5;
+    display: inline-block;
+    padding: 3px 21px 2px 5px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+}
+
+#filtres #filtres_actifs li:after{
+	color: #999999;
+    content: "x";
+    font-size: 16px;
+    margin-top: -2px;
+    padding-left: 8px;
+    position: absolute;
 }
 
 /* ----------------------------- */
