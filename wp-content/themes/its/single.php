@@ -12,27 +12,24 @@
 			$categorie = get_the_category();
 			$liste_tags = "";
 			//$categories="";
-			$tag_principal = "";
+			$organisations = "";
 			$tags = get_the_tags();
 
 			foreach ($tags as $tag){
-				if(get_field('tag_principal','post_tag_'.$tag->term_id)=="Oui"){
-					$tag_principal = $tag->name;
-				}
-				else{
-					$liste_tags .= $tag->name.', ';
-				}
+				$liste_tags .= $tag->name.', ';
 			}
 			$liste_tags = substr($liste_tags, 0, -2);
 			//$categories = get_category_parents($categorie[0]->term_id,'true','');
-			if($tag_principal==""){
-				$tag_principal="Institut Tribune Socialiste";
+
+			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
+
+			if($organisations==""){
+				$organisations="Institut Tribune Socialiste";
 			}
 		?>
 		<article class="pt1 pb2 post" id="post-<?php the_ID(); ?>">
-			<h4 class="smaller mb0 tag"><span></span><?php echo $tag_principal; ?></h4>
+			<h4 class="smaller mb0 tag"><span></span><?php echo $organisations; ?></h4>
 
-		
 			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 
 		<?php

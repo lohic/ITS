@@ -97,7 +97,7 @@ if( ! function_exists (my_register_taxonomies)) {
 			'show_ui' => true,
 			'query_var' => true,
 			'show_in_nav_menus' => true,
-			'rewrite' => array( 'slug' => 'organismation' ),
+			'rewrite' => array( 'slug' => 'organisation' ),
 		));
 	}
 }
