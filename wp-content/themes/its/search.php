@@ -38,24 +38,22 @@
 			$resume = get_field("resume_article");
 			$liste_tags = "";
 			$categories="";
-			$tag_principal = "";
+			$organisations = "";
+			
 			$tags = get_the_tags();
 			foreach ($tags as $tag){
-				if(get_field('tag_principal','post_tag_'.$tag->term_id)=="Oui"){
-					$tag_principal = '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>';
-				}
-				else{
-					$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
-				}
+				$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
 			}
 			$liste_tags = substr($liste_tags, 0, -2);
 			$categories = get_category_parents($categorie[0]->term_id,'true','');
-			if($tag_principal==""){
-				$tag_principal="Institut Tribune Socialiste";
+			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
+
+			if($organisations==""){
+				$organisations="Institut Tribune Socialiste";
 			}
 		?>
 			<article class="pt2 pb2 post_archive resume" id="post-<?php the_ID(); ?>">
-				<h4 class="smaller mb1 tag"><span></span><?php echo $tag_principal; ?></h4>
+				<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
 				<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 			<?php
 				if($categories!="" || $liste_tags!=""){
