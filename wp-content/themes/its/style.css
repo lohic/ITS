@@ -174,7 +174,7 @@ textarea, #form_contact2 input[type="submit"],
 
 #sur_menu li a, #logo h1, #menu_sidebar li a, #actualites .row .col + a > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
-.post_content .texte_image h2, .post_content .texte_image p span{
+.post_content .texte_image h2, .post_content .texte_image p span, #centre .newsletter input[type="submit"]{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
@@ -1595,6 +1595,34 @@ h4.resultats{
 #filtres .image p.filtre{
 	padding-left: 17px;
 	background: none;
+}
+
+#centre .newsletter .frm_form_fields{
+	width:225px;
+	float: left;
+	margin-right: 10px;
+	margin-top: 20px;
+}
+
+#centre .newsletter input[type="email"]{
+	color: #999999;
+    font-size: 0.8em;
+    width: 225px;
+}
+
+#centre .newsletter p.submit{
+	float: left;
+    margin-top: 18px;
+}
+
+#centre .newsletter input[type="submit"]{
+	background: none;
+	color:#b1b1b1;
+	cursor: pointer;
+}
+
+#centre .newsletter .with_frm_style .form-field{
+	margin-bottom: 10px;
 }
 
 /* ----------------------------- */

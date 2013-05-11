@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	/*gestion du slider agenda*/
+	/*gestion des commentaires*/
 	$('h3#respond').click(function(){
 		$('#commentform').toggle();
 	});
@@ -15,5 +15,6 @@ $(document).ready(function(){
 		$('#comments').toggle();
 		$(this).toggle();
 	});
+	/*Fin de la gestion des commentaires*/
 	
 });
