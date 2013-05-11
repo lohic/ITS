@@ -1187,6 +1187,10 @@ p.tags span.tags{
     padding-right: 15px;
 }
 
+#frise ul.categorie{
+	padding-top: 10px;
+}
+
 #frise.large ul {
     left: 0;
     position: absolute;
@@ -1195,14 +1199,25 @@ p.tags span.tags{
     width: auto;
 }
 
-#frise ul > li, #frise ul + a{
+#frise ul > li{
 	vertical-align: middle;
 	height: 31px;
 	padding-right: 17px;
 }
 
+#frise ul.categorie + a{
+	display: block;
+    float: right;
+    margin-right: 30px;
+    margin-top: 10px;
+}
+
 #frise.large ul > li{
 	padding-right:19px;
+}
+
+#frise ul.categorie > li{
+	display: inline-block;
 }
 
 #frise ul > li.actif a{

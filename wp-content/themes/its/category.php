@@ -7,15 +7,26 @@
 		?>
 		<div id="entete">
 			<h1 class="very_biggest"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
-			<section id="frise" class="normal mt2 mb1 pl3 row">
-				<ul class="">
-					<li><a href="#">1963</a></li>
-					<li><a href="#">1964</a></li>
-					<li><a href="#">1965</a></li>
-					<li><a href="#">1966</a></li>
-					<li><a href="#">1967</a></li>
-					<li><a href="#">1968</a></li>
-					<li><a href="#">1969</a></li>
+			<section id="frise" class="normal mt2 mb1 pl3">
+				<ul class="categorie">
+					<?php
+						$laCat = get_query_var('cat');
+						$lesAnnees = array();
+						$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'posts_per_page'=>-1));
+						while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
+							$ladate = the_date('Y', '', '',FALSE);
+							if(!in_array($ladate,$lesAnnees)){
+								$lesAnnees[]=$ladate;
+							}
+						endwhile;
+						wp_reset_postdata();
+						asort($lesAnnees);
+						foreach($lesAnnees as $annee){
+					?>
+							<li><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
+					<?php	
+						}
+					?>
 				</ul>
 				<a href="#">Regards d'aujourd'hui</a>
 			</section>
@@ -50,8 +61,15 @@
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
 
+					if(isset($_GET['annee'])){
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'cat'=>get_query_var('cat'), 'paged' => $paged));
+					}
+					else{
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
+					}
+
+					
 					$big = 99999999; // need an unlikely integer
 
 					echo paginate_links( array(
@@ -71,6 +89,7 @@
         	while( $my_query->have_posts() ) : $my_query->the_post();?>
 				<?php get_template_part( 'boucle', '' );?>
 			<?php endwhile;
+			wp_reset_postdata();
         ?>
 
 		<section class="pagination smaller mt1">
