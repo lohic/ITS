@@ -6,19 +6,15 @@
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-		<?php
-			$titre = get_tags(array('slug'=>get_query_var('organisation')));
-			$value = get_field('titre_tag','post_tag_'.$tag[0]->term_id);
-		?>
 			<h1 class="very_biggest mb4"><?php single_cat_title();?></h1>
 		<?php 
-			$tag = get_tags(array('slug'=>get_query_var('tag')));
-			$value = get_field('texte_tag','post_tag_'.$tag[0]->term_id);
+			$idObj = get_term_by('slug',get_query_var('organisation'),'organisation'); 
+  			$value = get_field('texte_organisation','organisation_'.$idObj->term_id);
 			if($value){
 		?>
-				<div class="normal pb2 mb2" id="texte_tag"><?php the_field('texte_tag','post_tag_'.$tag[0]->term_id);?></div>
+				<div class="normal pb2 mb2" id="texte_tag"><?php the_field('texte_organisation','organisation_'.$idObj->term_id);?></div>
 				<?php 
-                    $articles = get_field('articles_relatifs','post_tag_'.$tag[0]->term_id);
+                    $articles = get_field('articles_relatifs','organisation_'.$idObj->term_id);
                     if($articles!=false){
                 ?>
                 		<div class="normal pb3" id="relatif_tag">
