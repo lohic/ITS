@@ -8,7 +8,7 @@
 		<div id="entete">
 			<h1 class="very_biggest"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
 			<section id="frise" class="normal mt2 mb1 pl3 row">
-				<ul class="row">
+				<ul class="">
 					<li><a href="#">1963</a></li>
 					<li><a href="#">1964</a></li>
 					<li><a href="#">1965</a></li>
