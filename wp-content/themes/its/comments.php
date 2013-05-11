@@ -57,8 +57,8 @@ $oddcomment = 'alt';
 <!-- Vous pouvez faires des modifs à partir de là -->
 <div class="cadre_commentaires mt1">
 	<?php if ($comments) : ?>
-	<h3 id="comments" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Les commentaires', 'Les commentaires' );?></span> pour <span class="titre"><?php the_title(); ?></span></h3>
-
+	<h3 id="comments" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Afficher le commentaire ', 'Afficher les commentaires ' );?>(<?php echo get_comments_number( $post->ID );?>)</span></h3>
+	<h3 id="comments_bis" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Le commentaire', 'Les commentaires' );?></span> pour <span class="titre"><?php the_title(); ?></span></h3>
 	<ol class="commentlist">
 	<?php foreach ($comments as $comment) : ?>
 

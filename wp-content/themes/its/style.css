@@ -153,7 +153,7 @@ body {
 	font-size:1em;
 }
 
-#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, #filtres p.filtre, #filtres > section > div > p, #filtres #filtres_actifs li:after{
+#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, h3#comments_bis, #filtres p.filtre, #filtres > section > div > p, #filtres #filtres_actifs li:after{
 	font-family:"futura-pt", sans-serif;
 	font-weight:300;
 	font-style:normal;
@@ -181,13 +181,13 @@ textarea, #form_contact2 input[type="submit"],
 }
 
 aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise ul + a,
-#frise ul > li > a , h3#comments span, .commentmetadata p, #respond, aside section h3 > span{
+#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, aside section h3 > span{
 	font-family:"futura-pt", sans-serif;
 	font-weight:500;
 	font-style:normal;
 }
 
-h3#comments .titre{
+h3#comments .titre, h3#comments_bis .titre{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:italic;
@@ -1286,8 +1286,16 @@ p.tags span.tags{
 	margin-top:5px;
 }
 
-#comments, .commentmetadata, .commenttext, .commentmetadata a, #respond{
+#comments, #comments_bis, .commentmetadata, .commenttext, .commentmetadata a, #respond{
 	color:#666;
+}
+
+#respond:hover, #comments:hover, #comments_bis:hover{
+	cursor:pointer;
+}
+
+#comments_bis{
+	display:none;
 }
 
 .commentmetadata a{
@@ -1297,6 +1305,10 @@ p.tags span.tags{
 
 .commenttext{
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+}
+
+.commentlist{
+	display:none;
 }
 
 .commentlist li{
@@ -1309,6 +1321,7 @@ p.tags span.tags{
 
 #commentform{
 	display: none;
+	margin-top: 20px;
 }
 
 #entete{

@@ -24,6 +24,7 @@
 	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/script-home.js"></script>
 	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/script-page-tag.js"></script>
 	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/purl.js"></script>
+	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/general.js"></script>
 	<?php wp_get_archives('type=monthly&format=link'); ?>
 	<?php wp_head(); ?>
 </head>
