@@ -18,6 +18,7 @@ Template Name: Page archive d'images
 					<ul id="filtres_actifs" class="small">
 						<?php
 							$params = array();
+							$paramsQuery = array();
 							if(isset($_GET['annees'])){
 								$params_annees=array();
 								foreach($_GET['annees'] as $annee){
@@ -49,17 +50,23 @@ Template Name: Page archive d'images
 							}
 
 							if(isset($_GET['couleurs'])){
+								$params_couleurs=array();
 								foreach($_GET['couleurs'] as $couleur){
 									$new_url = str_replace ( '&couleurs[]='.$couleur , '' , $_SERVER['REQUEST_URI']);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$couleur.'</a></li>';
+									$params_couleurs[]=$couleur;
 								}
+								$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 							}
 
 							if(isset($_GET['mots_cles'])){
+								$params_mots=array();
 								foreach($_GET['mots_cles'] as $mot_cle){
 									$new_url = str_replace ( '&mots_cles[]='.$mot_cle , '' , $_SERVER['REQUEST_URI']);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$mot_cle.'</a></li>';
+									$params_mots[]=$mot_cle;
 								}
+								$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
 							}
 						?>
 					</ul>
@@ -132,16 +139,16 @@ Template Name: Page archive d'images
 						<div class="col">
 							<ul>
 							<?php
-								$couleurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'couleur' ORDER BY meta_value" );
-								//var_dump($couleurs);
-								/*foreach($couleurs as $couleur){
-									if(in_array($couleur,$_GET['couleurs'])){
-										echo '<li>'.$couleur.'</li>';
-									}
-									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;couleurs[]='.$couleur.'">'.$couleur.'</a></li>';
-									}
-								}*/
+							$args = array('orderby'=>'name', 'order'=>'ASC', 'hide_empty'=>false);
+							$couleurs = get_terms('couleur',$args);
+							foreach($couleurs as $couleur){
+								if(in_array($couleur->slug,$_GET['couleurs'])){
+									echo '<li>'.$couleur->name.'</li>';
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+								}
+							}
 							?>
 							</ul>
 						</div>
@@ -152,14 +159,18 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<li>Campagne présidentielle</li>
-								<li>Guerre</li>
-								<li>Manifestation</li>
-								<li>Ouvriers</li>
-								<li>Logement</li>
-								<li>Etudiants</li>
-								<li>Impôts</li>
-								<li>Ecologie</li>
+							<?php
+							$args = array('orderby'=>'name', 'order'=>'ASC', 'hide_empty'=>false);
+							$mots = get_terms('mot_cle_image',$args);
+							foreach($mots as $mot){
+								if(in_array($mot->slug,$_GET['mots_cles'])){
+									echo '<li>'.$mot->name.'</li>';
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+								}
+							}
+							?>
 							</ul>
 						</div>
 					</section>
@@ -171,7 +182,7 @@ Template Name: Page archive d'images
 			<section class="pagination smaller mb2 mt4">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
+					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
 
 					$big = 99999999; // need an unlikely integer
 
@@ -201,14 +212,38 @@ Template Name: Page archive d'images
 						</div>
 						<p>
 							<?php the_field('date_document');?>, 
-							<?php the_field('couleur');?>, 
-							<?php 
-								$tags = get_the_tags();
-								foreach ($tags as $tag){
-									echo $tag->name.', ';
-								}
+							<?php
+								$couleurs = get_the_terms( $post->ID, 'couleur' );
+						
+								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
+
+									$liste_couleurs = array();
+
+									foreach ( $couleurs as $couleur ) {
+										$liste_couleurs[] = $couleur->name;
+									}
+													
+									$les_couleurs = join( ", ", $liste_couleurs );
+									echo $les_couleurs.', ';
+								endif;
 							?>
-							<?php the_field('auteur');?></p>
+							<?php 
+								$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+						
+								if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
+
+									$liste_mots_cles = array();
+
+									foreach ( $mots_cles as $mot_cle ) {
+										$liste_mots_cles[] = $mot_cle->name;
+									}
+													
+									$les_mots_cles = join( ", ", $liste_mots_cles );
+									echo $les_mots_cles.', ';
+								endif;
+							?>
+							<?php the_field('auteur');?>
+						</p>
 						<div class="grand_format">
 							<?php
 								echo wp_get_attachment_image( $post->ID, 'iconographie' );

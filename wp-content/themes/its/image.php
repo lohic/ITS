@@ -19,10 +19,21 @@
 		</div>
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 		<?php
-			$couleurs = get_field('couleur');
-			foreach($couleurs as $couleur){
-				$liste_couleurs.='<span class="couleur">'.$couleur.'</span>';
-			}
+			$couleurs = get_the_terms( $post->ID, 'couleur' );	
+			if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
+				foreach ( $couleurs as $couleur ) {
+					$liste_couleurs.='<span class="couleur">'.$couleur->name.'</span>';
+				}			
+			endif;
+
+			$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+			if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
+				foreach ( $mots_cles as $mot_cle ) {
+					$liste_mots_cles.='<span class="couleur">'.$mot_cle->name.'</span>';
+				}
+			endif;
+
+
 		?>
 		<article class="pb2 post" id="post-<?php the_ID(); ?>">
 			<div class="post_content image mb2 row">
@@ -37,7 +48,7 @@
 					<p class="small"><span class="long">Type de document :</span><?php the_field('type_de_document');?></p>
 					<p class="small"><span class="court">Auteur :</span><?php the_field('auteur');?></p>
 					<p class="small"><span class="court">Couleur :</span><?php echo $liste_couleurs;?></p>
-					<p class="small"><span class="court">Mots clés :</span>Manifestation</p>
+					<p class="small"><span class="court">Mots clés :</span><?php echo $liste_mots_cles;?></p>
 					<p class="small"><span class="moyen">Dimensions :</span><?php the_field('dimensions');?></p>
 					<p class="small mb1"><span class="moyen">Poids fichier :</span><?php the_field('poids');?></p>
 					<p class="small"><span class="full">Remarques :</span><?php the_field('remarques');?></p>

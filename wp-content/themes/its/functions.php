@@ -101,6 +101,42 @@ if( ! function_exists (my_register_taxonomies)) {
 			'show_in_nav_menus' => true,
 			'rewrite' => array( 'slug' => 'organisation' ),
 		));
+
+		$labels = array(
+			'name' => _x( 'Couleurs', 'taxonomy general name' ),
+			'singular_name' => _x( 'Couleur', 'taxonomy singular name' ),
+			'parent_item' => null,
+			'parent_item_colon' => null,
+			//'show_ui' => false,
+			'menu_name' => __( 'Couleurs' ),
+		); 
+	
+		register_taxonomy('couleur','attachment',array(
+			'hierarchical' => true,
+			'labels' => $labels,
+			'show_ui' => true,
+			'query_var' => true,
+			'show_in_nav_menus' => true,
+			'rewrite' => array( 'slug' => 'couleur' ),
+		));
+
+		$labels = array(
+			'name' => _x( 'Mots clés image', 'taxonomy general name' ),
+			'singular_name' => _x( 'Mot clé image', 'taxonomy singular name' ),
+			'parent_item' => null,
+			'parent_item_colon' => null,
+			//'show_ui' => false,
+			'menu_name' => __( 'Mots clés image' ),
+		); 
+	
+		register_taxonomy('mot_cle_image','attachment',array(
+			'hierarchical' => true,
+			'labels' => $labels,
+			'show_ui' => true,
+			'query_var' => true,
+			'show_in_nav_menus' => true,
+			'rewrite' => array( 'slug' => 'mot_cle_image' ),
+		));
 	}
 }
 
