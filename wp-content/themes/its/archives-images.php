@@ -17,25 +17,35 @@ Template Name: Page archive d'images
 					<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
 					<ul id="filtres_actifs" class="small">
 						<?php
+							$params = array();
 							if(isset($_GET['annees'])){
+								$params_annees=array();
 								foreach($_GET['annees'] as $annee){
 									$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$annee.'</a></li>';
+									$params_annees[]=$annee;
 								}
+								$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
 							}
 
 							if(isset($_GET['types'])){
+								$params_types=array();
 								foreach($_GET['types'] as $type){
 									$new_url = str_replace ( '&types[]='.$type , '' , $_SERVER['REQUEST_URI']);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$type.'</a></li>';
+									$params_types[]=$type;
 								}
+								$params[]=array('key' => 'type_de_document', 'value'=>$params_types,'compare'=>'IN');
 							}
 
 							if(isset($_GET['auteurs'])){
+								$params_auteurs=array();
 								foreach($_GET['auteurs'] as $auteur){
 									$new_url = str_replace ( '&auteurs[]='.$auteur , '' , $_SERVER['REQUEST_URI']);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$auteur.'</a></li>';
+									$params_auteurs[]=$auteur;
 								}
+								$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
 							}
 
 							if(isset($_GET['couleurs'])){
@@ -61,16 +71,17 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<?php
-									for($i=1960;$i<=1990;$i++){
-										if(in_array($i,$_GET['annees'])){
-											echo '<li>'.$i.'</li>';
-										}
-										else{
-											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;annees[]='.$i.'">'.$i.'</a></li>';
-										}
+							<?php
+								$annees = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'date_document' ORDER BY meta_value" );
+								foreach($annees as $annee){
+									if(in_array($annee,$_GET['annees'])){
+										echo '<li>'.$annee.'</li>';
 									}
-								?>
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;annees[]='.$annee.'">'.$annee.'</a></li>';
+									}
+								}
+							?>
 							</ul>
 						</div>
 					</section>
@@ -122,7 +133,7 @@ Template Name: Page archive d'images
 							<ul>
 							<?php
 								$couleurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'couleur' ORDER BY meta_value" );
-								var_dump($couleurs);
+								//var_dump($couleurs);
 								/*foreach($couleurs as $couleur){
 									if(in_array($couleur,$_GET['couleurs'])){
 										echo '<li>'.$couleur.'</li>';
@@ -160,7 +171,7 @@ Template Name: Page archive d'images
 			<section class="pagination smaller mb2 mt4">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
+					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
 
 					$big = 99999999; // need an unlikely integer
 
