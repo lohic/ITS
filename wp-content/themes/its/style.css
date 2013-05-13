@@ -153,7 +153,8 @@ body {
 	font-size:1em;
 }
 
-#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, h3#comments_bis, #filtres p.filtre, #filtres > section > div > p, #filtres #filtres_actifs li:after{
+#menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, h3#comments_bis, #filtres p.filtre, #filtres > div.conteneur > section > div > p, 
+#filtres #filtres_actifs li:after{
 	font-family:"futura-pt", sans-serif;
 	font-weight:300;
 	font-style:normal;
@@ -1411,6 +1412,7 @@ h4.resultats{
     margin-right: 13px;
     width: 124px;
     position: relative;
+    vertical-align: top;
 }
 
 #meme_theme figure{
@@ -1454,6 +1456,7 @@ h4.resultats{
 #liste_images figure > div.grand_format h4{
 	text-transform: uppercase;
 	margin-bottom: 3px;
+	margin-top: 7px;
 }
 
 #liste_images figure > div.grand_format h5 span:after{
@@ -1478,6 +1481,11 @@ h4.resultats{
 	padding-top: 7px;
 }
 
+#filtres > div.conteneur{
+	border-top: none;
+	padding-top: 0px;
+}
+
 #filtres > div.image{
 	padding-top:10px;
 }
@@ -1492,15 +1500,19 @@ h4.resultats{
     padding-bottom: 12px;
 }
 
-#filtres > section{
+#filtres > div.conteneur{
+	display:none;
+}
+
+#filtres > div.conteneur > section{
 	margin-bottom: 7px;
 }
 
-#filtres > section > div:first-child{
+#filtres > div.conteneur > section > div:first-child{
 	width:175px;
 }
 
-#filtres > section li{
+#filtres > div.conteneur > section li{
 	display:inline-block;
 	margin-right: 7px;
 }
@@ -1508,6 +1520,7 @@ h4.resultats{
 #filtres p.filtre{
 	background: url("img/chevrons_filtre.png") no-repeat scroll 15px 8px transparent;
     display: inline-block;
+    cursor: pointer;
 }
 
 #filtres #filtres_actifs{

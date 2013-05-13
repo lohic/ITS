@@ -15,6 +15,26 @@ $(document).ready(function(){
 		$('#comments').toggle();
 		$(this).toggle();
 	});
+
+	$('#filtres p.filtre').click(function(){
+		$('#filtres > .conteneur').toggle();
+	});
+
+	$('#liste_images figure .miniature img').each(function(){
+		var margeLeft = (124-$(this).width())/2;
+		$(this).css('marginLeft',margeLeft);
+
+		var margeTop = (124-$(this).height())/2;
+		$(this).css('marginTop',margeTop);
+	});
+
+	$('#meme_theme figure .miniature img').each(function(){
+		var margeLeft = (124-$(this).width())/2;
+		$(this).css('marginLeft',margeLeft);
+
+		var margeTop = (124-$(this).height())/2;
+		$(this).css('marginTop',margeTop);
+	});
 	/*Fin de la gestion des commentaires*/
 	
 });

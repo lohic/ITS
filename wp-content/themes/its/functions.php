@@ -14,6 +14,8 @@ if ( ! function_exists( 'its_setup' ) ){
 		add_image_size('newsletter-3x'		, 400, 165, true);
 		add_image_size('remontee_its'		, 300, 270, true);
 		add_image_size('biographie'		, 200, 200, true);
+		add_image_size('iconographie'		, 310, 310, false);
+		add_image_size('miniature-iconographie'		, 124, 124, false);
 		
 		// on enregistre la barre latérale	
 		if ( function_exists('register_sidebar') )
@@ -75,21 +77,6 @@ if( ! function_exists (my_register_post_types)) {
 				//'taxonomies' => 
 			)
 		);	
-		register_post_type(
-			'image',
-			array(
-				'label' => __('Images'),
-				'singular_label' => __('Image'),
-				'public' => true,
-				'show_ui' => true,
-				'show_in_nav_menus'=> false,
-				'capability_type' => 'post',
-				'rewrite' => array("slug" => "image"),
-				'hierarchical' => false,
-				'query_var' => false,
-				'supports' => array('title','editor','thumbnail'),
-			)
-		);			
 	}
 }
 
