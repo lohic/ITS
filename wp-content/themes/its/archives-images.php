@@ -16,8 +16,42 @@ Template Name: Page archive d'images
 				<div class="">
 					<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
 					<ul id="filtres_actifs" class="small">
-						<li class="mr1">1962</li>
-						<li class="mr1">Affiche</li>
+						<?php
+							if(isset($_GET['annees'])){
+								foreach($_GET['annees'] as $annee){
+									$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
+									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$annee.'</a></li>';
+								}
+							}
+
+							if(isset($_GET['types'])){
+								foreach($_GET['types'] as $type){
+									$new_url = str_replace ( '&types[]='.$type , '' , $_SERVER['REQUEST_URI']);
+									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$type.'</a></li>';
+								}
+							}
+
+							if(isset($_GET['auteurs'])){
+								foreach($_GET['auteurs'] as $auteur){
+									$new_url = str_replace ( '&auteurs[]='.$auteur , '' , $_SERVER['REQUEST_URI']);
+									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$auteur.'</a></li>';
+								}
+							}
+
+							if(isset($_GET['couleurs'])){
+								foreach($_GET['couleurs'] as $couleur){
+									$new_url = str_replace ( '&couleurs[]='.$couleur , '' , $_SERVER['REQUEST_URI']);
+									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$couleur.'</a></li>';
+								}
+							}
+
+							if(isset($_GET['mots_cles'])){
+								foreach($_GET['mots_cles'] as $mot_cle){
+									$new_url = str_replace ( '&mots_cles[]='.$mot_cle , '' , $_SERVER['REQUEST_URI']);
+									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$mot_cle.'</a></li>';
+								}
+							}
+						?>
 					</ul>
 				</div>
 				<div class="conteneur">
@@ -27,37 +61,16 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<li>1960</li>
-								<li>1961</li>
-								<li>1962</li>
-								<li>1963</li>
-								<li>1964</li>
-								<li>1965</li>
-								<li>1966</li>
-								<li>1967</li>
-								<li>1968</li>
-								<li>1969</li>
-								<li>1970</li>
-								<li>1971</li>
-								<li>1972</li>
-								<li>1973</li>
-								<li>1974</li>
-								<li>1975</li>
-								<li>1976</li>
-								<li>1977</li>
-								<li>1978</li>
-								<li>1979</li>
-								<li>1980</li>
-								<li>1981</li>
-								<li>1982</li>
-								<li>1983</li>
-								<li>1984</li>
-								<li>1985</li>
-								<li>1986</li>
-								<li>1987</li>
-								<li>1988</li>
-								<li>1989</li>
-								<li>1990</li>
+								<?php
+									for($i=1960;$i<=1990;$i++){
+										if(in_array($i,$_GET['annees'])){
+											echo '<li>'.$i.'</li>';
+										}
+										else{
+											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;annees[]='.$i.'">'.$i.'</a></li>';
+										}
+									}
+								?>
 							</ul>
 						</div>
 					</section>
@@ -67,10 +80,17 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<li>Affiche</li>
-								<li>Publication</li>
-								<li>Photographe</li>
-								<li>Illustration</li>
+							<?php
+								$types_documents = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'type_de_document' ORDER BY meta_value" );
+								foreach($types_documents as $type_document){
+									if(in_array($type_document,$_GET['types'])){
+										echo '<li>'.$type_document.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;types[]='.$type_document.'">'.$type_document.'</a></li>';
+									}
+								}
+							?>
 							</ul>
 						</div>
 					</section>
@@ -80,8 +100,17 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<li>Picart</li>
-								<li>Un graphiste</li>
+							<?php
+								$auteurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'auteur' ORDER BY meta_value" );
+								foreach($auteurs as $auteur){
+									if(in_array($auteur,$_GET['auteurs'])){
+										echo '<li>'.$auteur.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
+									}
+								}
+							?>
 							</ul>
 						</div>
 					</section>
@@ -91,16 +120,18 @@ Template Name: Page archive d'images
 						</div>
 						<div class="col">
 							<ul>
-								<li>Noir</li>
-								<li>Blanc</li>
-								<li>Marron</li>
-								<li>Rouge</li>
-								<li>Orange</li>
-								<li>Jaune</li>
-								<li>Vert</li>
-								<li>Bleu</li>
-								<li>Violet</li>
-								<li>Rose</li>
+							<?php
+								$couleurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'couleur' ORDER BY meta_value" );
+								var_dump($couleurs);
+								/*foreach($couleurs as $couleur){
+									if(in_array($couleur,$_GET['couleurs'])){
+										echo '<li>'.$couleur.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;couleurs[]='.$couleur.'">'.$couleur.'</a></li>';
+									}
+								}*/
+							?>
 							</ul>
 						</div>
 					</section>
