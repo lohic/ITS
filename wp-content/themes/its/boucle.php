@@ -5,8 +5,10 @@
 	$categories="";
 	$organisations = "";
 	$tags = get_the_tags();
-	foreach ($tags as $tag){
-		$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
+	if($tags){
+		foreach ($tags as $tag){
+			$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
+		}
 	}
 	$liste_tags = substr($liste_tags, 0, -2);
 	$categories = get_category_parents($categorie[0]->term_id,'true','');
