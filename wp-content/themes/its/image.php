@@ -6,12 +6,38 @@
     <div id="centre" class="col pl3 pr3">
     	<?php 
     		if (function_exists('mybread')) mybread();
+    		$args_url = '';
+    		if(isset($_GET['annees'])){
+				foreach($_GET['annees'] as $annee){
+					$args_url.='&amp;annees[]='.$annee;
+				}
+			}
+			if(isset($_GET['types'])){
+				foreach($_GET['types'] as $type){
+					$args_url.='&amp;types[]='.$type;
+				}
+			}
+			if(isset($_GET['auteurs'])){
+				foreach($_GET['auteurs'] as $auteur){
+					$args_url.='&amp;auteurs[]='.$auteur;
+				}
+			}
+			if(isset($_GET['couleurs'])){
+				foreach($_GET['couleurs'] as $couleur){
+					$args_url.='&amp;couleurs[]='.$couleur;
+				}
+			}
+			if(isset($_GET['mots_cles'])){
+				foreach($_GET['mots_cles'] as $mot_cle){
+					$args_url.='&amp;mots_cles[]='.$mot_cle;
+				}
+			}
 		?>
 		<div id="entete">
 			<h1 class="little_very_biggest sans mb3">Archive d'images</h1>
 			<section id="filtres" class="mb2">
 				<div class="image">
-					<p class="filtre mr2 normal"><a href="<?php bloginfo('url'); ?>?page_id=13">Retour à la liste</a></p>
+					<p class="filtre mr2 normal"><a href="<?php bloginfo('url'); ?>?page_id=13<?php echo $args_url;?>">Retour à la liste</a></p>
 				</div>
 				<div class="bordure image">
 				</div>

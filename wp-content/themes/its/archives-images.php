@@ -200,11 +200,12 @@ Template Name: Page archive d'images
 		
 		<section id="liste_images">
 			<?php
+				$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 	        	while( $my_query->have_posts() ) : $my_query->the_post();
 	        ?>
 					<figure class="mb1">
 						<div class="miniature">
-							<a href="<?php the_permalink();?>">
+							<a href="<?php echo $new_url.'&amp;attachment_id='.$post->ID;?>">
 								<?php
 									echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
 								?>
