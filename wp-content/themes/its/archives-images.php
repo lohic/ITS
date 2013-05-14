@@ -82,7 +82,7 @@ Template Name: Page archive d'images
 								$annees = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'date_document' ORDER BY meta_value" );
 								foreach($annees as $annee){
 									if(in_array($annee,$_GET['annees'])){
-										echo '<li>'.$annee.'</li>';
+										echo '<li class="actif">'.$annee.'</li>';
 									}
 									else{
 										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;annees[]='.$annee.'">'.$annee.'</a></li>';
@@ -102,7 +102,7 @@ Template Name: Page archive d'images
 								$types_documents = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'type_de_document' ORDER BY meta_value" );
 								foreach($types_documents as $type_document){
 									if(in_array($type_document,$_GET['types'])){
-										echo '<li>'.$type_document.'</li>';
+										echo '<li class="actif">'.$type_document.'</li>';
 									}
 									else{
 										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;types[]='.$type_document.'">'.$type_document.'</a></li>';
@@ -122,7 +122,7 @@ Template Name: Page archive d'images
 								$auteurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'auteur' ORDER BY meta_value" );
 								foreach($auteurs as $auteur){
 									if(in_array($auteur,$_GET['auteurs'])){
-										echo '<li>'.$auteur.'</li>';
+										echo '<li class="actif">'.$auteur.'</li>';
 									}
 									else{
 										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
@@ -143,7 +143,7 @@ Template Name: Page archive d'images
 							$couleurs = get_terms('couleur',$args);
 							foreach($couleurs as $couleur){
 								if(in_array($couleur->slug,$_GET['couleurs'])){
-									echo '<li>'.$couleur->name.'</li>';
+									echo '<li class="actif">'.$couleur->name.'</li>';
 								}
 								else{
 									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
@@ -164,7 +164,7 @@ Template Name: Page archive d'images
 							$mots = get_terms('mot_cle_image',$args);
 							foreach($mots as $mot){
 								if(in_array($mot->slug,$_GET['mots_cles'])){
-									echo '<li>'.$mot->name.'</li>';
+									echo '<li class="actif">'.$mot->name.'</li>';
 								}
 								else{
 									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';

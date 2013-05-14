@@ -1,4 +1,7 @@
 $(document).ready(function(){
+	if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
+		$('#filtres > div.conteneur').css('display','block');
+	}
 	/*gestion des commentaires*/
 	$('h3#respond').click(function(){
 		$('#commentform').toggle();

@@ -268,6 +268,7 @@ function myget_category_parents($id, $link = false,$separator = '/',$nicename = 
 	}
 }
 
+
 //Le rendu
 function mybread() {
 	// variables gloables

@@ -118,4 +118,5 @@ $(document).ready(function(){
 		$('#puce_'+suivant).addClass('actif');
 	});
 
+
 });

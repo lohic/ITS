@@ -694,7 +694,7 @@ footer #nuage a{
 }
 
 #facebook, #twitter{
-	display:block;
+	display:inline-block;
 	margin: -1px 10px 5px 0px;
 }
 
@@ -772,6 +772,7 @@ h4.tag a{
     position: absolute;
     width: 711px;
     z-index: 2;
+    height:100%;
 }
 
 #agenda .conteneur{
@@ -1515,6 +1516,10 @@ h4.resultats{
 #filtres > div.conteneur > section li{
 	display:inline-block;
 	margin-right: 7px;
+}
+
+#filtres > div.conteneur > section li.actif{
+	color:#ff3333;
 }
 
 #filtres > div.conteneur > section li a{

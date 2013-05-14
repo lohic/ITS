@@ -1,5 +1,4 @@
 $(document).ready(function(){
-	
 	var position_curseur = 13;
 	var deplacement = 672;
 	var largeur = 256;
