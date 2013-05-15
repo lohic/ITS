@@ -1,4 +1,17 @@
 $(document).ready(function(){
+	/*$(function() {  
+	    $('img').each(function() {  
+	        $(this).wrap('<div class="tint"></div>');  
+	    });  
+	});*/
+
+	$('#agenda article').mouseenter(function(){
+		$('#agenda').css('height','100%');
+	});
+
+	$('#agenda article').mouseleave(function(){
+		$('#agenda').css('height','300');
+	});
 	/*gestion du slider agenda*/
 	$("#puce_1").addClass('actif');
 	$("#puce_2").addClass('actif');
