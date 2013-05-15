@@ -1,10 +1,4 @@
 $(document).ready(function(){
-	/*$(function() {  
-	    $('img').each(function() {  
-	        $(this).wrap('<div class="tint"></div>');  
-	    });  
-	});*/
-
 	$('#agenda article').mouseenter(function(){
 		$('#agenda').css('height','100%');
 	});

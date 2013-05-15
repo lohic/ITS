@@ -173,7 +173,7 @@ textarea, #form_contact2 input[type="submit"],
 	font-style:normal;
 }
 
-#sur_menu li a, #logo h1, #menu_sidebar li a, #actualites .row .col + a > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
+#sur_menu li a, #logo h1, #menu_sidebar li a, #actualites a.row > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
 .post_content .texte_image h2, .post_content .texte_image p span, #centre .newsletter input[type="submit"]{
 	font-family:"futura-pt", sans-serif;
@@ -211,7 +211,7 @@ h2.titre a{
 }
 
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > div > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
-#actualites a.col:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.col:hover span, 
+#actualites a.row:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites a.row:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *,
 #frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover{
@@ -917,7 +917,33 @@ h4.tag a{
 	width:300px;
 }
 
-#actualites a.col > *{
+/* desaturation image */
+.tint {  
+    position: relative; 
+}  
+  
+.tint:before {  
+    content: "";  
+    display: block;  
+    position: absolute;  
+    top: 0;  
+    bottom: 0;  
+    left: 0;  
+    right: 0;  
+    background: rgba(128,128,128, 0.5);  
+    -moz-transition: background .3s linear;  
+    -webkit-transition: background .3s linear;  
+    -ms-transition: background .3s linear;  
+    -o-transition: background .3s linear;  
+    transition: background .3s linear;  
+}  
+  
+#actualites a.row:hover .tint:before {  
+    background: none;  
+}
+/* fin desaturation image */
+
+#actualites a.row > *{
 	color:#000;
 }
 
@@ -937,11 +963,11 @@ h2.titre, h2.titre a{
 	margin-bottom: 2px;
 }
 
-#actualites .row .col + a > article > h4, #regards .row > article > h4{
+#actualites a.row article > h4, #regards .row > article > h4{
 	text-transform: uppercase;
 }
 
-#actualites .row .col + a > article > h4 > span:before, #regards .row > article > h4 > span:before{
+#actualites a.row > article > h4 > span:before, #regards .row > article > h4 > span:before{
 	content:'•';
 }
 
@@ -949,7 +975,7 @@ h2.titre, h2.titre a{
 	background:url('img/grand_sep.png') repeat-x left bottom;
 }
 
-#actualites a.col:hover article > div{
+#actualites a.row:hover article > div{
 	background:url('img/grand_sep_actif.png') repeat-x left bottom;
 }
 
@@ -982,7 +1008,7 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 	font-size:1.5em;
 }
 
-a.suite:hover, a.col:hover p.suite, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
+a.suite:hover, a.row:hover p.suite, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
 	background:url('img/chevron_vert.png') no-repeat left center;
 }
 

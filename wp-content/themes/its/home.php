@@ -51,11 +51,14 @@
 				<?php
 					$remontee_its = get_field('remontee_its', 'option');
 				?>
-                <div class="col">
-                	<?php echo get_the_post_thumbnail($remontee_its->ID,'remontee_its');?>
-                </div>
-                <a href="<?php echo get_permalink($remontee_its->ID);?>" class="pl3 col">
-	                <article>
+				<a href="<?php echo get_permalink($remontee_its->ID);?>" class="row">
+	                <div class="col">
+	                	<figure class="tint">
+							<?php echo get_the_post_thumbnail($remontee_its->ID,'remontee_its');?> 
+						</figure>
+	                </div>
+                
+	                <article class="col pl3">
 	                    <h3 class="very_biggest mb0 titre"><?php echo get_the_title($remontee_its->ID);?></h3>
 	                    <h4 class="normal mt0 mb1"><?php the_field('date_article', $remontee_its->ID); ?><span><?php the_field('auteur_article', $remontee_its->ID); ?></span></h4>
 	                    <div class="pb1 mb1">

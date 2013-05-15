@@ -27,6 +27,10 @@
 	<script type="text/javascript" src="<?php bloginfo( 'template_url' ); ?>/scripts/general.js"></script>
 	<?php wp_get_archives('type=monthly&format=link'); ?>
 	<?php wp_head(); ?>
+
+	<!--[if IE]>
+	  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
 </head>
 <body>
 	<div id="page">
