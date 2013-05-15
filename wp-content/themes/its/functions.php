@@ -113,7 +113,7 @@ if( ! function_exists (my_register_taxonomies)) {
 		); 
 	
 		register_taxonomy('couleur','attachment',array(
-			'hierarchical' => true,
+			'hierarchical' => false,
 			'labels' => $labels,
 			'show_ui' => true,
 			'query_var' => true,
@@ -131,7 +131,7 @@ if( ! function_exists (my_register_taxonomies)) {
 		); 
 	
 		register_taxonomy('mot_cle_image','attachment',array(
-			'hierarchical' => true,
+			'hierarchical' => false,
 			'labels' => $labels,
 			'show_ui' => true,
 			'query_var' => true,
