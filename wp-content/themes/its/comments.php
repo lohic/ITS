@@ -21,21 +21,21 @@ $oddcomment = 'alt';
 
 	<?php else : ?>
 
-		<form action="<?php echo get_option('siteurl'); ?>/wp-comments-post.php" method="post" id="commentform">
+		<form action="<?php echo get_option('siteurl'); ?>/wp-comments-post.php" method="post" id="commentform" class="smaller mb3">
 			<?php if ( $user_ID ) : ?>
 
 				<p>Connecté en tant que <a href="<?php echo get_option('siteurl'); ?>/wp-admin/profile.php"><?php echo $user_identity; ?></a>. <a href="<?php echo get_option('siteurl'); ?>/wp-login.php?action=logout" title="D&eacute;connect&eacute; de ce compte">Déconnection &raquo;</a></p>
 
 			<?php else : ?>
 
-				<p><input type="text" name="author" id="author" value="<?php echo $comment_author; ?>" size="40" tabindex="1" />
-				<label for="author"><small>Nom <?php if ($req) echo "(requis)"; ?></small></label></p>
+				<p><input type="text" name="author" id="author" value="<?php echo $comment_author; ?>" tabindex="1" />
+				<label for="author">Nom <?php if ($req) echo "(requis)"; ?></label></p>
 
-				<p><input type="text" name="email" id="email" value="<?php echo $comment_author_email; ?>" size="40" tabindex="2" />
-				<label for="email"><small>email (ne sera pas publié) <?php if ($req) echo "(requis)"; ?></small></label></p>
+				<p><input type="text" name="email" id="email" value="<?php echo $comment_author_email; ?>" tabindex="2" />
+				<label for="email">Email (ne sera pas publié) <?php if ($req) echo "(requis)"; ?></label></p>
 
-				<p><input type="text" name="url" id="url" value="<?php echo $comment_author_url; ?>" size="40" tabindex="3" />
-				<label for="url"><small>Site Web</small></label></p>
+				<p style="display:none;"><input type="text" name="url" id="url" value="<?php echo $comment_author_url; ?>" tabindex="3" />
+				<label for="url">Site Web</label></p>
 
 			<?php endif; ?>
 

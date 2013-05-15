@@ -166,7 +166,7 @@ body {
 	font-style:italic;
 }
 
-textarea, #form_contact2 input[type="submit"], 
+textarea, .with_frm_style input[type="submit"], #commentform input[type="submit"],
 #liste_images figure > div.grand_format h4, #liste_images figure > div.grand_format h5{
 	font-family:"futura-pt", sans-serif;
 	font-weight:400;
@@ -1367,6 +1367,58 @@ p.tags span.tags{
 	margin-top: 20px;
 }
 
+#commentform p{
+	margin-bottom: 15px;
+}
+
+/*.google{
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 3.5+ /
+  filter: gray; /  IE6-9 /
+  -webkit-filter: grayscale(100%); / Chrome 19+ & Safari 6+ 
+}*/
+
+#commentform textarea, #commentform input[type="text"]{
+	border:1px solid #d5d5d5;
+	background: #fcfcfc;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	color:#333;
+	font-size:1.1em;
+}
+
+#commentform label{
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+	padding-left:7px;
+}
+
+#commentform input[type="text"]{
+	height:16px;
+	width:190px;
+	padding:2px 10px;
+}
+
+#commentform textarea{
+	padding:20px 30px;
+	line-height:1.7em;
+	width: 620px;
+}
+
+#commentform input[type="submit"] {
+    background: none repeat scroll 0 0 #999999;
+    border: medium none;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-size: 15px;
+    height: auto;
+    padding: 0 3px;
+    text-align: center;
+    text-transform: uppercase;
+    width: auto;
+}
+
 #entete{
 	position:relative;
 }
@@ -1387,24 +1439,24 @@ h4.resultats{
 	font-weight: normal;
 }
 
-#form_contact2{
+.frm-show-form {
 	margin-top: 20px;
 }
 
-#frm_field_15_container, #frm_field_16_container{
+.with_frm_style .frm_form_field.freres{
 	clear: none;
     float: left;
     width: 270px;
 }
 
-#form_contact2 input[type="text"], #form_contact2 input[type="password"], #form_contact2 input[type="email"], #form_contact2 input[type="number"], 
-#form_contact2 input[type="url"], #form_contact2 input[type="tel"], #form_contact2 textarea{
+.frm-show-form input[type="text"], .frm-show-form input[type="password"], .frm-show-form input[type="email"], .frm-show-form input[type="number"], 
+.frm-show-form  input[type="url"], .frm-show-form input[type="tel"], .frm-show-form textarea{
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 }
 
-#form_contact2 input[type="email"]{
+.frm-show-form input[type="email"]{
 	width:166px;
 }
 
@@ -1412,16 +1464,17 @@ h4.resultats{
     padding-top: 2px;
 }
 
-.with_frm_style #form_contact2 textarea{
+.with_frm_style .frm-show-form textarea{
 	width:570px;
 	padding:3px 10px;
 	line-height:1.7em;
 	color:#333333;
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	font-size:1em;
+	max-width: 570px;
 }
 
-#frm_field_13_container label{
+.frm_form_fields .frm_form_field.textarea label{
 	color:#333;
 	font-family: "signikasemibold","futura-pt",Arial,sans-serif;
 }
@@ -1430,7 +1483,7 @@ h4.resultats{
     text-align: right;
 }
 
-#form_contact2 input[type="submit"]{
+.frm-show-form input[type="submit"]{
     text-transform: uppercase;	
 }
 
