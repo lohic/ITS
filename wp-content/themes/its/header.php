@@ -36,10 +36,7 @@
 	<div id="page">
 		<header>
 			<h1><a href="<?php bloginfo('url'); ?>"><span class="invisible">ITS</span></a></h1>
-			<ul id="sur_menu" class="very_smaller">
-				<li><a href="#">Appel aux documents</a></li>
-				<li><a href="#">Soutenir le fond</a></li>
-			</ul>
+			<?php wp_nav_menu( array('menu'=>'Menu Header', 'container' => 'false', 'menu_id' => 'sur_menu', 'menu_class' => 'very_smaller'));?>
 			<div id="recherche">
 		        <?php get_search_form(); ?>
 		    </div>

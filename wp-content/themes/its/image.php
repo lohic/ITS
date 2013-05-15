@@ -63,6 +63,7 @@
 		</div>
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 		<?php
+			$liste_couleurs = "";
 			$couleurs = get_the_terms( $post->ID, 'couleur' );	
 			if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
 				foreach ( $couleurs as $couleur ) {
@@ -70,14 +71,13 @@
 				}			
 			endif;
 
+			$liste_mots_cles = "";
 			$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
 			if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
 				foreach ( $mots_cles as $mot_cle ) {
 					$liste_mots_cles.='<span class="couleur">'.$mot_cle->name.'</span>';
 				}
 			endif;
-
-
 		?>
 		<article class="pb2 post" id="post-<?php the_ID(); ?>">
 			<div class="post_content image mb2 row">
@@ -88,18 +88,90 @@
 				</div>
 				<div class="col texte_image">
 					<h2 class="bigger"><?php the_title(); ?></h2>
-					<p class="small"><span class="court">Date :</span><?php the_field('date_document');?></p>
-					<p class="small"><span class="long">Type de document :</span><?php the_field('type_de_document');?></p>
-					<p class="small"><span class="court">Auteur :</span><?php the_field('auteur');?></p>
-					<p class="small"><span class="court">Couleur :</span><?php echo $liste_couleurs;?></p>
-					<p class="small"><span class="court">Mots clés :</span><?php echo $liste_mots_cles;?></p>
-					<p class="small"><span class="moyen">Dimensions :</span><?php the_field('dimensions');?></p>
-					<p class="small mb1"><span class="moyen">Poids fichier :</span><?php the_field('poids');?></p>
-					<p class="small"><span class="full">Remarques :</span><?php the_field('remarques');?></p>
+					<p class="small">
+						<span class="court">Date :</span>
+						<?php 
+							if( get_field( "date_document" ) ): 
+								the_field('date_document');
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="long">Type de document :</span>
+						<?php 
+							if( get_field( "type_de_document" ) ): 
+								the_field('type_de_document');
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="court">Auteur :</span>
+						<?php 
+							if( get_field( "auteur" ) ): 
+								the_field('auteur');
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="court">Couleur :</span>
+						<?php 
+							if( $liste_couleurs!="" ): 
+								echo $liste_couleurs;
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="court">Mots clés :</span>
+						<?php 
+							if( $liste_mots_cles!="" ): 
+								echo $liste_mots_cles;
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="moyen">Dimensions :</span>
+						<?php 
+							if( get_field( "dimensions" ) ): 
+								the_field('dimensions');
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small mb1">
+						<span class="moyen">Poids fichier :</span>
+						<?php 
+							if( get_field( "poids" ) ): 
+								the_field('poids');
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
+					<p class="small">
+						<span class="full">Remarques :</span>
+						<?php 
+							if( get_the_content() ): 
+								echo get_the_content();
+							else:
+								echo 'Pas d\'information';
+						 	endif;
+						?>
+					</p>
 				</div>
 			</div>
 			<div class="small texte_article_image">
-				<p>Vous souhaitez utiliser un document, une image, un texte ? Prenez contact avec nous afin d’en obtenir une meilleure résolution et les droits de reproduction.</p>
+				<?php the_field('texte_fixe_page_image', 'option'); ?>
 				<a href="<?php bloginfo('url'); ?>?page_id=18" class="suite mt1"><span>Contact ITS</span></a>
 			</div>
 		</article>
@@ -122,8 +194,10 @@
 							</a>
 						</div>
 						<p>
-							<?php the_field('date_document');?>, 
-							<?php
+							<?php 
+								if( get_field( "date_document" ) ): ?>
+								    <?php the_field('date_document');?>,
+							<?php endif;
 								$couleurs = get_the_terms( $post->ID, 'couleur' );
 						
 								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
@@ -150,10 +224,13 @@
 									}
 													
 									$les_mots_cles = join( ", ", $liste_mots_cles );
-									echo $les_mots_cles.', ';
+									echo $les_mots_cles;
 								endif;
 							?>
-							<?php the_field('auteur');?>
+							<?php 
+								if( get_field( "auteur" ) ): ?>
+									<?php echo ', '.get_field('auteur');?>
+							<?php endif;?>
 						</p>
 					</figure>
 				

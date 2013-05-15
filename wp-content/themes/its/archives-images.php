@@ -212,8 +212,11 @@ Template Name: Page archive d'images
 							</a>
 						</div>
 						<p>
-							<?php the_field('date_document');?>, 
-							<?php
+							<?php 
+								if( get_field( "date_document" ) ): ?>
+								    <?php the_field('date_document');?>,
+							<?php endif;
+
 								$couleurs = get_the_terms( $post->ID, 'couleur' );
 						
 								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
@@ -240,17 +243,32 @@ Template Name: Page archive d'images
 									}
 													
 									$les_mots_cles = join( ", ", $liste_mots_cles );
-									echo $les_mots_cles.', ';
+									echo $les_mots_cles;
 								endif;
 							?>
-							<?php the_field('auteur');?>
+							<?php 
+								if( get_field( "auteur" ) ): ?>
+									<?php echo ', '.get_field('auteur');?>
+							<?php endif;?>
+							
 						</p>
 						<div class="grand_format">
 							<?php
 								echo wp_get_attachment_image( $post->ID, 'iconographie' );
 							?>
 							<h4 class="little_small"><?php the_title();?></h4>
-							<h5 class="little_small"><span><?php the_field('date_document');?></span><?php the_field('auteur');?></h5>
+							<h5 class="little_small">
+								<span>
+									<?php 
+										if( get_field( "date_document" ) ): ?>
+										    <?php the_field('date_document');?>
+									<?php endif;?>
+								</span>
+								<?php 
+									if( get_field( "auteur" ) ): ?>
+										<?php the_field('auteur');?>
+								<?php endif;?>
+							</h5>
 						</div>
 					</figure>
 				<?php endwhile;

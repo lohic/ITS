@@ -94,16 +94,15 @@
 				if( $my_query->have_posts() ) {
 					while ($my_query->have_posts()) : $my_query->the_post(); ?>
 				<?php 
-						$liste_tags = "";
-						$tags = get_the_tags();
-						foreach ($tags as $tag){
-							$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
+						$organisations = "";
+						$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
+						if($organisations==""){
+							$organisations="Institut Tribune Socialiste";
 						}
-						$liste_tags = substr($liste_tags, 0, -2);
 				?>
 						<article class="pt2 pb2 post_archive biographie" id="post-<?php the_ID(); ?>">
 							<h2 class="little_very_biggest mb0 titre"><?php the_field('prenom'); ?> <?php the_title(); ?></h2>
-							<h4 class="smaller tag"><span></span><?php echo $liste_tags; ?></h4>
+							<h4 class="smaller tag"><span></span><?php echo $organisations; ?></h4>
 							<div class="post_content small biographie">
 								<div>
 									<?php the_content(); ?>
