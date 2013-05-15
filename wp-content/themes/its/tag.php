@@ -6,9 +6,9 @@
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-			<h1 class="very_biggest mb4"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
+			<!--<h1 class="very_biggest mb4"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
 						
-			<!--<section id="sous_categories" class="small mb2 pt1 pb1">
+			<section id="sous_categories" class="small mb2 pt1 pb1">
 				<ul>
 					<li class="pl3"><a href="#">L'Enseignement</a></li>
 					<li class="pl3"><a href="#">L'Agriculture</a></li>

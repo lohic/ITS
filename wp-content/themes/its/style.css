@@ -218,6 +218,13 @@ h2.titre a{
 	color:#188e7c;
 }
 
+#menus li.current-menu-item > a, #menus #menu_secondaire li.current-menu-item > a, #menu_sidebar li.current-menu-item a, #nuage_sidebar a.actif,
+#agenda article > h3, h3.titre, h2.titre, h2.titre a, a.suite, #meme_theme li, li.telechargement, p.suite, a.suite span, #meme_theme li a, 
+li.telechargement a, p.suite span, #entete h1, #entete h1 a, #frise ul > li.actif a, #sous_categories > ul > li > a.actif, 
+#filtres > div.conteneur > section li.actif{
+	color:#ff3333;
+}
+
 article.post_archive.resume:hover h4.tag span{
 	background:#188e7c;
 }
@@ -552,10 +559,6 @@ header > h1 > a{
 	z-index:2;
 }
 
-#menus li.current-menu-item > a, #menus #menu_secondaire li.current-menu-item > a{
-	color:#ff3333;
-}
-
 #menus #menu_secondaire a{
 	color:#bbb;
 }
@@ -620,10 +623,6 @@ header > h1 > a{
     font-weight: 500;
     padding-right: 7px;
     margin-right: -4px;
-}
-
-#nuage_sidebar a.actif{
-	color:#ff3333;
 }
 
 aside section h3 {
@@ -797,7 +796,6 @@ h4.tag a{
 }
 
 #agenda article > h3{
-	color:#ff3333;
 	text-transform: uppercase;
 	margin-bottom:3px;
 }
@@ -949,7 +947,6 @@ h4.tag a{
 
 h3.titre, h2.titre, h2.titre a{
 	text-transform: uppercase;
-	color:#ff3333;
 	margin-bottom:2px;
 	margin-top:-5px;
 }
@@ -993,7 +990,6 @@ h2.titre, h2.titre a{
 }
 
 a.suite, #meme_theme li, li.telechargement, p.suite{
-	color:#FF3333;
 	background:url('img/chevron_rouge.png') no-repeat left center;
 	padding-left:12px;
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
@@ -1001,7 +997,6 @@ a.suite, #meme_theme li, li.telechargement, p.suite{
 
 a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 	text-decoration: underline;
-	color:#FF3333;
 }
 
 .post_archive li.telechargement a{
@@ -1173,13 +1168,11 @@ p.tags span.tags{
 }
 
 #entete h1{
-	color:#FF3333;
 	text-transform: uppercase;
 }
 
 #entete h1 a{
 	border-bottom: 10px solid #FF3333;
-    color: #FF3333;
     display: inline-block;
     letter-spacing: 0.025em;
     padding-bottom: 2px;
@@ -1248,10 +1241,6 @@ p.tags span.tags{
 	display: inline-block;
 }
 
-#frise ul > li.actif a{
-	color:#ff3333;
-}
-
 #frise.biographie ul > li{
 	padding-right: 15px;
 }
@@ -1296,10 +1285,6 @@ p.tags span.tags{
 
 #sous_categories > ul > li > a{
 	color:#666;
-}
-
-#sous_categories > ul > li > a.actif{
-	color:#FF3333;
 }
 
 .pagination{
@@ -1456,15 +1441,15 @@ h4.resultats{
 	border-radius: 3px;
 }
 
-.frm-show-form input[type="email"]{
+.post_content .with_frm_style .frm-show-form input[type="email"]{
 	width:166px;
 }
 
-.with_frm_style .frm_left_container label.frm_primary_label {
+.post_content .with_frm_style .frm_left_container label.frm_primary_label {
     padding-top: 2px;
 }
 
-.with_frm_style .frm-show-form textarea{
+.post_content .with_frm_style .frm-show-form textarea{
 	width:570px;
 	padding:3px 10px;
 	line-height:1.7em;
@@ -1474,16 +1459,16 @@ h4.resultats{
 	max-width: 570px;
 }
 
-.frm_form_fields .frm_form_field.textarea label{
+.post_content .frm_form_fields .frm_form_field.textarea label{
 	color:#333;
 	font-family: "signikasemibold","futura-pt",Arial,sans-serif;
 }
 
-.with_frm_style p.submit {
+.post_content .with_frm_style p.submit {
     text-align: right;
 }
 
-.frm-show-form input[type="submit"]{
+.post_content .frm-show-form input[type="submit"]{
     text-transform: uppercase;	
 }
 
@@ -1504,10 +1489,13 @@ h4.resultats{
 }
 
 #liste_images figure > div.miniature, #meme_theme figure > div.miniature{
-	width: 124px;
-	height: 124px;
-	background: #f3f3f3;
-	margin-bottom: 5px;
+	background: none repeat scroll 0 0 #F3F3F3;
+    display: table-cell;
+    height: 124px;
+    margin-bottom: 5px;
+    text-align: center;
+    vertical-align: middle;
+    width: 124px;
 }
 
 #liste_images figure > div.miniature img, #meme_theme figure > div.miniature img{
@@ -1595,10 +1583,6 @@ h4.resultats{
 #filtres > div.conteneur > section li{
 	display:inline-block;
 	margin-right: 7px;
-}
-
-#filtres > div.conteneur > section li.actif{
-	color:#ff3333;
 }
 
 #filtres > div.conteneur > section li a{

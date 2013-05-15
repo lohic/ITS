@@ -15,8 +15,9 @@
 					$lachaine.=urldecode($query_split[1])." ";
 				}
 			?>
-			<h4 class="resultats smaller mb1">Résultat(s) de recherche pour :</h4> 
+			<!--<h4 class="resultats smaller mb1">Résultat(s) de recherche pour :</h4> 
 			<h1 class="very_biggest mb2"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php echo $lachaine;?></a></h1>
+			-->
 			<?php if ( have_posts() ) : 	
 				global $wp_query;
 				$total_results = $wp_query->found_posts;

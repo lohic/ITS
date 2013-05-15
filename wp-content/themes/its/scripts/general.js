@@ -1,7 +1,7 @@
 $(document).ready(function(){
-	if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
+	/*if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
 		$('#filtres > div.conteneur').css('display','block');
-	}
+	}*/
 	/*gestion des commentaires*/
 	$('h3#respond').click(function(){
 		$('#commentform').toggle();
@@ -18,26 +18,13 @@ $(document).ready(function(){
 		$('#comments').toggle();
 		$(this).toggle();
 	});
+	/*Fin de la gestion des commentaires*/
 
-	$('#filtres p.filtre').click(function(){
+	$('#filtres').mouseenter(function(){
 		$('#filtres > .conteneur').toggle();
 	});
 
-	$('#liste_images figure .miniature img').each(function(){
-		var margeLeft = (124-$(this).width())/2;
-		$(this).css('marginLeft',margeLeft);
-
-		var margeTop = (124-$(this).height())/2;
-		$(this).css('marginTop',margeTop);
+	$('#filtres').mouseleave(function(){
+		$('#filtres > .conteneur').toggle();
 	});
-
-	$('#meme_theme figure .miniature img').each(function(){
-		var margeLeft = (124-$(this).width())/2;
-		$(this).css('marginLeft',margeLeft);
-
-		var margeTop = (124-$(this).height())/2;
-		$(this).css('marginTop',margeTop);
-	});
-	/*Fin de la gestion des commentaires*/
-	
 });
