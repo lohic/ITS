@@ -101,10 +101,12 @@
 				<ul>
 		<?php
 				$categories = get_field('categories_liees','organisation_'.$idObj->term_id);
-				foreach ($categories as $categorie){
+				if($categories){
+					foreach ($categories as $categorie){
 		?>
 					<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
 		<?php
+					}
 				}
 		?>
 				</ul>
