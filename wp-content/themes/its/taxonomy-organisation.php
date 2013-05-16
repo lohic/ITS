@@ -114,11 +114,13 @@
 			<section class="pagination smaller mb2">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+					$idObj = get_category_by_slug('agenda'); 
+					
 					if(isset($_GET['annee'])){
-						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>'52', 'paged' => $paged));
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
 					}
 					else{
-						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>'1960', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>'52', 'paged' => $paged));
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>'1960', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
 					}
 
 					$big = 99999999; // need an unlikely integer

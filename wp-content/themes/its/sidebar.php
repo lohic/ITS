@@ -3,15 +3,18 @@
 
     <section id="nuage_sidebar" class="small mb3">
     	<?php 
-    		$categories = get_categories( array('parent'=>'50', 'hide_empty'=>'0') ); 
+            $idObj = get_category_by_slug('categories-meres'); 
+    		$categories = get_categories( array('parent'=>$idObj->term_id) ); 
             $categories_meres = get_ancestors( get_query_var('cat'), 'category' );
             $catMere = get_category($categories_meres[0]);
             $catEnCours = get_category(get_query_var('cat'));
-    		foreach ($categories as $categorie){
+            if($categories){
+                foreach ($categories as $categorie){
     	?>
-				<a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($catMere->slug==$categorie->slug || $categorie->slug==$catEnCours->slug ){echo ' class="actif"';}?>><?php echo $categorie->name;?></a>&nbsp;
+				    <a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($catMere->slug==$categorie->slug || $categorie->slug==$catEnCours->slug ){echo ' class="actif"';}?>><?php echo $categorie->name;?></a>&nbsp;
     	<?php
-    		}
+                }
+            }
     	?>
     </section>
 

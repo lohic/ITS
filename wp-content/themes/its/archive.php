@@ -7,7 +7,11 @@
 		?>
 		<?php 
 			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-			$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>'-51,-52', 'posts_per_page' => 1, 'paged' => $paged));
+
+			$idObj = get_category_by_slug('agenda'); 
+    		$idObj = '-'.$idObj->term_id;
+
+			$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>$idObj, 'posts_per_page' => 1, 'paged' => $paged));
 
 			$big = 99999999; // need an unlikely integer
 		?>
