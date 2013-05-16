@@ -195,10 +195,14 @@
 						</div>
 						<p>
 							<?php 
-								if( get_field( "date_document" ) ): ?>
-								    <?php the_field('date_document');?>,
-							<?php endif;
 								$couleurs = get_the_terms( $post->ID, 'couleur' );
+								$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+								$phrase = array();
+
+								if( get_field( "date_document" ) ): 
+									$phrase[] = get_field('date_document');
+								endif;
+								
 						
 								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
 
@@ -209,11 +213,10 @@
 									}
 													
 									$les_couleurs = join( ", ", $liste_couleurs );
-									echo $les_couleurs.', ';
+									$phrase[] = $les_couleurs;
 								endif;
-							?>
-							<?php 
-								$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+						
+								
 						
 								if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
 
@@ -224,13 +227,16 @@
 									}
 													
 									$les_mots_cles = join( ", ", $liste_mots_cles );
-									echo $les_mots_cles;
+									$phrase[] = $les_mots_cles;
 								endif;
+							
+								if( get_field( "auteur" ) ): 
+									$phrase[] = get_field('auteur');
+								endif;
+
+								$laphrase = join(", ", $phrase);
+								echo $laphrase;
 							?>
-							<?php 
-								if( get_field( "auteur" ) ): ?>
-									<?php echo ', '.get_field('auteur');?>
-							<?php endif;?>
 						</p>
 					</figure>
 				
