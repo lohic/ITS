@@ -21,10 +21,10 @@ $(document).ready(function(){
 	/*Fin de la gestion des commentaires*/
 
 	$('#filtres').mouseenter(function(){
-		$('#filtres > .conteneur').toggle();
+		$('#filtres > .conteneur').toggle('fast');
 	});
 
 	$('#filtres').mouseleave(function(){
-		$('#filtres > .conteneur').toggle();
+		$('#filtres > .conteneur').toggle('fast');
 	});
 });

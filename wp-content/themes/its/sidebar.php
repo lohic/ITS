@@ -18,20 +18,59 @@
     	?>
     </section>
 
-    <ul>
-        <?php dynamic_sidebar( 'Sidebar' ); ?>
-        <?php /*if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar() ) : ?> 
-        <?php endif; */?>
-    </ul>
 
-    <!--<section id="soutien" class="mb3">
-        <h3 class="small mb1"><a href="#"><span>Soutenez l'ITS!</span></a></h3>
-        <p class="smaller">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <!--<section class="mb3 sidebar">
+        <h3 class="small"><span>La lettre de l'ITS</span></h3>
+        <a class="suite small"><span>Consultez les archives</span></a>
+        <p class="small">Abonnez vous en entrant votre email ci-dessous : </p>
+        <form id="searchform" action="http://localhost:8888/ITS/" method="get">
+            <div>
+                <input id="email" type="text" onfocus="javascript:this.value=''" name="email" value="Votre email">
+                <input id="searchsubmit" type="submit" value="OK">
+            </div>
+        </form>
     </section>
 
-    <section id="slider" class="mb3">
-        <h3 class="small"><a href="#"><span>Accédez</span><br/><span>au fond d'images</span></a></h3>
-        <p class="very_smaller">Laïcité, éducation</p>
+    <section class="mb3 sidebar">
+        <h3 class="small"><span>Le livre</span></h3>
+        <img src="<?php bloginfo( 'template_url' ); ?>/img/livre.png" alt="livre" class=""/>
+        <p class="small">Cet ouvrage n’est pas seulement une réaction à l’occultation fréquente par 
+            les médias du rôle du PSU et des ESU du rôle dans les luttes politiques des années 60...</p>
+        <a class="suite small"><span>Lire la suite</span></a>
+    </section>
+
+    <section class="mb3 sidebar">
+        <h3 class="mb1 small"><span>Soutenez l'ITS!</span></h3>
+        <p class="small">Pour soutenir notre action, vous pouvez faire un don à l’ITS :</p>
+        <a class="suite small"><span>Telecharger le bon de soutien</span></a>
+    </section>
+
+    <section class="mb3 sidebar">
+        <h3 class="small"><span>Contribuez au fonds</span></h3>
+        <p class="small">Vous avez des documents originaux (tracts, discours, analyses…), vous souhaitez participer 
+            à l’enrichissement de ce site et faire part au plus grand nombre de l’engagement des 
+            étudiants  de 1960 à 1971.</p>
+        <a class="suite small"><span>Faites-nous parvenir vos documents</span></a>
+    </section>
+
+    <section class="mb3 sidebar">
+        <ul class="slider">
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li class="actif"><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+            <li><a href="#"></a></li>
+        </ul>
         <img src="<?php bloginfo( 'template_url' ); ?>/img/petit_visuel.png" alt="image"/>
+        <p class="smaller">Légende pour l'image</p>
+        <a class="suite small"><span>Consulez le fonds d'affiches</span></a>
     </section>-->
+
+    
+    <?php dynamic_sidebar( 'Sidebar' ); ?>
+    <?php /*if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar() ) : ?> 
+    <?php endif; */?>
+    
+    
 </aside>

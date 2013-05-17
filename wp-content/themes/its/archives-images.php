@@ -12,7 +12,7 @@ Template Name: Page archive d'images
 		?>
 		<div id="entete">
 			<h1 class="little_very_biggest sans mb4"><?php the_title(); ?></h1>
-			<section id="filtres" class="">
+			<section id="filtres" class="affiches">
 				<div class="">
 					<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
 					<ul id="filtres_actifs" class="small">
@@ -23,6 +23,8 @@ Template Name: Page archive d'images
 								$params_annees=array();
 								foreach($_GET['annees'] as $annee){
 									$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
+									$new_url = str_replace ( 'annees[]='.$annee.'&' , '' , $new_url);
+									$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$annee.'</a></li>';
 									$params_annees[]=$annee;
 								}
@@ -33,6 +35,8 @@ Template Name: Page archive d'images
 								$params_types=array();
 								foreach($_GET['types'] as $type){
 									$new_url = str_replace ( '&types[]='.$type , '' , $_SERVER['REQUEST_URI']);
+									$new_url = str_replace ( 'types[]='.$type.'&' , '' , $new_url);
+									$new_url = str_replace ( '?types[]='.$type , '' , $new_url);
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$type.'</a></li>';
 									$params_types[]=$type;
 								}
@@ -43,6 +47,8 @@ Template Name: Page archive d'images
 								$params_auteurs=array();
 								foreach($_GET['auteurs'] as $auteur){
 									$new_url = str_replace ( '&auteurs[]='.$auteur , '' , $_SERVER['REQUEST_URI']);
+									$new_url = str_replace ( 'auteurs[]='.$auteur.'&' , '' , $new_url);
+									$new_url = str_replace ( '?auteurs[]='.$auteur , '' , $new_url);									
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$auteur.'</a></li>';
 									$params_auteurs[]=$auteur;
 								}
@@ -53,6 +59,8 @@ Template Name: Page archive d'images
 								$params_couleurs=array();
 								foreach($_GET['couleurs'] as $couleur){
 									$new_url = str_replace ( '&couleurs[]='.$couleur , '' , $_SERVER['REQUEST_URI']);
+									$new_url = str_replace ( 'couleurs[]='.$couleur.'&' , '' , $new_url);
+									$new_url = str_replace ( '?couleurs[]='.$couleur , '' , $new_url);																		
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$couleur.'</a></li>';
 									$params_couleurs[]=$couleur;
 								}
@@ -63,6 +71,8 @@ Template Name: Page archive d'images
 								$params_mots=array();
 								foreach($_GET['mots_cles'] as $mot_cle){
 									$new_url = str_replace ( '&mots_cles[]='.$mot_cle , '' , $_SERVER['REQUEST_URI']);
+									$new_url = str_replace ( 'mots_cles[]='.$mot_cle.'&' , '' , $new_url);
+									$new_url = str_replace ( '?mots_cles[]='.$mot_cle , '' , $new_url);																		
 									echo '<li class="mr1"><a href="http://'.$_SERVER['HTTP_HOST'].$new_url.'">'.$mot_cle.'</a></li>';
 									$params_mots[]=$mot_cle;
 								}
@@ -79,13 +89,19 @@ Template Name: Page archive d'images
 						<div class="col">
 							<ul>
 							<?php
+								if(!preg_match('/\?/',$_SERVER['REQUEST_URI'])){
+									$caractere = "?";
+								}
+								else{
+									$caractere = "&amp;";
+								}
 								$annees = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'date_document' ORDER BY meta_value" );
 								foreach($annees as $annee){
 									if(in_array($annee,$_GET['annees'])){
 										echo '<li class="actif">'.$annee.'</li>';
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;annees[]='.$annee.'">'.$annee.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
 									}
 								}
 							?>
@@ -105,7 +121,7 @@ Template Name: Page archive d'images
 										echo '<li class="actif">'.$type_document.'</li>';
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;types[]='.$type_document.'">'.$type_document.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
 									}
 								}
 							?>
@@ -125,7 +141,7 @@ Template Name: Page archive d'images
 										echo '<li class="actif">'.$auteur.'</li>';
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
 									}
 								}
 							?>
@@ -146,7 +162,7 @@ Template Name: Page archive d'images
 									echo '<li class="actif">'.$couleur->name.'</li>';
 								}
 								else{
-									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
 								}
 							}
 							?>
@@ -167,7 +183,7 @@ Template Name: Page archive d'images
 									echo '<li class="actif">'.$mot->name.'</li>';
 								}
 								else{
-									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'&amp;mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
 								}
 							}
 							?>
@@ -179,7 +195,7 @@ Template Name: Page archive d'images
 				</div>
 			</section>
 
-			<section class="pagination smaller mb2 mt4">
+			<section class="pagination smaller mb2 mt4 affiches">
 				<?php
 					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));

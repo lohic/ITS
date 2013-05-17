@@ -23,7 +23,7 @@
 						asort($lesAnnees);
 						foreach($lesAnnees as $annee){
 					?>
-							<li><a href="<?php bloginfo('url'); ?>?cat=<?php echo $laCat;?>&amp;annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
+							<li><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
 					<?php	
 						}
 					?>
