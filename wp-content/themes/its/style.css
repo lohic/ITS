@@ -181,7 +181,7 @@ textarea, .with_frm_style input[type="submit"], #commentform input[type="submit"
 	font-style:normal;
 }
 
-aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise .conteneur_annees + a,
+aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise ul + a,
 #frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, aside section h3 > span{
 	font-family:"futura-pt", sans-serif;
 	font-weight:500;
@@ -870,14 +870,10 @@ h4.tag a{
 #navigation_curseur.large{
 	border-top: 3px solid #EDEDED;
     padding-top: 20px;
-    display: none;
-    position: absolute;
-    right: 3px;
-    top: 0;
-}
-
-#navigation_curseur.large.sans{
-	border-top: none;
+    position: relative;
+    right: inherit;
+    top: inherit;
+    width: 680px;
 }
 
 #navigation_curseur li{
@@ -942,7 +938,7 @@ h4.tag a{
 #navigation_curseur li#curseur_large{
 	left: 13px;
     top: 18px;
-    width: 172px;
+    width: 256px;
 }
 
 #relatif_tag{
@@ -1249,7 +1245,6 @@ p.tags span.tags{
 
 #frise{
 	width:650px;
-	position:relative;
 }
 
 #frise.large{
@@ -1266,7 +1261,6 @@ p.tags span.tags{
 
 #frise ul.categorie{
 	padding-top: 10px;
-	width:3000px;
 }
 
 #frise.large ul {
@@ -1283,16 +1277,11 @@ p.tags span.tags{
 	padding-right: 17px;
 }
 
-#frise .conteneur_annees + a{
+#frise ul.categorie + a{
 	display: block;
-    position: absolute;
-    right: 30px;
-    top: 10px;
-}
-
-#frise .conteneur_annees{
-	width:450px;
-	overflow: hidden;
+    float: right;
+    margin-right: 30px;
+    margin-top: 10px;
 }
 
 #frise.large ul > li{
@@ -1307,7 +1296,7 @@ p.tags span.tags{
 	padding-right: 15px;
 }
 
-#frise .conteneur_annees + a{
+#frise ul + a{
 	background: url("img/puce_sidebar.png") no-repeat scroll left center transparent;
     padding-left: 20px;
     color:#333;

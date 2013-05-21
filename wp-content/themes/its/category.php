@@ -5,45 +5,29 @@
     	<?php 
     		if (function_exists('mybread')) mybread();
 		?>
-		<div id="entete" class="pt2">
+		<div id="entete">
 			<!--<h1 class="very_biggest"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>-->
-			<ul id="navigation_curseur" class="large mb1 sans">
-        		<li id="curseur_large"></li>
-				<li class="precedent_tag"></li>
-			<?php
-				$laCat = get_query_var('cat');
-				$lesAnnees = array();
-				$i=1;
-				$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'posts_per_page'=>-1));
-				while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
-					$ladate = the_date('Y', '', '',FALSE);
-					if(!in_array($ladate,$lesAnnees) && $ladate!=""){
-
-						$lesAnnees[]=$ladate;
-			?>
-						<li id="puce-tag_<?php echo $i;?>" class="puce-tag"></li>
-			<?php
-						$i++;
-					}
-				endwhile;
-				wp_reset_postdata();					
-			?>
-				<li class="suivant_tag"></li>
-        	</ul>
-
 			<section id="frise" class="normal mt2 mb1 pl3">
-				<div class="conteneur_annees">
-					<ul class="categorie">
-						<?php
-							asort($lesAnnees);
-							foreach($lesAnnees as $annee){
-						?>
-								<li><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
-						<?php	
+				<ul class="categorie">
+					<?php
+						$laCat = get_query_var('cat');
+						$lesAnnees = array();
+						$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'posts_per_page'=>-1));
+						while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
+							$ladate = the_date('Y', '', '',FALSE);
+							if(!in_array($ladate,$lesAnnees)){
+								$lesAnnees[]=$ladate;
 							}
-						?>
-					</ul>
-				</div>
+						endwhile;
+						wp_reset_postdata();
+						asort($lesAnnees);
+						foreach($lesAnnees as $annee){
+					?>
+							<li><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
+					<?php	
+						}
+					?>
+				</ul>
 				<a href="#">Regards d'aujourd'hui</a>
 			</section>
 			
