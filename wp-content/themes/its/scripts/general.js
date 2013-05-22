@@ -33,17 +33,22 @@ $(document).ready(function(){
 	}
 
 	/*gestion du slider pages categories et organisations*/
-	var position_curseur = 9;
-	var deplacement = 450;
-	var largeur = 172;
+	var deplacement = 464; //valeur en pixels du déplacement de la frise date à chaque clic sur precedent ou suivant
+	var pointeur = 1; //variable qui récupère l'index de l'année en cours
+
+	var position = 1; //variable qui gère la position du curseur (début des puces blanches)
+	var borne = 8; //borne pour rendre les puces actives (blanches)
+	var max = Math.floor($('.conteneur_annees li').length/8)*8+1; //borne maximum de la position du curseur
+	var largeur = new Array(23,44,65,86,107.5,129,150.5,172); //stocke les différentes largeurs utiles pour le curseur
+	var arrondi_haut = 0; 
+	var arrondi_bas = 0;
+	var multiplicateur = 0;
 	
 	var premier = $('.conteneur_annees li:first-child a').html();
 
+
 	if ($.url().param('annee')===undefined || $.url().param('annee')==premier){
-		var position = 1;
-		var new_position = 1;
-		var borne = 8;
-		var largeur = 172;
+		
 		$('#annee_'+premier).addClass('actif');
 		$('#puce-tag_1').addClass('super_actif');
 
@@ -52,104 +57,102 @@ $(document).ready(function(){
 		}
 	}
 	else{
-		/*$('#annee_'+$.url().param('annee')).addClass('actif');
-		$('#puce-tag_'+$.url().param('annee')).addClass('super_actif');
-		var borne_min = parseInt($.url().param('annee'))+1;
-		if($.url().param('annee')>1960 && $.url().param('annee')<=1971){
-			var position = 1960;
-			var new_position = 1960;
-			var borne = 1971;
-			for(var i=1960; i<$.url().param('annee'); i++){
-				$('#puce-tag_'+i).addClass('actif');
+		$('.span-tag').each(function(){
+			if($.url().param('annee')==$(this).html()){
+				var tableau_id=$(this).attr("id").split('_');
+				pointeur = parseInt(tableau_id[1]);
 			}
-			for(var j=borne_min; j<=1971; j++){
-				$('#puce-tag_'+j).addClass('actif');
-			}
+		});
+
+		$('#annee_'+$.url().param('annee')).addClass('actif');
+		$('#puce-tag_'+pointeur).addClass('super_actif');
+
+		//On détermine les position de début et de fin du secteur
+
+		arrondi_haut = Math.ceil(pointeur / 8);
+		arrondi_bas = Math.floor(pointeur / 8);
+		multiplicateur = arrondi_bas;
+		position = (arrondi_haut*8)-7;
+
+		if((arrondi_haut*8)>$('.conteneur_annees li').length){
+			borne = ((arrondi_bas)*8)+($('.conteneur_annees li').length%8);
+			//calcul de la longueur du curseur selon le reste de la division du nombre de puces par 8 (taille max du curseur)
+			$('#curseur_large').css('width',largeur[($('.conteneur_annees li').length%8)-1]);
 		}
-		if($.url().param('annee')>=1972 && $.url().param('annee')<=1983){
-			var position = 1972;
-			var new_position = 1972;
-			var borne = 1983;
-			for(var i=1972; i<$.url().param('annee'); i++){
-				$('#puce-tag_'+i).addClass('actif');
-			}
-			for(var j=borne_min; j<=1983; j++){
-				$('#puce-tag_'+j).addClass('actif');
-			}
-			$("#curseur_large").css('left',264);
-			$('#frise.large ul').css('left',-672);
+		else{
+			borne = arrondi_haut*8;
+			$('#curseur_large').css('width',172);
 		}
-		if($.url().param('annee')>=1984 && $.url().param('annee')<=1990){
-			var position = 1984;
-			var new_position = 1984;
-			var borne = 1990;
-			for(var i=1984; i<$.url().param('annee'); i++){
-				$('#puce-tag_'+i).addClass('actif');
-			}
-			for(var j=borne_min; j<=1990; j++){
-				$('#puce-tag_'+j).addClass('actif');
-			}
-			$("#curseur_large").css('left',515);
-			$('#frise.large ul').css('left',-1344);
-			$("#curseur_large").css('width',152);
-		}*/
+		
+		for(var i=position; i<=borne; i++){
+			$('#puce-tag_'+i).addClass('actif');
+		}
+
+		//pour déterminer le multiplicateur (différent selon si on a un multiple de 8 ou non)
+		if(pointeur%8 == 0){
+			multiplicateur = arrondi_bas-1;
+		}
+
+		//position du curseur
+		$('#curseur_large').css('left', (168*multiplicateur)+13);
+
+		//position frise dates
+		$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
 	}
 	
 	
 	$('.precedent_tag').click(function(){
-		if(position==1972){
-			new_position=1960;
-			borne = 1971;
-			position_curseur = 13;
-		}
-		if(position==1984){
-			new_position=1972;
-			borne = 1983;
-			position_curseur = 264;
-			largeur = 256;
-		}
-		if(new_position!=position){
+		if(position!=1){
 			$('.puce-tag').removeClass('actif');
-			for(var i=new_position; i<=borne; i++){
+			$('#curseur_large').css('width',172);
+			position = position-8;
+			arrondi_haut = Math.ceil(position / 8);
+			arrondi_bas = Math.floor(position / 8);
+			multiplicateur = arrondi_bas;
+
+			borne = arrondi_haut*8;
+			
+			for(var i=position; i<=borne; i++){
 				$('#puce-tag_'+i).addClass('actif');
 			}
-			$("#curseur_large").css('left',position_curseur);
-			$("#curseur_large").css('width',largeur);
 
-			var laPositionBis = $('#frise.large ul').position();
-			laPositionBis = laPositionBis.left + (deplacement);
-			$('#frise.large ul').css('left',laPositionBis);
+			//position du curseur
+			$('#curseur_large').css('left', (168*multiplicateur)+13);
+
+			//position frise dates
+			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
 		}
-
-		position=new_position;
 	});
 
 	$('.suivant_tag').click(function(){
-		if(position==1960){
-			new_position=1972;
-			borne = 1983;
-			position_curseur = 264;
-		}
-		if(position==1972){
-			new_position=1984;
-			borne = 1990;
-			position_curseur = 515;
-			largeur = 152;
-		}
-		if(new_position!=position){
+		if(position!=max){
 			$('.puce-tag').removeClass('actif');
-			for(var i=new_position; i<=borne; i++){
+
+			position = position+8;
+			arrondi_haut = Math.ceil(position / 8);
+			arrondi_bas = Math.floor(position / 8);
+			multiplicateur = arrondi_bas;
+
+			if((arrondi_haut*8)>$('.conteneur_annees li').length){
+				borne = ((arrondi_bas)*8)+($('.conteneur_annees li').length%8);
+				//calcul de la longueur du curseur selon le reste de la division du nombre de puces par 8 (taille max du curseur)
+				$('#curseur_large').css('width',largeur[($('.conteneur_annees li').length%8)-1]);
+			}
+			else{
+				borne = arrondi_haut*8;
+				$('#curseur_large').css('width',172);
+			}
+
+			for(var i=position; i<=borne; i++){
 				$('#puce-tag_'+i).addClass('actif');
 			}
-			$("#curseur_large").css('left',position_curseur);
-			$("#curseur_large").css('width',largeur);
 
-			var laPositionBis = $('#frise.large ul').position();
-			laPositionBis = laPositionBis.left - (deplacement);
-			$('#frise.large ul').css('left',laPositionBis);
+			//position du curseur
+			$('#curseur_large').css('left', (168*multiplicateur)+13);
+
+			//position frise dates
+			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
 		}
-
-		position=new_position;
 	});
 	
 });

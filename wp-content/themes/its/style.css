@@ -869,11 +869,14 @@ h4.tag a{
 
 #navigation_curseur.large{
 	border-top: 3px solid #EDEDED;
-    padding-top: 20px;
     display: none;
     position: absolute;
     right: 3px;
     top: 0;
+}
+
+#navigation_curseur.large.organisation{
+	top:10px;
 }
 
 #navigation_curseur.large.sans{
@@ -941,7 +944,7 @@ h4.tag a{
 
 #navigation_curseur li#curseur_large{
 	left: 13px;
-    top: 18px;
+    top: -2px;
     width: 172px;
 }
 
@@ -1459,7 +1462,7 @@ p.tags span.tags{
     width: auto;
 }
 
-#entete{
+#entete, #entete > div.conteneur{
 	position:relative;
 }
 
