@@ -52,10 +52,10 @@
 					$les_categories = get_ancestors( get_query_var('cat'), 'category' );
 					$thisCat = get_category($les_categories[0]);
 					if($thisCat->slug=="categories-meres"){
-						$categories = get_categories( array('parent'=>get_query_var('cat'), 'hide_empty'=>'0')); 
+						$categories = get_categories( array('parent'=>get_query_var('cat'))); 
 					}
 					else{
-						$categories = get_categories( array('parent'=>$les_categories[0], 'hide_empty'=>'0'));
+						$categories = get_categories( array('parent'=>$les_categories[0]));
 					}
 
 					if(!empty($categories)){

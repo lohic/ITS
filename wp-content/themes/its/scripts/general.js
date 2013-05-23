@@ -154,5 +154,23 @@ $(document).ready(function(){
 			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
 		}
 	});
+	/* Fin de la gestion du slider*/
+
+	/*AJAX sur iconographie*/
+	$('#filtre_date li > a').click(function(e){
+		$.post(
+		   ajaxurl, 
+		   {
+			  'action':'get_images_listing',
+			  'data':'Ça marche',
+		   }, 
+		   function(response){
+			  $('#container').html(response);
+		   }
+		);
+
+		e.preventDefault();
+	});
+
 	
 });

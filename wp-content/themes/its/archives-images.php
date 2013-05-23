@@ -214,100 +214,102 @@ Template Name: Page archive d'images
 			</section>
 		</div>
 		
-		<section id="liste_images">
-			<?php
-				$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-	        	while( $my_query->have_posts() ) : $my_query->the_post();
-	        ?>
-					<figure class="mb1">
-						<div class="miniature">
-							<a href="<?php echo $new_url.'&amp;attachment_id='.$post->ID;?>">
+		<div id="container">
+			<section id="liste_images">
+				<?php
+					$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		        	while( $my_query->have_posts() ) : $my_query->the_post();
+		        ?>
+						<figure class="mb1">
+							<div class="miniature">
+								<a href="<?php echo $new_url.'?attachment_id='.$post->ID;?>">
+									<?php
+										echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
+									?>
+								</a>
+							</div>
+							<p>
 								<?php
-									echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
+									$couleurs = get_the_terms( $post->ID, 'couleur' );
+									$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+									$phrase = array();
+
+									if( get_field( "date_document" ) ): 
+										$phrase[] = get_field('date_document');
+									endif;
+									
+							
+									if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
+
+										$liste_couleurs = array();
+
+										foreach ( $couleurs as $couleur ) {
+											$liste_couleurs[] = $couleur->name;
+										}
+														
+										$les_couleurs = join( ", ", $liste_couleurs );
+										$phrase[] = $les_couleurs;
+									endif;
+							
+									
+							
+									if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
+
+										$liste_mots_cles = array();
+
+										foreach ( $mots_cles as $mot_cle ) {
+											$liste_mots_cles[] = $mot_cle->name;
+										}
+														
+										$les_mots_cles = join( ", ", $liste_mots_cles );
+										$phrase[] = $les_mots_cles;
+									endif;
+								
+									if( get_field( "auteur" ) ): 
+										$phrase[] = get_field('auteur');
+									endif;
+
+									$laphrase = join(", ", $phrase);
+									echo $laphrase;
 								?>
-							</a>
-						</div>
-						<p>
-							<?php
-								$couleurs = get_the_terms( $post->ID, 'couleur' );
-								$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
-								$phrase = array();
-
-								if( get_field( "date_document" ) ): 
-									$phrase[] = get_field('date_document');
-								endif;
 								
-						
-								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
-
-									$liste_couleurs = array();
-
-									foreach ( $couleurs as $couleur ) {
-										$liste_couleurs[] = $couleur->name;
-									}
-													
-									$les_couleurs = join( ", ", $liste_couleurs );
-									$phrase[] = $les_couleurs;
-								endif;
-						
-								
-						
-								if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
-
-									$liste_mots_cles = array();
-
-									foreach ( $mots_cles as $mot_cle ) {
-										$liste_mots_cles[] = $mot_cle->name;
-									}
-													
-									$les_mots_cles = join( ", ", $liste_mots_cles );
-									$phrase[] = $les_mots_cles;
-								endif;
-							
-								if( get_field( "auteur" ) ): 
-									$phrase[] = get_field('auteur');
-								endif;
-
-								$laphrase = join(", ", $phrase);
-								echo $laphrase;
-							?>
-							
-						</p>
-						<div class="grand_format">
-							<?php
-								echo wp_get_attachment_image( $post->ID, 'iconographie' );
-							?>
-							<h4 class="little_small"><?php the_title();?></h4>
-							<h5 class="little_small">
-								<span>
+							</p>
+							<div class="grand_format">
+								<?php
+									echo wp_get_attachment_image( $post->ID, 'iconographie' );
+								?>
+								<h4 class="little_small"><?php the_title();?></h4>
+								<h5 class="little_small">
+									<span>
+										<?php 
+											if( get_field( "date_document" ) ): ?>
+											    <?php the_field('date_document');?>
+										<?php endif;?>
+									</span>
 									<?php 
-										if( get_field( "date_document" ) ): ?>
-										    <?php the_field('date_document');?>
+										if( get_field( "auteur" ) ): ?>
+											<?php the_field('auteur');?>
 									<?php endif;?>
-								</span>
-								<?php 
-									if( get_field( "auteur" ) ): ?>
-										<?php the_field('auteur');?>
-								<?php endif;?>
-							</h5>
-						</div>
-					</figure>
-				<?php endwhile;
-	        ?>
-		</section>
+								</h5>
+							</div>
+						</figure>
+					<?php endwhile;
+		        ?>
+			</section>
 
-		<section class="pagination smaller">
-			<?php
-				echo paginate_links( array(
-					'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-					'format' => '?paged=%#%',
-					'current' => max( 1, get_query_var('paged') ),
-					'total' => $my_query->max_num_pages,
-					'prev_text'    => '« Previous',
-					'next_text'    => 'Next »',
-				) );
-			?>
-		</section>
+			<section class="pagination smaller">
+				<?php
+					echo paginate_links( array(
+						'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+						'format' => '?paged=%#%',
+						'current' => max( 1, get_query_var('paged') ),
+						'total' => $my_query->max_num_pages,
+						'prev_text'    => '« Previous',
+						'next_text'    => 'Next »',
+					) );
+				?>
+			</section>
+		</div>
 	</div>
 
 <?php get_footer(); ?>

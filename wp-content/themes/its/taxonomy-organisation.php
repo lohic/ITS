@@ -74,21 +74,24 @@
 					</div>
 					<a href="#">Regards d'aujourd'hui</a>
 				</section>
-
-				<section id="sous_categories" class="small mb2 pt1 pb1">
-					<ul>
 			<?php
-					$categories = get_field('categories_liees','organisation_'.$idObj->term_id);
-					if($categories){
+				$categories = get_field('categories_liees','organisation_'.$idObj->term_id);
+				if($categories){
+			?>
+					<section id="sous_categories" class="small mb2 pt1 pb1">
+						<ul>
+			<?php
 						foreach ($categories as $categorie){
 			?>
-						<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
+							<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
 			<?php
 						}
-					}
 			?>
-					</ul>
-				</section>
+						</ul>
+					</section>
+			<?php
+				}
+			?>
 				<section class="pagination smaller mb2">
 					<?php
 						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
