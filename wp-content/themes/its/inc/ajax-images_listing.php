@@ -229,12 +229,37 @@
 
 <section id="liste_images">
 	<?php
-		//$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		$parametres = "";
+		if(isset($_POST['annees'])){
+			foreach($_POST['annees'] as $uneAnnee){
+				$parametres.="&amp;annees[]=".$uneAnnee;
+			}
+		}
+		if(isset($_POST['types'])){
+			foreach($_POST['types'] as $unType){
+				$parametres.="&amp;types[]=".$unType;
+			}
+		}
+		if(isset($_POST['auteurs'])){
+			foreach($_POST['auteurs'] as $unAuteur){
+				$parametres.="&amp;auteurs[]=".$unAuteur;
+			}
+		}
+		if(isset($_POST['couleurs'])){
+			foreach($_POST['couleurs'] as $uneCouleur){
+				$parametres.="&amp;couleurs[]=".$uneCouleur;
+			}
+		}
+		if(isset($_POST['mots'])){
+			foreach($_POST['mots'] as $unMot){
+				$parametres.="&amp;mots[]=".$unMot;
+			}
+		}
     	while( $my_query->have_posts() ) : $my_query->the_post();
     ?>
 			<figure class="mb1">
 				<div class="miniature">
-					<a href="?attachment_id=<?php echo $post->ID;?>">
+					<a href="?attachment_id=<?php echo get_the_id().$parametres;?>">
 						<?php
 							echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
 						?>
@@ -262,8 +287,6 @@
 							$les_couleurs = join( ", ", $liste_couleurs );
 							$phrase[] = $les_couleurs;
 						endif;
-				
-						
 				
 						if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
 

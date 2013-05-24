@@ -17,7 +17,58 @@ Template Name: Page archive d'images
 					<div class="">
 						<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
 						<ul id="filtres_actifs" class="small">
-							
+							<?php
+								$params = array();
+								$paramsQuery = array();
+
+								if(isset($_GET['annees'])){
+									$params_annees=array();
+									foreach($_GET['annees'] as $annee){
+										/*$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
+										$new_url = str_replace ( 'annees[]='.$annee.'&' , '' , $new_url);
+										$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);*/
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$annee.'</a></li>';
+										$params_annees[]=$annee;
+									}
+									$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
+								}
+
+								if(isset($_GET['types'])){
+									$params_types=array();
+									foreach($_GET['types'] as $type){
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$type.'</a></li>';
+										$params_types[]=$type;
+									}
+									$params[]=array('key' => 'type_de_document', 'value'=>$params_types,'compare'=>'IN');
+								}
+
+								if(isset($_GET['auteurs'])){
+									$params_auteurs=array();
+									foreach($_GET['auteurs'] as $auteur){									
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$auteur.'</a></li>';
+										$params_auteurs[]=$auteur;
+									}
+									$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
+								}
+
+								if(isset($_GET['couleurs'])){
+									$params_couleurs=array();
+									foreach($_GET['couleurs'] as $couleur){																
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
+										$params_couleurs[]=$couleur;
+									}
+									$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
+								}
+
+								if(isset($_GET['mots'])){
+									$params_mots=array();
+									foreach($_GET['mots'] as $mot_cle){																	
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
+										$params_mots[]=$mot_cle;
+									}
+									$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
+								}
+							?>
 						</ul>
 					</div>
 					<div class="conteneur">
@@ -147,8 +198,8 @@ Template Name: Page archive d'images
 								$mots = get_terms('mot_cle_image',$args);
 								if($mots){
 									foreach($mots as $mot){
-										if(isset($_GET['mots_cles'])){
-											if(in_array($mot->slug,$_GET['mots_cles'])){
+										if(isset($_GET['mots'])){
+											if(in_array($mot->slug,$_GET['mots'])){
 												echo '<li class="actif">'.$mot->name.'</li>';
 											}
 											else{
@@ -191,12 +242,37 @@ Template Name: Page archive d'images
 		
 			<section id="liste_images">
 				<?php
-					//$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+					$parametres = "";
+					if(isset($_GET['annees'])){
+						foreach($_GET['annees'] as $uneAnnee){
+							$parametres.="&amp;annees[]=".$uneAnnee;
+						}
+					}
+					if(isset($_GET['types'])){
+						foreach($_GET['types'] as $unType){
+							$parametres.="&amp;types[]=".$unType;
+						}
+					}
+					if(isset($_GET['auteurs'])){
+						foreach($_GET['auteurs'] as $unAuteur){
+							$parametres.="&amp;auteurs[]=".$unAuteur;
+						}
+					}
+					if(isset($_GET['couleurs'])){
+						foreach($_GET['couleurs'] as $uneCouleur){
+							$parametres.="&amp;couleurs[]=".$uneCouleur;
+						}
+					}
+					if(isset($_GET['mots'])){
+						foreach($_GET['mots'] as $unMot){
+							$parametres.="&amp;mots[]=".$unMot;
+						}
+					}
 		        	while( $my_query->have_posts() ) : $my_query->the_post();
 		        ?>
 						<figure class="mb1">
 							<div class="miniature">
-								<a href="?attachment_id=<?php echo $post->ID;?>">
+								<a href="?attachment_id=<?php echo $post->ID.$parametres;?>">
 									<?php
 										echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
 									?>
