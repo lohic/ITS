@@ -158,7 +158,7 @@
 					if($couleurs){
 						foreach($couleurs as $couleur){
 							if(isset($_POST['couleurs'])){
-								if(in_array($couleur->slug,$_POST['couleurs'])){
+								if(in_array($couleur->name,$_POST['couleurs'])){
 									echo '<li class="actif">'.$couleur->name.'</li>';
 								}
 								else{
@@ -185,8 +185,8 @@
 					$mots = get_terms('mot_cle_image',$args);
 					if($mots){
 						foreach($mots as $mot){
-							if(isset($_POST['mots_cles'])){
-								if(in_array($mot->slug,$_POST['mots_cles'])){
+							if(isset($_POST['mots'])){
+								if(in_array($mot->name,$_POST['mots'])){
 									echo '<li class="actif">'.$mot->name.'</li>';
 								}
 								else{
@@ -203,7 +203,7 @@
 				</div>
 			</section>
 		</div>
-		<div class="bordure pb1">
+		<div class="bordure">
 		</div>
 	</section>
 

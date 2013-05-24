@@ -1623,6 +1623,7 @@ h4.resultats{
 #filtres > div{
 	border-top: 3px solid  #ededed;
 	padding-top: 7px;
+	min-height: 14px;
 }
 
 #filtres > div.conteneur{
@@ -1669,10 +1670,12 @@ h4.resultats{
 	background: url("img/chevrons_filtre.png") no-repeat scroll 15px 8px transparent;
     display: inline-block;
     cursor: pointer;
+    float:left;
 }
 
 #filtres #filtres_actifs{
-	display:inline-block;
+	display: inline-block;
+    width: 440px;
 }
 
 #filtres #filtres_actifs li{
@@ -1683,6 +1686,7 @@ h4.resultats{
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
+    margin-bottom: 8px;
 }
 
 #filtres #filtres_actifs li a{

@@ -216,7 +216,7 @@ Template Name: Page archive d'images
 							</div>
 						</section>
 					</div>
-					<div class="bordure pb1">
+					<div class="bordure">
 					</div>
 				</section>
 
