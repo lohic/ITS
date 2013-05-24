@@ -85,19 +85,7 @@
 				</div>
 				<div class="col">
 					<ul>
-					<?php
-						$auteurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'auteur' ORDER BY meta_value" );
-						if($auteurs){
-							foreach($auteurs as $auteur){
-								if(in_array($auteur,$_POST['auteurs'])){
-									echo '<li class="actif">'.$auteur.'</li>';
-								}
-								else{
-									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
-								}
-							}
-						}
-					?>
+					
 					</ul>
 				</div>
 			</section>
@@ -110,12 +98,19 @@
 					<?php
 					$args = array('orderby'=>'name', 'order'=>'ASC', 'hide_empty'=>false);
 					$couleurs = get_terms('couleur',$args);
-					foreach($couleurs as $couleur){
-						if(in_array($couleur->slug,$_POST['couleurs'])){
-							echo '<li class="actif">'.$couleur->name.'</li>';
-						}
-						else{
-							echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+					if($couleurs){
+						foreach($couleurs as $couleur){
+							if(isset($_POST['couleurs'])){
+								if(in_array($couleur->slug,$_POST['couleurs'])){
+									echo '<li class="actif">'.$couleur->name.'</li>';
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+								}
+							}
+							else{
+								echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+							}
 						}
 					}
 					?>
@@ -131,12 +126,19 @@
 					<?php
 					$args = array('orderby'=>'name', 'order'=>'ASC', 'hide_empty'=>false);
 					$mots = get_terms('mot_cle_image',$args);
-					foreach($mots as $mot){
-						if(in_array($mot->slug,$_POST['mots_cles'])){
-							echo '<li class="actif">'.$mot->name.'</li>';
-						}
-						else{
-							echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+					if($mots){
+						foreach($mots as $mot){
+							if(isset($_POST['mots_cles'])){
+								if(in_array($mot->slug,$_POST['mots_cles'])){
+									echo '<li class="actif">'.$mot->name.'</li>';
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+								}
+							}
+							else{
+								echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+							}
 						}
 					}
 					?>
