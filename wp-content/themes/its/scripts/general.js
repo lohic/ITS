@@ -156,6 +156,174 @@ $(document).ready(function(){
 	});
 	/* Fin de la gestion du slider*/
 
+	/*AJAX sur iconographie*/
+	function reinitialisation(){
+		$('#filtres').mouseenter(function(){
+			$('#filtres > .conteneur').toggle('fast');
+		});
+
+		$('#filtres').mouseleave(function(){
+			$('#filtres > .conteneur').toggle('fast');
+		});
+	}
+
+	function initialisation(){
+		$('#filtre_date li > a').click(function(e){
+			var longueur=parametres['annees'].length;
+			parametres['annees'][longueur]=$(this).html();
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+
+		$('#filtre_type li > a').click(function(e){
+			var longueur=parametres['types'].length;
+			parametres['types'][longueur]=$(this).html();
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+
+		$('#filtre_auteur li > a').click(function(e){
+			var longueur=parametres['auteurs'].length;
+			parametres['auteurs'][longueur]=$(this).html();
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+
+		$('#filtre_couleur li > a').click(function(e){
+			var longueur=parametres['couleurs'].length;
+			parametres['couleurs'][longueur]=$(this).html();
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+
+		$('#filtre_mots li > a').click(function(e){
+			var longueur=parametres['mots'].length;
+			parametres['mots'][longueur]=$(this).html();
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+
+		$('.lien_filtre_actif').click(function(e){
+			var test = jQuery.inArray($(this).html(), parametres['annees']);
+			if(test!=-1){
+				parametres['annees'].splice(test,1);
+			}
+			test = jQuery.inArray($(this).html(), parametres['types']);
+			if(test!=-1){
+				parametres['types'].splice(test,1);
+			}
+			test = jQuery.inArray($(this).html(), parametres['auteurs']);
+			if(test!=-1){
+				parametres['auteurs'].splice(test,1);
+			}
+			test = jQuery.inArray($(this).html(), parametres['couleurs']);
+			if(test!=-1){
+				parametres['couleurs'].splice(test,1);
+			}
+			test = jQuery.inArray($(this).html(), parametres['mots']);
+			if(test!=-1){
+				parametres['mots'].splice(test,1);
+			}
+			$.post(
+				ajaxurl, 
+				{
+					'action':'get_images_listing',
+					'titre':$('#entete > h1').html(),
+					'annees':parametres['annees'],
+					'types':parametres['types'],
+					'auteurs':parametres['auteurs'],
+					'couleurs':parametres['couleurs'],
+					'mots':parametres['mots'],
+				}, 
+				function(response){
+					$('#container').html(response);
+					initialisation();
+					reinitialisation();
+				}
+			);
+			e.preventDefault();
+		});
+	}
 
 	var parametres = new Array();
 	parametres['annees'] = new Array();
@@ -164,113 +332,5 @@ $(document).ready(function(){
 	parametres['couleurs'] = new Array();
 	parametres['mots'] = new Array();
 
-	/*AJAX sur iconographie*/
-	$('#filtre_date li > a').click(function(e){
-		var longueur=parametres['annees'].length;
-		parametres['annees'][longueur]=$(this).html();
-		$.post(
-		   ajaxurl, 
-		   {
-			  'action':'get_images_listing',
-			  'annees':parametres['annees'],
-			  'types':parametres['types'],
-			  'auteurs':parametres['auteurs'],
-			  'couleurs':parametres['couleurs'],
-			  'mots':parametres['mots'],
-		   }, 
-		   function(response){
-			  $('#container').html(response);
-			  $('#filtres').mouseenter(function(){
-				$('#filtres > .conteneur').toggle('fast');
-			  });
-
-			  $('#filtres').mouseleave(function(){
-				$('#filtres > .conteneur').toggle('fast');
-			  });
-		   }
-		);
-		e.preventDefault();
-	});
-
-	$('#filtre_type li > a').click(function(e){
-		var longueur=parametres['types'].length;
-		parametres['types'][longueur]=$(this).html();
-		$.post(
-		   ajaxurl, 
-		   {
-			  'action':'get_images_listing',
-			  'annees':parametres['annees'],
-			  'types':parametres['types'],
-			  'auteurs':parametres['auteurs'],
-			  'couleurs':parametres['couleurs'],
-			  'mots':parametres['mots'],
-		   }, 
-		   function(response){
-			  $('#container').html(response);
-		   }
-		);
-		e.preventDefault();
-	});
-
-	$('#filtre_auteur li > a').click(function(e){
-		var longueur=parametres['auteurs'].length;
-		parametres['auteurs'][longueur]=$(this).html();
-		$.post(
-		   ajaxurl, 
-		   {
-			  'action':'get_images_listing',
-			  'annees':parametres['annees'],
-			  'types':parametres['types'],
-			  'auteurs':parametres['auteurs'],
-			  'couleurs':parametres['couleurs'],
-			  'mots':parametres['mots'],
-		   }, 
-		   function(response){
-			  $('#container').html(response);
-		   }
-		);
-		e.preventDefault();
-	});
-
-	$('#filtre_couleur li > a').click(function(e){
-		var longueur=parametres['couleurs'].length;
-		parametres['couleurs'][longueur]=$(this).html();
-		$.post(
-		   ajaxurl, 
-		   {
-			  'action':'get_images_listing',
-			  'annees':parametres['annees'],
-			  'types':parametres['types'],
-			  'auteurs':parametres['auteurs'],
-			  'couleurs':parametres['couleurs'],
-			  'mots':parametres['mots'],
-		   }, 
-		   function(response){
-			  $('#container').html(response);
-		   }
-		);
-		e.preventDefault();
-	});
-
-	$('#filtre_mots li > a').click(function(e){
-		var longueur=parametres['mots'].length;
-		parametres['mots'][longueur]=$(this).html();
-		$.post(
-		   ajaxurl, 
-		   {
-			  'action':'get_images_listing',
-			  'annees':parametres['annees'],
-			  'types':parametres['types'],
-			  'auteurs':parametres['auteurs'],
-			  'couleurs':parametres['couleurs'],
-			  'mots':parametres['mots'],
-		   }, 
-		   function(response){
-			  $('#container').html(response);
-		   }
-		);
-		e.preventDefault();
-	});
-
-	
+	initialisation();
 });

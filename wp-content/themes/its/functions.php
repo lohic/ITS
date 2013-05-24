@@ -44,17 +44,17 @@ if ( ! function_exists( 'its_setup' ) ){
 
 		// AJAX
 		add_action('wp_head','custom_head');
-		add_action('wp_ajax_get_imagess_listing', 'ajax_get_images_listing');
+		add_action('wp_ajax_get_images_listing', 'ajax_get_images_listing');
 		add_action('wp_ajax_nopriv_get_images_listing', 'ajax_get_images_listing');
 		
 	}
 }
-
 function custom_head(){
     echo '<script type="text/javascript">var ajaxurl = \''.admin_url('admin-ajax.php').'\';</script>';
 }
 
 function ajax_get_images_listing(){
+	global $wpdb; // this is how you get access to the database
 	include(dirname(__File__) . '/inc/ajax-images_listing.php');
 	die();	
 }

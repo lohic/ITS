@@ -1,5 +1,5 @@
 <div id="entete">
-	<h1 class="little_very_biggest sans mb4"><?php the_title(); ?></h1>
+	<h1 class="little_very_biggest sans mb4"><?php echo $_POST['titre'];?></h1>
 	<section id="filtres" class="affiches">
 		<div class="">
 			<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
@@ -65,7 +65,30 @@
 				</div>
 				<div class="col">
 					<ul>
-					
+					<?php
+						if(!preg_match('/\?/',$_SERVER['REQUEST_URI'])){
+							$caractere = "?";
+						}
+						else{
+							$caractere = "&amp;";
+						}
+						$annees = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'date_document' ORDER BY meta_value" );
+						if($annees){
+							foreach($annees as $annee){
+								if(isset($_POST['annees'])){
+									if(in_array($annee,$_POST['annees'])){
+										echo '<li class="actif">'.$annee.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+									}
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+								}
+							}
+						}
+					?>
 					</ul>
 				</div>
 			</section>
@@ -75,7 +98,24 @@
 				</div>
 				<div class="col">
 					<ul>
-					
+					<?php
+						$types_documents = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'type_de_document' ORDER BY meta_value" );
+						if($types_documents){
+							foreach($types_documents as $type_document){
+								if(isset($_POST['types'])){
+									if(in_array($type_document,$_POST['types'])){
+										echo '<li class="actif">'.$type_document.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
+									}
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
+								}
+							}
+						}
+					?>
 					</ul>
 				</div>
 			</section>
@@ -85,7 +125,24 @@
 				</div>
 				<div class="col">
 					<ul>
-					
+					<?php
+						$auteurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'auteur' ORDER BY meta_value" );
+						if($auteurs){
+							foreach($auteurs as $auteur){
+								if(isset($_POST['auteurs'])){
+									if(in_array($auteur,$_POST['auteurs'])){
+										echo '<li class="actif">'.$auteur.'</li>';
+									}
+									else{
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
+									}
+								}
+								else{
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
+								}
+							}
+						}
+					?>
 					</ul>
 				</div>
 			</section>
@@ -153,7 +210,7 @@
 	<section class="pagination smaller mb2 mt4 affiches">
 		<?php
 			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-			$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
+			$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 1,'paged' => $paged));
 
 			$big = 99999999; // need an unlikely integer
 
@@ -172,12 +229,12 @@
 
 <section id="liste_images">
 	<?php
-		$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+		//$new_url = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
     	while( $my_query->have_posts() ) : $my_query->the_post();
     ?>
 			<figure class="mb1">
 				<div class="miniature">
-					<a href="<?php echo $new_url.'?attachment_id='.$post->ID;?>">
+					<a href="?attachment_id=<?php echo $post->ID;?>">
 						<?php
 							echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
 						?>
