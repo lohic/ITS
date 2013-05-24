@@ -156,19 +156,119 @@ $(document).ready(function(){
 	});
 	/* Fin de la gestion du slider*/
 
+
+	var parametres = new Array();
+	parametres['annees'] = new Array();
+	parametres['types'] = new Array();
+	parametres['auteurs'] = new Array();
+	parametres['couleurs'] = new Array();
+	parametres['mots'] = new Array();
+
 	/*AJAX sur iconographie*/
 	$('#filtre_date li > a').click(function(e){
+		var longueur=parametres['annees'].length;
+		parametres['annees'][longueur]=$(this).html();
 		$.post(
 		   ajaxurl, 
 		   {
 			  'action':'get_images_listing',
-			  'data':'Ça marche',
+			  'annees':parametres['annees'],
+			  'types':parametres['types'],
+			  'auteurs':parametres['auteurs'],
+			  'couleurs':parametres['couleurs'],
+			  'mots':parametres['mots'],
+		   }, 
+		   function(response){
+			  $('#container').html(response);
+			  $('#filtres').mouseenter(function(){
+				$('#filtres > .conteneur').toggle('fast');
+			  });
+
+			  $('#filtres').mouseleave(function(){
+				$('#filtres > .conteneur').toggle('fast');
+			  });
+		   }
+		);
+		e.preventDefault();
+	});
+
+	$('#filtre_type li > a').click(function(e){
+		var longueur=parametres['types'].length;
+		parametres['types'][longueur]=$(this).html();
+		$.post(
+		   ajaxurl, 
+		   {
+			  'action':'get_images_listing',
+			  'annees':parametres['annees'],
+			  'types':parametres['types'],
+			  'auteurs':parametres['auteurs'],
+			  'couleurs':parametres['couleurs'],
+			  'mots':parametres['mots'],
 		   }, 
 		   function(response){
 			  $('#container').html(response);
 		   }
 		);
+		e.preventDefault();
+	});
 
+	$('#filtre_auteur li > a').click(function(e){
+		var longueur=parametres['auteurs'].length;
+		parametres['auteurs'][longueur]=$(this).html();
+		$.post(
+		   ajaxurl, 
+		   {
+			  'action':'get_images_listing',
+			  'annees':parametres['annees'],
+			  'types':parametres['types'],
+			  'auteurs':parametres['auteurs'],
+			  'couleurs':parametres['couleurs'],
+			  'mots':parametres['mots'],
+		   }, 
+		   function(response){
+			  $('#container').html(response);
+		   }
+		);
+		e.preventDefault();
+	});
+
+	$('#filtre_couleur li > a').click(function(e){
+		var longueur=parametres['couleurs'].length;
+		parametres['couleurs'][longueur]=$(this).html();
+		$.post(
+		   ajaxurl, 
+		   {
+			  'action':'get_images_listing',
+			  'annees':parametres['annees'],
+			  'types':parametres['types'],
+			  'auteurs':parametres['auteurs'],
+			  'couleurs':parametres['couleurs'],
+			  'mots':parametres['mots'],
+		   }, 
+		   function(response){
+			  $('#container').html(response);
+		   }
+		);
+		e.preventDefault();
+	});
+
+	$('#filtre_mots li > a').click(function(e){
+		var longueur=parametres['mots'].length;
+		parametres['mots'][longueur]=$(this).html();
+		$.post(
+		   ajaxurl, 
+		   {
+			  'action':'get_images_listing',
+			  'annees':parametres['annees'],
+			  'types':parametres['types'],
+			  'auteurs':parametres['auteurs'],
+			  'couleurs':parametres['couleurs'],
+			  'mots':parametres['mots'],
+		   }, 
+		   function(response){
+			  $('#container').html(response);
+		   }
+		);
 		e.preventDefault();
 	});
 
