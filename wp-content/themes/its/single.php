@@ -14,11 +14,12 @@
 			//$categories="";
 			$organisations = "";
 			$tags = get_the_tags();
-
-			foreach ($tags as $tag){
-				$liste_tags .= $tag->name.', ';
+			if($tags){
+				foreach ($tags as $tag){
+					$liste_tags .= $tag->name.', ';
+				}
+				$liste_tags = substr($liste_tags, 0, -2);
 			}
-			$liste_tags = substr($liste_tags, 0, -2);
 			//$categories = get_category_parents($categorie[0]->term_id,'true','');
 
 			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );

@@ -1623,7 +1623,7 @@ h4.resultats{
 #filtres > div{
 	border-top: 3px solid  #ededed;
 	padding-top: 7px;
-	min-height: 14px;
+	min-height: 27px;
 }
 
 #filtres > div.conteneur{
@@ -1639,6 +1639,7 @@ h4.resultats{
 	border-top: none;
 	border-bottom: 3px solid  #ededed;
 	padding-top: 0;
+	min-height: 0;
 }
 
 #filtres > div.bordure.image {
@@ -1647,6 +1648,7 @@ h4.resultats{
 
 #filtres > div.conteneur{
 	display:none;
+	padding-bottom: 10px;
 }
 
 #filtres > div.conteneur > section{
@@ -1686,7 +1688,8 @@ h4.resultats{
     -webkit-border-radius: 8px;
     -moz-border-radius: 8px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    margin-top: -3px;
 }
 
 #filtres #filtres_actifs li a{

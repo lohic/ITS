@@ -2,6 +2,13 @@ $(document).ready(function(){
 	/*if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
 		$('#filtres > div.conteneur').css('display','block');
 	}*/
+
+	/*Survol d'une miniature sur la page iconographie*/
+	$('#liste_images figure').mouseenter(function(){
+		$(this).find('.grand_format > img').attr("src",$(this).data("its-url"));
+	});
+	/*Fin Survol d'une miniature sur la page iconographie*/
+
 	/*gestion des commentaires*/
 	$('h3#respond').click(function(){
 		$('#commentform').toggle();
@@ -164,6 +171,10 @@ $(document).ready(function(){
 
 		$('#filtres').mouseleave(function(){
 			$('#filtres > .conteneur').toggle('fast');
+		});
+
+		$('#liste_images figure').mouseenter(function(){
+			$(this).find('.grand_format > img').attr("src",$(this).data("its-url"));
 		});
 	}
 

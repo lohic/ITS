@@ -33,18 +33,23 @@
 	        	</ul>
 
 				<section id="frise" class="normal mb1 pl3">
-					<div class="conteneur_annees">
-						<ul class="categorie">
-							<?php
-								//asort($lesAnnees);
+				<?php
+					if(count($lesAnnees)!=0){
+				?>
+						<div class="conteneur_annees">
+							<ul class="categorie">
+				<?php				
 								foreach($lesAnnees as $annee){
-							?>
+				?>
 									<li id="annee_<?php echo $annee;?>"><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
-							<?php	
-								}
-							?>
-						</ul>
-					</div>
+				<?php
+								}	
+				?>
+							</ul>
+						</div>
+				<?php
+					}
+				?>
 					<a href="#">Regards d'aujourd'hui</a>
 				</section>
 				

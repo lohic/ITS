@@ -269,8 +269,9 @@ Template Name: Page archive d'images
 						}
 					}
 		        	while( $my_query->have_posts() ) : $my_query->the_post();
+		        		$infos_image = wp_get_attachment_image_src( $post->ID, 'iconographie');
 		        ?>
-						<figure class="mb1">
+						<figure class="mb1" data-its-url="<?php echo $infos_image[0];?>">
 							<div class="miniature">
 								<a href="?attachment_id=<?php echo $post->ID.$parametres;?>">
 									<?php
@@ -325,9 +326,7 @@ Template Name: Page archive d'images
 								
 							</p>
 							<div class="grand_format">
-								<?php
-									echo wp_get_attachment_image( $post->ID, 'iconographie' );
-								?>
+								<img src="" alt="<?php the_title();?>"/>
 								<h4 class="little_small"><?php the_title();?></h4>
 								<h5 class="little_small">
 									<span>
