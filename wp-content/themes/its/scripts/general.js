@@ -3,6 +3,12 @@ $(document).ready(function(){
 		$('#filtres > div.conteneur').css('display','block');
 	}*/
 
+	/* clic sur le bouton recherche de la home*/
+	$('a.recherche').click(function(){
+		$('#recherche #s').focus();
+	});
+	/* Fin clic sur le bouton recherche de la home*/
+
 	/*Survol d'une miniature sur la page iconographie*/
 	$('#liste_images figure').mouseenter(function(){
 		$(this).find('.grand_format > img').attr("src",$(this).data("its-url"));
@@ -342,6 +348,37 @@ $(document).ready(function(){
 	parametres['auteurs'] = new Array();
 	parametres['couleurs'] = new Array();
 	parametres['mots'] = new Array();
+
+	if($.url().param('annees')!=undefined){
+		for(var i = 0, len = $.url().param('annees').length; i < len; ++i) {
+	      	parametres['annees'][i]=$.url().param('annees')[i];
+	    }
+	}
+	
+	if($.url().param('types')!=undefined){
+	    for(var i = 0, len = $.url().param('types').length; i < len; ++i) {
+	      	parametres['types'][i]=$.url().param('types')[i];
+	    }
+	}
+
+    if($.url().param('auteurs')!=undefined){
+	    for(var i = 0, len = $.url().param('auteurs').length; i < len; ++i) {
+	      	parametres['auteurs'][i]=$.url().param('auteurs')[i];
+	    }
+	}
+
+    if($.url().param('couleurs')!=undefined){
+	    for(var i = 0, len = $.url().param('couleurs').length; i < len; ++i) {
+	      	parametres['couleurs'][i]=$.url().param('couleurs')[i];
+	    }
+	}
+
+    if($.url().param('mots')!=undefined){
+	    for(var i = 0, len = $.url().param('mots').length; i < len; ++i) {
+	      	parametres['mots'][i]=$.url().param('mots')[i];
+	    }
+	}
+
 
 	initialisation();
 });

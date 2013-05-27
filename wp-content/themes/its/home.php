@@ -115,7 +115,7 @@
 							endif;
 						?>
 
-		                <a href="#" class="recherche small mt3">Faire une recherche</a>
+		                <a href="#recherche" class="recherche small mt3">Faire une recherche</a>
 		            </section>
                 <?php endwhile;
             ?>

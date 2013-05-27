@@ -7,7 +7,7 @@
 				<?php
 					$params = array();
 					$paramsQuery = array();
-
+					$complement = "images-darchives/?";
 					if(isset($_POST['annees'])){
 						$params_annees=array();
 						foreach($_POST['annees'] as $annee){
@@ -16,6 +16,12 @@
 							$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);*/
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$annee.'</a></li>';
 							$params_annees[]=$annee;
+							if($complement=="images-darchives/?"){
+								$complement .="annees[]=".$annee;
+							}
+							else{
+								$complement .="&amp;annees[]=".$annee;
+							}
 						}
 						$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
 					}
@@ -25,6 +31,12 @@
 						foreach($_POST['types'] as $type){
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$type.'</a></li>';
 							$params_types[]=$type;
+							if($complement=="images-darchives/?"){
+								$complement .="types[]=".$type;
+							}
+							else{
+								$complement .="&amp;types[]=".$type;
+							}
 						}
 						$params[]=array('key' => 'type_de_document', 'value'=>$params_types,'compare'=>'IN');
 					}
@@ -34,6 +46,12 @@
 						foreach($_POST['auteurs'] as $auteur){									
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$auteur.'</a></li>';
 							$params_auteurs[]=$auteur;
+							if($complement=="images-darchives/?"){
+								$complement .="auteurs[]=".$auteur;
+							}
+							else{
+								$complement .="&amp;auteurs[]=".$auteur;
+							}
 						}
 						$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
 					}
@@ -43,6 +61,12 @@
 						foreach($_POST['couleurs'] as $couleur){																
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
 							$params_couleurs[]=$couleur;
+							if($complement=="images-darchives/?"){
+								$complement .="couleurs[]=".$couleur;
+							}
+							else{
+								$complement .="&amp;couleurs[]=".$couleur;
+							}
 						}
 						$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 					}
@@ -52,9 +76,17 @@
 						foreach($_POST['mots'] as $mot_cle){																	
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
 							$params_mots[]=$mot_cle;
+							if($complement=="images-darchives/?"){
+								$complement .="mots[]=".$mot_cle;
+							}
+							else{
+								$complement .="&amp;mots[]=".$mot_cle;
+							}
 						}
 						$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
 					}
+
+					$complement .= "&amp;";
 				?>
 			</ul>
 		</div>
@@ -209,19 +241,32 @@
 
 	<section class="pagination smaller mb2 mt4 affiches">
 		<?php
+
+
+
 			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 			$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 1,'paged' => $paged));
 
 			$big = 99999999; // need an unlikely integer
-
-			echo paginate_links( array(
+			$listeLiens = paginate_links( array(
 				'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
 				'format' => '?paged=%#%',
 				'current' => max( 1, get_query_var('paged') ),
 				'total' => $my_query->max_num_pages,
 				'prev_text'    => '« Previous',
 				'next_text'    => 'Next »',
+				'type' => 'array',
 			) );
+
+			if($listeLiens){
+				foreach($listeLiens as $lien){
+					if(preg_match('/wp-admin\/admin-ajax.php/',$lien)){
+						$lien = str_replace('wp-admin/admin-ajax.php','images-darchives/',$lien);
+						$lien = str_replace('images-darchives/?',$complement,$lien);
+					}
+					echo $lien;
+				}
+			}
 		?>
 	</section>
 </div>
@@ -333,13 +378,24 @@
 
 <section class="pagination smaller">
 	<?php
-		echo paginate_links( array(
+		$listeLiens = paginate_links( array(
 			'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
 			'format' => '?paged=%#%',
 			'current' => max( 1, get_query_var('paged') ),
 			'total' => $my_query->max_num_pages,
 			'prev_text'    => '« Previous',
 			'next_text'    => 'Next »',
+			'type' => 'array',
 		) );
+
+		if($listeLiens){
+			foreach($listeLiens as $lien){
+				if(preg_match('/wp-admin\/admin-ajax.php/',$lien)){
+					$lien = str_replace('wp-admin/admin-ajax.php','images-darchives/',$lien);
+					$lien = str_replace('images-darchives/?',$complement,$lien);
+				}
+				echo $lien;
+			}
+		}
 	?>
 </section>

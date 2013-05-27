@@ -24,9 +24,6 @@ Template Name: Page archive d'images
 								if(isset($_GET['annees'])){
 									$params_annees=array();
 									foreach($_GET['annees'] as $annee){
-										/*$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
-										$new_url = str_replace ( 'annees[]='.$annee.'&' , '' , $new_url);
-										$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);*/
 										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$annee.'</a></li>';
 										$params_annees[]=$annee;
 									}
