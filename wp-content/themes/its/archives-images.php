@@ -220,7 +220,7 @@ Template Name: Page archive d'images
 				<section class="pagination smaller mb2 mt4 affiches">
 					<?php
 						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-						$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 1,'paged' => $paged));
+						$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
 
 						$big = 99999999; // need an unlikely integer
 
