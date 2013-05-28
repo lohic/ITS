@@ -80,7 +80,7 @@
 			<h1 class="little_very_biggest sans mb3">Archive d'images</h1>
 			<section id="filtres" class="mb2">
 				<div class="image">
-					<p class="filtre mr2 normal"><a href="<?php bloginfo('url'); ?>?page_id=13<?php echo $args_url;?>">Retour à la liste</a></p>
+					<p class="filtre mr2 normal"><a href="<?php echo $args_url;?>">Retour à la liste</a></p>
 				</div>
 				<div class="bordure image">
 				</div>

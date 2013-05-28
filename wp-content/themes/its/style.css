@@ -221,7 +221,7 @@ h2.titre a{
 a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus #menu_secondaire li.current-menu-item > a, #menu_sidebar li.current-menu-item a, 
 #sur_menu li.current-menu-item > a, #nuage_sidebar a.actif, #agenda article > h3, h3.titre, h2.titre, h2.titre a, a.suite, 
 #meme_theme li, li.telechargement, p.suite, a.suite span, #meme_theme li a, li.telechargement a, p.suite span, #entete h1, #entete h1 a, 
-#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif{
+#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif, #frise a#regards.actif{
 	color:#ff3333;
 }
 

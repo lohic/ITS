@@ -18,7 +18,7 @@
 					$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'posts_per_page'=>-1, 'order'=>'ASC'));
 					while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
 						$ladate = the_date('Y', '', '',FALSE);
-						if(!in_array($ladate,$lesAnnees) && $ladate!=""){
+						if(!in_array($ladate,$lesAnnees) && $ladate!="" && $ladate<=1990){
 
 							$lesAnnees[]=$ladate;
 				?>
@@ -50,7 +50,7 @@
 				<?php
 					}
 				?>
-					<a href="#">Regards d'aujourd'hui</a>
+					<a href="?annee=regards" id="regards">Regards d'aujourd'hui</a>
 				</section>
 				
 				<?php
@@ -85,7 +85,20 @@
 						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
 						if(isset($_GET['annee'])){
-							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'cat'=>get_query_var('cat'), 'paged' => $paged));
+							if($_GET['annee']!="regards"){
+								$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'cat'=>get_query_var('cat'), 'paged' => $paged));
+							}
+							else{
+								function filter_where( $where = '' ) {
+									// posts for March 1 to March 15, 2010
+									$where .= " AND post_date >= '1991-01-01'";
+									return $where;
+								}
+
+								add_filter( 'posts_where', 'filter_where' );
+								$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
+								remove_filter( 'posts_where', 'filter_where' );
+							}
 						}
 						else{
 							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'cat'=>get_query_var('cat'), 'paged' => $paged));

@@ -59,6 +59,12 @@ $(document).ready(function(){
 	
 	var premier = $('.conteneur_annees li:first-child a').html();
 
+	if ($.url().param('annee')=="regards"){
+		$('a#regards').addClass('actif');
+	}
+	else{
+		$('a#regards').removeClass('actif');
+	}
 
 	if ($.url().param('annee')===undefined || $.url().param('annee')==premier){
 		

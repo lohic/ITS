@@ -45,7 +45,7 @@
 					$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'posts_per_page'=>-1, 'order'=>'ASC'));
 					while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
 						$ladate = the_date('Y', '', '',FALSE);
-						if(!in_array($ladate,$lesAnnees) && $ladate!=""){
+						if(!in_array($ladate,$lesAnnees) && $ladate!="" && $ladate<=1990){
 
 							$lesAnnees[]=$ladate;
 				?>
@@ -72,7 +72,7 @@
 							?>
 						</ul>
 					</div>
-					<a href="#">Regards d'aujourd'hui</a>
+					<a href="?annee=regards" id="regards">Regards d'aujourd'hui</a>
 				</section>
 			<?php
 				$categories = get_field('categories_liees','organisation_'.$idObj->term_id);
@@ -98,7 +98,20 @@
 						$idObj = get_category_by_slug('agenda'); 
 						
 						if(isset($_GET['annee'])){
-							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+							if($_GET['annee']!="regards"){
+								$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+							}
+							else{
+								function filter_where( $where = '' ) {
+									// posts for March 1 to March 15, 2010
+									$where .= " AND post_date >= '1991-01-01'";
+									return $where;
+								}
+
+								add_filter( 'posts_where', 'filter_where' );
+								$my_query = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+								remove_filter( 'posts_where', 'filter_where' );
+							}
 						}
 						else{
 							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
