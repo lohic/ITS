@@ -309,7 +309,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, nav, sectio
 }
 
 /* max values */
-img, table, td, blockquote, code, pre, textarea, input, video {
+table, td, blockquote, code, pre, textarea, input, video {
 	max-width: 100%;
 }
 
@@ -1188,8 +1188,8 @@ h3.date{
 }
 
 h3.date span{
-	padding-left:11px;
-	background: url("img/puce_auteur.png") no-repeat left center;	
+	/*padding-left:11px;
+	background: url("img/puce_auteur.png") no-repeat left center;*/
 }
 
 p.categories_et_tags a, p.categories_et_tags, p.tags{
@@ -1208,8 +1208,8 @@ p.tags{
 .categories_et_tags span.tags{
 	text-transform: uppercase;
 	font-size:0.85em;
-	padding-left:6px;
-	background: url("img/puce_tags.png") no-repeat left 4px;
+	/*padding-left:6px;
+	background: url("img/puce_tags.png") no-repeat left 4px;*/
 }
 
 p.tags span.tags{

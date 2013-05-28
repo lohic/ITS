@@ -6,14 +6,19 @@
     <div id="centre" class="col pl3 pr3">
     	<?php 
     		if (function_exists('mybread')) mybread();
-    		$args_url = '';
+    		$args_url = '?';
     		$params = array();
 			$paramsQuery = array();
 			
     		if(isset($_GET['annees'])){
     			$params_annees=array();
 				foreach($_GET['annees'] as $annee){
-					$args_url.='&amp;annees[]='.$annee;
+					if($args_url=="?"){
+						$args_url.='annees[]='.$annee;
+					}
+					else{
+						$args_url.='&amp;annees[]='.$annee;
+					}
 					$params_annees[]=$annee;
 				}
 				$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
@@ -21,7 +26,12 @@
 			if(isset($_GET['types'])){
 				$params_types=array();
 				foreach($_GET['types'] as $type){
-					$args_url.='&amp;types[]='.$type;
+					if($args_url=="?"){
+						$args_url.='types[]='.$type;
+					}
+					else{
+						$args_url.='&amp;types[]='.$type;
+					}
 					$params_types[]=$type;
 				}
 				$params[]=array('key' => 'type_de_document', 'value'=>$params_types,'compare'=>'IN');
@@ -29,7 +39,12 @@
 			if(isset($_GET['auteurs'])){
 				$params_auteurs=array();
 				foreach($_GET['auteurs'] as $auteur){
-					$args_url.='&amp;auteurs[]='.$auteur;
+					if($args_url=="?"){
+						$args_url.='auteurs[]='.$auteur;
+					}
+					else{
+						$args_url.='&amp;auteurs[]='.$auteur;
+					}
 					$params_auteurs[]=$auteur;
 				}
 				$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
@@ -37,7 +52,12 @@
 			if(isset($_GET['couleurs'])){
 				$params_couleurs=array();
 				foreach($_GET['couleurs'] as $couleur){
-					$args_url.='&amp;couleurs[]='.$couleur;
+					if($args_url=="?"){
+						$args_url.='couleurs[]='.$couleur;
+					}
+					else{
+						$args_url.='&amp;couleurs[]='.$couleur;
+					}
 					$params_couleurs[]=$couleur;
 				}
 				$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
@@ -45,7 +65,12 @@
 			if(isset($_GET['mots'])){
 				$params_mots=array();
 				foreach($_GET['mots'] as $mot_cle){
-					$args_url.='&amp;mots[]='.$mot_cle;
+					if($args_url=="?"){
+						$args_url.='mots[]='.$mot_cle;
+					}
+					else{
+						$args_url.='&amp;mots[]='.$mot_cle;
+					}
 					$params_mots[]=$mot_cle;
 				}
 				$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
