@@ -41,8 +41,22 @@ if ( ! function_exists( 'its_setup' ) ){
 		// on déclare les connexions entre différents types de posts
 		if ( function_exists('my_connection_types') )
 		add_action( 'p2p_init', 'my_connection_types' );
+
+		// AJAX
+		add_action('wp_head','custom_head');
+		add_action('wp_ajax_get_images_listing', 'ajax_get_images_listing');
+		add_action('wp_ajax_nopriv_get_images_listing', 'ajax_get_images_listing');
 		
 	}
+}
+function custom_head(){
+    echo '<script type="text/javascript">var ajaxurl = \''.admin_url('admin-ajax.php').'\';</script>';
+}
+
+function ajax_get_images_listing(){
+	global $wpdb; // this is how you get access to the database
+	include(dirname(__File__) . '/inc/ajax-images_listing.php');
+	die();	
 }
 
 function my_connection_types() {

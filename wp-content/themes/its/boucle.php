@@ -22,16 +22,17 @@
 			<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
 			<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 		<?php
-			if($categories!="" || $liste_tags!=""){
+			//if($categories!="" || $liste_tags!=""){
+			if($liste_tags!=""){
 		?>
 				<p class="mb0 smaller categories_et_tags">
 				<?php 
-					if($categorie!=""){ 
+					/*if($categorie!=""){ 
 						echo '<span class="categories">'.$categories.'</span>&nbsp';
 					}
-					if($liste_tags!=""){
-						echo '<span class="tags">'.$liste_tags.'</span>';
-					}
+					if($liste_tags!=""){*/
+					echo '<span class="tags">'.$liste_tags.'</span>';
+					//}
 				?>
 				</p>
 		<?php

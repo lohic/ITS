@@ -88,10 +88,12 @@
 		                <h3 class="small mb0">Archives sur le même thème</h3>
 		                <?php 
 		                	$categories = get_the_category();
-		                	foreach ($categories as $categorie){
-		                		$lesCategories.=$categorie->cat_name.', ';
+		                	if($categories){
+		                		foreach ($categories as $categorie){
+			                		$lesCategories.=$categorie->cat_name.', ';
+			                	}
+			                	$lesCategories = substr($lesCategories, 0, -2);
 		                	}
-		                	$lesCategories = substr($lesCategories, 0, -2);
 		                ?>
 		                <h4 class="very_smaller mb1"><?php echo $lesCategories;?></h4>
 
@@ -113,7 +115,7 @@
 							endif;
 						?>
 
-		                <a href="#" class="recherche small mt3">Faire une recherche</a>
+		                <a href="#recherche" class="recherche small mt3">Faire une recherche</a>
 		            </section>
                 <?php endwhile;
             ?>

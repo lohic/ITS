@@ -42,10 +42,10 @@
 				}
 				$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 			}
-			if(isset($_GET['mots_cles'])){
+			if(isset($_GET['mots'])){
 				$params_mots=array();
-				foreach($_GET['mots_cles'] as $mot_cle){
-					$args_url.='&amp;mots_cles[]='.$mot_cle;
+				foreach($_GET['mots'] as $mot_cle){
+					$args_url.='&amp;mots[]='.$mot_cle;
 					$params_mots[]=$mot_cle;
 				}
 				$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');

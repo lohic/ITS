@@ -5,10 +5,32 @@
     	<?php 
     		if (function_exists('mybread')) mybread();
 		?>
-		<div id="entete">
-			<h1 class="very_biggest sans"><?php the_title(); ?></h1>
-		</div>
 		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
+			<div id="entete">
+				<h1 class="very_biggest sans"><?php the_title(); ?></h1>
+			<?php
+				$my_wp_query = new WP_Query();
+				$all_wp_pages = $my_wp_query->query(array('post_type' => 'page'));
+				$monId = get_the_ID();
+				$page_children = get_page_children( $monId, $all_wp_pages );
+				if(!empty($page_children)){
+			?>
+					<section id="sous_categories" class="small mb2 pt1 pb1 mt2">
+						<ul>
+			<?php
+						foreach ($page_children as $page_child){
+			?>
+							<li class="pl3"><a href="<?php echo get_permalink($page_child->ID);?>"><?php echo get_the_title($page_child->ID);?></a></li>
+			<?php
+						}
+			?>
+						</ul>
+					</section>
+			<?php						
+				}
+			?>
+			</div>
+		
 			<article class="pt2 pb2 mb2 post_archive" id="post-<?php the_ID(); ?>">
 				<div class="post_content small">
 					<?php the_content(); ?>
