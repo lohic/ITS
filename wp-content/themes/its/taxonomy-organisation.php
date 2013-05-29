@@ -6,7 +6,7 @@
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-			<h1 class="very_biggest mb4"><?php single_cat_title();?></h1>
+			<h1 class="super_biggest mb4 sans"><?php single_cat_title();?></h1>
 		<?php 
 			$idObj = get_term_by('slug',get_query_var('organisation'),'organisation'); 
   			$value = get_field('texte_organisation','organisation_'.$idObj->term_id);

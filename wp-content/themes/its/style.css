@@ -92,6 +92,11 @@ body {
 	background-color:#fff;
 }
 
+.super_biggest{
+	font-size:3.6em;
+	line-height:1em;
+}
+
 .very_biggest{
 	font-size:3.3em;
 	line-height:1em;
@@ -1474,6 +1479,10 @@ p.tags span.tags{
 
 #entete, #entete > div.conteneur{
 	position:relative;
+}
+
+#entete > div.conteneur{
+	margin-top: -10px;
 }
 
 .nombre_resultat{

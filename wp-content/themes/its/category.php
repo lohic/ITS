@@ -5,9 +5,17 @@
     	<?php 
     		if (function_exists('mybread')) mybread();
 		?>
-		<div id="entete" class="pt2">
+		<div id="entete" class="pt0">
+	<?php 	if(category_description()!=""){
+	?>
+				<h1 class="super_biggest sans mb3 pb0"><?php single_cat_title();?></h1>
+				<div id="texte_tag" class="mb3 normal pb2">
+					<?php echo category_description(); ?> 
+				</div>
+	<?php
+			}
+	?>
 			<div class="conteneur pt2">
-				<!--<h1 class="very_biggest"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>-->
 				<ul id="navigation_curseur" class="large mb1 sans">
 	        		<li id="curseur_large"></li>
 					<li class="precedent_tag"></li>
