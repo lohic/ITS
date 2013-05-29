@@ -75,19 +75,11 @@
 					<a href="?annee=regards" id="regards">Regards d'aujourd'hui</a>
 				</section>
 			<?php
-				$categories = get_field('categories_liees','organisation_'.$idObj->term_id);
+				$categories = get_field('menu_lie','organisation_'.$idObj->term_id);
 				if($categories){
 			?>
 					<section id="sous_categories" class="small mb2 pt1 pb1">
-						<ul>
-			<?php
-						foreach ($categories as $categorie){
-			?>
-							<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
-			<?php
-						}
-			?>
-						</ul>
+						<?php wp_nav_menu( array('menu'=>$categories->name, 'container' => 'false'));?>
 					</section>
 			<?php
 				}

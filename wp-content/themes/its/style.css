@@ -1361,6 +1361,7 @@ p.tags span.tags{
 #sous_categories > ul > li{
 	display:inline-block;
 	width:185px;
+	padding-left: 30px;
 }
 
 #sous_categories > ul > li > a{

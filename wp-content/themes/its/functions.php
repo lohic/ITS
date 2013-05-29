@@ -46,9 +46,9 @@ if ( ! function_exists( 'its_setup' ) ){
 		add_action('wp_head','custom_head');
 		add_action('wp_ajax_get_images_listing', 'ajax_get_images_listing');
 		add_action('wp_ajax_nopriv_get_images_listing', 'ajax_get_images_listing');
-		
 	}
 }
+
 function custom_head(){
     echo '<script type="text/javascript">var ajaxurl = \''.admin_url('admin-ajax.php').'\';</script>';
 }
