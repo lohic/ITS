@@ -85,16 +85,18 @@ Template Name: Page archive d'images
 									$annees = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'date_document' ORDER BY meta_value" );
 									if($annees){
 										foreach($annees as $annee){
-											if(isset($_GET['annees'])){
-												if(in_array($annee,$_GET['annees'])){
-													echo '<li class="actif">'.$annee.'</li>';
+											if($annee!=""){
+												if(isset($_GET['annees'])){
+													if(in_array($annee,$_GET['annees'])){
+														echo '<li class="actif">'.$annee.'</li>';
+													}
+													else{
+														echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+													}
 												}
 												else{
 													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
 												}
-											}
-											else{
-												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
 											}
 										}
 									}
@@ -112,16 +114,18 @@ Template Name: Page archive d'images
 									$types_documents = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'type_de_document' ORDER BY meta_value" );
 									if($types_documents){
 										foreach($types_documents as $type_document){
-											if(isset($_GET['types'])){
-												if(in_array($type_document,$_GET['types'])){
-													echo '<li class="actif">'.$type_document.'</li>';
+											if($type_document!=""){
+												if(isset($_GET['types'])){
+													if(in_array($type_document,$_GET['types'])){
+														echo '<li class="actif">'.$type_document.'</li>';
+													}
+													else{
+														echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
+													}
 												}
 												else{
 													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
 												}
-											}
-											else{
-												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'types[]='.$type_document.'">'.$type_document.'</a></li>';
 											}
 										}
 									}
@@ -139,16 +143,18 @@ Template Name: Page archive d'images
 									$auteurs = $wpdb->get_col("SELECT DISTINCT meta_value FROM $wpdb->postmeta WHERE meta_key = 'auteur' ORDER BY meta_value" );
 									if($auteurs){
 										foreach($auteurs as $auteur){
-											if(isset($_GET['auteurs'])){
-												if(in_array($auteur,$_GET['auteurs'])){
-													echo '<li class="actif">'.$auteur.'</li>';
+											if($auteur!=""){
+												if(isset($_GET['auteurs'])){
+													if(in_array($auteur,$_GET['auteurs'])){
+														echo '<li class="actif">'.$auteur.'</li>';
+													}
+													else{
+														echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
+													}
 												}
 												else{
 													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
 												}
-											}
-											else{
-												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'auteurs[]='.$auteur.'">'.$auteur.'</a></li>';
 											}
 										}
 									}
@@ -167,16 +173,18 @@ Template Name: Page archive d'images
 								$couleurs = get_terms('couleur',$args);
 								if($couleurs){
 									foreach($couleurs as $couleur){
-										if(isset($_GET['couleurs'])){
-											if(in_array($couleur->slug,$_GET['couleurs'])){
-												echo '<li class="actif">'.$couleur->name.'</li>';
+										if($couleur!=""){
+											if(isset($_GET['couleurs'])){
+												if(in_array($couleur->slug,$_GET['couleurs'])){
+													echo '<li class="actif">'.$couleur->name.'</li>';
+												}
+												else{
+													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+												}
 											}
 											else{
 												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
 											}
-										}
-										else{
-											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
 										}
 									}
 								}
@@ -195,16 +203,18 @@ Template Name: Page archive d'images
 								$mots = get_terms('mot_cle_image',$args);
 								if($mots){
 									foreach($mots as $mot){
-										if(isset($_GET['mots'])){
-											if(in_array($mot->slug,$_GET['mots'])){
-												echo '<li class="actif">'.$mot->name.'</li>';
+										if($mot!=""){
+											if(isset($_GET['mots'])){
+												if(in_array($mot->slug,$_GET['mots'])){
+													echo '<li class="actif">'.$mot->name.'</li>';
+												}
+												else{
+													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+												}
 											}
 											else{
 												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
 											}
-										}
-										else{
-											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
 										}
 									}
 								}
