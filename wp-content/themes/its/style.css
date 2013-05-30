@@ -1037,11 +1037,11 @@ h2.titre, h2.titre a{
 }
 
 #actualites article > div, #regards article > div{
-	background:url('img/grand_sep.png') repeat-x left bottom;
+	background:url('img/pointille-gris.png') repeat-x left bottom;
 }
 
 #actualites a.row:hover article > div{
-	background:url('img/grand_sep_actif.png') repeat-x left bottom;
+	background:url('img/pointille-vert.png') repeat-x left bottom;
 }
 
 #actualites article > div > p, #regards article > div > p, .post_content p{
@@ -1148,7 +1148,7 @@ a.suite:hover, a.row:hover p.suite, #meme_theme li:hover, .post + #meme_theme li
 }
 
 .post_archive, .post .post_content, .pagination, #texte_tag{
-	background: url("img/sep_articles.png") no-repeat scroll left bottom transparent;
+	background: url("img/pointille-gris.png") repeat-x scroll left bottom transparent;
 }
 
 .post_content.resume p{
@@ -1260,6 +1260,7 @@ p.tags span.tags{
 
 #texte_tag{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+	width: 680px;
 } 
 
 #texte_tag p{
