@@ -46,16 +46,22 @@ $(document).ready(function(){
 	}
 
 	/*gestion du slider pages categories et organisations*/
-	var deplacement = 464; //valeur en pixels du déplacement de la frise date à chaque clic sur precedent ou suivant
+	var deplacement = 458; //valeur en pixels du déplacement de la frise date à chaque clic sur precedent ou suivant
 	var pointeur = 1; //variable qui récupère l'index de l'année en cours
 
 	var position = 1; //variable qui gère la position du curseur (début des puces blanches)
 	var borne = 8; //borne pour rendre les puces actives (blanches)
 	var max = Math.floor($('.conteneur_annees li').length/8)*8+1; //borne maximum de la position du curseur
-	var largeur = new Array(23,44,65,86,107.5,129,150.5,172); //stocke les différentes largeurs utiles pour le curseur
+	var largeur = 0; // largeur du curseur
 	var arrondi_haut = 0; 
 	var arrondi_bas = 0;
 	var multiplicateur = 0;
+
+	//On détermine la largeur du curseur quand on arrive sur la page
+	var position_depart = $('li.puce-tag').eq(0).position();
+	var position_fin = $('li.puce-tag').eq(7).position();
+	largeur = position_fin.left - position_depart.left + 24;
+	$('#curseur_large').css('width',largeur);
 	
 	var premier = $('.conteneur_annees li:first-child a').html();
 
@@ -69,10 +75,10 @@ $(document).ready(function(){
 	if ($.url().param('annee')===undefined || $.url().param('annee')==premier){
 		
 		$('#annee_'+premier).addClass('actif');
-		$('#puce-tag_1').addClass('super_actif');
+		$('li.puce-tag').eq(0).addClass('super_actif');
 
-		for(var i=2; i<=borne; i++){
-			$('#puce-tag_'+i).addClass('actif');
+		for(var i=1; i<borne; i++){
+			$('li.puce-tag').eq(i).addClass('actif');
 		}
 	}
 	else{
@@ -84,7 +90,7 @@ $(document).ready(function(){
 		});
 
 		$('#annee_'+$.url().param('annee')).addClass('actif');
-		$('#puce-tag_'+pointeur).addClass('super_actif');
+		$('li.puce-tag').eq(pointeur-1).addClass('super_actif');
 
 		//On détermine les position de début et de fin du secteur
 
@@ -95,16 +101,18 @@ $(document).ready(function(){
 
 		if((arrondi_haut*8)>$('.conteneur_annees li').length){
 			borne = ((arrondi_bas)*8)+($('.conteneur_annees li').length%8);
-			//calcul de la longueur du curseur selon le reste de la division du nombre de puces par 8 (taille max du curseur)
-			$('#curseur_large').css('width',largeur[($('.conteneur_annees li').length%8)-1]);
 		}
 		else{
 			borne = arrondi_haut*8;
-			$('#curseur_large').css('width',172);
 		}
+
+		position_depart = $('li.puce-tag').eq(position-1).position();
+		position_fin = $('li.puce-tag').eq(borne-1).position();
+		largeur = position_fin.left - position_depart.left + 24;
+		$('#curseur_large').css('width',largeur);
 		
-		for(var i=position; i<=borne; i++){
-			$('#puce-tag_'+i).addClass('actif');
+		for(var i=position-1; i<borne; i++){
+			$('li.puce-tag').eq(i).addClass('actif');
 		}
 
 		//pour déterminer le multiplicateur (différent selon si on a un multiple de 8 ou non)
@@ -113,7 +121,7 @@ $(document).ready(function(){
 		}
 
 		//position du curseur
-		$('#curseur_large').css('left', (168*multiplicateur)+13);
+		$('#curseur_large').css('left', position_depart.left-6);
 
 		//position frise dates
 		$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
@@ -123,7 +131,7 @@ $(document).ready(function(){
 	$('.precedent_tag').click(function(){
 		if(position!=1){
 			$('.puce-tag').removeClass('actif');
-			$('#curseur_large').css('width',172);
+
 			position = position-8;
 			arrondi_haut = Math.ceil(position / 8);
 			arrondi_bas = Math.floor(position / 8);
@@ -131,12 +139,17 @@ $(document).ready(function(){
 
 			borne = arrondi_haut*8;
 			
-			for(var i=position; i<=borne; i++){
-				$('#puce-tag_'+i).addClass('actif');
+			for(var i=position-1; i<borne; i++){
+				$('li.puce-tag').eq(i).addClass('actif');
 			}
 
+			position_depart = $('li.puce-tag').eq(position-1).position();
+			position_fin = $('li.puce-tag').eq(borne-1).position();
+			largeur = position_fin.left - position_depart.left + 24;
+			$('#curseur_large').css('width',largeur);
+
 			//position du curseur
-			$('#curseur_large').css('left', (168*multiplicateur)+13);
+			$('#curseur_large').css('left', position_depart.left-6);
 
 			//position frise dates
 			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
@@ -154,20 +167,23 @@ $(document).ready(function(){
 
 			if((arrondi_haut*8)>$('.conteneur_annees li').length){
 				borne = ((arrondi_bas)*8)+($('.conteneur_annees li').length%8);
-				//calcul de la longueur du curseur selon le reste de la division du nombre de puces par 8 (taille max du curseur)
-				$('#curseur_large').css('width',largeur[($('.conteneur_annees li').length%8)-1]);
 			}
 			else{
 				borne = arrondi_haut*8;
 				$('#curseur_large').css('width',172);
 			}
 
-			for(var i=position; i<=borne; i++){
-				$('#puce-tag_'+i).addClass('actif');
+			position_depart = $('li.puce-tag').eq(position-1).position();
+			position_fin = $('li.puce-tag').eq(borne-1).position();
+			largeur = position_fin.left - position_depart.left + 24;
+			$('#curseur_large').css('width',largeur);
+
+			for(var i=position-1; i<borne; i++){
+				$('li.puce-tag').eq(i).addClass('actif');
 			}
 
 			//position du curseur
-			$('#curseur_large').css('left', (168*multiplicateur)+13);
+			$('#curseur_large').css('left', position_depart.left-6);
 
 			//position frise dates
 			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
