@@ -1020,10 +1020,11 @@ h3.titre, h2.titre, h2.titre a{
 
 h2.titre, h2.titre a{
 	margin-bottom:0;
+	margin-top: 0;
 }
 
 .post h2.titre{
-	margin-top:0px;
+	margin-top:40px;
 	margin-bottom: 2px;
 }
 
@@ -1193,7 +1194,9 @@ article + .pagination{
 }
 
 h3.date{
-	text-transform: uppercase;
+	margin-bottom: 15px;
+    margin-top: 5px;
+    text-transform: uppercase;
 }
 
 h3.date span{
