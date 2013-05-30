@@ -707,7 +707,7 @@ section.sidebar ul.slider li.actif a{
 /* ----------------------------- */
 
 footer{
-	background-color: #333;
+	background-color: #555;
 }
 
 footer #nuage{
@@ -751,6 +751,10 @@ footer #nuage a{
 
 #menu_footer_2 + div{
 	padding-left: 20px;
+}
+
+#footer > ul, #footer > div{
+	width:180px;
 }
 
 /* ----------------------------- */
@@ -1328,7 +1332,7 @@ p.tags span.tags{
 #frise .conteneur_annees + a{
 	background: url("img/puce_sidebar.png") no-repeat scroll left center transparent;
     padding-left: 20px;
-    color:#333;
+    color:#666;
 }
 
 #frise ul > li > a{

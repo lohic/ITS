@@ -12,7 +12,7 @@
 	        </div>    
 	        <section id="nuage" class="pr3 smallest col">
                 <?php 
-                	$idObj = get_category_by_slug('categories-meres'); 
+                	/*$idObj = get_category_by_slug('categories-meres'); 
     				$categories = get_categories( array('parent'=>$idObj->term_id) ); 
     				if($categories){
 			    		foreach ($categories as $categorie){
@@ -20,7 +20,7 @@
 							<a href="<?php echo get_category_link($categorie->term_id);?>"><?php echo $categorie->name;?></a>&nbsp;
 		    	<?php
 		    			}
-		    		}
+		    		}*/
 		    	?>
             </section>
         </footer>
