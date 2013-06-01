@@ -22,7 +22,7 @@
 				global $wp_query;
 				$total_results = $wp_query->found_posts;
 			?>
-			<p class="nombre_resultat smaller"><?php echo $total_results;?> résultat(s)</p>
+			<p class="nombre_resultat smaller"><?php echo $total_results;?> résultat(s) pour <a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php echo $lachaine;?></a></p>
 			<?php else : ?>
 			<p class="nombre_resultat smaller">Aucun article trouvé. Essayer une autre recherche ?</p>
 			<?php endif; ?>
@@ -94,8 +94,8 @@
 			?>
 				<div class="post_content small resume">
 					<?php 
-						the_excerpt();
-						echo ' ... <a href="'.get_permalink().'" class="suite"><span>lire la suite</span></a>';
+						//the_excerpt();
+						echo '<a href="'.get_permalink().'" class="suite"><span>lire la suite</span></a>';
 					?>
 				</div>
 			</article>
