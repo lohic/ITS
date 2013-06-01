@@ -1068,7 +1068,7 @@ h2.titre, h2.titre a{
 }
 
 a.suite, #meme_theme li, li.telechargement, p.suite{
-	background:url('img/chevron_rouge.png') no-repeat left center;
+	background:url('img/chevron_rouge.png') no-repeat left 6px;
 	padding-left:12px;
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
@@ -1082,7 +1082,7 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 }
 
 a.suite:hover, a.row:hover p.suite, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
-	background:url('img/chevron_vert.png') no-repeat left center;
+	background:url('img/chevron_vert.png') no-repeat left 6px;
 }
 
 #meme_theme li{
@@ -1157,16 +1157,16 @@ a.suite:hover, a.row:hover p.suite, #meme_theme li:hover, .post + #meme_theme li
 
 .post_content img.alignleft{
 	float:left;
-	margin:1em 1em 1em 0em;
+	margin:0.3em 1em 1em 0em;
 }
 
 .post_content img.alignright{
 	float:right;
-	margin:1em 0em 1em 1em;
+	margin:0.3em 0em 1em 1em;
 }
 
 .post_content img.aligncenter{
-	margin:1em;
+	margin:0.3em 1em 1em;
 }
 
 .clear{
@@ -1833,6 +1833,12 @@ h4.resultats{
 #centre .newsletter .with_frm_style .form-field{
 	margin-bottom: 10px;
 }
+
+/*** 404 ***/
+.p404 p{
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+}
+
 
 /* ----------------------------- */
 /* ==iefix */

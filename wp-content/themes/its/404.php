@@ -1,12 +1,12 @@
 <?php get_header(); ?>
 
 <div class="row mb3">
-    <div id="centre" class="col pl3 pr3">
+    <div id="centre" class="col pl3 pr3 p404">
     	<?php 
     		if (function_exists('mybread')) mybread();
 		?>
 		<div id="entete">
-			<h1 class="very_biggest sans mb3">Aucun document ne correspond.</h1>
+			<h1 class="very_biggest sans mb3">Erreur : la page n'existe pas</h1>
 		</div>
 		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 			<article class="pt2 pb2 post_archive" id="post-<?php the_ID(); ?>">
