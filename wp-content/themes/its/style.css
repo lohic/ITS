@@ -187,7 +187,7 @@ textarea, .with_frm_style input[type="submit"], #commentform input[type="submit"
 }
 
 aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise .conteneur_annees + a,
-#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, aside section h3 > span{
+#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, aside section h3 > span, p.nocomments{
 	font-family:"futura-pt", sans-serif;
 	font-weight:500;
 	font-style:normal;
@@ -1403,7 +1403,7 @@ p.tags span.tags{
 	margin-top:5px;
 }
 
-#comments, #comments_bis, .commentmetadata, .commenttext, .commentmetadata a, #respond{
+#comments, #comments_bis, .commentmetadata, .commenttext, .commentmetadata a, #respond, p.nocomments{
 	color:#666;
 }
 
