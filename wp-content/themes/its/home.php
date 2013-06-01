@@ -45,30 +45,54 @@
 	        </div>
         </section>
 
+		
         <section id="actualites" class="pl3">
+        <?php
+			//$remontee_its = get_field('remontee_its', 'option');
+			$posts = get_field('remontee_its', 'option');
+			
+			if( $posts ):
+			
+			foreach( $posts as $post): // variable must be called $post (IMPORTANT)
+				setup_postdata($post); 
+		?>
+
             <h2 class="smaller"><span></span>Institut Tribune Socialiste</h2>
             <div class="row">
-				<?php
-					$remontee_its = get_field('remontee_its', 'option');
-				?>
-				<a href="<?php echo get_permalink($remontee_its->ID);?>" class="row">
+				
+				<a href="<?php echo the_permalink();?>" class="row">
 	                <div class="col">
 	                	<figure class="tint">
-							<?php echo get_the_post_thumbnail($remontee_its->ID,'remontee_its');?> 
+							<?php the_post_thumbnail('remontee_its');?> 
 						</figure>
 	                </div>
                 
 	                <article class="col pl3">
-	                    <h3 class="very_biggest mb0 titre"><?php echo get_the_title($remontee_its->ID);?></h3>
-	                    <h4 class="normal mt0 mb1"><?php the_field('date_article', $remontee_its->ID); ?><span><?php the_field('auteur_article', $remontee_its->ID); ?></span></h4>
+	                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
+	                    <h4 class="normal mt0 mb1"><?php the_field('date_article'); ?><span><?php the_field('auteur_article'); ?></span></h4>
 	                    <div class="pb1 mb1">
-	                        <p class="small mb1"><?php echo $remontee_its->post_content;?></p>
+	                        <div class="small mb1"><?php
+                            // il y a un probleme ici, je n'arrive pas à faire remonter le texte ou le résume sans eclater la structure !
+							$resume = get_field("resume_article");
+							//if(!$resume){
+								//the_content();
+							//}else{
+								//echo $resume;
+							//}
+							?></div>
 	                    </div>
 	                    <p class="small suite"><span>lire la suite</span></p>
 	                </article>
                 </a>
             </div>
+        <?php 
+		
+		endforeach;
+		wp_reset_postdata();
+		endif; ?>
         </section>
+        
+        
 
         <section id="regards" class="pl3">
             <h2 class="smaller"><span></span>Regards d'aujourd'hui</h2>
