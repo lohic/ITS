@@ -17,3 +17,7 @@ Timeline :
 Paginate Links :
 
 - http://codex.wordpress.org/Function_Reference/paginate_links
+
+
+redricect rules :
+http://wp.tutsplus.com/tutorials/creative-coding/the-rewrite-api-the-basics/
