@@ -159,7 +159,7 @@
 							endif;
 						?>
 
-		                <a href="#recherche" class="recherche small mt3">Faire une recherche</a>
+		                <a href="?s=accueil_recherche" class="recherche small mt3">Faire une recherche</a>
 		            </section>
                 <?php endwhile;
             ?>

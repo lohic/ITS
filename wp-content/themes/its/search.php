@@ -3,7 +3,19 @@
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
-    		if (function_exists('mybread')) mybread();
+    		if($_GET['s']=="accueil_recherche"){
+    	?>
+    			<div id="breadcrumbs" class="smaller mb3" xmlns:v="http://rdf.data-vocabulary.org/#">
+					<span typeof="v:Breadcrumb">
+						<a id="breadh" property="v:title" rel="v:url" href="<?php bloginfo('url'); ?>" title="ITS">Accueil</a>
+					</span>
+					<span>» Recherche</span>
+				</div>
+		<?php
+    		}
+    		else{
+    			if (function_exists('mybread')) mybread();
+    		}
 		?>
 		<div id="entete">
 			<?php
@@ -24,8 +36,17 @@
 			?>
 			<p class="nombre_resultat smaller"><?php echo $total_results;?> résultat(s) pour <a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php echo $lachaine;?></a></p>
 			<?php else : ?>
-			<p class="nombre_resultat smaller">Aucun article trouvé. Essayer une autre recherche ?</p>
-			<?php endif; ?>
+				<?php if($_GET['s']=="accueil_recherche"){
+			?>
+					<p class="nombre_resultat smaller">Rechercher</p>
+			<?php
+				}
+				else{
+			?>
+					<p class="nombre_resultat smaller">Aucun article trouvé. Essayer une autre recherche ?</p>
+			<?php
+				}
+				endif; ?>
 			
 			<section class="pagination smaller mb2">
 				<?php previous_posts_link('« Previous') ?>
