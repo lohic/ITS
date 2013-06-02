@@ -66,7 +66,16 @@
                 
 	                <article class="col pl3">
 	                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
-	                    <h4 class="normal mt0 mb1"><?php the_field('date_article'); ?><span><?php the_field('auteur_article'); ?></span></h4>
+	                    <h4 class="normal mt0 mb1">
+						<?php 		
+							if(get_field('date_article')){
+								echo get_field('date_article').'&nbsp•&nbsp';
+							}
+							if(get_field('auteur_article')){
+								echo '<span>'.get_field('auteur_article').'</span>';
+							}
+						?>
+	                    </h4>
 	                    <div class="pb1 mb1">
 	                        <div class="small mb1">
 		                    <?php
@@ -100,14 +109,24 @@
                 while( $my_query->have_posts() ) : $my_query->the_post();?>
 		            <article class="col">
                         <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
-                        <h4 class="normal mt0 mb1"><?php the_field('date_article');?><span><?php the_field('auteur_article');?></span></h4>
+
+                        <h4 class="normal mt0 mb1">
+							<?php 		
+								if(get_field('date_article')){
+									echo get_field('date_article').'&nbsp•&nbsp';
+								}
+								if(get_field('auteur_article')){
+									echo '<span>'.get_field('auteur_article').'</span>';
+								}
+							?>
+                        </h4>
                         <div class="pb2 mb1 small">
 	                        <?php the_content();?>
 	                    </div>
 	                    <a href="<?php the_permalink(); ?>" class="small suite"><span>lire la suite</span></a>
 		            </article>
 		            <section id="meme_theme" class="pl3 col">
-		                <h3 class="small mb0">Archives sur le même thème</h3>
+		                <h3 class="small mb0">Archives en relation</h3>
 		                <?php 
 		                	$categories = get_the_category();
 		                	if($categories){
@@ -123,14 +142,17 @@
 							$connected = p2p_type( 'posts_to_posts' )->get_connected(get_the_ID());
 							// Display connected pages
 							if ( $connected->have_posts() ) :
-							?>
+						?>
 								<ul id="liste_liens" class="small">
 								<?php while ( $connected->have_posts() ) : $connected->the_post(); ?>
 									<li><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></li>
 								<?php endwhile; ?>
 								</ul>
-
-							<?php 
+						<?php
+							else:
+						?>
+								<p class="small">Aucune archive en relation</p>
+						<?php
 							// Prevent weirdness
 							wp_reset_postdata();
 
