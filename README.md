@@ -21,3 +21,6 @@ Paginate Links :
 
 redricect rules :
 http://wp.tutsplus.com/tutorials/creative-coding/the-rewrite-api-the-basics/
+
+à regarder :
+http://php.net/manual/fr/function.range.php
