@@ -56,8 +56,7 @@
 
             <h2 class="smaller"><span></span>Institut Tribune Socialiste</h2>
             <div class="row">
-				
-				<a href="<?php echo the_permalink();?>" class="row">
+				<!--<a href="<?php echo the_permalink();?>" class="row">-->
 	                <div class="col">
 	                	<figure class="tint">
 							<?php the_post_thumbnail('remontee_its');?> 
@@ -88,9 +87,9 @@
 							?>
 							</div>
 	                    </div>
-	                    <p class="small suite"><span>lire la suite</span></p>
+	                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
 	                </article>
-                </a>
+                <!--</a>-->
             </div>
         <?php 
 		

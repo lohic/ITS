@@ -1,4 +1,5 @@
 $(document).ready(function(){
+
 	/*gestion du slider agenda*/
 	$("#puce_1").addClass('actif');
 	$("#puce_2").addClass('actif');

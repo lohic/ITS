@@ -2,8 +2,21 @@ $(document).ready(function(){
 	/*if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
 		$('#filtres > div.conteneur').css('display','block');
 	}*/
+	/*** Survol bloc actualités home ***/
+	$("#actualites").mouseenter(function(){
+		$(this).addClass('actualites_over');
+	});
+	$('#actualites').mouseleave(function(){
+		$(this).removeClass('actualites_over');
+	});
 
-	/* clic sur le bouton recherche de la home*/
+	$("#actualites").click(function(){
+		var chemin_actu = $("#actualites p.suite a").attr('href');
+		$(location).attr('href',chemin_actu);
+	});
+	/*** fin Survol bloc actualités home ***/
+
+	/* clic sur le bouton recherche de la home
 	$('a.recherche').click(function(){
 		$('#recherche #s').focus();
 	});
