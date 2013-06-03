@@ -10,31 +10,13 @@
 			<section id="frise" class="normal mt4 mb3 pl1 row biographie">
 				<ul class="row">
 					<li <?php if($_GET['lettre']=="a" || !isset($_GET['lettre'])){ echo 'class="actif"';}?>><a href="?lettre=a">A</a></li>
-					<li <?php if($_GET['lettre']=="b"){ echo 'class="actif"';}?>><a href="?lettre=b">B</a></li>
-					<li <?php if($_GET['lettre']=="c"){ echo 'class="actif"';}?>><a href="?lettre=c">C</a></li>
-					<li <?php if($_GET['lettre']=="d"){ echo 'class="actif"';}?>><a href="?lettre=d">D</a></li>
-					<li <?php if($_GET['lettre']=="e"){ echo 'class="actif"';}?>><a href="?lettre=e">E</a></li>
-					<li <?php if($_GET['lettre']=="f"){ echo 'class="actif"';}?>><a href="?lettre=f">F</a></li>
-					<li <?php if($_GET['lettre']=="g"){ echo 'class="actif"';}?>><a href="?lettre=g">G</a></li>
-					<li <?php if($_GET['lettre']=="h"){ echo 'class="actif"';}?>><a href="?lettre=h">H</a></li>
-					<li <?php if($_GET['lettre']=="i"){ echo 'class="actif"';}?>><a href="?lettre=i">I</a></li>
-					<li <?php if($_GET['lettre']=="j"){ echo 'class="actif"';}?>><a href="?lettre=j">J</a></li>
-					<li <?php if($_GET['lettre']=="k"){ echo 'class="actif"';}?>><a href="?lettre=k">K</a></li>
-					<li <?php if($_GET['lettre']=="l"){ echo 'class="actif"';}?>><a href="?lettre=l">L</a></li>
-					<li <?php if($_GET['lettre']=="m"){ echo 'class="actif"';}?>><a href="?lettre=m">M</a></li>
-					<li <?php if($_GET['lettre']=="n"){ echo 'class="actif"';}?>><a href="?lettre=n">N</a></li>
-					<li <?php if($_GET['lettre']=="o"){ echo 'class="actif"';}?>><a href="?lettre=o">O</a></li>
-					<li <?php if($_GET['lettre']=="p"){ echo 'class="actif"';}?>><a href="?lettre=p">P</a></li>
-					<li <?php if($_GET['lettre']=="q"){ echo 'class="actif"';}?>><a href="?lettre=q">Q</a></li>
-					<li <?php if($_GET['lettre']=="r"){ echo 'class="actif"';}?>><a href="?lettre=r">R</a></li>
-					<li <?php if($_GET['lettre']=="s"){ echo 'class="actif"';}?>><a href="?lettre=s">S</a></li>
-					<li <?php if($_GET['lettre']=="t"){ echo 'class="actif"';}?>><a href="?lettre=t">T</a></li>
-					<li <?php if($_GET['lettre']=="u"){ echo 'class="actif"';}?>><a href="?lettre=u">U</a></li>
-					<li <?php if($_GET['lettre']=="v"){ echo 'class="actif"';}?>><a href="?lettre=v">V</a></li>
-					<li <?php if($_GET['lettre']=="w"){ echo 'class="actif"';}?>><a href="?lettre=w">W</a></li>
-					<li <?php if($_GET['lettre']=="x"){ echo 'class="actif"';}?>><a href="?lettre=x">X</a></li>
-					<li <?php if($_GET['lettre']=="y"){ echo 'class="actif"';}?>><a href="?lettre=y">Y</a></li>
-					<li <?php if($_GET['lettre']=="z"){ echo 'class="actif"';}?>><a href="?lettre=z">Z</a></li>
+				<?php
+					foreach (range('b', 'z') as $letter) {
+				?>
+						<li <?php if($_GET['lettre']==$letter){ echo 'class="actif"';}?>><a href="?lettre=<?php echo $letter;?>"><?php echo $letter;?></a></li>				
+				<?php	
+					}
+				?>
 				</ul>
 			</section>
 			
@@ -55,7 +37,6 @@
 							$prev=chr(ord($_GET['lettre'])-1);
 						}
 					}
-					
 				}
 				else{
 					$first_char = 'a';

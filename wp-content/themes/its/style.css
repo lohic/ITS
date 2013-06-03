@@ -1392,6 +1392,7 @@ p.tags span.tags{
 #frise.biographie{
 	width:665px;
 	padding-left: 15px;
+	text-transform: uppercase;
 }
 
 #frise.biographie li.actif a{
