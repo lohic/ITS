@@ -217,9 +217,9 @@ h2.titre a{
 
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > div > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
 #actualites:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites:hover span, 
-#meme_theme li:hover a, .post + #meme_theme li:hover a, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
-#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *,
-#frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover{
+#meme_theme li:hover a, .post + #meme_theme li:hover a, .post + #meme_theme li:hover:before, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
+#nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
+#frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover{
 	color:#188e7c;
 }
 
@@ -230,17 +230,21 @@ a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus 
 	color:#ff3333;
 }
 
+.post_content a{
+	text-decoration: underline;
+}
+
 article.post_archive.resume:hover h4.tag span{
 	background:#188e7c;
 }
 
-article.post_archive.resume:hover h3.date span{
+/*article.post_archive.resume:hover h3.date span{
 	background: url("img/puce_auteur_actif.png") no-repeat scroll left center transparent;
 }
 
 article.post_archive.resume:hover .categories_et_tags span.tags {
     background: url("img/puce_tags_actif.png") no-repeat scroll left 4px transparent;
-}
+}*/
 
 #menus li > a:hover, #menus #menu_secondaire a:hover{
 	color:#fff;
@@ -1058,6 +1062,19 @@ h2.titre, h2.titre a{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
+.post_content ul{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.post_content li{
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+}
+
+.post_content li:before{
+	content:' » ';
+}
+
 #regards .row > article{
 	width:420px;
 }
@@ -1090,7 +1107,7 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 	font-size:1.5em;
 }
 
-a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, .post + #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
+a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, li.telechargement:hover, article.post_archive.resume:hover a.suite{
 	background:url('img/chevron_vert.png') no-repeat left 6px;
 }
 
@@ -1154,8 +1171,15 @@ a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, .post + #meme_th
 }
 
 .post + #meme_theme li{
-	background: url("img/chevron_gris.png") no-repeat scroll left 6px transparent;
+	/*background: url("img/chevron_gris.png") no-repeat scroll left 6px transparent;*/
+	background: none;
 	margin-bottom: 0;
+	padding-left: 0;
+}
+
+.post + #meme_theme li:before{
+	content:' » ';
+	color:#666;
 }
 
 .post_archive, .post .post_content, .post, .comments-template, #sous_categories, .pagination{
@@ -1222,6 +1246,12 @@ h3.date span{
 p.categories_et_tags a, p.categories_et_tags, p.tags{
     font-family: "signikaregular", "futura-pt", Arial, sans-serif;
 	color:#000;
+}
+
+p.categories_et_tags span.titre_mot_cle{
+	color:#999;
+	font-size:1.05em;
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
 p.tags{

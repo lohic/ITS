@@ -71,13 +71,14 @@
 			}
 			
 			$categories = get_category_parents($categorie[0]->term_id,'true','');
+			
 			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
 
 			if($organisations==""){
 				$organisations="Institut Tribune Socialiste";
 			}
 		?>
-			<article class="pt2 pb2 post_archive resume" id="post-<?php the_ID(); ?>">
+			<article class="pt2 pb2 post_archive search" id="post-<?php the_ID(); ?>">
 				<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
 				<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 			<?php
@@ -85,11 +86,11 @@
 			?>
 					<p class="mb0 smaller categories_et_tags">
 					<?php 
-						if($categorie!=""){ 
+						if($categories!=""){ 
 							echo '<span class="categories">'.$categories.'</span>&nbsp';
 						}
 						if($liste_tags!=""){
-							echo '<span class="tags">'.$liste_tags.'</span>';
+							echo '•&nbsp<span class="tags">'.$liste_tags.'</span>';
 						}
 					?>
 					</p>
@@ -103,7 +104,7 @@
 					<h3 class="little_small mb1 mt1 date">
 			<?php 		
 					if(get_field('date_article')){
-						echo get_field('date_article').'&nbsp';
+						echo get_field('date_article').'&nbsp•&nbsp';
 					}
 					if(get_field('auteur_article')){
 						echo '<span>'.get_field('auteur_article').'</span>';

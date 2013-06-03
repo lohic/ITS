@@ -31,7 +31,7 @@
 						echo '<span class="categories">'.$categories.'</span>&nbsp';
 					}
 					if($liste_tags!=""){*/
-					echo '<span class="tags">'.$liste_tags.'</span>';
+					echo '<span class="titre_mot_cle">Mots-clés : </span><span class="tags">'.$liste_tags.'</span>';
 					//}
 				?>
 				</p>

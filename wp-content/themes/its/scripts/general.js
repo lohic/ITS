@@ -2,6 +2,18 @@ $(document).ready(function(){
 	/*if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
 		$('#filtres > div.conteneur').css('display','block');
 	}*/
+	/*** masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
+	$('.categories_et_tags').each(function(){
+		if($(this).find('.tags').text()==""){
+			if($(this).find('.categories > a').eq(0).text()=="Non classé" || ($(this).find('.categories > a').eq(0).text()=="Catégories mères" && $(this).find('.categories > a').eq(0).text()=="")){
+				$(this).css('display','none');
+				$(this).siblings('h3.date').css('marginTop', '2px');
+			}
+		}
+	});
+	/*** fin masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
+
+
 	/*** Survol bloc actualités home ***/
 	$("#actualites").mouseenter(function(){
 		$(this).addClass('actualites_over');
