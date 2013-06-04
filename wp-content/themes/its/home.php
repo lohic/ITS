@@ -69,10 +69,16 @@
 						<?php 		
 							if(get_field('date_article')){
 								echo get_field('date_article');
+								if(get_field('auteur_article')){
+									echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+								}
 							}
-							if(get_field('auteur_article')){
-								echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+							else{
+								if(get_field('auteur_article')){
+									echo '<span>'.get_field('auteur_article').'</span>';
+								}
 							}
+							
 						?>
 	                    </h4>
 	                    <div class="pb1 mb1">
@@ -113,9 +119,14 @@
 							<?php 		
 								if(get_field('date_article')){
 									echo get_field('date_article');
+									if(get_field('auteur_article')){
+										echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+									}
 								}
-								if(get_field('auteur_article')){
-									echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+								else{
+									if(get_field('auteur_article')){
+										echo '<span>'.get_field('auteur_article').'</span>';
+									}
 								}
 							?>
                         </h4>

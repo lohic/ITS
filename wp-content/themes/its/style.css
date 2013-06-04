@@ -1273,9 +1273,13 @@ p.tags{
 	color:#999;
 }
 
-.categories a:first-child{
+/*.categories a:first-child{
 	display:none;
 }
+
+.categories.premier_niveau a:first-child{
+	display:inherit;
+}*/
 
 .categories_et_tags span.tags{
 	text-transform: uppercase;

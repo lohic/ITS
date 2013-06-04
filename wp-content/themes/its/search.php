@@ -76,8 +76,19 @@
 				$liste_tags = substr($liste_tags, 0, -2);
 			}
 			
-			$categories = get_category_parents($categorie[0]->term_id,'true','');
-			
+			if($categorie[0]->term_id){
+				$categories = get_category_parents($categorie[0]->term_id,false,';');
+				$tableau_categories = explode(';',$categories);
+				$categories="";
+				foreach($tableau_categories as $lacate){
+					if($lacate!="Non classé" && $lacate!="Catégories mères" && $lacate!=""){
+						$category_id = get_cat_ID($lacate);
+    					$category_link = get_category_link( $category_id );
+						$categories.='<a href="'.$category_link.'">'.$lacate.'</a>';
+					}
+				}
+			}
+
 			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
 
 			if($organisations==""){
@@ -94,9 +105,14 @@
 					<?php 
 						if($categories!=""){ 
 							echo '<span class="categories">'.$categories.'</span>';
+							if($liste_tags!=""){
+								echo '&nbsp•&nbsp<span class="tags">'.$liste_tags.'</span>';
+							}
 						}
-						if($liste_tags!=""){
-							echo '&nbsp•&nbsp<span class="tags">'.$liste_tags.'</span>';
+						else{
+							if($liste_tags!=""){
+								echo '<span class="tags">'.$liste_tags.'</span>';
+							}
 						}
 					?>
 					</p>
@@ -111,10 +127,16 @@
 			<?php 		
 					if(get_field('date_article')){
 						echo get_field('date_article');
+						if(get_field('auteur_article')){
+							echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+						}
 					}
-					if(get_field('auteur_article')){
-						echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+					else{
+						if(get_field('auteur_article')){
+							echo '<span>'.get_field('auteur_article').'</span>';
+						}
 					}
+					
 			?>
 					</h3>
 			<?php

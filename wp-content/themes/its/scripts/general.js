@@ -3,14 +3,14 @@ $(document).ready(function(){
 		$('#filtres > div.conteneur').css('display','block');
 	}*/
 	/*** masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
-	$('.categories_et_tags').each(function(){
+	/*$('.categories_et_tags').each(function(){
 		if($(this).find('.tags').text()==""){
-			if($(this).find('.categories > a').eq(0).text()=="Non classé" || ($(this).find('.categories > a').eq(0).text()=="Catégories mères" && $(this).find('.categories > a').eq(0).text()=="")){
+			if($(this).find('.categories > a').eq(0).text()=="Non classé" || ($(this).find('.categories > a').eq(0).text()=="Catégories mères" && $(this).find('.categories > a').eq(1).text()=="")){
 				$(this).css('display','none');
 				$(this).siblings('h3.date').css('marginTop', '2px');
 			}
 		}
-	});
+	});*/
 	/*** fin masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
 
 
@@ -58,19 +58,10 @@ $(document).ready(function(){
 	});
 	/*Fin de la gestion des commentaires*/
 
-	$('#filtres').mouseenter(function(){
-		$('#filtres > .conteneur').toggle('fast');
-	});
-
-	$('#filtres').mouseleave(function(){
-		$('#filtres > .conteneur').toggle('fast');
-	});
-
+	/*gestion du slider pages categories et organisations*/
 	if($('.conteneur_annees li').length>8){
 		$('#navigation_curseur').css('display','block');
 	}
-
-	/*gestion du slider pages categories et organisations*/
 	var deplacement = 458; //valeur en pixels du déplacement de la frise date à chaque clic sur precedent ou suivant
 	var pointeur = 1; //variable qui récupère l'index de l'année en cours
 
@@ -85,7 +76,9 @@ $(document).ready(function(){
 	//On détermine la largeur du curseur quand on arrive sur la page
 	var position_depart = $('li.puce-tag').eq(0).position();
 	var position_fin = $('li.puce-tag').eq(7).position();
-	largeur = position_fin.left - position_depart.left + 24;
+	if(position_fin!=undefined && position_depart!=undefined){
+		largeur = position_fin.left - position_depart.left + 24;
+	}
 	$('#curseur_large').css('width',largeur);
 	
 	var premier = $('.conteneur_annees li:first-child a').html();
@@ -215,6 +208,16 @@ $(document).ready(function(){
 		}
 	});
 	/* Fin de la gestion du slider*/
+
+
+	$('#filtres').mouseenter(function(){
+		$('#filtres > .conteneur').toggle('fast');
+	});
+
+	$('#filtres').mouseleave(function(){
+		$('#filtres > .conteneur').toggle('fast');
+	});
+
 
 	/*AJAX sur iconographie*/
 	function reinitialisation(){
@@ -428,4 +431,6 @@ $(document).ready(function(){
 
 
 	initialisation();
+
+	
 });
