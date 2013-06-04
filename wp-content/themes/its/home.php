@@ -68,10 +68,10 @@
 	                    <h4 class="normal mt0 mb1">
 						<?php 		
 							if(get_field('date_article')){
-								echo get_field('date_article').'&nbsp•&nbsp';
+								echo get_field('date_article');
 							}
 							if(get_field('auteur_article')){
-								echo '<span>'.get_field('auteur_article').'</span>';
+								echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
 							}
 						?>
 	                    </h4>
@@ -112,10 +112,10 @@
                         <h4 class="normal mt0 mb1">
 							<?php 		
 								if(get_field('date_article')){
-									echo get_field('date_article').'&nbsp•&nbsp';
+									echo get_field('date_article');
 								}
 								if(get_field('auteur_article')){
-									echo '<span>'.get_field('auteur_article').'</span>';
+									echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
 								}
 							?>
                         </h4>
@@ -127,15 +127,15 @@
 		            <section id="meme_theme" class="pl3 col">
 		                <h3 class="small mb0">Archives en relation</h3>
 		                <?php 
-		                	$categories = get_the_category();
+		                	/*$categories = get_the_category();
 		                	if($categories){
 		                		foreach ($categories as $categorie){
 			                		$lesCategories.=$categorie->cat_name.', ';
 			                	}
 			                	$lesCategories = substr($lesCategories, 0, -2);
-		                	}
+		                	}*/
 		                ?>
-		                <h4 class="very_smaller mb1"><?php echo $lesCategories;?></h4>
+		                <!--<h4 class="very_smaller mb1"><?php echo $lesCategories;?></h4>-->
 
 						<?php
 							$connected = p2p_type( 'posts_to_posts' )->get_connected(get_the_ID());
@@ -150,7 +150,7 @@
 						<?php
 							else:
 						?>
-								<p class="small">Aucune archive en relation</p>
+								<p class="small">Aucune archive en relation.</p>
 						<?php
 							// Prevent weirdness
 							wp_reset_postdata();

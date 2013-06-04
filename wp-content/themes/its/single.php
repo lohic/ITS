@@ -39,10 +39,10 @@
 				<h3 class="little_small mb2 mt0 date">
 		<?php 		
 				if(get_field('date_article')){
-					echo get_field('date_article').'&nbsp•&nbsp';
+					echo get_field('date_article');
 				}
 				if(get_field('auteur_article')){
-					echo '<span>'.get_field('auteur_article').'</span>';
+					echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
 				}
 		?>
 				</h3>

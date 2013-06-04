@@ -24,8 +24,13 @@
 				$search_query = array();
 				foreach($query_args as $key => $string) {
 					$query_split = explode("=", $string);
-					$lachaine.=urldecode($query_split[1])." ";
+					if(!is_numeric($query_split[1])){
+						$lachaine.=urldecode($query_split[1])." ";
+					}
+					$search_query[$query_split[0]] = urldecode($query_split[1]);
 				}
+				$search_query['posts_per_page'] = 20;
+				$search = new WP_Query($search_query);
 			?>
 			<!--<h4 class="resultats smaller mb1">Résultat(s) de recherche pour :</h4> 
 			<h1 class="very_biggest mb2"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php echo $lachaine;?></a></h1>
@@ -54,8 +59,9 @@
 			</section>
 		</div>
 		
-		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
-		<?php 
+		<?php if(have_posts()) : ?>
+		<?php while( $search->have_posts() ) : $search->the_post();?>
+			<?php 
 			$categorie = get_the_category();
 			$resume = get_field("resume_article");
 			$liste_tags = "";
@@ -87,10 +93,10 @@
 					<p class="mb0 smaller categories_et_tags">
 					<?php 
 						if($categories!=""){ 
-							echo '<span class="categories">'.$categories.'</span>&nbsp';
+							echo '<span class="categories">'.$categories.'</span>';
 						}
 						if($liste_tags!=""){
-							echo '•&nbsp<span class="tags">'.$liste_tags.'</span>';
+							echo '&nbsp•&nbsp<span class="tags">'.$liste_tags.'</span>';
 						}
 					?>
 					</p>
@@ -104,10 +110,10 @@
 					<h3 class="little_small mb1 mt1 date">
 			<?php 		
 					if(get_field('date_article')){
-						echo get_field('date_article').'&nbsp•&nbsp';
+						echo get_field('date_article');
 					}
 					if(get_field('auteur_article')){
-						echo '<span>'.get_field('auteur_article').'</span>';
+						echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
 					}
 			?>
 					</h3>
@@ -121,7 +127,9 @@
 					?>
 				</div>
 			</article>
-		<?php endwhile; ?>
+		<?php endwhile;
+		wp_reset_postdata();
+		?>
 		<section class="pagination smaller mb2">
 			<?php previous_posts_link('« Previous') ?>
 			<?php next_posts_link('Next »','') ?>

@@ -9,20 +9,18 @@
 			<div id="entete">
 				<h1 class="very_biggest sans"><?php the_title(); ?></h1>
 			<?php
-				$my_wp_query = new WP_Query();
-				$all_wp_pages = $my_wp_query->query(array('post_type' => 'page'));
-				$monId = get_the_ID();
-				$page_children = get_page_children( $monId, $all_wp_pages );
+				$page_children = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>get_the_ID()));
 				if(!empty($page_children)){
 			?>
 					<section id="sous_categories" class="small mb2 pt1 pb1 mt2">
 						<ul>
 			<?php
-						foreach ($page_children as $page_child){
+						while( $page_children->have_posts() ) : $page_children->the_post();
 			?>
-							<li class="pl3"><a href="<?php echo get_permalink($page_child->ID);?>"><?php echo get_the_title($page_child->ID);?></a></li>
+							<li class="pl3"><a href="<?php the_permalink();?>"><?php the_title();?></a></li>
 			<?php
-						}
+						endwhile;
+						wp_reset_postdata();
 			?>
 						</ul>
 					</section>
@@ -31,7 +29,7 @@
 			?>
 			</div>
 		
-			<article class="pt2 pb2 mb2 post_archive" id="post-<?php the_ID(); ?>">
+			<article class="mt4 pb2 mb2 post_archive" id="post-<?php the_ID(); ?>">
 				<div class="post_content small">
 					<?php the_content(); ?>
 				</div>

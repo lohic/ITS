@@ -39,38 +39,50 @@
 				?>
 					<li class="suivant_tag"></li>
 	        	</ul>
-
-				<section id="frise" class="normal mb1 pl3">
-				<?php
-					if(count($lesAnnees)!=0){
-				?>
-						<div class="conteneur_annees">
-							<ul class="categorie">
-				<?php				
-								foreach($lesAnnees as $annee){
-				?>
-									<li id="annee_<?php echo $annee;?>"><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
-				<?php
-								}	
-				?>
-							</ul>
-						</div>
-				<?php
-					}
-				?>
-					<a href="?annee=regards" id="regards">Regards d'aujourd'hui</a>
-				</section>
 				
 				<?php
+					//on teste si c'est une catégorie classique ou une catégorie "racine" (actualités ou autre). Si normale on affiche la frise.
+					$categorie_normale = false;
+					$parent="";
 					$les_categories = get_ancestors( get_query_var('cat'), 'category' );
-					$thisCat = get_category($les_categories[0]);
-					if($thisCat->slug=="categories-meres"){
+					if($les_categories){
+						$parent = $les_categories[0];
+						$categorie_normale = true;
+					}
+					$thisCat = get_category($parent);
+					if($thisCat->slug=="categories-meres" || $parent==""){
 						$categories = get_categories( array('parent'=>get_query_var('cat'))); 
 					}
 					else{
-						$categories = get_categories( array('parent'=>$les_categories[0]));
+						$categories = get_categories( array('parent'=>$parent));
 					}
-
+				?>
+					
+				<?php
+					if($categorie_normale){
+				?>
+						<section id="frise" class="normal mb1 pl3">
+						<?php
+							if(count($lesAnnees)!=0){
+						?>
+								<div class="conteneur_annees">
+									<ul class="categorie">
+						<?php				
+										foreach($lesAnnees as $annee){
+						?>
+											<li id="annee_<?php echo $annee;?>"><a href="?annee=<?php echo $annee;?>"><?php echo $annee;?></a></li>
+						<?php
+										}	
+						?>
+									</ul>
+								</div>
+						<?php
+							}
+						?>
+							<a href="?annee=regards" id="regards">Regards d'aujourd'hui</a>
+						</section>
+				<?php
+					}
 					if(!empty($categories)){
 				?>
 						<section id="sous_categories" class="small mb2 pt1 pb1">

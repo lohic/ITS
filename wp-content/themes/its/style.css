@@ -216,7 +216,7 @@ h2.titre a{
 }
 
 #agenda article:hover > h3, #agenda article:hover > h4, #agenda article:hover > div > p, #logo > h1, #sur_menu li a:hover, #regards a.suite:hover, 
-#actualites:hover article > *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites:hover span, 
+#actualites:hover article *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, .post + #meme_theme li:hover:before, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
 #frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover{
@@ -1057,9 +1057,19 @@ h2.titre, h2.titre a{
 	background:url('img/pointille-vert.png') repeat-x left bottom;
 }
 
-#actualites article > div > p, #regards article > div > p, .post_content p, .post_content li{
+#actualites article > div  p, #regards article > div > p, .post_content p, .post_content li{
 	line-height:1.2em;
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+}
+
+.post_content p strong, .post_content li strong{
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+	font-weight:normal;
+}
+
+.post_content p em, .post_content li em{
+	font-family: "futura-pt", Arial, sans-serif;
+	font-size:1.05em;
 }
 
 .post_content ul{
@@ -1068,6 +1078,10 @@ h2.titre, h2.titre a{
 }
 
 .post_content li{
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+}
+
+.post_content li.telechargement{
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
@@ -1126,6 +1140,7 @@ a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, article.post_arc
 #meme_theme p{
 	font-family: "signikalight","futura-pt",Arial,sans-serif;
     line-height: 1.2em;
+    margin-top:7px;
 }
 
 #meme_theme h4{
