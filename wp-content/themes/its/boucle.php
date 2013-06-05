@@ -16,6 +16,8 @@
 	if($organisations==""){
 		$organisations="Institut Tribune Socialiste";
 	}
+	$date_article = get_field('date_article');
+	$auteur_article = get_field('auteur_article');
 	if(!$resume){
 ?>
 		<article class="pt2 pb2 post_archive" id="post-<?php the_ID(); ?>">
@@ -40,19 +42,20 @@
 		?>
 
 		<?php
-			if(get_field('date_article') || get_field('auteur_article')){
+			
+			if($date_article || $auteur_article){
 		?>
 				<h3 class="little_small mb1 mt1 date">
 		<?php 		
-				if(get_field('date_article')){
-					echo get_field('date_article');
-					if(get_field('auteur_article')){
-						echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+				if($date_article){
+					echo $date_article;
+					if($auteur_article){
+						echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
 					}
 				}
 				else{
-					if(get_field('auteur_article')){
-						echo '<span>'.get_field('auteur_article').'</span>';
+					if($auteur_article){
+						echo '<span>'.$auteur_article.'</span>';
 					}
 				}
 		?>
@@ -93,22 +96,21 @@
 		?>
 
 		<?php
-			if(get_field('date_article') || get_field('auteur_article')){
+			if($date_article || $auteur_article){
 		?>
 				<h3 class="little_small mb1 mt1 date">
 		<?php 		
-				if(get_field('date_article')){
-					echo get_field('date_article');
-					if(get_field('auteur_article')){
-						echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+				if($date_article){
+					echo $date_article;
+					if($auteur_article){
+						echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
 					}
 				}
 				else{
-					if(get_field('auteur_article')){
-						echo '<span>'.get_field('auteur_article').'</span>';
+					if($auteur_article){
+						echo '<span>'.$auteur_article.'</span>';
 					}
 				}
-				
 		?>
 				</h3>
 		<?php

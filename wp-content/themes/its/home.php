@@ -67,18 +67,19 @@
 	                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
 	                    <h4 class="normal mt0 mb1">
 						<?php 		
-							if(get_field('date_article')){
-								echo get_field('date_article');
-								if(get_field('auteur_article')){
-									echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+							$date_article = get_field('date_article');
+							$auteur_article = get_field('auteur_article');
+							if($date_article){
+								echo $date_article;
+								if($auteur_article){
+									echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
 								}
 							}
 							else{
-								if(get_field('auteur_article')){
-									echo '<span>'.get_field('auteur_article').'</span>';
+								if($auteur_article){
+									echo '<span>'.$auteur_article.'</span>';
 								}
 							}
-							
 						?>
 	                    </h4>
 	                    <div class="pb1 mb1">
@@ -117,15 +118,17 @@
 
                         <h4 class="normal mt0 mb1">
 							<?php 		
-								if(get_field('date_article')){
-									echo get_field('date_article');
-									if(get_field('auteur_article')){
-										echo '&nbsp•&nbsp<span>'.get_field('auteur_article').'</span>';
+								$date_article = get_field('date_article');
+								$auteur_article = get_field('auteur_article');
+								if($date_article){
+									echo $date_article;
+									if($auteur_article){
+										echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
 									}
 								}
 								else{
-									if(get_field('auteur_article')){
-										echo '<span>'.get_field('auteur_article').'</span>';
+									if($auteur_article){
+										echo '<span>'.$auteur_article.'</span>';
 									}
 								}
 							?>
