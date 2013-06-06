@@ -1702,20 +1702,17 @@ h4.resultats{
 	margin-top: 7px;
 }
 
-#liste_images figure > div.grand_format h5 span:after{
-	content:'•';
-}
-
 #liste_images figure p, #meme_theme figure p{
 	text-transform: uppercase;
 	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	margin-top: 5px;
 }
 
 #filtres{
 	border-top: 1px solid  #ccc;
 	border-bottom: 1px solid  #ccc;
 	color:#666;
-	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	width: 680px;
 }
 
@@ -1773,6 +1770,10 @@ h4.resultats{
 
 #filtres > div.conteneur > section li a{
 	color:#666;
+}
+
+#filtres > div.conteneur > section li a:hover{
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
 #filtres p.filtre{

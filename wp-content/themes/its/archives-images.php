@@ -338,18 +338,29 @@ Template Name: Page archive d'images
 							<div class="grand_format">
 								<img src="" alt="<?php the_title();?>"/>
 								<h4 class="little_small"><?php the_title();?></h4>
-								<h5 class="little_small">
-									<span>
-										<?php 
-											if( get_field( "date_document" ) ): ?>
-											    <?php the_field('date_document');?>
-										<?php endif;?>
-									</span>
-									<?php 
-										if( get_field( "auteur" ) ): ?>
-											<?php the_field('auteur');?>
-									<?php endif;?>
-								</h5>
+								<?php
+									$date_document = get_field('date_document');
+									$auteur = get_field('auteur');
+									if($date_document || $auteur){
+								?>
+										<h5 class="little_small">
+								<?php 		
+										if($date_document){
+											echo '<span>'.$date_document.'</span>';
+											if($auteur){
+												echo '&nbsp•&nbsp'.$auteur;
+											}
+										}
+										else{
+											if($auteur){
+												echo $auteur;
+											}
+										}
+								?>
+										</h5>
+								<?php
+									}
+								?>
 							</div>
 						</figure>
 					<?php endwhile;
