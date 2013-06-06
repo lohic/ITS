@@ -12,12 +12,12 @@
   			$value = get_field('texte_organisation','organisation_'.$idObj->term_id);
 			if($value){
 		?>
-				<div class="normal pb2 mb2" id="texte_tag"><?php the_field('texte_organisation','organisation_'.$idObj->term_id);?></div>
+				<div class="normal mb2" id="texte_tag"><?php the_field('texte_organisation','organisation_'.$idObj->term_id);?></div>
 				<?php 
                     $articles = get_field('articles_relatifs','organisation_'.$idObj->term_id);
                     if($articles!=false){
                 ?>
-                		<div class="normal pb3" id="relatif_tag">
+                		<div class="normal pb3 pt2" id="relatif_tag">
                 			<ul class="liste_attachements">
                	<?php
                         		foreach($articles as $article){
@@ -83,34 +83,67 @@
 					</section>
 			<?php
 				}
+				$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+				$idObj = get_category_by_slug('agenda'); 
+				
+				if(isset($_GET['annee'])){
+					if($_GET['annee']!="regards"){
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+					}
+					else{
+						function filter_where( $where = '' ) {
+							// posts for March 1 to March 15, 2010
+							$where .= " AND post_date >= '1991-01-01'";
+							return $where;
+						}
+
+						add_filter( 'posts_where', 'filter_where' );
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+						remove_filter( 'posts_where', 'filter_where' );
+					}
+				}
+				else{
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
+				}
+
+				if($my_query->max_num_pages>1){
 			?>
-				<section class="pagination smaller mb2">
+					<section class="pagination smaller mb2">
+						<?php
+							$big = 99999999; // need an unlikely integer
+
+							echo paginate_links( array(
+								'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+								'format' => '?paged=%#%',
+								'current' => max( 1, get_query_var('paged') ),
+								'total' => $my_query->max_num_pages,
+								'prev_text'    => '« Previous',
+								'next_text'    => 'Next »',
+							) );
+						?>
+					</section>
+			<?php		
+				}
+			?>
+			</div>
+		</div>
+		<?php 
+			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+			$big = 99999999; // need an unlikely integer
+		?>
+		
+		<div>
+		<?php
+        	while( $my_query->have_posts() ) : $my_query->the_post();?>
+				<?php get_template_part( 'boucle', '' );?>
+			<?php endwhile;
+        ?>
+		</div>
+		<?php
+			if($my_query->max_num_pages>1){
+		?>
+				<section class="pagination basse smaller mb2 pt1">
 					<?php
-						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-						$idObj = get_category_by_slug('agenda'); 
-						
-						if(isset($_GET['annee'])){
-							if($_GET['annee']!="regards"){
-								$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
-							}
-							else{
-								function filter_where( $where = '' ) {
-									// posts for March 1 to March 15, 2010
-									$where .= " AND post_date >= '1991-01-01'";
-									return $where;
-								}
-
-								add_filter( 'posts_where', 'filter_where' );
-								$my_query = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
-								remove_filter( 'posts_where', 'filter_where' );
-							}
-						}
-						else{
-							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>$idObj->term_id, 'paged' => $paged));
-						}
-
-						$big = 99999999; // need an unlikely integer
-
 						echo paginate_links( array(
 							'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
 							'format' => '?paged=%#%',
@@ -121,32 +154,9 @@
 						) );
 					?>
 				</section>
-			</div>
-		</div>
-		<?php 
-			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-			$big = 99999999; // need an unlikely integer
-		?>
-		
 		<?php
-        	while( $my_query->have_posts() ) : $my_query->the_post();?>
-				<?php get_template_part( 'boucle', '' );?>
-			<?php endwhile;
-        ?>
-
-
-		<section class="pagination smaller mb2 mt1">
-			<?php
-				echo paginate_links( array(
-					'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-					'format' => '?paged=%#%',
-					'current' => max( 1, get_query_var('paged') ),
-					'total' => $my_query->max_num_pages,
-					'prev_text'    => '« Previous',
-					'next_text'    => 'Next »',
-				) );
-			?>
-		</section>
+			}
+		?>
 	</div>
 
 <?php get_footer(); ?>

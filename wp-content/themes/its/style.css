@@ -219,7 +219,8 @@ h2.titre a{
 #actualites:hover article *, #meme_theme li:hover, .post + #meme_theme li:hover, #regards a.suite:hover span, #actualites:hover span, 
 #meme_theme li:hover a, .post + #meme_theme li:hover a, .post + #meme_theme li:hover:before, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
-#frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover{
+#frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover, .post_content li.telechargement:hover, 
+.post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover{
 	color:#188e7c;
 }
 
@@ -250,7 +251,7 @@ article.post_archive.resume:hover .categories_et_tags span.tags {
 	color:#fff;
 }
 
-#menus li > a, #regards a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, 
+/*#menus li > a, #regards a.suite span, #meme_theme li a, #menu_sidebar li a, #nuage_sidebar a, #sur_menu li a, footer a, 
 footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a, li.telechargement a, section.sidebar li a {
 	-webkit-transition: color .2s ease-out;
 	-moz-transition: color .2s ease-out;
@@ -258,7 +259,7 @@ footer #nuage a, a.suite span, #sous_categories > ul > li > a, .pagination a, li
 	-ms-transition: color .2s ease-out; 
 	-khtml-transition: color .2s ease-out;
 	transition: color .2s ease-out;
-}
+}*/
 
 
 /* soft reset */
@@ -965,6 +966,7 @@ h4.tag a{
 #relatif_tag{
 	border-bottom: 1px solid #CCCCCC;
 	width: 680px;
+	background: url("img/pointille-gris.png") repeat-x scroll left top transparent;
 }
 
 #actualites{
@@ -1081,12 +1083,16 @@ h2.titre, h2.titre a{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
-.post_content li.telechargement{
+.post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement{
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
-.post_content li:before{
+.post_content li:before, .post_archive li.telechargement:before, #entete li.telechargement:before{
 	content:' » ';
+}
+
+.post_archive li.telechargement:before{
+	font-size: 1.5em;
 }
 
 #regards .row > article{
@@ -1201,8 +1207,16 @@ a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, article.post_arc
     width: 680px;
 }
 
-.post_archive, .post .post_content, .pagination, #texte_tag{
+.post_archive, .post .post_content, .pagination{
 	background: url("img/pointille-gris.png") repeat-x scroll left bottom transparent;
+}
+
+.pagination.basse{
+	background: url("img/pointille-gris.png") repeat-x scroll left top transparent;
+}
+
+#centre div article.post_archive:last-child{
+	background: none;
 }
 
 .post_content.resume p{

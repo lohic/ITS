@@ -9,7 +9,7 @@
 	<?php 	if(category_description()!=""){
 	?>
 				<h1 class="super_biggest sans mb3 pb0"><?php single_cat_title();?></h1>
-				<div id="texte_tag" class="mb3 normal pb2">
+				<div id="texte_tag" class="mb3 normal">
 					<?php echo category_description(); ?> 
 				</div>
 	<?php
@@ -98,35 +98,62 @@
 						</section>
 				<?php						
 					}
-				?>
-				
-				<section class="pagination smaller mb2">
-					<?php
-						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
-						if(isset($_GET['annee'])){
-							if($_GET['annee']!="regards"){
-								$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'cat'=>get_query_var('cat'), 'paged' => $paged));
-							}
-							else{
-								function filter_where( $where = '' ) {
-									// posts for March 1 to March 15, 2010
-									$where .= " AND post_date >= '1991-01-01'";
-									return $where;
-								}
-
-								add_filter( 'posts_where', 'filter_where' );
-								$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
-								remove_filter( 'posts_where', 'filter_where' );
-							}
+					if(isset($_GET['annee'])){
+						if($_GET['annee']!="regards"){
+							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'cat'=>get_query_var('cat'), 'paged' => $paged));
 						}
 						else{
-							$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'cat'=>get_query_var('cat'), 'paged' => $paged));
+							function filter_where( $where = '' ) {
+								// posts for March 1 to March 15, 2010
+								$where .= " AND post_date >= '1991-01-01'";
+								return $where;
+							}
+
+							add_filter( 'posts_where', 'filter_where' );
+							$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>get_query_var('cat'), 'paged' => $paged));
+							remove_filter( 'posts_where', 'filter_where' );
 						}
+					}
+					else{
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'cat'=>get_query_var('cat'), 'paged' => $paged));
+					}
+					if($my_query->max_num_pages>1){
+				?>
+						<section class="pagination smaller mb2">
+							<?php
+								$big = 99999999; // need an unlikely integer
 
-						
-						$big = 99999999; // need an unlikely integer
+								echo paginate_links( array(
+									'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+									'format' => '?paged=%#%',
+									'current' => max( 1, get_query_var('paged') ),
+									'total' => $my_query->max_num_pages,
+									'prev_text'    => '« Previous',
+									'next_text'    => 'Next »',
+								) );
+							?>
+						</section>
+				<?php		
+					}
+				?>
+			</div>
 
+		</div>
+		<div>
+		<?php
+        	while( $my_query->have_posts() ) : $my_query->the_post();?>
+				<?php get_template_part( 'boucle', '' );?>
+			<?php endwhile;
+			wp_reset_postdata();
+        ?>
+		</div>
+		<?php
+			if($my_query->max_num_pages>1){
+		?>
+				<section class="pagination basse smaller pt1">
+					<?php
 						echo paginate_links( array(
 							'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
 							'format' => '?paged=%#%',
@@ -137,29 +164,9 @@
 						) );
 					?>
 				</section>
-			</div>
-
-		</div>
-		
 		<?php
-        	while( $my_query->have_posts() ) : $my_query->the_post();?>
-				<?php get_template_part( 'boucle', '' );?>
-			<?php endwhile;
-			wp_reset_postdata();
-        ?>
-
-		<section class="pagination smaller mt1">
-			<?php
-				echo paginate_links( array(
-					'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-					'format' => '?paged=%#%',
-					'current' => max( 1, get_query_var('paged') ),
-					'total' => $my_query->max_num_pages,
-					'prev_text'    => '« Previous',
-					'next_text'    => 'Next »',
-				) );
-			?>
-		</section>
+			}
+		?>
 	</div>
 
 <?php get_footer(); ?>
