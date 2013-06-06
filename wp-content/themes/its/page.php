@@ -10,7 +10,8 @@
 				<h1 class="very_biggest sans"><?php the_title(); ?></h1>
 			<?php
 				$page_children = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>get_the_ID()));
-				if(!empty($page_children)){
+
+				if ( $page_children->have_posts() ) {
 			?>
 					<section id="sous_categories" class="small mb2 pt1 pb1 mt2">
 						<ul>
@@ -25,6 +26,29 @@
 						</ul>
 					</section>
 			<?php						
+				}
+				else{
+					$parent = get_page($post->post_parent);
+					if($parent->ID != get_the_ID()){
+						$page_soeurs = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>$post->post_parent));
+
+						if ( $page_soeurs->have_posts() ) {
+					?>
+							<section id="sous_categories" class="small mb2 pt1 pb1 mt2">
+								<ul>
+					<?php
+								while( $page_soeurs->have_posts() ) : $page_soeurs->the_post();
+					?>
+									<li class="pl3"><a href="<?php the_permalink();?>"><?php the_title();?></a></li>
+					<?php
+								endwhile;
+								wp_reset_postdata();
+					?>
+								</ul>
+							</section>
+					<?php
+						}
+					}
 				}
 			?>
 			</div>

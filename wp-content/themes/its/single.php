@@ -56,7 +56,7 @@
 		<?php
 			}
 		?>
-			<div class="post_content normal pb2 mb1 mt2">
+			<div class="post_content normal mb1 mt2">
 				<?php get_template_part( 'content', 'get_post_format()' ); ?>
 				<div class="clear"></div>
 				<?php create_attachement_list(get_the_ID());?>

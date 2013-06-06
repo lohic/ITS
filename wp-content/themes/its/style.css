@@ -220,7 +220,7 @@ h2.titre a{
 #meme_theme li:hover a, .post + #meme_theme li:hover a, .post + #meme_theme li:hover:before, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
 #frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover, .post_content li.telechargement:hover, 
-.post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover{
+.post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover, .post_content li.telechargement:hover{
 	color:#188e7c;
 }
 
@@ -1079,6 +1079,11 @@ h2.titre, h2.titre a{
 	margin-bottom: 10px;
 }
 
+.post_content ul.liste_attachements{
+	margin-top: 20px;
+	padding-top: 20px;
+}
+
 .post_content li{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
@@ -1212,11 +1217,11 @@ a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, article.post_arc
     width: 680px;
 }
 
-.post_archive, .post .post_content, .pagination{
+.post_archive, .pagination{
 	background: url("img/pointille-gris.png") repeat-x scroll left bottom transparent;
 }
 
-.pagination.basse{
+.pagination.basse, .post_content ul.liste_attachements{
 	background: url("img/pointille-gris.png") repeat-x scroll left top transparent;
 }
 
