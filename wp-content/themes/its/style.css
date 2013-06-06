@@ -220,7 +220,7 @@ h2.titre a{
 #meme_theme li:hover a, .post + #meme_theme li:hover a, .post + #meme_theme li:hover:before, footer a:hover, footer #nuage a:hover, a.suite:hover span, #menu_sidebar li a:hover, 
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
 #frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover, .post_content li.telechargement:hover, 
-.post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover, .post_content li.telechargement:hover{
+.post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover, .post_content li.telechargement:hover, #texte_tag li:hover{
 	color:#188e7c;
 }
 
@@ -1088,11 +1088,11 @@ h2.titre, h2.titre a{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
-.post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement{
+.post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement, #texte_tag li a{
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
-.post_content li:before, .post_archive li.telechargement:before, #entete li.telechargement:before{
+.post_content li:before, .post_archive li.telechargement:before, #entete li.telechargement:before, #texte_tag li:before{
 	content:' » ';
 }
 
