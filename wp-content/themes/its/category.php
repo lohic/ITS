@@ -41,13 +41,12 @@
 	        	</ul>
 				
 				<?php
-					//on teste si c'est une catégorie classique ou une catégorie "racine" (actualités ou autre). Si normale on affiche la frise.
-					$categorie_normale = false;
+					//on gère l'affichage de la frise grâce à un champ ACF.
+					$test_frise = get_field('masquer_frise','category_'.get_query_var('cat'));
 					$parent="";
 					$les_categories = get_ancestors( get_query_var('cat'), 'category' );
 					if($les_categories){
 						$parent = $les_categories[0];
-						$categorie_normale = true;
 					}
 					$thisCat = get_category($parent);
 					if($thisCat->slug=="categories-meres" || $parent==""){
@@ -59,7 +58,7 @@
 				?>
 					
 				<?php
-					if($categorie_normale){
+					if(!$test_frise){
 				?>
 						<section id="frise" class="normal mb1 pl3">
 						<?php
