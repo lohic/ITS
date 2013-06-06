@@ -159,7 +159,7 @@ body {
 }
 
 #menus li > a, #nuage_sidebar a, footer #nuage a, h3#comments, h3#comments_bis, #filtres p.filtre, #filtres > div.conteneur > section > div > p, 
-#filtres #filtres_actifs li:after{
+#filtres #filtres_actifs li:after, .post_content .texte_image p span{
 	font-family:"futura-pt", sans-serif;
 	font-weight:300;
 	font-style:normal;
@@ -180,7 +180,7 @@ textarea, .with_frm_style input[type="submit"], #commentform input[type="submit"
 
 #sur_menu li a, #logo h1, #menu_sidebar li a, #actualites div.row > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
-.post_content .texte_image h2, .post_content .texte_image p span, #centre .newsletter input[type="submit"]{
+.post_content .texte_image h2, #centre .newsletter input[type="submit"]{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
@@ -1181,6 +1181,11 @@ a.suite:hover, #actualites:hover p.suite, #meme_theme li:hover, article.post_arc
 	margin-bottom: 15px;
 }
 
+.post + #meme_theme.image h3{
+	margin-bottom: 35px;
+	margin-top: 2px;
+}
+
 .post + #meme_theme a.recherche {
     position: absolute;
     right: 0;
@@ -1729,7 +1734,7 @@ h4.resultats{
 }
 
 #filtres > div.image{
-	padding-top:10px;
+	padding-top:7px;
 }
 
 #filtres > div.bordure{
@@ -1740,7 +1745,7 @@ h4.resultats{
 }
 
 #filtres > div.bordure.image {
-    padding-bottom: 12px;
+    padding-bottom: 0px;
 }
 
 #filtres > div.conteneur{
@@ -1835,7 +1840,7 @@ h4.resultats{
 .post_content .texte_image p{
 	margin-bottom: 4px;
 	color:#666;
-	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
 .post_content .texte_image p span{
@@ -1860,7 +1865,7 @@ h4.resultats{
 
 .post_content .texte_image p span.couleur{
 	margin-right: 10px;
-	font-family: "signikaregular", "futura-pt", Arial, sans-serif;
+	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	font-weight: normal;
 }
 

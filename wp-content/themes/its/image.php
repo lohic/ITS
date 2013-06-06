@@ -6,14 +6,14 @@
     <div id="centre" class="col pl3 pr3">
     	<?php 
     		if (function_exists('mybread')) mybread();
-    		$args_url = '?';
+    		$args_url = 'fonds-images/?';
     		$params = array();
 			$paramsQuery = array();
 			
     		if(isset($_GET['annees'])){
     			$params_annees=array();
 				foreach($_GET['annees'] as $annee){
-					if($args_url=="?"){
+					if($args_url=="fonds-images/?"){
 						$args_url.='annees[]='.$annee;
 					}
 					else{
@@ -26,7 +26,7 @@
 			if(isset($_GET['types'])){
 				$params_types=array();
 				foreach($_GET['types'] as $type){
-					if($args_url=="?"){
+					if($args_url=="fonds-images/?"){
 						$args_url.='types[]='.$type;
 					}
 					else{
@@ -39,7 +39,7 @@
 			if(isset($_GET['auteurs'])){
 				$params_auteurs=array();
 				foreach($_GET['auteurs'] as $auteur){
-					if($args_url=="?"){
+					if($args_url=="fonds-images/?"){
 						$args_url.='auteurs[]='.$auteur;
 					}
 					else{
@@ -52,7 +52,7 @@
 			if(isset($_GET['couleurs'])){
 				$params_couleurs=array();
 				foreach($_GET['couleurs'] as $couleur){
-					if($args_url=="?"){
+					if($args_url=="fonds-images/?"){
 						$args_url.='couleurs[]='.$couleur;
 					}
 					else{
@@ -65,7 +65,7 @@
 			if(isset($_GET['mots'])){
 				$params_mots=array();
 				foreach($_GET['mots'] as $mot_cle){
-					if($args_url=="?"){
+					if($args_url=="fonds-images/?"){
 						$args_url.='mots[]='.$mot_cle;
 					}
 					else{
@@ -77,7 +77,7 @@
 			}
 		?>
 		<div id="entete">
-			<h1 class="little_very_biggest sans mb3">Archive d'images</h1>
+			<h1 class="little_very_biggest sans mb4">Archive d'images</h1>
 			<section id="filtres" class="mb2">
 				<div class="image">
 					<p class="filtre mr2 normal"><a href="<?php echo $args_url;?>">Retour à la liste</a></p>
@@ -119,7 +119,7 @@
 							if( get_field( "date_document" ) ): 
 								the_field('date_document');
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -129,7 +129,7 @@
 							if( get_field( "type_de_document" ) ): 
 								the_field('type_de_document');
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -139,7 +139,7 @@
 							if( get_field( "auteur" ) ): 
 								the_field('auteur');
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -149,7 +149,7 @@
 							if( $liste_couleurs!="" ): 
 								echo $liste_couleurs;
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -159,7 +159,7 @@
 							if( $liste_mots_cles!="" ): 
 								echo $liste_mots_cles;
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -169,7 +169,7 @@
 							if( get_field( "dimensions" ) ): 
 								the_field('dimensions');
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -179,7 +179,7 @@
 							if( get_field( "poids" ) ): 
 								the_field('poids');
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -189,7 +189,7 @@
 							if( get_the_content() ): 
 								echo get_the_content();
 							else:
-								echo 'Pas d\'information';
+								echo 'Champ non renseigné';
 						 	endif;
 						?>
 					</p>

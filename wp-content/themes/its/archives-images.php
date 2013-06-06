@@ -226,24 +226,27 @@ Template Name: Page archive d'images
 					<div class="bordure">
 					</div>
 				</section>
+				<?php
+					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
+				?>
+						<section class="pagination smaller mb2 mt4 affiches">
+						<?php
+							$big = 99999999; // need an unlikely integer
 
-				<section class="pagination smaller mb2 mt4 affiches">
-					<?php
-						$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-						$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
-
-						$big = 99999999; // need an unlikely integer
-
-						echo paginate_links( array(
-							'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-							'format' => '?paged=%#%',
-							'current' => max( 1, get_query_var('paged') ),
-							'total' => $my_query->max_num_pages,
-							'prev_text'    => '« Previous',
-							'next_text'    => 'Next »',
-						) );
-					?>
-				</section>
+							echo paginate_links( array(
+								'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+								'format' => '?paged=%#%',
+								'current' => max( 1, get_query_var('paged') ),
+								'total' => $my_query->max_num_pages,
+								'prev_text'    => '« Previous',
+								'next_text'    => 'Next »',
+							) );
+						?>
+						</section>
+				<?php		
+				?>
+				
 			</div>
 		
 		
@@ -353,18 +356,24 @@ Template Name: Page archive d'images
 		        ?>
 			</section>
 
-			<section class="pagination smaller">
-				<?php
-					echo paginate_links( array(
-						'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-						'format' => '?paged=%#%',
-						'current' => max( 1, get_query_var('paged') ),
-						'total' => $my_query->max_num_pages,
-						'prev_text'    => '« Previous',
-						'next_text'    => 'Next »',
-					) );
-				?>
-			</section>
+			<?php
+				if($my_query->max_num_pages>1){
+			?>
+					<section class="pagination basse smaller pt1">
+						<?php
+							echo paginate_links( array(
+								'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+								'format' => '?paged=%#%',
+								'current' => max( 1, get_query_var('paged') ),
+								'total' => $my_query->max_num_pages,
+								'prev_text'    => '« Previous',
+								'next_text'    => 'Next »',
+							) );
+						?>
+					</section>
+			<?php
+				}
+			?>
 		</div>
 	</div>
 
