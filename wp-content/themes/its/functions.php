@@ -319,9 +319,10 @@ function mybread() {
 
     // les catégories
 	if ( is_category()) {
+		echo $thisCat;
 		$cat_obj = $wp_query->get_queried_object();$thisCat = $cat_obj->term_id;$thisCat = get_category($thisCat);$parentCat = get_category($thisCat->parent);
-		if ($thisCat->parent != 0) $rendu .= " &raquo; ".myget_category_parents($parentCat, true, " &raquo; ", true);
-		if ($thisCat->parent == 0) {$rendu .= " &raquo; ";}
+		if ( $thisCat->parent != 0) $rendu .= " &raquo; ".myget_category_parents($parentCat, true, " &raquo; ", true);
+		if ( $thisCat->parent == 0) {$rendu .= " &raquo; ";}
 		if ( $ped <= 1 ) {$rendu .= single_cat_title("", false);}
 		elseif ( $ped > 1 ) {
 			$rendu .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $thisCat ) . '" title="Voir tous les articles de '.single_cat_title("", false).'" rel="v:url" property="v:title">'.single_cat_title("", false).'</a></span>';
