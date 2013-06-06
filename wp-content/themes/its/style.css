@@ -1084,11 +1084,11 @@ h2.titre, h2.titre a{
 	padding-top: 20px;
 }
 
-.post_content li{
+.post_content li, #texte_tag li, #texte_tag li{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
-.post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement, #texte_tag li a{
+.post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement{
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
 
