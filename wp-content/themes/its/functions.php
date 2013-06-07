@@ -272,11 +272,15 @@ function myget_category_parents($id, $link = false,$separator = '/',$nicename = 
 		if (is_wp_error($parent))return $parent;
 		if ($nicename)$name = $parent->name;
 		else $name = $parent->cat_name;
+
 		if ($parent->parent && ($parent->parent != $parent->term_id ) && !in_array($parent->parent, $visited)) {
 			$visited[] = $parent->parent;
 			$chain .= myget_category_parents( $parent->parent, $link, $separator, $nicename, $visited );
 		}
-		if ($link) $chain .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $parent->term_id ) . '" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
+		//echo $name. ' ' . get_category_link( $parent->term_id ) . ' '. $parent->slug;
+		if($parent->slug == "esu-60-71") $chain .= '<span typeof="v:Breadcrumb"><a href="http://www.institut-tribune-socialiste.fr/organisation/esu/" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
+		if($parent->slug == "psu-60-90") $chain .= '<span typeof="v:Breadcrumb"><a href="http://www.institut-tribune-socialiste.fr/organisation/psu/" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
+		elseif ($link) $chain .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $parent->term_id ) . '" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
 		else $chain .= $name.$separator;
 		return $chain;
 	}
@@ -319,7 +323,6 @@ function mybread() {
 
     // les catégories
 	if ( is_category()) {
-		echo $thisCat;
 		$cat_obj = $wp_query->get_queried_object();$thisCat = $cat_obj->term_id;$thisCat = get_category($thisCat);$parentCat = get_category($thisCat->parent);
 		if ( $thisCat->parent != 0) $rendu .= " &raquo; ".myget_category_parents($parentCat, true, " &raquo; ", true);
 		if ( $thisCat->parent == 0) {$rendu .= " &raquo; ";}
