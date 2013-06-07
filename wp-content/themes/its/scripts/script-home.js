@@ -46,10 +46,14 @@ $(document).ready(function(){
 			position = new_position;
 			var laPosition = $("#curseur").position();
 			laPosition = laPosition.left + (deplacement * 18);
-			$("#curseur").css('left',laPosition);
+			// LOIC
+			//$("#curseur").css('left',laPosition);
+			$("#curseur").animate({left:laPosition},300);
 			var laPositionBis = $("#agenda .conteneur").position();
 			laPositionBis = laPositionBis.left - (deplacement * 237);
-			$("#agenda .conteneur").css('left',laPositionBis);
+			//$("#agenda .conteneur").css('left',laPositionBis);
+			$("#agenda .conteneur").animate({left:laPositionBis},300);
+			// FIN LOIC
 		}
 		
 		$(this).addClass('actif');
@@ -80,10 +84,14 @@ $(document).ready(function(){
 			position = new_position;
 			var laPosition = $("#curseur").position();
 			laPosition = laPosition.left + (deplacement * 18);
-			$("#curseur").css('left',laPosition);
+			// LOIC
+			//$("#curseur").css('left',laPosition);
+			$("#curseur").animate({left:laPosition},300);
 			var laPositionBis = $("#agenda .conteneur").position();
 			laPositionBis = laPositionBis.left - (deplacement * 237);
-			$("#agenda .conteneur").css('left',laPositionBis);
+			//$("#agenda .conteneur").css('left',laPositionBis);
+			$("#agenda .conteneur").animate({left:laPositionBis},300);
+			// FIN LOIC
 		}
 		
 		$('#puce_'+pointeur).addClass('actif');
@@ -114,10 +122,14 @@ $(document).ready(function(){
 			position = new_position;
 			var laPosition = $("#curseur").position();
 			laPosition = laPosition.left + (deplacement * 18);
-			$("#curseur").css('left',laPosition);
+			// LOIC
+			//$("#curseur").css('left',laPosition);
+			$("#curseur").animate({left:laPosition},300);
 			var laPositionBis = $("#agenda .conteneur").position();
 			laPositionBis = laPositionBis.left - (deplacement * 237);
-			$("#agenda .conteneur").css('left',laPositionBis);
+			//$("#agenda .conteneur").css('left',laPositionBis);
+			$("#agenda .conteneur").animate({left:laPositionBis},300);
+			// FIN LOIC
 		}
 		
 		$('#puce_'+pointeur).addClass('actif');

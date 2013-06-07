@@ -169,13 +169,21 @@ $(document).ready(function(){
 			position_depart = $('li.puce-tag').eq(position-1).position();
 			position_fin = $('li.puce-tag').eq(borne-1).position();
 			largeur = position_fin.left - position_depart.left + 24;
-			$('#curseur_large').css('width',largeur);
+
+			// LOIC
+			//$('#curseur_large').css('width',largeur);
 
 			//position du curseur
-			$('#curseur_large').css('left', position_depart.left-6);
+			//$('#curseur_large').css('left', position_depart.left-6);
+			$("#curseur_large").animate({	width:largeur,
+											left:position_depart.left-6},300);
+
 
 			//position frise dates
-			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
+			//$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
+			$("#frise ul.categorie").animate({	marginLeft:-multiplicateur*deplacement},300);
+
+			// FIN LOIC
 		}
 	});
 
@@ -199,17 +207,25 @@ $(document).ready(function(){
 			position_depart = $('li.puce-tag').eq(position-1).position();
 			position_fin = $('li.puce-tag').eq(borne-1).position();
 			largeur = position_fin.left - position_depart.left + 24;
-			$('#curseur_large').css('width',largeur);
+			
+			// LOIC		
+			//$('#curseur_large').css('width',largeur);
 
 			for(var i=position-1; i<borne; i++){
 				$('li.puce-tag').eq(i).addClass('actif');
 			}
 
 			//position du curseur
-			$('#curseur_large').css('left', position_depart.left-6);
+			//$('#curseur_large').css('left', position_depart.left-6);
+			$("#curseur_large").animate({	width:largeur,
+											left:position_depart.left-6},300);
 
 			//position frise dates
-			$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
+			//$('#frise ul.categorie').css('marginLeft',(-multiplicateur*deplacement));
+			$("#frise ul.categorie").animate({	marginLeft:-multiplicateur*deplacement},300);
+
+			// FIN LOIC
+
 		}
 	});
 	/* Fin de la gestion du slider*/
