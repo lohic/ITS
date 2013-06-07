@@ -54,7 +54,7 @@
 			foreach( $posts as $post): // variable must be called $post (IMPORTANT)
 		?>
 
-            <h2 class="smaller"><span></span>Institut Tribune Socialiste</h2>
+            <h2 class="smaller"><span></span>Focus</h2>
             <div class="row">
 				<!--<a href="<?php echo the_permalink();?>" class="row">-->
 	                <div class="col">
@@ -139,7 +139,7 @@
 	                    <a href="<?php the_permalink(); ?>" class="small suite"><span>lire la suite</span></a>
 		            </article>
 		            <section id="meme_theme" class="pl3 col">
-		                <h3 class="small mb0">Archives en relation</h3>
+		                <h3 class="small mb1">Archives en relation</h3>
 		                <?php 
 		                	/*$categories = get_the_category();
 		                	if($categories){

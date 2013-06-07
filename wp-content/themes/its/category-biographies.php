@@ -77,13 +77,19 @@
 				<?php 
 						$organisations = "";
 						$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
-						if($organisations==""){
+						/*if($organisations==""){
 							$organisations="Institut Tribune Socialiste";
-						}
+						}*/
 				?>
 						<article class="pt2 pb2 post_archive biographie" id="post-<?php the_ID(); ?>">
 							<h2 class="little_very_biggest mb0 titre"><?php the_field('prenom'); ?> <?php the_title(); ?></h2>
-							<h4 class="smaller tag"><span></span><?php echo $organisations; ?></h4>
+						<?php
+							if($organisations!=""){
+						?>
+								<h4 class="smaller tag"><span></span><?php echo $organisations; ?></h4>
+						<?php
+							}
+						?>
 							<div class="post_content small biographie">
 								<div>
 									<?php the_content(); ?>

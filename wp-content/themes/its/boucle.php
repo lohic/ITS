@@ -13,15 +13,21 @@
 	$liste_tags = substr($liste_tags, 0, -2);
 	$categories = get_category_parents($categorie[0]->term_id,'true','');
 	$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
-	if($organisations==""){
+	/*if($organisations==""){
 		$organisations="Institut Tribune Socialiste";
-	}
+	}*/
 	$date_article = get_field('date_article');
 	$auteur_article = get_field('auteur_article');
 	if(!$resume){
 ?>
 		<article class="pt2 pb2 post_archive" id="post-<?php the_ID(); ?>">
-			<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+		<?php
+			if($organisations!=""){
+		?>
+				<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+		<?php
+			}
+		?>
 			<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 		<?php
 			//if($categories!="" || $liste_tags!=""){
@@ -75,7 +81,13 @@
 	else{
 ?>
 		<article class="pt2 pb2 post_archive resume" id="post-<?php the_ID(); ?>">
-			<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+		<?php
+			if($organisations!=""){
+		?>
+				<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+		<?php
+			}
+		?>
 			<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 		<?php
 			//if($categories!="" || $liste_tags!=""){

@@ -91,12 +91,18 @@
 
 			$organisations = get_the_term_list( $post->ID, 'organisation', '', ', ', '' );
 
-			if($organisations==""){
+			/*if($organisations==""){
 				$organisations="Institut Tribune Socialiste";
-			}
+			}*/
 		?>
 			<article class="pt2 pb2 post_archive search" id="post-<?php the_ID(); ?>">
-				<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+			<?php
+				if($organisations!=""){
+			?>
+					<h4 class="smaller mb1 tag"><span></span><?php echo $organisations; ?></h4>
+			<?php
+				}
+			?>
 				<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
 			<?php
 				if($categories!="" || $liste_tags!=""){
