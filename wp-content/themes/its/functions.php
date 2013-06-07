@@ -278,8 +278,10 @@ function myget_category_parents($id, $link = false,$separator = '/',$nicename = 
 			$chain .= myget_category_parents( $parent->parent, $link, $separator, $nicename, $visited );
 		}
 		//echo $name. ' ' . get_category_link( $parent->term_id ) . ' '. $parent->slug;
+		// LOIC
 		if($parent->slug == "esu-60-71") $chain .= '<span typeof="v:Breadcrumb"><a href="http://www.institut-tribune-socialiste.fr/organisation/esu/" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
-		if($parent->slug == "psu-60-90") $chain .= '<span typeof="v:Breadcrumb"><a href="http://www.institut-tribune-socialiste.fr/organisation/psu/" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
+		// LOIC
+		else if($parent->slug == "psu-60-90") $chain .= '<span typeof="v:Breadcrumb"><a href="http://www.institut-tribune-socialiste.fr/organisation/psu/" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
 		elseif ($link) $chain .= '<span typeof="v:Breadcrumb"><a href="' . get_category_link( $parent->term_id ) . '" title="Voir tous les articles de '.$parent->cat_name.'" rel="v:url" property="v:title">'.$name.'</a></span>' . $separator;
 		else $chain .= $name.$separator;
 		return $chain;
