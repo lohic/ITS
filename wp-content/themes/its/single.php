@@ -76,18 +76,26 @@
 		</article>
 
 		<section id="meme_theme" class="pt1 pb4">
-            <!--<h3 class="small mb2">Archives sur le thème : <?php echo $categorie[0]->cat_name;?></h3>-->
             <h3 class="small mb1">Archives en relation</h3>
-            <ul id="liste_liens" class="small">
-				<?php
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'cat'=>$categorie[0]->term_id, 'orderby' => 'rand', 'posts_per_page'=>5));
-					while( $my_query->have_posts() ) : $my_query->the_post();
-				?>
+			<?php
+				$connected = p2p_type( 'posts_to_posts' )->get_connected(get_the_ID());
+				// Display connected pages
+				if ( $connected->have_posts() ) :
+			?>
+					<ul id="liste_liens" class="small">
+					<?php while ( $connected->have_posts() ) : $connected->the_post(); ?>
 						<li><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></li>
-					<?php endwhile;
-					wp_reset_postdata(); // IMPORTANT - reset the $post object so the rest of the page works correctly
-				?>
-            </ul>
+					<?php endwhile; ?>
+					</ul>
+			<?php
+				else:
+			?>
+					<p class="small">Aucune archive en relation.</p>
+			<?php
+				// Prevent weirdness
+				wp_reset_postdata();
+				endif;
+			?>
 
             <a href="#" class="recherche small mt0">Faire une recherche</a>
         </section>

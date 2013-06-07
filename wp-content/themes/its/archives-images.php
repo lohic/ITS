@@ -12,7 +12,7 @@ Template Name: Page archive d'images
 		?>
 		<div id="container">
 			<div id="entete">
-				<h1 class="little_very_biggest sans mb4"><?php the_title(); ?></h1>
+				<h1 class="super_biggest sans mb4"><?php the_title(); ?></h1>
 				<section id="filtres" class="affiches">
 					<div class="">
 						<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>

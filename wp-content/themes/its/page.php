@@ -7,13 +7,14 @@
 		?>
 		<?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
 			<div id="entete">
-				<h1 class="very_biggest sans"><?php the_title(); ?></h1>
+				<h1 class="super_biggest sans mb4"><?php the_title(); ?></h1>
 			<?php
+				$id_page = get_the_ID();
 				$page_children = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>get_the_ID()));
 
 				if ( $page_children->have_posts() ) {
 			?>
-					<section id="sous_categories" class="small mb2 pt1 pb1 mt2">
+					<section id="sous_categories" class="small mb2 pt1 pb1">
 						<ul>
 			<?php
 						while( $page_children->have_posts() ) : $page_children->the_post();
@@ -39,7 +40,7 @@
 					<?php
 								while( $page_soeurs->have_posts() ) : $page_soeurs->the_post();
 					?>
-									<li class="pl3"><a href="<?php the_permalink();?>"><?php the_title();?></a></li>
+									<li class="pl3 <?php if($post->ID==$id_page){echo 'actif';}?>"><a href="<?php the_permalink();?>"><?php the_title();?></a></li>
 					<?php
 								endwhile;
 								wp_reset_postdata();

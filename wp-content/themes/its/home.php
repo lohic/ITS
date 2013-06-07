@@ -41,6 +41,7 @@
 			                </article>
 			            </a>
 	                <?php endwhile;
+	                wp_reset_postdata();
 	            ?>
 	        </div>
         </section>
@@ -48,15 +49,12 @@
         <section id="actualites" class="pl3">
         <?php
 			$posts = get_field('remontee_its', 'option');
-			
 			if( $posts ):
-			
-			foreach( $posts as $post): // variable must be called $post (IMPORTANT)
+			$my_query = new WP_Query( 'p='.$posts[0]->ID );
+			while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
 		?>
-
             <h2 class="smaller"><span></span>Focus</h2>
             <div class="row">
-				<!--<a href="<?php echo the_permalink();?>" class="row">-->
 	                <div class="col">
 	                	<figure class="tint">
 							<?php the_post_thumbnail('remontee_its');?> 
@@ -86,7 +84,7 @@
 	                        <div class="small mb1">
 		                    <?php
 								$resume = get_field('resume_article');
-								if(!$resume){
+								if($resume==""){
 									the_content();
 								}else{
 									echo $resume;
@@ -96,13 +94,12 @@
 	                    </div>
 	                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
 	                </article>
-                <!--</a>-->
             </div>
         <?php 
-		
-		endforeach;
-		wp_reset_postdata();
-		endif; ?>
+			endwhile;
+	        wp_reset_postdata();
+			endif; 
+		?>
         </section>
         
         
@@ -140,16 +137,6 @@
 		            </article>
 		            <section id="meme_theme" class="pl3 col">
 		                <h3 class="small mb1">Archives en relation</h3>
-		                <?php 
-		                	/*$categories = get_the_category();
-		                	if($categories){
-		                		foreach ($categories as $categorie){
-			                		$lesCategories.=$categorie->cat_name.', ';
-			                	}
-			                	$lesCategories = substr($lesCategories, 0, -2);
-		                	}*/
-		                ?>
-		                <!--<h4 class="very_smaller mb1"><?php echo $lesCategories;?></h4>-->
 
 						<?php
 							$connected = p2p_type( 'posts_to_posts' )->get_connected(get_the_ID());

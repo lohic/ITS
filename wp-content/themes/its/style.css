@@ -227,7 +227,7 @@ h2.titre a{
 a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus #menu_secondaire li.current-menu-item > a, #menu_sidebar li.current-menu-item a, 
 #sur_menu li.current-menu-item > a, #nuage_sidebar a.actif, #agenda article > h3, h3.titre, h2.titre, h2.titre a, a.suite, 
 #meme_theme li, li.telechargement, p.suite, a.suite span, #meme_theme li a, li.telechargement a, p.suite span, #entete h1, #entete h1 a, 
-#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif, #frise a#regards.actif{
+#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif, #frise a#regards.actif, #sous_categories > ul > li.actif a{
 	color:#ff3333;
 }
 
@@ -1084,8 +1084,14 @@ h2.titre, h2.titre a{
 	padding-top: 20px;
 }
 
-.post_content li, #texte_tag li, #texte_tag li{
+.post_content li, #texte_tag li{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
+	margin-bottom: 5px;
+}
+
+.post_content li{
+	position: relative;
+	padding-left: 11px;
 }
 
 .post_content li.telechargement, .post_archive li.telechargement, #entete li.telechargement{
@@ -1094,6 +1100,11 @@ h2.titre, h2.titre a{
 
 .post_content li:before, .post_archive li.telechargement:before, #entete li.telechargement:before, #texte_tag li:before{
 	content:' » ';
+}
+
+.post_content li:before{
+	position:absolute;
+	left:0px;
 }
 
 .post_archive li.telechargement:before{
@@ -1356,7 +1367,7 @@ p.tags span.tags{
 }
 
 #frise, #sous_categories{
-	background: #EDEDED;
+	background: #f3f3f3;
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
 }
@@ -1436,6 +1447,7 @@ p.tags span.tags{
 	width:665px;
 	padding-left: 15px;
 	text-transform: uppercase;
+	min-height:28px;
 }
 
 #frise.biographie li.actif a{
@@ -1720,7 +1732,7 @@ h4.resultats{
     background: none repeat scroll 0 0 #FFFFFF;
     left: 0;
     position: absolute;
-    top: 70px;
+    top: 76px;
     z-index: 1;
 }
 
