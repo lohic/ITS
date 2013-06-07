@@ -150,7 +150,7 @@ function drawVisualization() {
     var options = {
         'width':  '100%',
         'height': 'auto',
-		//'minHeight' : 500,
+		'minHeight' : 500,
         //'start': new Date(2012, 0, 1),
         //'end': new Date(2012, 11, 31),
         //'cluster': true,

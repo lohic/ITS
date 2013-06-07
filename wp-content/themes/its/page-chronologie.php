@@ -1,7 +1,21 @@
 <?php get_header(); ?>
 
-<div class="row mb3">
-    <div id="centre" class="col pl3 pr3">
+<style>
+#centre.chronologie{
+	margin: 0;
+	border: none;
+	width:auto;
+	display: block;
+}
+
+article.chronologie{
+	width: 100%;
+}
+
+</style>
+
+<!--<div class="row mb3">-->
+    <div id="centre" class="col pl3 pr3 chronologie">
     	<?php 
     		if (function_exists('mybread')) mybread();
 		?>
@@ -68,7 +82,7 @@
 		        }
 		    </style>
 
-			<article class="mt4 pb2 mb2 post_archive" id="post-<?php the_ID(); ?>">
+			<article class="mt4 pb2 mb2 chronologie" id="post-<?php the_ID(); ?>">
 				
 
 				<div class="post_content small">
@@ -87,11 +101,11 @@
 		<?php include (TEMPLATEPATH . "/searchform.php"); ?>
 		<?php edit_post_link('Modifier cette page', '<p>', '</p>'); ?>
 		<?php endif; ?>
-	</div>
+	<!--</div>-->
 
 
 	<!-- SCRIPT DE LA TIMELINE -->
 	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-min.js" ></script>
 	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-values.js"  ></script>
 
-<?php get_footer(); ?>
+<?php get_template_part('part','footer');?>
