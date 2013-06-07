@@ -79,7 +79,7 @@ html {
 body {
 	background-color: #ededed;
 	color: #000;
-	font-family: helvetica, arial, sans-serif;
+	font-family: "signikalight", helvetica, arial, sans-serif;
 }
 
 .invisible{
@@ -284,7 +284,7 @@ code,
 pre,
 samp {
 	white-space: pre-wrap;
-	font-family: consolas, 'DejaVu Sans Mono', courier, monospace;
+	font-family: courier, monospace;
 }
 code { line-height: 1em; }
 table { margin-bottom: 1.5em; }
