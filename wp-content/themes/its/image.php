@@ -119,7 +119,7 @@
 							if( get_field( "date_document" ) ): 
 								the_field('date_document');
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -129,7 +129,7 @@
 							if( get_field( "type_de_document" ) ): 
 								the_field('type_de_document');
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -139,7 +139,7 @@
 							if( get_field( "auteur" ) ): 
 								the_field('auteur');
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -149,7 +149,7 @@
 							if( $liste_couleurs!="" ): 
 								echo $liste_couleurs;
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -159,7 +159,7 @@
 							if( $liste_mots_cles!="" ): 
 								echo $liste_mots_cles;
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -169,7 +169,7 @@
 							if( get_field( "dimensions" ) ): 
 								the_field('dimensions');
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -179,7 +179,7 @@
 							if( get_field( "poids" ) ): 
 								the_field('poids');
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -189,7 +189,7 @@
 							if( get_the_content() ): 
 								echo get_the_content();
 							else:
-								echo 'Champ non renseigné';
+								echo 'champ non renseigné';
 						 	endif;
 						?>
 					</p>
@@ -197,7 +197,7 @@
 			</div>
 			<div class="small texte_article_image">
 				<?php the_field('texte_fixe_page_image', 'option'); ?>
-				<a href="<?php bloginfo('url'); ?>?page_id=18" class="suite mt1"><span>Contact ITS</span></a>
+				<a href="<?php bloginfo('url'); ?>/contact/" class="suite mt1"><span>Contact ITS</span></a>
 			</div>
 		</article>
 

@@ -14,19 +14,16 @@ $(document).ready(function(){
 	/*** fin masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
 
 
-	/*** Survol bloc actualités home ***/
-	$("#actualites").mouseenter(function(){
-		$(this).addClass('actualites_over');
-	});
-	$('#actualites').mouseleave(function(){
-		$(this).removeClass('actualites_over');
-	});
-
+	/*** Survol bloc actualités et regards home ***/
 	$("#actualites").click(function(){
 		var chemin_actu = $("#actualites p.suite a").attr('href');
 		$(location).attr('href',chemin_actu);
 	});
-	/*** fin Survol bloc actualités home ***/
+	$("section#regards").click(function(){
+		var chemin_actu = $("section#regards article a.suite").attr('href');
+		$(location).attr('href',chemin_actu);
+	});
+	/*** fin Survol bloc actualités et regards home ***/
 
 	/* clic sur le bouton recherche de la home
 	$('a.recherche').click(function(){

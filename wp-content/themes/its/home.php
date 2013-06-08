@@ -57,60 +57,60 @@
         <?php
 			$posts = get_field('remontee_its', 'option');
 			if( $posts ):
-			$my_query = new WP_Query( 'p='.$posts[0]->ID );
-			while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
-		?>
-            <h2 class="smaller"><span></span>Focus</h2>
-            <div class="row">
-	                <div class="col">
-	                	<figure class="tint">
-							<?php the_post_thumbnail('remontee_its');?> 
-						</figure>
-	                </div>
-                
-	                <article class="col pl3">
-	                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
-	                    <h4 class="normal mt0 mb1">
-						<?php 		
-							$date_article = get_field('date_article');
-							$auteur_article = get_field('auteur_article');
-							if($date_article){
-								echo $date_article;
-								if($auteur_article){
-									echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
-								}
-							}
-							else{
-								if($auteur_article){
-									echo '<span>'.$auteur_article.'</span>';
-								}
-							}
-						?>
-	                    </h4>
-	                    <div class="pb1 mb1">
-	                        <div class="small mb1">
-		                    <?php
-								$resume = get_field('resume_article');
-								if($resume==""){
-									the_content();
-								}else{
-									echo $resume;
-								}
-							?>
-							</div>
-	                    </div>
-	                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
-	                </article>
-            </div>
-        <?php 
-			endwhile;
-	        wp_reset_postdata();
+				$my_query = new WP_Query( 'p='.$posts[0]->ID );
+				if($my_query->have_posts()){
+					while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
+			?>
+			            <h2 class="smaller"><span></span>Focus</h2>
+			            <div class="row">
+				                <div class="col">
+				                	<figure class="tint">
+										<?php the_post_thumbnail('remontee_its');?> 
+									</figure>
+				                </div>
+			                
+				                <article class="col pl3">
+				                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
+				                    <h4 class="normal mt0 mb1">
+									<?php 		
+										$date_article = get_field('date_article');
+										$auteur_article = get_field('auteur_article');
+										if($date_article){
+											echo $date_article;
+											if($auteur_article){
+												echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
+											}
+										}
+										else{
+											if($auteur_article){
+												echo '<span>'.$auteur_article.'</span>';
+											}
+										}
+									?>
+				                    </h4>
+				                    <div class="pb1 mb1">
+				                        <div class="small mb1">
+					                    <?php
+											$resume = get_field('resume_article');
+											if($resume==""){
+												the_content();
+											}else{
+												echo $resume;
+											}
+										?>
+										</div>
+				                    </div>
+				                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
+				                </article>
+			            </div>
+	        <?php 
+					endwhile;
+				}
+		        wp_reset_postdata();
 			endif; 
 		?>
         </section>
         
-        
-
         <section id="regards" class="pl3">
             <h2 class="smaller"><span></span>Regards d'aujourd'hui</h2>
             <div class="row">
@@ -172,7 +172,5 @@
             ?>
             </div>
         </section>
-
-        
     </div>
 <?php get_footer(); ?>

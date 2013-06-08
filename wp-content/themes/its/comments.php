@@ -24,7 +24,7 @@ $oddcomment = 'alt';
 		<form action="<?php echo get_option('siteurl'); ?>/wp-comments-post.php" method="post" id="commentform" class="smaller mb3">
 			<?php if ( $user_ID ) : ?>
 
-				<p>Connecté en tant que <a href="<?php echo get_option('siteurl'); ?>/wp-admin/profile.php"><?php echo $user_identity; ?></a>. <a href="<?php echo get_option('siteurl'); ?>/wp-login.php?action=logout" title="D&eacute;connect&eacute; de ce compte">Déconnection &raquo;</a></p>
+				<p>Connecté en tant que <a href="<?php echo get_option('siteurl'); ?>/wp-admin/profile.php"><?php echo $user_identity; ?></a>. <a href="<?php echo get_option('siteurl'); ?>/wp-login.php?action=logout" title="D&eacute;connect&eacute; de ce compte">Déconnexion &raquo;</a></p>
 
 			<?php else : ?>
 
@@ -56,8 +56,8 @@ $oddcomment = 'alt';
 
 <!-- Vous pouvez faires des modifs à partir de là -->
 <div class="cadre_commentaires mt1">
-	<?php if ($comments) : ?>
-	<h3 id="comments" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Afficher le commentaire ', 'Afficher les commentaires ' );?>(<?php echo get_comments_number( $post->ID );?>)</span></h3>
+<?php if ($comments) : ?>
+	<h3 id="comments" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Afficher le commentaire ', 'Afficher les commentaires ' );?> (<?php echo get_comments_number( $post->ID );?>)</span></h3>
 	<h3 id="comments_bis" class="mb2 normal"><span><?php comments_number('Pas de commentaire', 'Le commentaire', 'Les commentaires' );?></span> pour <span class="titre"><?php the_title(); ?></span></h3>
 	<ol class="commentlist">
 	<?php foreach ($comments as $comment) : ?>
@@ -69,7 +69,7 @@ $oddcomment = 'alt';
 					<em><?php _e('Votre commentaire est en cours de mod&eacute;ration'); ?></em>
 		 		<?php endif; ?>
 			</div>
-			<div class="smaller commenttext">
+			<div class="little_small commenttext">
 				<?php comment_text() ?>
 			</div>
 		</li>
@@ -83,16 +83,14 @@ $oddcomment = 'alt';
 	</ol>
 
 <?php else : // affiché si aucun commentaire ?>
-
 	<?php if ('open' == $post->comment_status) : ?>
-		<!-- Si les commentaires sont ouverts, mais sans aucun commentaire -->
-		<?php else : // Les commentaires sont fermés ?>
-
-			<!-- Si les commentaires sont fermés -->
-			<p class="nocomments normal">Les commentaires sont fermés.</p>
-
-		<?php endif; ?>
+		<h3 id="comments" class="mb2 normal"><span>Pas de commentaire (0)</span></h3>
+	<!-- Si les commentaires sont ouverts, mais sans aucun commentaire -->
+	<?php else : // Les commentaires sont fermés ?>
+		<!-- Si les commentaires sont fermés -->
+		<p class="nocomments normal">Les commentaires sont fermés.</p>
 	<?php endif; ?>
+<?php endif; ?>
 
 </div>
 
