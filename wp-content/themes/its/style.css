@@ -179,7 +179,8 @@ textarea, #liste_images figure > div.grand_format h4, #liste_images figure > div
 
 #sur_menu li a, #logo h1, #menu_sidebar li a, #actualites div.row > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
-.post_content .texte_image h2, #centre .newsletter input[type="submit"], .with_frm_style input[type="submit"], #commentform input[type="submit"]{
+.post_content .texte_image h2, #centre .newsletter input[type="submit"], .with_frm_style input[type="submit"], #commentform input[type="submit"], 
+.nsu-form input[type="submit"]{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
@@ -226,7 +227,7 @@ h2.titre a{
 #nuage_sidebar a:hover, #sous_categories > ul > li > a:hover, .pagination a:hover, li.telechargement a:hover, article.post_archive.resume:hover *, article.post_archive.search a:hover,
 #frise.biographie a:hover, section.sidebar li a:hover, #frise ul > li > a:hover, .post_archive a:hover, .post_content li.telechargement:hover, 
 .post_content a:hover, .post_archive li.telechargement:hover, #entete li.telechargement:hover, .post_content li.telechargement:hover, #texte_tag li:hover,
-a.suite:hover:before, #actualites:hover p.suite:before, #meme_theme li:hover:before, article.post_archive.resume:hover a.suite:before{
+a.suite:hover:before, #actualites:hover p.suite:before, #meme_theme li:hover:before, article.post_archive.resume:hover a.suite:before, aside .sidebar a:hover{
 	color:#188e7c;
 }
 
@@ -592,9 +593,10 @@ header > h1 > a{
 	background:url('img/loupe.png') no-repeat;
 	width:16px;
 	height:16px;
+	cursor: pointer;
 }
 
-#searchform input[type="text"]{
+#searchform input[type="text"], .nsu-form input[type="text"]{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	font-size:1.2em;
 	border: 1px solid #D5D5D5;
@@ -653,9 +655,9 @@ aside section h3 > span{
     padding: 1px 6px;
 }
 
-aside section h3:hover > span{
+/*aside section h3:hover > span{
 	background-color:#188e7c;
-}
+}*/
 
 #slider p{
 	margin: 10px 0 3px;
@@ -712,6 +714,44 @@ section.sidebar ul.slider li.actif a{
 	background: url("img/puces_sidebar.png") no-repeat scroll left -11px transparent;
 }
 
+.textwidget, .nsu-text-before-form{
+	font-size:1.5em;
+}
+
+.nsu-text-before-form a, .textwidget a{
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+	display: inline-block;
+	margin-bottom: 5px;
+}
+
+.nsu-text-before-form a span, .textwidget a span{
+	text-decoration: underline;
+}
+
+.nsu-form{
+	margin-top: 10px;
+}
+
+.nsu-form input[type="text"]{
+	padding:3px 9px 2px;
+}
+
+.nsu-form input[type="submit"]{
+	background: none repeat scroll 0 0 transparent;
+    border: medium none;
+    color: #B1B1B1;
+    font-size: 1.6em;
+    height: 18px;
+    margin-top: -4px;
+    padding: 0;
+    text-transform: uppercase;
+    width: 26px;
+    cursor: pointer;
+}
+
+.nsu-form p{
+	display: inline-block;
+}
 
 /* ----------------------------- */
 /* ==footer */

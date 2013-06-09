@@ -19,7 +19,7 @@ if ( ! function_exists( 'its_setup' ) ){
 		
 		// on enregistre la barre latérale	
 		if ( function_exists('register_sidebar') )
-		register_sidebar(array('name'=>'Sidebar','before_widget' => '<section class="mb3 sidebar">',
+		register_sidebar(array('name'=>'Sidebar','before_widget' => '<section class="mb2 sidebar">',
 	'after_widget'  => '</section>','before_title'  => '<h3 class="small mb1"><span>',
 	'after_title'   => '</span></h3>'));
 		
