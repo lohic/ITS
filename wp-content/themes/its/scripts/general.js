@@ -1,3 +1,14 @@
+var multiplicateur = 0;
+function slideImage(identifiant, borne) {
+	multiplicateur++;
+	if(multiplicateur>=borne){
+		multiplicateur = 0;
+	}
+	var deplacement = -200*multiplicateur;
+	$('#galerie_'+identifiant).animate({left:deplacement},200);
+	$('#galerie_'+identifiant).siblings('.nav_gallerie_sidebar').find('li').removeClass('actif');
+	$('#galerie_'+identifiant).siblings('.nav_gallerie_sidebar').find('li').eq(multiplicateur).addClass('actif');
+}
 $(document).ready(function(){
 	/*if($.url().param('annees')!=undefined || $.url().param('types')!=undefined || $.url().param('auteurs')!=undefined || $.url().param('couleurs')!=undefined || $.url().param('mots_cles')!=undefined) {
 		$('#filtres > div.conteneur').css('display','block');
@@ -19,17 +30,51 @@ $(document).ready(function(){
 		var chemin_actu = $("#actualites p.suite a").attr('href');
 		$(location).attr('href',chemin_actu);
 	});
-	$("section#regards").click(function(){
+	$("section#regards article").click(function(){
 		var chemin_actu = $("section#regards article a.suite").attr('href');
 		$(location).attr('href',chemin_actu);
 	});
 	/*** fin Survol bloc actualités et regards home ***/
 
-	/* clic sur le bouton recherche de la home
-	$('a.recherche').click(function(){
-		$('#recherche #s').focus();
+	/*** Slider image de la sidebar ***/
+	var compteur_galeries = 1;
+	$('.rsgallery').each(function(){
+		$(this).attr('id','galerie_'+compteur_galeries);
+		$(this).wrap('<div class="conteneur_galerie_sidebar" />');
+
+		$(this).parent('.conteneur_galerie_sidebar').each(function(){
+			$(this).append('<div class="nav_gallerie_sidebar"></div>');
+		});
+
+		$(this).siblings('.nav_gallerie_sidebar').append('<ul></ul>');
+		var compteur_images = 1;
+		$(this).children('.rsg_item').each(function(){
+			var identifiant_image = "galerie_"+compteur_galeries+"_image_"+compteur_images;
+			var identifiant_puce = "galerie_"+compteur_galeries+"_puce_"+compteur_images;
+			$(this).attr('id',identifiant_image);
+			$(this).parent('.rsgallery').siblings('.nav_gallerie_sidebar').find('ul').append('<li id="'+identifiant_puce+'"></li>');
+			compteur_images++;
+		});
+		$('#galerie_'+compteur_galeries+'_puce_1').addClass('actif');
+		compteur_galeries++;
+		var largeur_gallerie = 200*(compteur_images-1);
+		$(this).css('width',largeur_gallerie);
+
+		$(this).siblings('.nav_gallerie_sidebar').find('ul li').click(function(){
+			clearInterval(timer);
+			var tableau_id=$(this).attr("id").split('_');
+			var deplacement = -200*(tableau_id[3]-1);
+			$('#galerie_'+tableau_id[1]).animate({left:deplacement},200);
+			$(this).siblings('li').removeClass('actif');
+			$(this).addClass('actif');
+			multiplicateur = tableau_id[3]-1;
+			var timer=setInterval(function(){slideImage(compteur_galeries-1,compteur_images-1);}, 10000);
+		});
+
+		var timer=setInterval(function(){slideImage(compteur_galeries-1,compteur_images-1);}, 10000);
 	});
-	/* Fin clic sur le bouton recherche de la home*/
+	
+	/*** Fin slider image de la sidebar ***/
 
 	/*Survol d'une miniature sur la page iconographie*/
 	$('#liste_images figure').mouseenter(function(){
