@@ -180,14 +180,14 @@ textarea, #liste_images figure > div.grand_format h4, #liste_images figure > div
 #sur_menu li a, #logo h1, #menu_sidebar li a, #actualites div.row > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
 .post_content .texte_image h2, #centre .newsletter input[type="submit"], .with_frm_style input[type="submit"], #commentform input[type="submit"], 
-.nsu-form input[type="submit"]{
+.nsu-form input[type="submit"], aside section > h3 > a, aside section h3 > span{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
 }
 
-aside section > h3 > a, footer a, #sous_categories > ul > li > a, #frise a#regards,
-#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, aside section h3 > span, p.nocomments{
+footer a, #sous_categories > ul > li > a, #frise a#regards,
+#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, p.nocomments{
 	font-family:"futura-pt", sans-serif;
 	font-weight:500;
 	font-style:normal;
@@ -753,6 +753,10 @@ section.sidebar ul.slider li.actif a{
 	display: inline-block;
 }
 
+.nsu-form div.hidden{
+	display:none;
+}
+
 .nav_gallerie_sidebar li{
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -772,7 +776,7 @@ section.sidebar ul.slider li.actif a{
 .nav_gallerie_sidebar{
 	position:absolute;
 	right:0px;
-	bottom:0px;
+	top:0px;
 }
 
 .rsg_item{
@@ -787,14 +791,16 @@ section.sidebar .rsg_item img{
 .conteneur_galerie_sidebar{
 	overflow:hidden;
 	width:200px;
-	height:325px;
+	height:300px;
 	position: relative;
+	padding-top: 17px;
+	margin-top: -10px;
 }
 
 .rsgallery{
 	position:absolute;
 	left:0px;
-	top:0px;
+	top:17px;
 }
 
 /* ----------------------------- */
@@ -1179,6 +1185,11 @@ h2.titre, h2.titre a{
 	margin-bottom: 5px;
 }
 
+.post_content li strong, #texte_tag li strong, .post_content p strong, #texte_tag p strong{
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+	font-weight: normal;
+}
+
 .post_content li{
 	position: relative;
 	padding-left: 11px;
@@ -1245,6 +1256,7 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
     margin-top: 1px;
     padding: 1px 6px 0;
     text-transform: uppercase;
+    display: inline-block;
 }
 
 #meme_theme p{
@@ -1608,6 +1620,14 @@ p.tags span.tags{
 .commentmetadata a{
 	padding-left:6px;
 	background: url('img/puce_tags.png') no-repeat left 10px;
+}
+
+.commentmetadata a.comment-edit-link{
+	background: none repeat scroll 0 0 transparent;
+    display: block;
+    margin-bottom: 7px;
+    margin-top: -6px;
+    padding-left: 0;
 }
 
 .commenttext{

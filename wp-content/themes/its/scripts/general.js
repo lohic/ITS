@@ -5,7 +5,7 @@ function slideImage(identifiant, borne) {
 		multiplicateur = 0;
 	}
 	var deplacement = -200*multiplicateur;
-	$('#galerie_'+identifiant).animate({left:deplacement},200);
+	$('#galerie_'+identifiant).animate({left:deplacement},500);
 	$('#galerie_'+identifiant).siblings('.nav_gallerie_sidebar').find('li').removeClass('actif');
 	$('#galerie_'+identifiant).siblings('.nav_gallerie_sidebar').find('li').eq(multiplicateur).addClass('actif');
 }
