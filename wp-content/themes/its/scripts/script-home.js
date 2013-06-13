@@ -44,16 +44,12 @@ $(document).ready(function(){
 		if(new_position!=position){
 			var deplacement = new_position - position;
 			position = new_position;
-			var laPosition = $("#curseur").position();
-			laPosition = laPosition.left + (deplacement * 18);
-			// LOIC
-			//$("#curseur").css('left',laPosition);
-			$("#curseur").animate({left:laPosition},300);
-			var laPositionBis = $("#agenda .conteneur").position();
-			laPositionBis = laPositionBis.left - (deplacement * 237);
-			//$("#agenda .conteneur").css('left',laPositionBis);
-			$("#agenda .conteneur").animate({left:laPositionBis},300);
-			// FIN LOIC
+
+			var laPosition = $("li.standard").eq(position-2).position();
+			$("#curseur").animate({left:laPosition.left-4},300);
+
+			var laPositionBis = $("#agenda .conteneur article").eq(position-2).position();
+			$("#agenda .conteneur").animate({left:-laPositionBis.left+30},300);
 		}
 		
 		$(this).addClass('actif');
@@ -82,16 +78,12 @@ $(document).ready(function(){
 		if(new_position!=position){
 			var deplacement = new_position - position;
 			position = new_position;
-			var laPosition = $("#curseur").position();
-			laPosition = laPosition.left + (deplacement * 18);
-			// LOIC
-			//$("#curseur").css('left',laPosition);
-			$("#curseur").animate({left:laPosition},300);
-			var laPositionBis = $("#agenda .conteneur").position();
-			laPositionBis = laPositionBis.left - (deplacement * 237);
-			//$("#agenda .conteneur").css('left',laPositionBis);
-			$("#agenda .conteneur").animate({left:laPositionBis},300);
-			// FIN LOIC
+
+			var laPosition = $("li.standard").eq(position-2).position();
+			$("#curseur").animate({left:laPosition.left-4},300);
+
+			var laPositionBis = $("#agenda .conteneur article").eq(position-2).position();
+			$("#agenda .conteneur").animate({left:-laPositionBis.left+30},300);
 		}
 		
 		$('#puce_'+pointeur).addClass('actif');
@@ -120,16 +112,12 @@ $(document).ready(function(){
 		if(new_position!=position){
 			var deplacement = new_position - position;
 			position = new_position;
-			var laPosition = $("#curseur").position();
-			laPosition = laPosition.left + (deplacement * 18);
-			// LOIC
-			//$("#curseur").css('left',laPosition);
-			$("#curseur").animate({left:laPosition},300);
-			var laPositionBis = $("#agenda .conteneur").position();
-			laPositionBis = laPositionBis.left - (deplacement * 237);
-			//$("#agenda .conteneur").css('left',laPositionBis);
-			$("#agenda .conteneur").animate({left:laPositionBis},300);
-			// FIN LOIC
+
+			var laPosition = $("li.standard").eq(position-2).position();
+			$("#curseur").animate({left:laPosition.left-4},300);
+
+			var laPositionBis = $("#agenda .conteneur article").eq(position-2).position();
+			$("#agenda .conteneur").animate({left:-laPositionBis.left+30},300);
 		}
 		
 		$('#puce_'+pointeur).addClass('actif');
