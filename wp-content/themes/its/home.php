@@ -63,45 +63,72 @@
 			?>
 			            <h2 class="smaller"><span></span>Focus</h2>
 			            <div class="row">
-				                <div class="col">
+			<?php
+							if ( has_post_thumbnail() ) {
+			?>
+								<div class="col pr3">
 				                	<figure class="tint">
 										<?php the_post_thumbnail('remontee_its');?> 
 									</figure>
 				                </div>
-			                
-				                <article class="col pl3">
-				                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
-				                    <h4 class="normal mt0 mb1">
-									<?php 		
-										$date_article = get_field('date_article');
-										$auteur_article = get_field('auteur_article');
-										if($date_article){
-											echo $date_article;
-											if($auteur_article){
-												echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
-											}
+			<?php
+							}
+							else{
+			?>
+								<div class="col pr3 sans">
+
+				                </div>
+			<?php					
+							}
+			?>
+			                <article class="col">
+			                    <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
+			                    <h4 class="normal mt0 mb1">
+								<?php 		
+									$date_article = get_field('date_article');
+									$auteur_article = get_field('auteur_article');
+									if($date_article){
+										echo $date_article;
+										if($auteur_article){
+											echo '&nbsp•&nbsp<span>'.$auteur_article.'</span>';
 										}
-										else{
-											if($auteur_article){
-												echo '<span>'.$auteur_article.'</span>';
-											}
+									}
+									else{
+										if($auteur_article){
+											echo '<span>'.$auteur_article.'</span>';
 										}
-									?>
-				                    </h4>
+									}
+								?>
+			                    </h4>
+			<?php
+								if ( has_post_thumbnail() ) {
+			?>
 				                    <div class="pb1 mb1">
+				                        <div class="small mb1">
+											<?php the_excerpt_max_charlength(300);?>
+										</div>
+				                    </div>
+			<?php
+								}
+								else{
+			?>
+									<div class="pb1 mb1">
 				                        <div class="small mb1">
 					                    <?php
 											$resume = get_field('resume_article');
 											if($resume==""){
 												the_content();
 											}else{
-												echo $resume;
+												echo $resume.'...';
 											}
 										?>
 										</div>
 				                    </div>
-				                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
-				                </article>
+			<?php						
+								}
+			?>
+			                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
+			                </article>
 			            </div>
 	        <?php 
 					endwhile;

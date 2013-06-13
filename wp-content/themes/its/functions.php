@@ -414,3 +414,24 @@ function mybread() {
 	$rendu .= '</div>';
 	echo $rendu;
 }
+
+if( ! function_exists ( 'the_excerpt_max_charlength') ) {
+	function the_excerpt_max_charlength($charlength) {
+		$contenu_resume = get_the_content();
+		$charlength++;
+
+		if ( mb_strlen( $contenu_resume ) > $charlength ) {
+			$subex = mb_substr( $contenu_resume, 0, $charlength - 5 );
+			$exwords = explode( ' ', $subex );
+			$excut = - ( mb_strlen( $exwords[ count( $exwords ) - 1 ] ) );
+			if ( $excut < 0 ) {
+				echo mb_substr( $subex, 0, $excut );
+			} else {
+				echo $subex;
+			}
+			echo '...';
+		} else {
+			echo "$contenu_resume";
+		}
+	}
+}

@@ -295,6 +295,11 @@ $(document).ready(function(){
 		$('#liste_images figure').mouseenter(function(){
 			$(this).find('.grand_format > img').attr("src",$(this).data("its-url"));
 		});
+
+		$('#liste_images figure').mousemove(function(e){
+			$(this).find('.grand_format').css('left',e.pageX+10);
+			$(this).find('.grand_format').css('top',e.pageY+10);
+		});
 	}
 
 	function initialisation(){

@@ -20,7 +20,7 @@ Template Name: Page newsletter
 				</div>
 				<div class="clear"></div>
 			</article>
-			<ul class="liste_attachements mt2 small">
+			<ul class="liste_attachements mt2 small" id="newsletter">
 			<?php
 				$my_query = new WP_Query( array( 'post_type' => 'newsletter'));
 	        	while( $my_query->have_posts() ) : $my_query->the_post();?>
