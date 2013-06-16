@@ -22,6 +22,10 @@
 		body{
 			background:#FFF;
 		}
+
+        #download{
+            display: none;
+        }
 	}
 
 </style>
@@ -31,6 +35,14 @@
 
 <body bgcolor="#CCCCCC">
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
+<?php if(get_field('pdf_file')) { ?>
+<table width="630" border="0" cellpadding="0" cellspacing="0" align="center" id="download" style="background:#333333;" class="no_visible">
+    <tr>    
+        <td><p style="font-family:Tahoma, Arial, sans-serif;color:#329687;font-size:10px;text-align:center;margin:5px 0;" class="no_visible">Pour télécharger la newsletter au format PDF, <a href="<?php the_field('pdf_file'); ?>" style="color:#FFFFFF;text-decoration:none;" target="_blank">cliquez ici</a></p></td>
+    </tr>
+</table>
+<?php } ?>
+
 <table width="630" border="0" cellpadding="0" cellspacing="0" align="center">
 	<tr>	
     	<td><p style="font-family:Tahoma, Arial, sans-serif;color:#666666;font-size:10px;text-align:right;margin:5px 0;" class="no_visible">Si ce message ne s'affiche pas correctement, <a href="<?php the_permalink(); ?>" style="color:#329687;text-decoration:none;">cliquez ici</a></p></td>
