@@ -22,6 +22,7 @@
 				<?php
 						$index++;
 					endwhile;
+					wp_reset_postdata();
 				?>
 				<li class="suivant"></li>
         	</ul>
@@ -57,7 +58,10 @@
         <?php
 			$posts = get_field('remontee_its', 'option');
 			if( $posts ):
-				$my_query = new WP_Query( 'p='.$posts[0]->ID );
+
+				$post_id = rand(0, (count($posts) - 1) );
+
+				$my_query = new WP_Query( 'p='.$posts[$post_id ]->ID );
 				if($my_query->have_posts()){
 					while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
 			?>
@@ -142,8 +146,19 @@
             <h2 class="smaller"><span></span>Regards d'aujourd'hui</h2>
             <div class="row">
             <?php 
-                $my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>'regards-d-aujourd-hui', 'orderby' => 'rand', 'posts_per_page'=>1));
-                while( $my_query->have_posts() ) : $my_query->the_post();?>
+                //$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>'regards-d-aujourd-hui', 'orderby' => 'rand', 'posts_per_page'=>1));
+                //while( $my_query->have_posts() ) : $my_query->the_post();
+            	$posts = get_field('categorie_insititut_tribune_socialiste', 'option');
+
+				if( $posts ):
+
+					$post_id = rand(0, (count($posts) - 1) );
+
+					$my_query = new WP_Query( 'p='.$posts[$post_id]->ID );
+					if($my_query->have_posts()){
+						while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
+
+            ?>
 		            <article class="col">
                         <h3 class="very_biggest mb0 titre"><?php the_title();?></h3>
 
@@ -195,7 +210,13 @@
 
 		                <a href="?s=accueil_recherche" class="recherche small mt3">Faire une recherche</a>
 		            </section>
-                <?php endwhile;
+                <?php //endwhile;
+
+					endwhile;
+				}
+		        wp_reset_postdata();
+			endif; 
+
             ?>
             </div>
         </section>
