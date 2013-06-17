@@ -342,7 +342,7 @@ div, textarea, table, td, th, code, pre, samp {
 
 /* pictures */
 img {
-	width: auto;
+	/*width: auto;*/
 	height: auto;
 	vertical-align: middle;
 }
@@ -815,6 +815,7 @@ section.sidebar .rsg_item img{
 .featured-sidebar  a > img{
 	width:200px !important;
 	height:200px !important;
+	float:none !important;
 }
 
 section.sidebar .featured-sidebar li{
