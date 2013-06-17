@@ -82,7 +82,7 @@
 						}*/
 				?>
 						<article class="pt2 pb2 post_archive biographie" id="post-<?php the_ID(); ?>">
-							<h2 class="little_very_biggest mb0 titre"><?php the_field('prenom'); ?> <?php the_title(); ?></h2>
+							<h2 class="little_very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_field('prenom'); ?> <?php the_title(); ?>"><?php the_field('prenom'); ?> <?php the_title(); ?></a></h2>
 						<?php
 							if($organisations!=""){
 						?>
