@@ -621,6 +621,7 @@ header > h1 > a{
 #centre + aside{
 	width:200px;
 	border-left:1px solid #ccc;
+	min-width:200px;
 }
 
 #menu_sidebar, #nuage_sidebar{
@@ -810,6 +811,22 @@ section.sidebar .rsg_item img{
 	left:0px;
 	top:17px;
 }
+
+.featured-sidebar  a > img{
+	width:200px !important;
+	height:200px !important;
+}
+
+section.sidebar .featured-sidebar li{
+	font-size:1.5em;
+}
+
+.featured-sidebar li > a{
+	color:#000;
+	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+}
+
+
 
 /* ----------------------------- */
 /* ==footer */
