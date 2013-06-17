@@ -39,12 +39,12 @@
 	        		<li id="curseur_large"></li>
 					<li class="precedent_tag"></li>
 				<?php
-					$idObj = get_category_by_slug('agenda'); 
-					$idObj2 = get_category_by_slug('biographies');
+					$idObj2 = get_category_by_slug('agenda'); 
+					$idObj3 = get_category_by_slug('biographies');
 					$laCat = get_query_var('cat');
 					$lesAnnees = array();
 					$i=1;
-					$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj->term_id, $idObj2->term_id), 'posts_per_page'=>-1, 'order'=>'ASC'));
+					$my_query_annees = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj2->term_id, $idObj3->term_id), 'posts_per_page'=>-1, 'order'=>'ASC'));
 					while( $my_query_annees->have_posts() ) : $my_query_annees->the_post();
 						$ladate = the_date('Y', '', '',FALSE);
 						if(!in_array($ladate,$lesAnnees) && $ladate!="" && $ladate<=1990){
@@ -90,7 +90,7 @@
 
 				if(isset($_GET['annee'])){
 					if($_GET['annee']!="regards"){
-						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj->term_id, $idObj2->term_id), 'paged' => $paged));
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$_GET['annee'], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj2->term_id, $idObj3->term_id), 'paged' => $paged));
 					}
 					else{
 						function filter_where( $where = '' ) {
@@ -100,12 +100,12 @@
 						}
 
 						add_filter( 'posts_where', 'filter_where' );
-						$my_query = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj->term_id, $idObj2->term_id), 'paged' => $paged));
+						$my_query = new WP_Query( array( 'post_type' => 'post', 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj2->term_id, $idObj3->term_id), 'paged' => $paged));
 						remove_filter( 'posts_where', 'filter_where' );
 					}
 				}
 				else{
-					$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj->term_id, $idObj2->term_id), 'paged' => $paged));
+					$my_query = new WP_Query( array( 'post_type' => 'post', 'year'=>$lesAnnees[0], 'organisation'=>get_query_var('organisation'), 'category__not_in'=>array($idObj2->term_id, $idObj3->term_id), 'paged' => $paged));
 				}
 
 				if($my_query->max_num_pages>1){
