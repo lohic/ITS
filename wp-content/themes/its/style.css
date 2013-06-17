@@ -821,7 +821,7 @@ section.sidebar .featured-sidebar li{
 	font-size:1.5em;
 }
 
-.featured-sidebar li > a{
+section.sidebar .featured-sidebar li > a{
 	color:#000;
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 }
