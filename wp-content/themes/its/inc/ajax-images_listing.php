@@ -310,10 +310,11 @@
 				$parametres.="&amp;mots[]=".$unMot;
 			}
 		}
+		$compteur_images = 1;
     	while( $my_query->have_posts() ) : $my_query->the_post();
     		$infos_image = wp_get_attachment_image_src( $post->ID, 'iconographie');
     ?>
-			<figure class="mb1" data-its-url="<?php echo $infos_image[0];?>">
+			<figure class="mb1 <?php if($compteur_images%5==0){echo "sans";}?>" data-its-url="<?php echo $infos_image[0];?>">
 				<div class="miniature">
 					<a href="?attachment_id=<?php echo get_the_id().$parametres;?>">
 						<?php
@@ -382,7 +383,9 @@
 					</h5>
 				</div>
 			</figure>
-		<?php endwhile;
+		<?php 
+		$compteur_images++;
+		endwhile;
     ?>
 </section>
 
