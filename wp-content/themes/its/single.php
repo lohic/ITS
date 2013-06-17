@@ -36,7 +36,7 @@
 		<?php
 			}
 		?>
-			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php the_title(); ?></a></h2>
+			<h2 class="very_biggest mb0 titre"><a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>"><?php if(get_field('prenom')) echo get_field('prenom').' '; ?><?php the_title(); ?></a></h2>
 
 		<?php
 			$date_article = get_field('date_article');
