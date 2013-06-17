@@ -1330,7 +1330,7 @@ a.suite span, #meme_theme li a, li.telechargement a, p.suite span{
 	/*background: url("img/chevron_gris.png") no-repeat scroll left 6px transparent;*/
 	background: none;
 	margin-bottom: 0;
-	padding-left: 0;
+	padding-left: 12px;
 }
 
 .post + #meme_theme li:before{

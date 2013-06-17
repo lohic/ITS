@@ -49,10 +49,10 @@
 						$parent = $les_categories[0];
 					}
 					$thisCat = get_category($parent);
-					if($thisCat->slug=="categories-meres" || $parent==""){
-						$categories = get_categories( array('parent'=>get_query_var('cat'))); 
-					}
-					else{
+					//if($thisCat->slug=="categories-meres" || $parent==""){
+					$categories = get_categories( array('parent'=>get_query_var('cat'))); 
+					//}
+					if(empty($categories)){
 						$categories = get_categories( array('parent'=>$parent));
 					}
 				?>
