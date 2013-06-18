@@ -180,14 +180,16 @@ textarea, #liste_images figure > div.grand_format h4, #liste_images figure > div
 #sur_menu li a, #logo h1, #menu_sidebar li a, #actualites div.row > article > h4, #agenda article > h4, h3.date, #meme_theme h3, 
 #meme_theme a.recherche, .pagination a, .pagination span.current, .pagination span.dots, #regards .row > article > h4, #agenda article > h3, 
 .post_content .texte_image h2, #centre .newsletter input[type="submit"], .with_frm_style input[type="submit"], #commentform input[type="submit"], 
-.nsu-form input[type="submit"], aside section > h3 > a, aside section h3 > span{
+.nsu-form input[type="submit"], aside section > h3 > a, aside section h3 > span, .post_content h2, .post_content h3, 
+#actualites article div h2, #actualites article div h3, #regards article div h2, #regards article div h3, #texte_tag h2, #texte_tag h3{
 	font-family:"futura-pt", sans-serif;
 	font-weight:700;
 	font-style:normal;
 }
 
-footer a, #sous_categories > ul > li > a, #frise a#regards,
-#frise ul > li > a , h3#comments span, h3#comments_bis span, .commentmetadata p, #respond, p.nocomments{
+footer a, #sous_categories > ul > li > a, #frise a#regards, #frise ul > li > a , h3#comments span, 
+h3#comments_bis span, .commentmetadata p, #respond, p.nocomments, .post_content h4, .post_content h5, #regards article div h4,
+#regards article div h5, #actualites article div h4, #actualites article div h5, #texte_tag h4, #texte_tag h5{
 	font-family:"futura-pt", sans-serif;
 	font-weight:500;
 	font-style:normal;
@@ -199,7 +201,7 @@ h3#comments .titre, h3#comments_bis .titre{
 	font-style:italic;
 }
 
-h3.titre, h2.titre, h2.titre a, #entete h1{
+h3.titre, h2.titre, h2.titre a, #entete h1, .post_content h1, #actualites article div h1, #regards article div h1, #texte_tag h1{
 	font-family:"futura-pt", sans-serif;
 	font-weight:800;
 	font-style:normal;
@@ -234,7 +236,9 @@ a.suite:hover:before, #actualites:hover p.suite:before, #meme_theme li:hover:bef
 a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus #menu_secondaire li.current-menu-item > a, #menu_sidebar li.current-menu-item a, 
 #sur_menu li.current-menu-item > a, #nuage_sidebar a.actif, #agenda article > h3, h3.titre, h2.titre, h2.titre a, a.suite, 
 #meme_theme li, li.telechargement, p.suite, a.suite span, #meme_theme li a, li.telechargement a, p.suite span, #entete h1, #entete h1 a, 
-#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif, #frise a#regards.actif, #sous_categories > ul > li.actif a{
+#frise ul > li.actif a, #sous_categories > ul > li > a.actif, #filtres > div.conteneur > section li.actif, 
+#frise a#regards.actif, #sous_categories > ul > li.actif a, .post_content h1, #actualites article div h1, #regards article div h1,
+#texte_tag h1{
 	color:#ff3333;
 }
 
@@ -242,8 +246,12 @@ a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus 
 	text-decoration: underline;
 }
 
-article.post_archive.resume:hover h4.tag span{
+article.post_archive.resume:hover h4.tag span, #actualites:hover article div h2, section#regards article:hover div h2{
 	background:#188e7c;
+}
+
+#actualites:hover article div h2, section#regards article:hover div h2{
+	color:#fff;
 }
 
 /*article.post_archive.resume:hover h3.date span{
@@ -918,6 +926,98 @@ textarea {
 	font-weight:normal;
 }
 
+/* titres dans corps de texte */
+.post_content h1, #actualites article div h1, #regards article div h1, #texte_tag h1,
+.post_content h2, #actualites article div h2, #regards article div h2, #texte_tag h2,
+.post_content h3, #actualites article div h3, #regards article div h3, #texte_tag h3,
+.post_content h4, #actualites article div h4, #regards article div h4, #texte_tag h4,
+.post_content h5, #actualites article div h5, #regards article div h5, #texte_tag h5,
+.post_content h6, #actualites article div h6, #regards article div h6, #texte_tag h6{
+	margin-top: 15px;
+	margin-bottom: 10px;
+}
+
+#texte_tag h1, #texte_tag h2, #texte_tag h3, #texte_tag h4, #texte_tag h5, #texte_tag h6{
+	margin-top: 5px;
+}
+
+.post_content h1, #actualites article div h1, #regards article div h1, #texte_tag h1, 
+.post_content h2, #actualites article div h2, #regards article div h2, #texte_tag h2, 
+.post_content h3, #actualites article div h3, #regards article div h3, #texte_tag h3,
+.post_content h6, #actualites article div h6, #regards article div h6, #texte_tag h6{
+	text-transform: uppercase;
+}
+
+.post_content h1, #actualites article div h1, #regards article div h1, #texte_tag h1{
+	line-height:0.8em;
+}
+
+.post_content h3, #actualites article div h3, #regards article div h3, #texte_tag h3,
+.post_content h4, #actualites article div h4, #regards article div h4, #texte_tag h4, 
+.post_content h5, #actualites article div h5, #regards article div h5, #texte_tag h5, 
+.post_content h6, #actualites article div h6, #regards article div h6, #texte_tag h6{
+	line-height:1em;
+}
+
+.post_content h1, #texte_tag h1{
+	font-size:2.25em;
+}
+
+#actualites article div h1, #regards article div h1{
+	font-size:2.4em;
+}
+
+.post_content h2, #actualites article div h2, #regards article div h2, #texte_tag h2{
+	background: none repeat scroll 0 0 #FF3333;
+    color: #FFFFFF;
+    display: inline-block;
+    font-size: 0.9375em;
+    padding: 1px 6px 0;
+}
+
+#actualites article div h2, #regards article div h2{
+	font-size:1em;
+}
+
+.post_content h3, #texte_tag h3{
+	color: #000000;
+    font-size: 0.875em;
+}
+
+#actualites article div h3, #regards article div h3{
+	font-size:0.9333em;
+}
+
+.post_content h4, #texte_tag h4{
+	color:#666;
+	font-size: 1em;
+}
+
+#actualites article div h4, #regards article div h4{
+	font-size:1.0666em;
+}
+
+.post_content h5, #texte_tag h5{
+	color:#999;
+	font-size: 1em;
+}
+
+#actualites article div h5, #regards article div h5{
+	font-size:1.0666em;
+}
+
+.post_content h6, #texte_tag h6{
+	color:#000;
+	font-weight:normal;
+	font-size:0.6875em;
+}
+
+#actualites article div h6, #regards article div h6{
+	font-size:0.7333em;
+}
+
+/* fin titres dans corps de texte */
+
 h4.tag a{
 	color:#000;
 }
@@ -1474,7 +1574,7 @@ p.tags span.tags{
 	content:' » ';
 }
 
-#entete h1.sans:after, #entete h1.sans:before{
+#entete h1.sans:after, #entete h1.sans:before, #entete #texte_tag h1:after, #entete #texte_tag h1:before{
 	content:'';
 }
 
