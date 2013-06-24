@@ -232,6 +232,13 @@ function newsletter_image($ref, $size){
 	return $retour;
 }
 
+/* POUR AJOUTER UN TARGET _BLANK A wp_get_attachment_link */
+function modify_attachment_link($markup) {
+    return preg_replace('/^<a([^>]+)>(.*)$/', '<a\\1 target="_blank">\\2', $markup);
+}
+add_filter( 'wp_get_attachment_link', 'modify_attachment_link', 10, 6 );
+
+
 
 if( ! function_exists ( 'create_attachement_list') ) {
 	function create_attachement_list($identifiant = '', $titre = ''){
