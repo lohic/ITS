@@ -442,3 +442,16 @@ if( ! function_exists ( 'the_excerpt_max_charlength') ) {
 		}
 	}
 }
+
+if( ! function_exists ( 'get_the_content_by_id' ) ) {
+	function get_the_content_by_id($id) {
+		
+		$content_post = get_post($id);
+		$content = $content_post->post_content;
+		$content = apply_filters('the_content', $content);
+		$content = str_replace(']]>', ']]&gt;', $content);
+		
+		return $content;
+		
+	}
+}

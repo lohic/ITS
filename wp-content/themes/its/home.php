@@ -121,7 +121,7 @@
 					                    <?php
 											$resume = get_field('resume_article');
 											if($resume==""){
-												the_content();
+												echo get_the_content_by_id(get_the_ID());
 											}else{
 												echo $resume.'...';
 											}
