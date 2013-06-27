@@ -1364,6 +1364,10 @@ h2.titre, h2.titre a{
 	margin-left:1em;
 }
 
+#regards .row > article img{
+	max-width:115px;
+}
+
 #actualites > .row, #regards > .row{
 	width:680px;
 }
