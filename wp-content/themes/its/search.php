@@ -131,7 +131,7 @@
 				$auteur_article = get_field('auteur_article');
 				if($date_article || $auteur_article){
 			?>
-					<h3 class="little_small mb1 mt1 date">
+					<h3 class="little_small mt1 date">
 			<?php 		
 					if($date_article){
 						echo $date_article;
@@ -149,7 +149,7 @@
 			<?php
 				}
 			?>
-				<div class="post_content small resume">
+				<div class="post_content small resume mt1">
 					<?php 
 						//the_excerpt();
 						echo '<a href="'.get_permalink().'" class="suite"><span>lire la suite</span></a>';
