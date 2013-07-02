@@ -143,7 +143,7 @@
         </section>
         
         <section id="regards" class="pl3">
-            <h2 class="smaller"><span></span>Regards d'aujourd'hui</h2>
+            <h2 class="smaller"><span></span>Regards sur…</h2>
             <div class="row">
             <?php 
                 //$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>'regards-d-aujourd-hui', 'orderby' => 'rand', 'posts_per_page'=>1));
