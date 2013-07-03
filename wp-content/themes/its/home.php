@@ -12,7 +12,7 @@
 					//									'post_status'=>array('publish','future') ) );
 					$my_query = new WP_Query( array('post_type' => 'post',
 													'category_name'=>'agenda',
-													'orderby' => 'ASC','posts_per_page'=>-1,
+													'order' => 'ASC', 'orderby' => 'date', 'posts_per_page'=>-1,
 													'post_status'=>array('publish','future') ) );
 					//$my_query = new WP_Query( array( 'post_type' => 'post', 'category_name'=>'agenda', 'orderby' => 'DESC', 'posts_per_page'=>-1));
 					$index = 1;
