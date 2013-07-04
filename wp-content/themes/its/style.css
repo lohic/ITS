@@ -1317,6 +1317,7 @@ h2.titre, h2.titre a{
 .post_content li, #texte_tag li{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 	margin-bottom: 5px;
+	padding-left:12px;
 }
 
 .post_content li strong, #texte_tag li strong, .post_content p strong, #texte_tag p strong{
