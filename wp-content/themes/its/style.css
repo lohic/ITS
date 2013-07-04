@@ -2036,6 +2036,7 @@ h4.resultats{
 
 #filtres > div.conteneur > section li a{
 	color:#666;
+	text-transform: capitalize;
 }
 
 #filtres > div.conteneur > section li a:hover{
