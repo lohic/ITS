@@ -422,6 +422,41 @@ function mybread() {
 	echo $rendu;
 }
 
+if( ! function_exists ( 'get_the_content_by_id' ) ) {
+	function get_the_content_by_id($id) {
+		
+		$content_post = get_post($id);
+		$content = $content_post->post_content;
+		$content = apply_filters('the_content', $content);
+		$content = str_replace(']]>', ']]&gt;', $content);
+		
+		return $content;
+		
+	}
+}
+
+if( ! function_exists ( 'the_excerpt_max_charlength_by_param') ) {
+	function the_excerpt_max_charlength_by_param($charlength, $pageID) {
+		$contenu_resume = get_the_content_by_id($pageID);
+		//$contenu_resume = strip_tags($contenu_resume);
+		$charlength++;
+
+		if ( mb_strlen( $contenu_resume ) > $charlength ) {
+			$subex = mb_substr( $contenu_resume, 0, $charlength - 5 );
+			$exwords = explode( ' ', $subex );
+			$excut = - ( mb_strlen( $exwords[ count( $exwords ) - 1 ] ) );
+			if ( $excut < 0 ) {
+				echo mb_substr( $subex, 0, $excut );
+			} else {
+				echo $subex;
+			}
+			echo '[...]';
+		} else {
+			echo "$contenu_resume";
+		}
+	}
+}
+
 if( ! function_exists ( 'the_excerpt_max_charlength') ) {
 	function the_excerpt_max_charlength($charlength) {
 		$contenu_resume = get_the_content();
@@ -443,15 +478,4 @@ if( ! function_exists ( 'the_excerpt_max_charlength') ) {
 	}
 }
 
-if( ! function_exists ( 'get_the_content_by_id' ) ) {
-	function get_the_content_by_id($id) {
-		
-		$content_post = get_post($id);
-		$content = $content_post->post_content;
-		$content = apply_filters('the_content', $content);
-		$content = str_replace(']]>', ']]&gt;', $content);
-		
-		return $content;
-		
-	}
-}
+
