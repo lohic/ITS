@@ -50,8 +50,9 @@ Template Name: Page archive d'images
 
 								if(isset($_GET['couleurs'])){
 									$params_couleurs=array();
-									foreach($_GET['couleurs'] as $couleur){																
-										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
+									foreach($_GET['couleurs'] as $couleur){	
+										$ma_couleur = get_term_by( 'slug', $couleur, 'couleur');															
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$ma_couleur->name.'</a></li>';
 										$params_couleurs[]=$couleur;
 									}
 									$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
@@ -59,8 +60,9 @@ Template Name: Page archive d'images
 
 								if(isset($_GET['mots'])){
 									$params_mots=array();
-									foreach($_GET['mots'] as $mot_cle){																	
-										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
+									foreach($_GET['mots'] as $mot_cle){	
+										$mon_mot = get_term_by( 'slug', $mot_cle, 'mot_cle_image');																
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mon_mot->name.'</a></li>';
 										$params_mots[]=$mot_cle;
 									}
 									$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
@@ -179,11 +181,11 @@ Template Name: Page archive d'images
 													echo '<li class="actif">'.$couleur->name.'</li>';
 												}
 												else{
-													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'" data-la-couleur="'.$couleur->slug.'">'.$couleur->name.'</a></li>';
 												}
 											}
 											else{
-												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'" data-la-couleur="'.$couleur->slug.'">'.$couleur->name.'</a></li>';
 											}
 										}
 									}
@@ -209,11 +211,11 @@ Template Name: Page archive d'images
 													echo '<li class="actif">'.$mot->name.'</li>';
 												}
 												else{
-													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'" data-le-mot="'.$mot->slug.'">'.$mot->name.'</a></li>';
 												}
 											}
 											else{
-												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+												echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'" data-le-mot="'.$mot->slug.'">'.$mot->name.'</a></li>';
 											}
 										}
 									}
@@ -271,11 +273,15 @@ Template Name: Page archive d'images
 					if(isset($_GET['couleurs'])){
 						foreach($_GET['couleurs'] as $uneCouleur){
 							$parametres.="&amp;couleurs[]=".$uneCouleur;
+							$ma_couleur = get_term_by( 'slug', $uneCouleur, 'couleur');
+							$parametres.="&amp;couleurs_nom[]=".$ma_couleur->name;
 						}
 					}
 					if(isset($_GET['mots'])){
 						foreach($_GET['mots'] as $unMot){
 							$parametres.="&amp;mots[]=".$unMot;
+							$mon_mot = get_term_by( 'slug', $unMot, 'mot_cle_image');
+							$parametres.="&amp;mots_nom[]=".$mon_mot->name;
 						}
 					}
 					$compteur_images = 1;

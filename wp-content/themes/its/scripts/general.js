@@ -314,8 +314,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -337,8 +339,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -360,8 +364,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -373,8 +379,11 @@ $(document).ready(function(){
 		});
 
 		$('#filtre_couleur li > a').click(function(e){
-			var longueur=parametres['couleurs'].length;
-			parametres['couleurs'][longueur]=$(this).html();
+			var longueur_couleur_identifiants=parametres['couleur_identifiant'].length;
+			var longueur_couleur_noms=parametres['couleur_nom'].length;
+			//parametres['couleurs'][longueur]=$(this).html();
+			parametres['couleur_identifiant'][longueur_couleur_identifiants]=$(this).data("la-couleur");
+			parametres['couleur_nom'][longueur_couleur_noms]=$(this).html();
 			$.post(
 				ajaxurl, 
 				{
@@ -383,8 +392,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -396,8 +407,11 @@ $(document).ready(function(){
 		});
 
 		$('#filtre_mots li > a').click(function(e){
-			var longueur=parametres['mots'].length;
-			parametres['mots'][longueur]=$(this).html();
+			var longueur_mots_identifiants=parametres['mots_identifiant'].length;
+			var longueur_mots_noms=parametres['mots_nom'].length;
+			//parametres['mots'][longueur]=$(this).html();
+			parametres['mots_identifiant'][longueur_mots_identifiants]=$(this).data("le-mot");
+			parametres['mots_nom'][longueur_mots_noms]=$(this).html();
 			$.post(
 				ajaxurl, 
 				{
@@ -406,8 +420,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -431,13 +447,15 @@ $(document).ready(function(){
 			if(test!=-1){
 				parametres['auteurs'].splice(test,1);
 			}
-			test = jQuery.inArray($(this).html(), parametres['couleurs']);
+			test = jQuery.inArray($(this).html(), parametres['couleur_nom']);
 			if(test!=-1){
-				parametres['couleurs'].splice(test,1);
+				parametres['couleur_nom'].splice(test,1);
+				parametres['couleur_identifiant'].splice(test,1);
 			}
-			test = jQuery.inArray($(this).html(), parametres['mots']);
+			test = jQuery.inArray($(this).html(), parametres['mots_nom']);
 			if(test!=-1){
-				parametres['mots'].splice(test,1);
+				parametres['mots_nom'].splice(test,1);
+				parametres['mots_identifiant'].splice(test,1);
 			}
 			$.post(
 				ajaxurl, 
@@ -447,8 +465,10 @@ $(document).ready(function(){
 					'annees':parametres['annees'],
 					'types':parametres['types'],
 					'auteurs':parametres['auteurs'],
-					'couleurs':parametres['couleurs'],
-					'mots':parametres['mots'],
+					'couleurs_identifiants':parametres['couleur_identifiant'],
+					'couleurs_noms':parametres['couleur_nom'],
+					'mots_identifiants':parametres['mots_identifiant'],
+					'mots_noms':parametres['mots_nom'],
 				}, 
 				function(response){
 					$('#container').html(response);
@@ -464,8 +484,10 @@ $(document).ready(function(){
 	parametres['annees'] = new Array();
 	parametres['types'] = new Array();
 	parametres['auteurs'] = new Array();
-	parametres['couleurs'] = new Array();
-	parametres['mots'] = new Array();
+	parametres['couleur_identifiant'] = new Array();
+	parametres['couleur_nom'] = new Array();
+	parametres['mots_identifiant'] = new Array();
+	parametres['mots_nom'] = new Array();
 
 	if($.url().param('annees')!=undefined){
 		for(var i = 0, len = $.url().param('annees').length; i < len; ++i) {
@@ -487,13 +509,15 @@ $(document).ready(function(){
 
     if($.url().param('couleurs')!=undefined){
 	    for(var i = 0, len = $.url().param('couleurs').length; i < len; ++i) {
-	      	parametres['couleurs'][i]=$.url().param('couleurs')[i];
+	      	parametres['couleur_identifiant'][i]=$.url().param('couleurs')[i];
+	      	parametres['couleur_nom'][i]=$.url().param('couleurs_nom')[i];
 	    }
 	}
 
     if($.url().param('mots')!=undefined){
 	    for(var i = 0, len = $.url().param('mots').length; i < len; ++i) {
-	      	parametres['mots'][i]=$.url().param('mots')[i];
+	      	parametres['mots_identifiant'][i]=$.url().param('mots')[i];
+	      	parametres['mots_nom'][i]=$.url().param('mots_nom')[i];
 	    }
 	}
 

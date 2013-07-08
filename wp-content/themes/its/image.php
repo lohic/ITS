@@ -62,6 +62,18 @@
 				}
 				$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 			}
+
+			if(isset($_GET['couleurs_nom'])){
+				foreach($_GET['couleurs_nom'] as $couleur){
+					if($args_url=="fonds-images/?"){
+						$args_url.='couleurs_nom[]='.$couleur;
+					}
+					else{
+						$args_url.='&amp;couleurs_nom[]='.$couleur;
+					}
+				}
+			}
+
 			if(isset($_GET['mots'])){
 				$params_mots=array();
 				foreach($_GET['mots'] as $mot_cle){
@@ -74,6 +86,17 @@
 					$params_mots[]=$mot_cle;
 				}
 				$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
+			}
+
+			if(isset($_GET['mots_nom'])){
+				foreach($_GET['mots_nom'] as $mot_cle){
+					if($args_url=="fonds-images/?"){
+						$args_url.='mots_nom[]='.$mot_cle;
+					}
+					else{
+						$args_url.='&amp;mots_nom[]='.$mot_cle;
+					}
+				}
 			}
 		?>
 		<div id="entete">

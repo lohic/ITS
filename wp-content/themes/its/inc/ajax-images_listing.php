@@ -56,10 +56,9 @@
 						$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
 					}
 
-					if(isset($_POST['couleurs'])){
+					if(isset($_POST['couleurs_identifiants'])){
 						$params_couleurs=array();
-						foreach($_POST['couleurs'] as $couleur){																
-							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
+						foreach($_POST['couleurs_identifiants'] as $couleur){																
 							$params_couleurs[]=$couleur;
 							if($complement=="images-darchives/?"){
 								$complement .="couleurs[]=".$couleur;
@@ -71,10 +70,21 @@
 						$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 					}
 
-					if(isset($_POST['mots'])){
+					if(isset($_POST['couleurs_noms'])){
+						foreach($_POST['couleurs_noms'] as $couleur){																
+							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
+							if($complement=="images-darchives/?"){
+								$complement .="couleurs_nom[]=".$couleur;
+							}
+							else{
+								$complement .="&amp;couleurs_nom[]=".$couleur;
+							}
+						}
+					}
+
+					if(isset($_POST['mots_identifiants'])){
 						$params_mots=array();
-						foreach($_POST['mots'] as $mot_cle){																	
-							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
+						foreach($_POST['mots_identifiants'] as $mot_cle){																	
 							$params_mots[]=$mot_cle;
 							if($complement=="images-darchives/?"){
 								$complement .="mots[]=".$mot_cle;
@@ -84,6 +94,18 @@
 							}
 						}
 						$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
+					}
+
+					if(isset($_POST['mots_noms'])){
+						foreach($_POST['mots_noms'] as $mot_cle){																	
+							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
+							if($complement=="images-darchives/?"){
+								$complement .="mots_nom[]=".$mot_cle;
+							}
+							else{
+								$complement .="&amp;mots_nom[]=".$mot_cle;
+							}
+						}
 					}
 
 					$complement .= "&amp;";
@@ -196,16 +218,16 @@
 					if($couleurs){
 						foreach($couleurs as $couleur){
 							if($couleur!=""){
-								if(isset($_POST['couleurs'])){
-									if(in_array($couleur->name,$_POST['couleurs'])){
+								if(isset($_POST['couleurs_noms'])){
+									if(in_array($couleur->name,$_POST['couleurs_noms'])){
 										echo '<li class="actif">'.$couleur->name.'</li>';
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'" data-la-couleur="'.$couleur->slug.'">'.$couleur->name.'</a></li>';
 									}
 								}
 								else{
-									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'">'.$couleur->name.'</a></li>';
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'couleurs[]='.$couleur->slug.'" data-la-couleur="'.$couleur->slug.'">'.$couleur->name.'</a></li>';
 								}
 							}
 						}
@@ -226,16 +248,16 @@
 					if($mots){
 						foreach($mots as $mot){
 							if($mot!=""){
-								if(isset($_POST['mots'])){
-									if(in_array($mot->name,$_POST['mots'])){
+								if(isset($_POST['mots_noms'])){
+									if(in_array($mot->name,$_POST['mots_noms'])){
 										echo '<li class="actif">'.$mot->name.'</li>';
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'" data-le-mot="'.$mot->slug.'">'.$mot->name.'</a></li>';
 									}
 								}
 								else{
-									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'">'.$mot->name.'</a></li>';
+									echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'mots_cles[]='.$mot->slug.'" data-le-mot="'.$mot->slug.'">'.$mot->name.'</a></li>';
 								}
 							}
 						}
@@ -251,9 +273,6 @@
 
 	<section class="pagination smaller mb2 mt4 affiches">
 		<?php
-
-
-
 			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 			$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
 
@@ -300,14 +319,18 @@
 				$parametres.="&amp;auteurs[]=".$unAuteur;
 			}
 		}
-		if(isset($_POST['couleurs'])){
-			foreach($_POST['couleurs'] as $uneCouleur){
+		if(isset($_POST['couleurs_identifiants'])){
+			foreach($_POST['couleurs_identifiants'] as $uneCouleur){
 				$parametres.="&amp;couleurs[]=".$uneCouleur;
+				$ma_couleur = get_term_by( 'slug', $uneCouleur, 'couleur');
+				$parametres.="&amp;couleurs_nom[]=".$ma_couleur->name;
 			}
 		}
-		if(isset($_POST['mots'])){
-			foreach($_POST['mots'] as $unMot){
+		if(isset($_POST['mots_identifiants'])){
+			foreach($_POST['mots_identifiants'] as $unMot){
 				$parametres.="&amp;mots[]=".$unMot;
+				$mon_mot = get_term_by( 'slug', $unMot, 'mot_cle_image');
+				$parametres.="&amp;mots_nom[]=".$mon_mot->name;
 			}
 		}
 		$compteur_images = 1;
