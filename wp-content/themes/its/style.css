@@ -2172,7 +2172,7 @@ h4.resultats{
 	font-size: 0.9em;
 }
 
-.post_content.newsletter .nsu-form input[type="text"]{
+.post_content.newsletter .nsu-form input[type="submit"]{
 	font-size: 1em;
 }
 
