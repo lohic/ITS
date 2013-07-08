@@ -190,76 +190,82 @@
 				<a href="<?php bloginfo('url'); ?>/contact/" class="suite mt1"><span>Contact ITS</span></a>
 			</div>
 		</article>
+		<?php
+			if(count($params)>0){
+		?>
+				<section id="meme_theme" class="pt1 pb4 image">
+		            <h3 class="small mb3">Archives sur les mêmes critères</h3>
+		            <div>
+		        	<?php
+		        		$new_url = str_replace ( 'attachment_id='.$post->ID , '' , $_SERVER['REQUEST_URI']);
+						$new_url = 'http://'.$_SERVER['HTTP_HOST'].$new_url;
+						$my_query = new WP_Query( array( 'post_type' => 'attachment', 'post__not_in' => array( $post->ID ), 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'orderby' => 'rand', 'posts_per_page' => 5,'paged' => $paged));
+						$compteur_images = 1;
+						while( $my_query->have_posts() ) : $my_query->the_post();
+					?>
+				            <figure class="mb1 <?php if($compteur_images%5==0){echo "sans";}?>">
+								<div class="miniature">
+									<a href="<?php echo $new_url.'&amp;attachment_id='.$post->ID;?>">
+										<?php
+											echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
+										?>
+									</a>
+								</div>
+								<!--<p>
+									<?php 
+										$couleurs = get_the_terms( $post->ID, 'couleur' );
+										$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
+										$phrase = array();
 
-		<section id="meme_theme" class="pt1 pb4 image">
-            <h3 class="small mb3">Archives sur les mêmes critères</h3>
-            <div>
-        	<?php
-        		$new_url = str_replace ( 'attachment_id='.$post->ID , '' , $_SERVER['REQUEST_URI']);
-				$new_url = 'http://'.$_SERVER['HTTP_HOST'].$new_url;
-				$my_query = new WP_Query( array( 'post_type' => 'attachment', 'post__not_in' => array( $post->ID ), 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'orderby' => 'rand', 'posts_per_page' => 5,'paged' => $paged));
-				$compteur_images = 1;
-				while( $my_query->have_posts() ) : $my_query->the_post();
-			?>
-		            <figure class="mb1 <?php if($compteur_images%5==0){echo "sans";}?>">
-						<div class="miniature">
-							<a href="<?php echo $new_url.'&amp;attachment_id='.$post->ID;?>">
-								<?php
-									echo wp_get_attachment_image( $post->ID, 'miniature-iconographie' );
-								?>
-							</a>
-						</div>
-						<p>
-							<?php 
-								$couleurs = get_the_terms( $post->ID, 'couleur' );
-								$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
-								$phrase = array();
-
-								if( get_field( "date_document" ) ): 
-									$phrase[] = get_field('date_document');
-								endif;
+										if( get_field( "date_document" ) ): 
+											$phrase[] = get_field('date_document');
+										endif;
+										
 								
+										if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
+
+											$liste_couleurs = array();
+
+											foreach ( $couleurs as $couleur ) {
+												$liste_couleurs[] = $couleur->name;
+											}
+															
+											$les_couleurs = join( ", ", $liste_couleurs );
+											$phrase[] = $les_couleurs;
+										endif;
+														
+										if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
+
+											$liste_mots_cles = array();
+
+											foreach ( $mots_cles as $mot_cle ) {
+												$liste_mots_cles[] = $mot_cle->name;
+											}
+															
+											$les_mots_cles = join( ", ", $liste_mots_cles );
+											$phrase[] = $les_mots_cles;
+										endif;
+									
+										if( get_field( "auteur" ) ): 
+											$phrase[] = get_field('auteur');
+										endif;
+
+										$laphrase = join(", ", $phrase);
+										echo $laphrase;
+									?>
+								</p>-->
+							</figure>
 						
-								if ( $couleurs && ! is_wp_error( $couleurs ) ) : 
-
-									$liste_couleurs = array();
-
-									foreach ( $couleurs as $couleur ) {
-										$liste_couleurs[] = $couleur->name;
-									}
-													
-									$les_couleurs = join( ", ", $liste_couleurs );
-									$phrase[] = $les_couleurs;
-								endif;
-												
-								if ( $mots_cles && ! is_wp_error( $mots_cles ) ) : 
-
-									$liste_mots_cles = array();
-
-									foreach ( $mots_cles as $mot_cle ) {
-										$liste_mots_cles[] = $mot_cle->name;
-									}
-													
-									$les_mots_cles = join( ", ", $liste_mots_cles );
-									$phrase[] = $les_mots_cles;
-								endif;
-							
-								if( get_field( "auteur" ) ): 
-									$phrase[] = get_field('auteur');
-								endif;
-
-								$laphrase = join(", ", $phrase);
-								echo $laphrase;
-							?>
-						</p>
-					</figure>
-				
-				<?php 
-				$compteur_images++;
-				endwhile;
-	        ?>
-			</div>
-        </section>
+						<?php 
+						$compteur_images++;
+						endwhile;
+			        ?>
+					</div>
+		        </section>
+		<?php
+			}
+		?>
+		
        
 	<?php endwhile; ?>
 	<?php else : ?>
