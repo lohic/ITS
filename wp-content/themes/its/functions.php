@@ -438,7 +438,7 @@ if( ! function_exists ( 'get_the_content_by_id' ) ) {
 if( ! function_exists ( 'the_excerpt_max_charlength_by_param') ) {
 	function the_excerpt_max_charlength_by_param($charlength, $pageID) {
 		$contenu_resume = get_the_content_by_id($pageID);
-		//$contenu_resume = strip_tags($contenu_resume);
+		$contenu_resume = strip_tags($contenu_resume);
 		$charlength++;
 
 		if ( mb_strlen( $contenu_resume ) > $charlength ) {
