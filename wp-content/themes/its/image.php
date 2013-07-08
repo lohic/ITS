@@ -173,16 +173,6 @@
 						 	endif;
 						?>
 					</p>
-					<p class="small mb1">
-						<span class="moyen">Poids fichier :</span>
-						<?php 
-							if( get_field( "poids" ) ): 
-								the_field('poids');
-							else:
-								echo 'champ non renseigné';
-						 	endif;
-						?>
-					</p>
 					<p class="small">
 						<span class="full">Remarques :</span>
 						<?php 
