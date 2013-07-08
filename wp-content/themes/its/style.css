@@ -1051,7 +1051,7 @@ h4.tag a{
     position: absolute;
     width: 711px;
     z-index: 2;
-    height:300px;
+    height:250px;
 }
 
 #agenda .conteneur{
@@ -1064,7 +1064,7 @@ h4.tag a{
 	background:#f6f6f6;
     border: 1px solid #E5E5E5;
     float: left;
-    min-height: 152px;
+    min-height: 135px;
     margin-right: 31px;
     width: 164px;
 }
@@ -1196,7 +1196,7 @@ h4.tag a{
 }
 
 #actualites{
-	margin:268px 0px 60px;
+	margin:250px 0px 60px;
 }
 
 #actualites .row .col:first-child{
