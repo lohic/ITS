@@ -191,7 +191,7 @@
 			</div>
 		</article>
 		<?php
-			if(count($params)>0){
+			if(count($params)>0 || count($paramsQuery)>0){
 		?>
 				<section id="meme_theme" class="pt1 pb4 image">
 		            <h3 class="small mb3">Archives sur les mêmes critères</h3>

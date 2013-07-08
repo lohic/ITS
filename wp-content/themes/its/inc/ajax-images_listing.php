@@ -322,7 +322,7 @@
 						?>
 					</a>
 				</div>
-				<p>
+				<!--<p>
 					<?php
 						$couleurs = get_the_terms( $post->ID, 'couleur' );
 						$mots_cles = get_the_terms( $post->ID, 'mot_cle_image' );
@@ -365,7 +365,7 @@
 						echo $laphrase;
 					?>
 					
-				</p>
+				</p>-->
 				<div class="grand_format">
 					<img src="" alt="<?php the_title();?>"/>
 					<h4 class="little_small"><?php the_title();?></h4>
