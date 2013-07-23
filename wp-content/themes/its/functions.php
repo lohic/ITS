@@ -196,8 +196,8 @@ function newsletter_content_format($html = ''){
 				$href->setAttribute("style", "font-family:Tahoma, Arial, sans-serif;color:#333333;font-size:12px;margin:0;");
 		}
 		
-		// on evalue les listes ol
-		$hrefs = $xpath->evaluate("*/*/a");
+		// on evalue les liens a
+		$hrefs = $xpath->evaluate("/html/body//a");
 		for ($i = 0; $i < $hrefs->length; $i++) {		
 				$href = $hrefs->item($i);
 				$href->removeAttribute('style');
