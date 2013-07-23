@@ -22,7 +22,12 @@ Template Name: Page newsletter
 			</article>
 			<ul class="liste_attachements mt2 small" id="newsletter">
 			<?php
-				$my_query = new WP_Query( array( 'post_type' => 'newsletter'));
+				$args = array(
+					'post_type'      => 'newsletter',
+					'posts_per_page' => -1,
+				);
+
+				$my_query = new WP_Query( $args );
 	        	while( $my_query->have_posts() ) : $my_query->the_post();?>
 					<li class="telechargement"><a href="<?php the_permalink(); ?>">Voir la lettre de l'ITS - <?php the_title(); ?></a></li>
 				<?php endwhile;
