@@ -1,4 +1,12 @@
 $(document).ready(function(){
+
+	var isSafari5Lte = /a/.__proto__=='//';
+	if(isSafari5Lte){
+		$('body').addClass('safari5');
+	}
+	console.log('is SAFARI 5 ou inférieur ? '+isSafari5Lte);
+
+
 	$('#agenda article').mouseenter(function(){
 		$('#agenda').css('height','100%');
 	});
