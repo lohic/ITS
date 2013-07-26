@@ -1,10 +1,23 @@
+navigator.sayswho= (function(){
+  var N= navigator.appName, ua= navigator.userAgent, tem;
+  var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
+  if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
+  M= M? [M[1], M[2]]: [N, navigator.appVersion,'-?'];
+  return M;
+ })();
+
 $(document).ready(function(){
 
-	var isSafari5Lte = /a/.__proto__=='//';
-	if(isSafari5Lte){
+	var browser 		= navigator.sayswho;
+	var browserName		= browser[0];
+	var browserVersion	= browser[1].split('.')[0];
+
+	
+	if(browserName == 'Safari' && browserVersion<6){
 		$('body').addClass('safari5');
+		console.log('safari5 ou moins');
 	}
-	console.log('is SAFARI 5 ou inférieur ? '+isSafari5Lte);
+	
 
 
 	$('#agenda article').mouseenter(function(){

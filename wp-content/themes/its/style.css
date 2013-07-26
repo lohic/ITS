@@ -308,6 +308,21 @@ samp {
 code { line-height: 1em; }
 table { margin-bottom: 1.5em; }
 
+
+.safari5 div#centre {
+	display: block;
+	float:left;
+	border:none;
+}
+.safari5 #centre + aside {
+	display: block;
+	float:right;
+	background: url('img/border-safari5.png') repeat-y top left;
+	border-left: none;
+	padding-left: 25px;
+}
+
+
 /* avoid top margins on first content element */
 p:first-child,
 ul:first-child,
