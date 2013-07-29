@@ -116,7 +116,7 @@
 								}
 								else{
 			?>
-									<div class="pb1 mb1">
+									<div class="pb0 mb1">
 				                        <div class="small mb1">
 					                    <?php
 											$resume = get_field('resume_article');
@@ -179,7 +179,7 @@
 								}
 							?>
                         </h4>
-                        <div class="pb2 mb1 small">
+                        <div class="pb0 mb1 small">
 	                        <?php the_content();?>
 	                    </div>
 	                    <a href="<?php the_permalink(); ?>" class="small suite"><span>lire la suite</span></a>

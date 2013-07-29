@@ -248,6 +248,8 @@ a, #menus li.current-menu-item > a, #menus li.current-page-ancestor > a, #menus 
 
 .post_content a.suite{
 	text-decoration: none;
+	display: block;
+	margin-top: 5px;
 }
 
 article.post_archive.resume:hover h4.tag span, #actualites:hover article div h2, section#regards article:hover div h2{
@@ -1151,6 +1153,12 @@ h4.tag a{
 	cursor: pointer;
 }
 
+#navigation_curseur li.puce-tag a{
+	display:block;
+	height:11px;
+	width: 10px;
+}
+
 #navigation_curseur.large li{
 	margin-left: 0;
     margin-right: 10.9px;
@@ -1294,7 +1302,7 @@ h2.titre, h2.titre a{
 
 /*#actualites a.row > article > h4 > span:before, #regards .row > article > h4 > span:before{
 	content:'•';
-}*/
+}
 
 #actualites article > div, #regards article > div{
 	background:url('img/pointille-gris.png') repeat-x left bottom;
@@ -1302,7 +1310,7 @@ h2.titre, h2.titre a{
 
 #actualites div.row:hover article > div, section#regards:hover article > div{
 	background:url('img/pointille-vert.png') repeat-x left bottom;
-}
+}*/
 
 #actualites article > div  p, #regards article > div > p, .post_content p, .post_content li{
 	line-height:1.2em;

@@ -30,7 +30,7 @@
 
 							$lesAnnees[]=$ladate;
 				?>
-							<li class="puce-tag" id="puce-tag_<?php echo $i;?>"><span class="invisible span-tag" id="span-tag_<?php echo $i;?>"><?php echo $ladate;?></span></li>
+							<li class="puce-tag" id="puce-tag_<?php echo $i;?>"><a href="?annee=<?php echo $ladate;?>"><span class="invisible span-tag" id="span-tag_<?php echo $i;?>"><?php echo $ladate;?></span></a></li>
 				<?php
 							$i++;
 						}
