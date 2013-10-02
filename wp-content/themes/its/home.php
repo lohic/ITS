@@ -10,10 +10,32 @@
 					//LOIC
 					//$my_query = new WP_Query( array(	'p'=>$posts[0]->ID,
 					//									'post_status'=>array('publish','future') ) );
+					$today = getdate();
+
+					$today;
+
 					$my_query = new WP_Query( array('post_type' => 'post',
 													'category_name'=>'agenda',
-													'order' => 'ASC', 'orderby' => 'date', 'posts_per_page'=>-1,
-													'post_status'=>array('publish','future') ) );
+													'order' 	=> 'ASC',
+													'orderby' 	=> 'date',
+													'posts_per_page'=>-1,
+													/*'date_query' => array(
+														array(
+															'day'       => $today["mday"],
+															'compare'   => '>=',
+														),
+														array(
+															'month'     => $today["mon"],
+															'compare'   => '>=',
+														),
+														array(
+															'year'      => $today["year"],
+															'compare'   => '>=',
+														)
+													),*/
+													//'post_status'=>array('publish','future') ) );
+													'post_status'=>array('future') ) );
+
 					//$my_query = new WP_Query( array( 'post_type' => 'post', 'category_name'=>'agenda', 'orderby' => 'DESC', 'posts_per_page'=>-1));
 					$index = 1;
 					while( $my_query->have_posts() ) : $my_query->the_post();
@@ -29,6 +51,7 @@
             <h2 class="smaller"><span></span>Agenda</h2>
             <div class="conteneur">
 				<?php
+
 	                while( $my_query->have_posts() ) : $my_query->the_post();?>
 	                    <a href="<?php the_permalink(); ?>">
 			                <article class="pt1 pb1 pl2 pr2">

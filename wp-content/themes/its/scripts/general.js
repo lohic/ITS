@@ -37,6 +37,10 @@ $(document).ready(function(){
 	/*** fin Survol bloc actualités et regards home ***/
 
 	/*** Slider image de la sidebar ***/
+	$('.rsg_item').each(function(){
+		$(this).html( $(this).find('img') );
+	});
+
 	var compteur_galeries = 1;
 	$('.rsgallery').each(function(){
 		$(this).attr('id','galerie_'+compteur_galeries);

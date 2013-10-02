@@ -147,5 +147,7 @@ $(document).ready(function(){
 		$('#puce_'+suivant).addClass('actif');
 	});
 
-
+	$('#conteneur_galerie_sidebar .rsgallery .rsg_item a').click(function(e){
+		e.preventDefault();
+	});
 });
