@@ -47,9 +47,9 @@ class FrmProCopy{
     }
     
     function getAll($where = '', $order_by = '', $limit = ''){
-        global $wpdb, $frm_form, $frm_app_helper;
+        global $wpdb, $frm_form;
         $query = "SELECT * FROM $this->table_name ". 
-                $frm_app_helper->prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
+                FrmAppHelper::prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
         if ($limit == ' LIMIT 1')
             $results = $wpdb->get_row($query);
         else
@@ -126,7 +126,7 @@ class FrmProCopy{
     }
     
     function uninstall(){
-        if(!current_user_can('administrator')){
+        if(!is_super_admin()){
             global $frm_settings;
             wp_die($frm_settings->admin_permission);
         }

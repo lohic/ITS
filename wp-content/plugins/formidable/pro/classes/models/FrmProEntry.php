@@ -3,7 +3,7 @@ class FrmProEntry{
 
     function FrmProEntry(){
         add_filter('frm_continue_to_new', array(&$this, 'frmpro_editing'), 10, 3);
-        add_action('frm_validate_entry', array(&$this, 'pre_validate'), 10, 2);
+        add_action('frm_validate_entry', array(&$this, 'pre_validate'), 15, 2);
         add_action('frm_validate_form_creation', array(&$this, 'validate'), 10, 5);
         add_action('frm_after_create_entry', array(&$this, 'set_cookie'), 20, 2);
         add_action('frm_after_create_entry', array(&$this, 'create_post'), 40, 2);
@@ -23,15 +23,17 @@ class FrmProEntry{
     }
     
     function user_can_edit($entry, $form){
-        if(is_numeric($form))
-            $form = FrmForm::getOne($form);
+        if(is_numeric($form)){
+            global $frm_form;
+            $form = $frm_form->getOne($form);
+        }
         
-        $allowed = FrmProEntry::user_can_edit_check($entry, $form);
+        $allowed = $this->user_can_edit_check($entry, $form);
         return apply_filters('frm_user_can_edit', $allowed, compact('entry', 'form'));
     }
     
     function user_can_edit_check($entry, $form){
-        global $user_ID;
+        global $user_ID, $frm_entry;
         
         if(!$user_ID or !$form)
             return false;
@@ -58,7 +60,7 @@ class FrmProEntry{
                 $where .= " and item_key='" . $entry ."'";
         }
 
-        return FrmEntry::getAll( $where, '', ' LIMIT 1', true);
+        return $frm_entry->getAll( $where, '', ' LIMIT 1', true);
     }
     
     function get_tagged_entries($term_ids, $args = array()){
@@ -83,8 +85,13 @@ class FrmProEntry{
         global $user_ID, $frm_entry_meta, $frm_entry, $frmdb, $frm_form, $frmpro_settings, $frm_form_params;
         
         $params = $frm_form_params[$values['form_id']];
-        if($params['action'] != 'create')
+        if($params['action'] != 'create'){
+            if(FrmProFormsHelper::going_to_prev($values['form_id'])){
+                add_filter('frm_continue_to_create', create_function('', 'return false;'));
+                $errors = array();
+            }
             return $errors;
+        }
         
         $form = $frm_form->getOne($values['form_id']);
         $form_options = maybe_unserialize($form->options);
@@ -114,7 +121,7 @@ class FrmProEntry{
         }
         unset($can_submit);
         
-        if ((isset($_POST) and isset($_POST['frm_page_order_'. $form->id]))){
+        if ((isset($_POST) and isset($_POST['frm_page_order_'. $form->id])) or FrmProFormsHelper::going_to_prev($form->id)){
             add_filter('frm_continue_to_create', create_function('', 'return false;'));
         }else if ($form->editable and isset($form_options['single_entry']) and $form_options['single_entry'] and $form_options['single_entry_type'] == 'user' and $user_ID){
             $meta = $frmdb->get_var($frmdb->entries, array('user_id' => $user_ID, 'form_id' => $form->id));
@@ -124,13 +131,17 @@ class FrmProEntry{
                 add_filter('frm_continue_to_create', create_function('', 'return false;'));
             }
         }
+        
+        if(FrmProFormsHelper::going_to_prev($values['form_id']))
+            $errors = array();
+        
         return $errors;
     }
         
     function validate($params, $fields, $form, $title, $description){
-        global $user_ID, $frm_entry, $frm_settings, $frmpro_entries_controller;
+        global $user_ID, $frm_entry, $frm_settings;
 
-        if (isset($_POST) and isset($_POST['frm_page_order_'. $form->id])){
+        if (($_POST and isset($_POST['frm_page_order_'. $form->id])) or FrmProFormsHelper::going_to_prev($form->id)){
             global $frm_next_page;
             $errors = '';
             $fields = FrmFieldsHelper::get_form_fields($form->id);
@@ -151,7 +162,7 @@ class FrmProEntry{
             }
             
             if ($entry and !empty($entry) and (!isset($frm_created_entry[$form->id]['entry_id']) or $entry->id != $frm_created_entry[$form->id]['entry_id'])){
-                $frmpro_entries_controller->show_responses($entry, $fields, $form, $title, $description);
+                FrmProEntriesController::show_responses($entry, $fields, $form, $title, $description);
             }else{
                 $record = $frm_created_entry[$form->id]['entry_id'];
                 $saved_message = isset($form->options['success_msg']) ? $form->options['success_msg'] : $frm_settings->success_msg;
@@ -159,7 +170,7 @@ class FrmProEntry{
                 $message = ($record) ? wpautop(do_shortcode($saved_message)) : $frm_settings->failed_msg;
                 $message = '<div class="frm_message" id="message">'. $message .'</div>';
                 
-                $frmpro_entries_controller->show_responses($record, $fields, $form, $title, $description, $message, '', $form->options);
+                FrmProEntriesController::show_responses($record, $fields, $form, $title, $description, $message, '', $form->options);
             }
             add_filter('frm_continue_to_create', create_function('', 'return false;'));
         }
@@ -201,7 +212,7 @@ data:"controller=entries&frm_action=ajax_set_cookie&entry_id=<?php echo $entry_i
     }
     
     function create_post($entry_id, $form_id){
-        global $wpdb, $frmdb;
+        global $wpdb, $frmdb, $frmpro_display;
         $post_id = NULL;
         if(isset($_POST['frm_wp_post'])){
             $post = array();
@@ -228,7 +239,7 @@ data:"controller=entries&frm_action=ajax_set_cookie&entry_id=<?php echo $entry_i
             }
             
             //check for auto custom display and set frm_display_id
-            $display = FrmProDisplay::get_auto_custom_display(compact('form_id', 'entry_id'));
+            $display = $frmpro_display->get_auto_custom_display(compact('form_id', 'entry_id'));
             if($display)
                 $_POST['frm_wp_post_custom']['=frm_display_id'] = $display->ID;
 

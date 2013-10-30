@@ -27,8 +27,6 @@
             $field = array('hide_opt' => array($meta_name => $val));
         $field_name = 'notification['. $email_key .'][conditions]['. $meta_name .'][hide_opt]';
         $new_field = $frm_field->getOne($condition['hide_field']);
-        if($new_field)
-            $new_field->field_options = maybe_unserialize($new_field->field_options);
 
         require(FRMPRO_VIEWS_PATH .'/frmpro-fields/field-values.php');
     } ?>

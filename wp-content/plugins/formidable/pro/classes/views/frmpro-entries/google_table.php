@@ -24,7 +24,7 @@ data.addColumn('number','<?php _e("ID", "formidable") ?>');
             unset($count);
         }
     ?>
-data.addColumn('<?php echo $type ?>','<?php echo $col->name; ?>');    
+data.addColumn('<?php echo $type ?>','<?php echo addslashes($col->name); ?>');    
 <?php
     unset($col);
     unset($type);
@@ -63,20 +63,26 @@ data.setCell(<?php echo $i ?>,<?php echo $c ?>,<?php echo $entry->id ?>);
             unset($count);
         }
         
-        $val = FrmProEntryMetaHelper::display_value((isset($entry->metas[$col->id]) ? $entry->metas[$col->id] : false), $col, array('type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id));
+        $val = FrmProEntryMetaHelper::display_value((isset($entry->metas[$col->id]) ? $entry->metas[$col->id] : false), $col, array('type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id, 'show_filename' => false));
+
         if($type == 'number'){ ?>
 data.setCell(<?php echo $i ?>,<?php echo $c ?>,<?php echo empty($val) ? '0' : $val ?>);
 <?php   }else if($type == 'boolean'){ ?>
 data.setCell(<?php echo $i ?>,<?php echo $c ?>,<?php echo empty($val) ? 'false' : 'true' ?>);
 <?php   }else{ ?>
-data.setCell(<?php echo $i ?>,<?php echo $c ?>,"<?php echo str_replace(array("\r\n", "\n"), '\r', str_replace('&#039;', "'", esc_attr($val))); ?>");
+data.setCell(<?php echo $i ?>,<?php echo $c ?>,"<?php 
+$val = ($val != strip_tags($val)) ? $val : esc_attr($val); //check for html
+$val = str_replace(array("\r\n", "\n"), '\r', str_replace('&#039;', "'", $val));
+$val = ($clickable and $col->type != 'file') ? make_clickable($val) : $val;
+echo $val = ($val != strip_tags($val)) ? addslashes($val) : $val; //escape html
+?>");
 <?php   }
         $c++;
         unset($val);
         unset($col);
         unset($type);
     }
-    if($edit_link and FrmProEntry::user_can_edit($entry, $form)){ ?>
+    if($edit_link and $frmpro_entry->user_can_edit($entry, $form)){ ?>
 data.setCell(<?php echo $i ?>,<?php echo $c ?>,'<a href="<?php echo esc_url(add_query_arg(array('frm_action' => 'edit', 'entry' => $entry->id), $permalink) . $anchor)  ?>"><?php echo addslashes($edit_link) ?></a>');
 <?php }
     $i++;
@@ -88,7 +94,7 @@ data.addRows(1);
 $c = 0;
 foreach ($form_cols as $col){ 
     $val = ($c) ? '' : $no_entries; ?>
-data.setCell(0,<?php echo $c ?>,'<?php echo $val ?>');
+data.setCell(0,<?php echo $c ?>,'<?php echo ($clickable) ? make_clickable($val) : $val; ?>');
 <?php
     $c++;
     }

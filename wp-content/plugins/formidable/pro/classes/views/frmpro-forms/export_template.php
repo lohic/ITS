@@ -23,6 +23,7 @@ $values['options']['akismet'] = '<?php echo isset($form->options['akismet']) ? $
 $values['options']['custom_style'] = <?php echo isset($form->options['custom_style']) ? $form->options['custom_style'] : 0 ?>;
 $values['options']['before_html'] = '<?php echo addslashes(isset($form->options['before_html']) ? $form->options['before_html'] : FrmFormsHelper::get_default_html('before')) ?>';
 $values['options']['after_html'] = '<?php echo addslashes(isset($form->options['after_html']) ? $form->options['after_html'] : FrmFormsHelper::get_default_html('after')) ?>';
+$values['options']['submit_html'] = '<?php echo addslashes(isset($form->options['submit_html']) ? $form->options['submit_html'] : FrmFormsHelper::get_default_html('submit')) ?>';
 $values['options']['single_entry'] = <?php echo (isset($form->options['single_entry'])) ? $form->options['single_entry'] : 0 ?>;
 <?php if (isset($form->options['single_entry'])){ ?>
 $values['options']['single_entry_type'] = '<?php echo (isset($form->options['single_entry_type'])) ? $form->options['single_entry_type'] : 'cookie' ?>';<?php } ?>
@@ -54,7 +55,7 @@ $values['options']['ar_email_message'] = '<?php echo addslashes((isset($form->op
 if ($form){
     $form_id = $form->id;
     $frm_form->update($form_id, $values );
-    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id));
+    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
     if (!empty($form_fields)){
         foreach ($form_fields as $field)
             $frm_field->destroy($field->id);
@@ -67,6 +68,7 @@ if ($form){
     $new_key = FrmAppHelper::get_unique_key($field->field_key, $frmdb->fields, 'field_key'); ?>
     
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('<?php echo $field->type ?>', $form_id));
+$field_values['id'] = <?php echo $field->id ?>;
 $field_values['field_key'] = '<?php echo $new_key ?>';
 <?php foreach (array('name', 'description', 'type', 'default_value', 'options', 'required', 'field_order') as $col){ ?>
 $field_values['<?php echo $col ?>'] = '<?php echo ($col != 'options' and !is_array($field->$col)) ? addslashes($field->$col) : str_replace("'", "\'", maybe_serialize($field->$col)); ?>';

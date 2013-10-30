@@ -2,9 +2,9 @@
 class FrmProNotification{
     function FrmProNotification(){
         add_filter('frm_stop_standard_email', array(&$this, 'stop_standard_email'));
-        add_action('frm_after_create_entry', array(&$this, 'entry_created'), 11, 2);
-        add_action('frm_after_update_entry', array(&$this, 'entry_updated'), 11, 2);
-        add_action('frm_after_create_entry', array(&$this, 'autoresponder'), 11, 2);
+        add_action('frm_after_create_entry', array(&$this, 'entry_created'), 41, 2);
+        add_action('frm_after_update_entry', array(&$this, 'entry_updated'), 41, 2);
+        add_action('frm_after_create_entry', array(&$this, 'autoresponder'), 41, 2);
     }
     
     function stop_standard_email(){
@@ -47,7 +47,7 @@ class FrmProNotification{
         $fields = $temp_fields;
         unset($temp_fields);
         
-        foreach($notifications as $notification){
+        foreach($notifications as $email_key => $notification){
             if(isset($notification['update_email'])){
                 if($create and $notification['update_email'] == 2)
                     continue;
@@ -166,7 +166,7 @@ class FrmProNotification{
                     	unset($m);
                 	}
                 }
-                    
+                unset($file_options);   
             }
         
             $val = apply_filters('frm_email_value', $prev_val, $value, $entry);
@@ -228,7 +228,7 @@ class FrmProNotification{
         }
         unset($prev_val);
         
-        $attachments = apply_filters('frm_notification_attachment', $attachments, $form, array('entry' => $entry));
+        $attachments = apply_filters('frm_notification_attachment', $attachments, $form, array('entry' => $entry, 'email_key' => $email_key));
         if(isset($notification['ar']) and $notification['ar'])
             $attachments = apply_filters('frm_autoresponder_attachment', array(), $form);
         
@@ -285,7 +285,8 @@ class FrmProNotification{
             unset($default);
         }
         
-        $to_emails = array_unique(apply_filters('frm_to_email', $to_emails, $values, $form_id));
+        $to_emails = apply_filters('frm_to_email', $to_emails, $values, $form_id);
+        $to_emails = array_unique((array)$to_emails);
         $sent = array();
         foreach((array)$to_emails as $to_email){
             $to_email = apply_filters('frm_content', $to_email, $form, $entry_id);

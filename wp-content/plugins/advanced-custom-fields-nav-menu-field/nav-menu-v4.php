@@ -24,7 +24,8 @@ class acf_field_nav_menu extends acf_field
 		$this->category = __("Relational",'acf'); // Basic, Content, Choice, etc
 		$this->defaults = array(
 			'save_format' => 'id',
-			'allow_null' => 0
+			'allow_null' => 0,
+			'container' => 'div'
 		);
 		
 		
@@ -36,7 +37,7 @@ class acf_field_nav_menu extends acf_field
 		$this->settings = array(
 			'path' => apply_filters('acf/helpers/get_path', __FILE__),
 			'dir' => apply_filters('acf/helpers/get_dir', __FILE__),
-			'version' => '0.1.0'
+			'version' => '1.1.2'
 		);
 
 	}
@@ -83,6 +84,26 @@ class acf_field_nav_menu extends acf_field
 				'menu'		=>	__("Nav Menu HTML",'acf'),
 				'id'		=>	__("Nav Menu ID",'acf')
 			)
+		));
+		
+		?>
+	</td>
+</tr>
+<tr class="field_option field_option_<?php echo $this->name; ?>">
+	<td class="label">
+		<label><?php _e("Menu Container",'acf'); ?></label>
+		<p class="description">What to wrap the Menu's ul with.<br />Only used when returning HTML.</p>
+	</td>
+	<td>
+		<?php
+
+		$choices = $this->get_allowed_nav_container_tags();
+		
+		do_action('acf/create_field', array(
+			'type'		=>	'select',
+			'name'		=>	'fields['.$key.'][container]',
+			'value'		=>	$field['container'],
+			'choices' 	=>	$choices
 		));
 		
 		?>
@@ -137,7 +158,7 @@ class acf_field_nav_menu extends acf_field
 		// null
 		if( $field['allow_null'] )
 		{
-			echo '<option value="null"> - Select - </option>';
+			echo '<option value=""> - Select - </option>';
 		}
 
 		// Nav Menus
@@ -160,6 +181,17 @@ class acf_field_nav_menu extends acf_field
 		}
 
 		return $nav_menus;
+	}
+
+	function get_allowed_nav_container_tags() {
+		$tags = apply_filters( 'wp_nav_menu_container_allowedtags', array( 'div', 'nav' ) );
+		$formatted_tags = array(
+			array( '0' => 'None' )
+		);
+		foreach( $tags as $tag ) {
+    		$formatted_tags[0][$tag] = ucfirst( $tag );
+		}
+		return $formatted_tags;
 	}
 	
 	function format_value_for_api( $value, $post_id, $field )
@@ -193,7 +225,8 @@ class acf_field_nav_menu extends acf_field
 			ob_start();
 
 			wp_nav_menu( array(
-				'menu' => $value
+				'menu' => $value,
+				'container' => $field['container']
 			) );
 			
 			return ob_get_clean();

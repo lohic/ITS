@@ -5,7 +5,7 @@ Author: Faison Zutavern
 Author URI: http://faisonz.com
 Requires at least: 3.4
 Tested up to: 3.5.1
-Stable tag: 1.0.0
+Stable tag: 1.1.2
 License: GPL2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,23 +36,42 @@ This add-on will work with:
 This add-on can be treated as both a WP plugin and a theme include.
 
 = Plugin =
-1. Copy the 'fz-acf-nav-menu' folder into your plugins folder
+1. Copy the 'advanced-custom-fields-nav-menu-field' folder into your plugins folder
 2. Activate the plugin via the Plugins admin page
 
 = Include =
-1.	Copy the 'fz-acf-nav-menu' folder into your theme folder (can use sub folders). You can place the folder anywhere inside the 'wp-content' directory
-2.	Edit your functions.php file and add the code below (Make sure the path is correct to include the fz-acf-nav-menu.php file)
+1.	Copy the 'advanced-custom-fields-nav-menu-field' folder into your theme folder (can use sub folders). You can place the folder anywhere inside the 'wp-content' directory
+2.	Edit your functions.php file and add the code below (Make sure the path is correct to include the nav-menu-v4.php file)
 
 `
 add_action('acf/register_fields', 'my_register_fields');
 
 function my_register_fields()
 {
-	include_once('fz-acf-nav-menu/fz-acf-nav-menu.php');
+	include_once('advanced-custom-fields-nav-menu-field/nav-menu-v4.php');
 }
 `
 
 == Frequently Asked Questions ==
+
+= Can you show a quick example of how to use this? =
+
+Sure can!
+
+1.	Create a new field group
+2.	Add a Nav Menu and set the Field Label to `Side Menu` (this will cause the Field Name to be `side_menu`)
+3.	Set the Nav Menu's Return Value to `Nav Menu HTML`
+4.	Set the Location Rules to Show if "Post Type" "is equal to" "Page"
+5.	Save the Field Group
+6.	Now in your themes sidebar.php, put the following code before or after any of the div's with class="widget-area"
+`
+<?php if( get_field( 'side_menu' ) ) : ?>
+	<div class="widget-area">
+		<?php the_field( 'side_menu' ); ?>
+	</div>
+<?php endif; ?>
+`
+Finally, create or edit a page, select a menu in the Side Menu field, and view the page to see that menu in the sidebar!
 
 = Will you make this plugin compatible with Advanced Custom Fields v3? =
 
@@ -78,10 +97,25 @@ First, check that you added the necessary ACF code to your templates. If you don
 
 == Changelog ==
 
+= 1.1.2 =
+* Fixed a silly mistake related to allowing Null for a Nav Menu Field. Basically, it was storing the string "null" when you don't select a menu, that's taken care of now.
+
+= 1.1.1 =
+* I forgot to add a default value for the Menu Container field, so I added 'div' as the default value. If you upgraded from 1.0.0 to 1.1.0 and had WP_DEBUG enabled, you would receive a warning about an unknown index. Since I like debug mode to run without warnings, I fixed this.
+
+= 1.1.0 =
+* Added a field which allows users to choose the containing element for the Menu's ul. See [wp_nav_menu's container parameter](http://codex.wordpress.org/Function_Reference/wp_nav_menu#Parameters)
+
 = 1.0.0 =
 * Initial Release.
 
 == Upgrade Notice ==
+
+= 1.1.1 =
+I forgot to add a default value for the Menu Container field. So to eliminate WP_DEBUG warnings, I added 'div' as the default value. Please upgrade to avoid the warnings.
+
+= 1.1.0 =
+Added a new minor feature for selecting the Menu's containing element.
 
 = 1.0.0 =
 If you have a version less than 0.1.0, something went really, really wrong. Upgrade now, because I have no idea what will happen if you don't!

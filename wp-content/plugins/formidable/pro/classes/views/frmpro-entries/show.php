@@ -22,6 +22,9 @@
                     <div class="inside">
                         <table class="form-table"><tbody>
                         <?php foreach($fields as $field){ 
+                            if(in_array($field->type, array('captcha', 'html')))
+                                continue;
+                            
                             if ($field->type == 'break' or $field->type == 'divider'){ ?>
                         </tbody></table>
                         <br/><h4><?php echo $field->name ?></h4>

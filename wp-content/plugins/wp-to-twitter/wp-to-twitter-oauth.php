@@ -89,6 +89,12 @@ switch ( $post['oauth_settings'] ) {
 				if ( $connection = wtt_oauth_connection( $auth ) ) {
 					$protocol = ( get_option( 'wpt_http' ) == '1' )?'http:':'https:';
 					$data = $connection->get($protocol.'//api.twitter.com/1.1/account/verify_credentials.json');
+					if ( $connection->http_code != '200' ) {
+						$data = json_decode( $data );
+						update_option( 'wpt_error', $data->errors[0]->message );
+					} else {
+						delete_option( 'wpt_error' );
+					}
 					if ($connection->http_code == '200') {
 						$error_information = '';
 						$decode = json_decode($data);
@@ -117,7 +123,7 @@ switch ( $post['oauth_settings'] ) {
 						echo "<pre><strong>Summary Connection Response:</strong><br />";
 							print_r($error_information);
 						echo "<br /><strong>Account Verification Data:</strong><br />";
-							print_r($data);
+							print_r($data);							
 						echo "<br /><strong>Full Connection Response:</strong><br />";
 							print_r($connection);
 						echo "</pre>";
@@ -136,15 +142,17 @@ switch ( $post['oauth_settings'] ) {
 				wp_die('Oops, please try again.');
 			}
 			if ( !$auth ) {
-				update_option('app_consumer_key', '');
-				update_option('app_consumer_secret', '');
-				update_option('oauth_token', '');
-				update_option('oauth_token_secret', '');
+				update_option( 'app_consumer_key', '' );
+				update_option( 'app_consumer_secret', '' );
+				update_option( 'oauth_token', '' );
+				update_option( 'oauth_token_secret', '' );
+				update_option( 'wtt_twitter_username', '' );
 			} else {
 				delete_user_meta( $auth, 'app_consumer_key' );
 				delete_user_meta( $auth, 'app_consumer_secret' );
 				delete_user_meta( $auth, 'oauth_token' );
 				delete_user_meta( $auth, 'oauth_token_secret' );
+				delete_user_meta( $auth, 'wtt_twitter_username' );
 			}
 			$message = "cleared";
 			return $message;
@@ -206,25 +214,25 @@ $nonce = ( !$auth )?wp_nonce_field('wp-to-twitter-nonce', '_wpnonce', true, fals
 			<div class="inside '.$class.'">
 			<div class="notes">
 			<h4>'.__('WP to Twitter Set-up','wp-to-twitter').'</h4>
-			<p>'.__('Your server time:','wp-to-twitter').' <code>'.$server_time.'</code> '.__("Twitter's time:").' <code>'.$date.'</code>.'.__( 'If these timestamps are not within 5 minutes of each other, your server will not connect to Twitter.','wp-to-twitter').'</p>
+			<p>'.__('Your server time:','wp-to-twitter').' <code>'.$server_time.'</code> '.__("Twitter's time:").' <code>'.$date.'</code>. '.__( 'If these timestamps are not within 5 minutes of each other, your server will not connect to Twitter.','wp-to-twitter').'</p>
 			'.$errors.'
-			<p>'.__('Your server timezone (should be UTC,GMT,Europe/London or equivalent):','wp-to-twitter').date_default_timezone_get().'</p>
+			<p>'.__('Your server timezone (should be UTC,GMT,Europe/London or equivalent):','wp-to-twitter').' '.date_default_timezone_get().'</p>
 			</div>
 			'.$form.'
 				<fieldset class="options">
 					<h4>'.__('1. Register this site as an application on ', 'wp-to-twitter') . '<a href="http://dev.twitter.com/apps/new" target="_blank">'.__('Twitter\'s application registration page','wp-to-twitter').'</a></h4>
 						<ul>
 						<li>'.__('If you\'re not currently logged in to Twitter, log-in to the account you want associated with this site' , 'wp-to-twitter').'</li>
-						<li>'.__('Your Application\'s Name will show up after "via" in your twitter stream. Your application name cannot include the word "Twitter."' , 'wp-to-twitter').'</li>
+						<li>'.__('Your application name cannot include the word "Twitter."' , 'wp-to-twitter').'</li>
 						<li>'.__('Your Application Description can be anything.','wp-to-twitter').'</li>
 						<li>'.__('The WebSite and Callback URL should be ' , 'wp-to-twitter').'<strong>'.  get_bloginfo( 'url' ) .'</strong></li>					
 						</ul>
 					<p><em>'.__('Agree to the Developer Rules of the Road and continue.','wp-to-twitter').'</em></p>
-					<h4>'.__('2. Switch to the "Settings" tab in Twitter apps','wp-to-twitter').'</h4>
+					<h4>'.__('2. Switch to the "Settings" tab in Twitter apps','wp-to-twitter').'. '.__('<em>Do NOT create your access token yet.</em>','wp-to-twitter').'</h4>
 						<ul>
 						<li>'.__('Select "Read and Write" for the Application Type' , 'wp-to-twitter').'</li>
 						<li>'.__('Update the application settings' , 'wp-to-twitter').'</li>
-						<li>'.__('Return to the Details tab and create your access token. Refresh page to view your access tokens.','wp-to-twitter').'</li>		
+						<li>'.__('Return to the Details tab and create your access token.','wp-to-twitter').'</li>		
 						</ul>	
 					<p><em>'.__('Once you have registered your site as an application, you will be provided with four keys.' , 'wp-to-twitter').'</em></p>
 					<h4>'.__('3. Copy and paste your consumer key and consumer secret into the fields below' , 'wp-to-twitter').'</h4>

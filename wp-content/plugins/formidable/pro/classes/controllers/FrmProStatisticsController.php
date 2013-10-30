@@ -142,10 +142,18 @@ class FrmProStatisticsController{
         if($show_key and $show_key < 5)
             $show_key = 10;
             
-        $options = array('width' => $width, 'height' => $height, 'legend' => 'none');
+        $options = array('width' => $width, 'height' => $height, 'legend' => 'none', 'title' => '', 'titleTextStyle'=> '');
         if(!empty($colors))
             $options['colors'] = $colors;
-        $options['title'] = preg_replace("/&#?[a-z0-9]{2,8};/i", "", FrmAppHelper::truncate($field->name, $truncate, 0));
+        
+		$options['title'] = preg_replace("/&#?[a-z0-9]{2,8};/i", "", FrmAppHelper::truncate($field->name, $truncate, 0));
+
+		if(!empty($title))
+            $options['title'] = $title;
+
+		if(!empty($title_size) or !empty($title_font))
+            $options['titleTextStyle'] = array('fontSize' => $title_size, 'fontName' => $title_font);
+
              
         if($show_key)
             $options['legend'] = array('position' => 'right', 'textStyle' => array('fontSize' => $show_key));
@@ -240,6 +248,9 @@ class FrmProStatisticsController{
                 $x_query .= " AND user_id='$user_id'";
             }
 
+            $query = apply_filters('frm_graph_query', $query, $field, $args);
+            $x_query = apply_filters('frm_graph_xquery', $x_query, $field, $args);
+            
             $inputs = $wpdb->get_results($query, ARRAY_A);
             $x_inputs = $wpdb->get_results($x_query, ARRAY_A);
             
@@ -350,6 +361,9 @@ class FrmProStatisticsController{
         if(isset($x_inputs) and $x_inputs){
             $x_temp = array();
             foreach($x_inputs as $x_input){
+                if(!$x_input)
+                    continue;
+                    
                 if($x_field)
                     $x_temp[$x_input['item_id']] = $x_input['meta_value'];
                 else
@@ -597,7 +611,7 @@ class FrmProStatisticsController{
                     $id_count = array();
                     foreach($inputs as $k => $i){
                         foreach((array)$i as $v){
-                            if(trim($v) != '')
+                            if(is_array($v) or trim($v) != '')
                                 $id_count[] = $v;
                             unset($v);
                         }
@@ -949,6 +963,7 @@ class FrmProStatisticsController{
             return;
             
         $options['title'] = $title;
+		$options['titleTextStyle'] = array($title_size, $title_font);
         $options['legend'] = 'none';
         $cols = array('xaxis' => array('type' => 'string'), __('Count', 'formidable') => array('type' => 'number'));
         
@@ -996,9 +1011,9 @@ class FrmProStatisticsController{
             'include_js' => true, 'colors' => '', 'grid_color' => '#CCC', 'is3d' => false,
             'height' => 400, 'width' => 400, 'truncate_label' => 7,
             'bg_color' => '#FFFFFF', 'truncate' => 40, 'response_count' => 10, 'user_id' => false, 
-            'type' => 'default', 'x_axis' => false, 'data_type' => 'count', 'limit' => '',
+            'title'=> '', 'type' => 'default', 'x_axis' => false, 'data_type' => 'count', 'limit' => '',
             'x_start' => '', 'x_end' => '', 'show_key' => false, 'min' => '', 'max' => '',
-            'include_zero' => false, 'field' => false
+            'include_zero' => false, 'field' => false, 'title_size' => '', 'title_font' => ''
         );
         
         if($type == 'geo'){
@@ -1045,7 +1060,7 @@ class FrmProStatisticsController{
         if(!$frm_gr_count)
             $frm_gr_count = 0;
         foreach ($fields as $field){
-            $data = $this->get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'include_zero', 'width', 'height'));
+            $data = $this->get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'include_zero', 'width', 'height', 'title', 'title_size', 'title_font'));
             
             $frm_gr_count++;
             $this_id = $field->id .'_'. $frm_gr_count;
@@ -1071,7 +1086,7 @@ class FrmProStatisticsController{
     function stats_shortcode($atts){
         $defaults = array(
             'id' => false, //the ID of the field to show stats for
-            'type' => 'total', //total, count, average, median, deviation, star, minimum, maximum
+            'type' => 'total', //total, count, average, median, deviation, star, minimum, maximum, unique
             'user_id' => false, //limit the stat to a specific user id or "current"
             'value' => false, //only count entries with a specific value
             'round' => 100, //how many digits to round to

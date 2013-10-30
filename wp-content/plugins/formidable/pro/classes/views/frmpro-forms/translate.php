@@ -6,7 +6,7 @@
     <tr>
     <th class="manage-column" width="170px"><?php echo FrmAppHelper::truncate($values['name'], 40) ?></th>
     <?php foreach($langs as $lang){ 
-        if($lang['code'] == $base_lang)
+        if($lang['code'] == $default_language)
             continue;
         $col_order[] = $lang['code'];
         ?>

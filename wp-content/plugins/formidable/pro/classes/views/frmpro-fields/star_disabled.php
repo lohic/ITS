@@ -1,8 +1,10 @@
 <div class="frm_form_fields">
 <?php
-global $frm_star_loaded;
+global $frm_star_loaded, $frm_forms_loaded;
 if(!is_array($frm_star_loaded))
     $frm_star_loaded = array();
+if(!$frm_forms_loaded or empty($frm_forms_loaded))
+    $frm_forms_loaded[] = true;
 
 $rand = FrmProAppHelper::get_rand(3);
 $name = $field->id . $rand;

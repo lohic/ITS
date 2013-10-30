@@ -2,7 +2,7 @@
 if (in_array($field['type'], array('tag', 'date'))){ ?>
 <input type="text" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo esc_attr($field['value']) ?>" <?php do_action('frm_field_input_html', $field) ?>/>
 <?php 
-if ($field['type'] == 'date' and (!isset($field['read_only']) or !$field['read_only'])){ 
+if ($field['type'] == 'date' and (!isset($field['read_only']) or !$field['read_only'] or ($field['read_only'] and $frm_readonly == 'disabled' ))){ 
 global $frm_datepicker_loaded;
 if(!is_array($frm_datepicker_loaded)) $frm_datepicker_loaded = array();
 $frm_datepicker_loaded['field_'. $field['field_key']] = array(

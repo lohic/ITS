@@ -98,19 +98,19 @@
             <fieldset>
               
             <div class="frm_error_style"> 
-                <img src="<?php echo FRMPRO_ICONS_URL .'/'. $frmpro_settings->error_icon; ?>" alt="" />
+                <img src="<?php echo FRMPRO_IMAGES_URL .'/error_icons/'. $frmpro_settings->error_icon; ?>" alt="" />
                 <?php echo __('SAMPLE:', 'formidable') .' '. $frm_settings->invalid_msg ?>
             </div>
             
             <div id="message" class="frm_message"><?php echo __('SAMPLE:', 'formidable') .' '. $frm_settings->success_msg ?></div>
             <?php $pos_class = ($frmpro_settings->position == 'none') ? 'frm_top_container' : 'frm_'. $frmpro_settings->position .'_container' ?>
-            <div class="frm_form_field frm_left_half form-field <?php echo $pos_class ?>">
+            <div class="frm_form_field frm_first_half form-field <?php echo $pos_class ?>">
             <label class="frm_primary_label"><?php _e('Text field', 'formidable') ?> <span class="frm_required">*</span></label>   
             <input type="text" value="<?php echo esc_attr( __('This is sample text', 'formidable')) ?>"/>
             <div class="frm_description"><?php _e('A field with a description', 'formidable') ?></div>
             </div>
             
-            <div class="frm_form_field frm_right_half form-field frm_focus_field <?php echo $pos_class ?>">
+            <div class="frm_form_field frm_last_half form-field frm_focus_field <?php echo $pos_class ?>">
             <label class="frm_primary_label"><?php _e('Text field in active state', 'formidable') ?> <span class="frm_required">*</span></label>   
             <input type="text" value="<?php echo esc_attr( __('The active state will be seen when the field is clicked', 'formidable')) ?>" />
             </div>
@@ -134,13 +134,13 @@
             </select>
             </div>
             
-            <div class="frm_form_field frm_left_half <?php echo $pos_class ?>">
+            <div class="frm_form_field frm_first_half <?php echo $pos_class ?>">
                 <label class="frm_primary_label"><?php _e('Radio Buttons', 'formidable') ?></label>
                 <div class="frm_radio"><input type="radio" /><label><?php _e('Option 1', 'formidable') ?></label></div>
                 <div class="frm_radio"><input type="radio" /><label><?php _e('Option 2', 'formidable') ?></label></div>
             </div>
             
-            <div class="frm_form_field frm_right_half <?php echo $pos_class ?>">
+            <div class="frm_form_field frm_last_half <?php echo $pos_class ?>">
                 <label class="frm_primary_label"><?php _e('Check Boxes', 'formidable') ?></label>
                 <div class="frm_checkbox"><input type="checkbox" /><label><?php _e('Option 1', 'formidable') ?></label></div>
                 <div class="frm_checkbox"><input type="checkbox" /><label><?php _e('Option 2', 'formidable') ?></label></div>

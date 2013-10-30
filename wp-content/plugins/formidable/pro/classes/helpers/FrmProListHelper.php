@@ -58,11 +58,11 @@ class FrmProListHelper extends WP_List_Table {
 		$s_query = '';
 		
 		if($this->plural == 'entries'){
-		    global $frm_entry, $frmpro_entries_controller;
+		    global $frm_entry;
 		    $form_id = $this->params['form'];
 		    $s_query = 'it.form_id='. (int)$form_id;
 		    if($s != '')
-		        $s_query = $frmpro_entries_controller->get_search_str($s_query, $s, $form_id, $fid);
+		        $s_query = FrmProEntriesController::get_search_str($s_query, $s, $form_id, $fid);
 		    
             $this->items = $frm_entry->getAll($s_query, " ORDER BY $orderby $order", " LIMIT $start, $per_page", true, false);
 	        $total_items = $frm_entry->getRecordCount($s_query);
@@ -124,6 +124,7 @@ class FrmProListHelper extends WP_List_Table {
     <select name="fid">
         <option value="">- <?php _e('All Fields', 'formidable') ?> -</option>
         <option value="created_at" <?php selected($fid, 'created_at') ?>><?php _e('Entry creation date', 'formidable') ?></option>
+        <option value="id" <?php selected($fid, 'id') ?>><?php _e('Entry ID', 'formidable') ?></option>
         <?php foreach($field_list as $f){ ?>
         <option value="<?php echo ($f->type == 'user_id') ? 'user_id' : $f->id ?>" <?php selected($fid, $f->id) ?>><?php echo FrmAppHelper::truncate($f->name, 30);  ?></option>
         <?php } ?>

@@ -383,7 +383,7 @@ class WPOAuthRequest {
   public function get_normalized_http_url() {
     $parts = parse_url($this->http_url);
 
-    $port = @$parts['port'];
+    $port   = isset($parts['port']) ? $parts['port'] : false;
     $scheme = @$parts['scheme'];
     $host = @$parts['host'];
     $path = @$parts['path'];
@@ -467,6 +467,8 @@ class WPOAuthRequest {
    * util function: current timestamp
    */
   private static function generate_timestamp() {
+	// make sure that timestamp is in UTC
+	date_default_timezone_set('UTC');
     return time();
   }
 

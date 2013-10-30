@@ -2,11 +2,10 @@
 <script type="text/javascript">
 //<![CDATA[
 <?php 
-if($frm_rules)
+if(!defined('DOING_AJAX')){
     echo "__FRMRULES=". json_encode($frm_rules) .";\n";
-
-if(!defined('DOING_AJAX'))
     echo "__FRMURL='". FRM_SCRIPT_URL ."';\n";
+}
 
 if($frm_recaptcha_loaded)
     echo $frm_recaptcha_loaded;
@@ -18,11 +17,11 @@ new nicEditor({fullPanel:true,iconsPath:'<?php echo FRMPRO_IMAGES_URL ?>/nicEdit
 } 
 
 ?>
-jQuery(document).ready(function($){<?php if(!defined('DOING_AJAX')){ ?>
-if($.isFunction($.on)){$(document).on('submit','.frm-show-form',function(e){e.preventDefault();if(jQuery(this).find('.wp-editor-wrap').length){tinyMCE.triggerSave();}frmGetFormErrors(this);});}else{$('.frm-show-form').live('submit',function(e){e.preventDefault();if(jQuery(this).find('.wp-editor-wrap').length){tinyMCE.triggerSave();} frmGetFormErrors(this);});}
+jQuery(document).ready(function($){<?php if(!defined('DOING_AJAX') and (!is_admin() or !isset($_GET) or !isset($_GET['page']) or $_GET['page'] != 'formidable-entries')){ ?>
+if($.isFunction($.fn.on)){$(document).off('submit.formidable','.frm-show-form');$(document).on('submit.formidable','.frm-show-form',frmOnSubmit);}else{$('.frm-show-form').live('submit',frmOnSubmit);}
 <?php }
 if($frm_chosen_loaded){ ?>
-$('.frm_chzn').chosen();<?php 
+$('.frm_chzn').chosen({<?php echo apply_filters('frm_chosen_js', 'allow_single_deselect:true') ?>});<?php 
 }
 
 if(!empty($frm_hidden_fields) or (!empty($frm_datepicker_loaded) and is_array($frm_datepicker_loaded))
@@ -111,7 +110,7 @@ success:function(opts){
 }
 
 if(!empty($frm_calc_fields)){ 
-global $frmdb; 
+global $frmdb, $frm_field; 
 
 foreach($frm_calc_fields as $result => $calc){ 
     preg_match_all("/\[(.?)\b(.*?)(?:(\/))?\]/s", $calc, $matches, PREG_PATTERN_ORDER);
@@ -121,13 +120,11 @@ foreach($frm_calc_fields as $result => $calc){
 
     foreach ($matches[0] as $match_key => $val){
         $val = trim(trim($val, '['), ']');
-        $calc_fields[$val] = FrmField::getOne($val); //get field
+        $calc_fields[$val] = $frm_field->getOne($val); //get field
         if(!$calc_fields[$val]) continue;
         
-        if($calc_fields[$val] and in_array($calc_fields[$val]->type, array('radio', 'scale', '10radio'))){
-            $field_keys[$calc_fields[$val]->id] = 'input[name="item_meta['. $calc_fields[$val]->id .']"]';
-        }else if($calc_fields[$val]->type == 'checkbox'){
-            $field_keys[$calc_fields[$val]->id] = 'input[name="item_meta['. $calc_fields[$val]->id .'][]"]';
+        if($calc_fields[$val] and in_array($calc_fields[$val]->type, array('radio', 'scale', '10radio', 'checkbox'))){
+            $field_keys[$calc_fields[$val]->id] = 'input[name^="item_meta['. $calc_fields[$val]->id .']"]';
         }else{
             $field_keys[$calc_fields[$val]->id] = ($calc_fields[$val]) ? '#field_'. $calc_fields[$val]->field_key : '#field_'. $val;
         }
@@ -141,21 +138,21 @@ var vals=new Array();
 if($calc_field->type == 'checkbox'){
 ?>$('<?php echo $field_keys[$calc_field->id] ?>:checked, <?php echo $field_keys[$calc_field->id] ?>[type=hidden]').each(function(){ 
 if(isNaN(vals['<?php echo $calc_field->id ?>'])){vals['<?php echo $calc_field->id ?>']=0;}
-var n=parseFloat($(this).val().match(/\d*(\.\d*)?$/));if(isNaN(n))n=0;
+var n=parseFloat($(this).val().match(/-?\d*(\.\d*)?$/));if(isNaN(n))n=0;
 vals['<?php echo $calc_field->id ?>'] += n; });
 <?php }else if($calc_field->type == 'date') { 
 ?>var d=$('<?php echo $field_keys[$calc_field->id]; ?>').val();
 <?php 
 global $frmpro_settings;
-if(in_array($frmpro_settings->date_format, array('d/m/Y', 'j/m/y'))){
+        if(in_array($frmpro_settings->date_format, array('d/m/Y', 'j/m/y'))){
 ?>var darr=d.split("/");
 vals['<?php echo $calc_field->id ?>']=new Date(darr[2],darr[1],darr[0]).getTime();
-<?php }else if($frmpro_settings->date_format == 'j-m-Y'){ 
+<?php   }else if($frmpro_settings->date_format == 'j-m-Y'){ 
 ?>var darr=d.split("-");
 vals['<?php echo $calc_field->id ?>']=new Date(darr[2],darr[1],darr[0]).getTime();
-<?php }else{
+<?php   }else{
 ?>vals['<?php echo $calc_field->id ?>']=new Date(d).getTime();
-<?php } 
+<?php   } 
 ?>vals['<?php echo $calc_field->id ?>']=Math.round(vals['<?php echo $calc_field->id ?>']/(1000*60*60*24));
 <?php }else{
 ?>vals['<?php echo $calc_field->id ?>']=$('<?php 

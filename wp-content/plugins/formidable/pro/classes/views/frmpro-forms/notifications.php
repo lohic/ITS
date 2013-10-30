@@ -11,10 +11,6 @@
         
     <p><input type="checkbox" name="notification[<?php echo $email_key ?>][plain_text]" value="1" <?php checked($notification['plain_text'], 1); ?> /> <?php _e('Send Emails in Plain Text', 'formidable') ?></p>
 
-<?php if($email_key > 0){ ?>
-    <p class="alignright"><a href="javascript:frmRemoveEmailList(<?php echo $email_key ?>)"><?php _e('Remove Email', 'formidable') ?></a></p>
-<?php } ?>
-
     <p><?php _e('Send this notification when entries are', 'formidable'); ?>
         <select name="notification[<?php echo $email_key ?>][update_email]">
             <option value="0"><?php _e('created', 'formidable') ?></option>

@@ -2,7 +2,7 @@
 
 class FrmProAppHelper{
     
-    function jquery_themes(){
+    public static function jquery_themes(){
         return array(
             'ui-lightness'  => 'UI Lightness',
             'ui-darkness'   => 'UI Darkness',
@@ -31,7 +31,10 @@ class FrmProAppHelper{
         );
     }
     
-    static function jquery_css_url($theme_css){
+    public static function jquery_css_url($theme_css){
+        if($theme_css == -1)
+            return;
+
         $uploads = wp_upload_dir();
         if(!$theme_css or $theme_css == '' or $theme_css == 'ui-lightness'){
             $css_file = FRM_URL . '/css/ui-lightness/jquery-ui.css';
@@ -51,7 +54,7 @@ class FrmProAppHelper{
         return $css_file;
     }
     
-    function datepicker_version(){
+    public static function datepicker_version(){
         $jq = FrmAppHelper::script_version('jquery');
 	    
 	    $new_ver = true;
@@ -65,7 +68,7 @@ class FrmProAppHelper{
         return ($new_ver) ? '' : '.1.7.3';
     }
     
-    function get_user_id_param($user_id){
+    public static function get_user_id_param($user_id){
         if($user_id and !empty($user_id) and !is_numeric($user_id)){
             if($user_id == 'current'){
                 global $user_ID;
@@ -83,7 +86,7 @@ class FrmProAppHelper{
         return $user_id;
     }
     
-    function get_formatted_time($date, $date_format=false, $time_format=false){
+    public static function get_formatted_time($date, $date_format=false, $time_format=false){
         if(empty($date))
             return $date;
         
@@ -114,7 +117,7 @@ class FrmProAppHelper{
         return $formatted;
     }
     
-    function human_time_diff($from, $to=''){
+    public static function human_time_diff($from, $to=''){
     	if ( empty($to) )
     		$to = time();
 
@@ -162,7 +165,7 @@ class FrmProAppHelper{
     	return $output;
     }
     
-    function convert_date($date_str, $from_format, $to_format){
+    public static function convert_date($date_str, $from_format, $to_format){
         $base_struc     = preg_split("/[\/|.| |-]/", $from_format);
         $date_str_parts = preg_split("/[\/|.| |-]/", $date_str );
 
@@ -184,7 +187,7 @@ class FrmProAppHelper{
         return date( $to_format, $dummy_ts );
     }
     
-    function get_edit_link($id){
+    public static function get_edit_link($id){
         global $current_user, $frm_siteurl;
 
     	$output = '';
@@ -194,13 +197,13 @@ class FrmProAppHelper{
     	return $output;
     }
     
-    function rewriting_on(){
+    public static function rewriting_on(){
       $permalink_structure = get_option('permalink_structure');
 
       return ($permalink_structure and !empty($permalink_structure));
     }
     
-    function current_url() {
+    public static function current_url() {
         $pageURL = 'http';
         if (is_ssl()) $pageURL .= "s";
         $pageURL .= "://";
@@ -212,25 +215,24 @@ class FrmProAppHelper{
         return $pageURL;
     }
     
-    function get_permalink_pre_slug_uri(){
+    public static function get_permalink_pre_slug_uri(){
       preg_match('#^([^%]*?)%#', get_option('permalink_structure'), $struct);
       return $struct[1];
     }
     
     //Bulk Actions
-    function header_checkbox(){ ?>
+    public static function header_checkbox(){ ?>
         <input type="checkbox" name="check-all" class="select-all-item-action-checkboxes" value="" /> &nbsp;
     <?php    
     }
     
 
-    function item_checkbox($id){ ?>
+    public static function item_checkbox($id){ ?>
         <input type="checkbox" name="item-action[]" class="item-action-checkbox" value="<?php echo $id; ?>" /> &nbsp;
     <?php    
     }
     
-
-    function bulk_actions($footer){ 
+    public static function bulk_actions($footer){ 
         $name = (!$footer) ? '' : '2'; ?>
         <div class="alignleft actions">
         <select name="bulkaction<?php echo $name ?>" id="bulkaction<?php echo $name ?>">
@@ -246,7 +248,7 @@ class FrmProAppHelper{
     <?php    
     }
     
-    function search_form($sort_str, $sdir_str, $search_str, $fid=false){
+    public static function search_form($sort_str, $sdir_str, $search_str, $fid=false){
         if(isset($_GET['page']) and $_GET['page'] == 'formidable-entries'){
             global $frm_form, $frm_field;
             if(isset($_GET['form']))
@@ -283,7 +285,7 @@ class FrmProAppHelper{
     <?php
     }
     
-    function get_shortcodes($content, $form_id){
+    public static function get_shortcodes($content, $form_id){
         global $frm_field;
         $fields = $frm_field->getAll("fi.type not in ('divider','captcha','break','html') and fi.form_id=".$form_id);
         
@@ -296,7 +298,7 @@ class FrmProAppHelper{
         return $matches;
     }
     
-    function get_custom_post_types(){
+    public static function get_custom_post_types(){
         if(function_exists('get_post_types')){
             $custom_posts = get_post_types(array(), 'object');
             foreach(array('revision', 'attachment', 'nav_menu_item') as $unset)
@@ -306,7 +308,7 @@ class FrmProAppHelper{
         return false;
     }
     
-    function get_custom_taxonomy($post_type, $field){
+    public static function get_custom_taxonomy($post_type, $field){
         $taxonomies = get_object_taxonomies($post_type);
         if(!$taxonomies){
             return false;
@@ -326,7 +328,7 @@ class FrmProAppHelper{
         }
     }
     
-    function sort_by_array($array, $order_array){
+    public static function sort_by_array($array, $order_array){
         $array = (array)$array;
         $order_array = (array)$order_array;
         $ordered = array();
@@ -340,7 +342,7 @@ class FrmProAppHelper{
     }
     
     
-    function reset_keys($arr){
+    public static function reset_keys($arr){
         $new_arr = array();
         if(empty($arr))
             return $new_arr;
@@ -352,8 +354,8 @@ class FrmProAppHelper{
         return $new_arr;
     }
     
-    function filter_where($entry_ids, $args){
-        global $wpdb, $frmdb, $frm_entry_meta;
+    public static function filter_where($entry_ids, $args){
+        global $wpdb, $frmdb, $frm_entry_meta, $frm_field;
         
         $defaults = array(
             'where_opt' => false, 'where_is' => '=', 'where_val' => '', 
@@ -368,7 +370,7 @@ class FrmProAppHelper{
             return $entry_ids;
            
                    
-        $where_field = FrmField::getOne($where_opt);
+        $where_field = $frm_field->getOne($where_opt);
         if(!$where_field)
             return $entry_ids;
                 
@@ -377,7 +379,7 @@ class FrmProAppHelper{
     
         if($where_field->type == 'date' and !empty($where_val))
             $where_val = date('Y-m-d', strtotime($where_val));
-        else if($where_field->type == 'checkbox' and $where_is == '=')
+        else if($where_is == '=' and ($where_field->type == 'checkbox' or ($where_field->type == 'data' and $where_field->field_options['data_type'] == 'checkbox')))
             $where_is =  'LIKE';
             
         $field_options = maybe_unserialize($where_field->field_options);
@@ -486,7 +488,7 @@ class FrmProAppHelper{
         return $entry_ids;
     }
     
-    function get_current_form_id(){
+    public static function get_current_form_id(){
         global $frm_current_form;
         
         $form_id = 0;
@@ -504,7 +506,7 @@ class FrmProAppHelper{
         return $form_id;
     }
     
-    function export_xml($type, $args = array() ) {
+    public static function export_xml($type, $args = array() ) {
     	global $wpdb, $frmdb, $frmprodb;
 	    
 	    if(!is_array($type)){
@@ -548,8 +550,8 @@ class FrmProAppHelper{
     		$where .= "{$table}.id IN (". $args['ids'] .")";
         }
 
-        $xml = '<?xml version="1.0" encoding="'. get_bloginfo('charset') .'" ?>'."\n";
-        $xml .= "<formidable>\n";
+        echo '<?xml version="1.0" encoding="'. get_bloginfo('charset') .'" ?>'."\n";
+        echo "<formidable>\n";
         if(is_array($type)){
             foreach($type as $tb_type){
                 $table = ($tb_type == 'items') ? $frmdb->entries :  (($tb_type == 'displays') ? $frmprodb->{$tb_type} : $frmdb->{$tb_type});
@@ -567,100 +569,137 @@ class FrmProAppHelper{
                 if(!empty($where))
                     $where = " WHERE ". $where;
                 $records = $wpdb->get_results( "SELECT * FROM {$table}$where" );
-        	    $xml .= FrmProAppHelper::get_xml_for_type($tb_type, $records);
+        	    FrmProAppHelper::get_xml_for_type($tb_type, $records);
 
     	    }
         }else{
     	    $records = $wpdb->get_results( "SELECT * FROM {$table} $join WHERE $where" );
-    	    $xml .= FrmProAppHelper::get_xml_for_type($type, $records);
+    	    FrmProAppHelper::get_xml_for_type($type, $records);
     	}
-        $xml .= "</formidable>\n";
-        
-        return $xml;
+        echo "</formidable>\n";
     }
     
-    function get_xml_for_type($type, $records){
+    public static function get_xml_for_type($type, $records){
         global $frmdb, $wpdb;
         
-        $xml = "<$type>\n";
+        echo "<$type>\n";
         $padding = "  ";
         foreach($records as $record){
             $singular = trim($type, 's');
             $object_key = $singular .'_key';
-            $xml .= $padding. "<$singular>\n";
+            echo $padding. "<$singular>\n";
             $padding .= "  ";
-            $xml .= $padding."<". $singular ."_key><![CDATA[". $record->{$object_key} ."]]></". $singular."_key>\n";
+            echo $padding."<". $singular ."_key><![CDATA[". $record->{$object_key} ."]]></". $singular."_key>\n";
             
-            foreach(array('id', 'name', 'description', 'options', 'logged_in', 'editable', 'is_template', 'default_template', 'content', 'dyncontent', 'insert_loc', 'param', 'type', 'show_count', 'form_id', 'entry_id', 'post_id', 'ip', 'created_at') as $col){
+            foreach(array('id', 'name', 'description', 'options', 'logged_in', 'editable', 'is_template', 'default_template', 'form_id', 'entry_id', 'post_id', 'ip', 'created_at') as $col){
                 if(isset($record->{$col})){
                     $col_val = maybe_unserialize($record->{$col});
-                    $xml .= FrmProAppHelper::xml_item($col_val, $col, $padding);
+                    FrmProAppHelper::xml_item($col_val, $col, $padding);
                 }
             }
 
             if($type == 'forms'){
-                $fields = $wpdb->get_results("SELECT * FROM {$frmdb->fields} WHERE form_id={$record->id} ORDER BY field_order");
+                global $frm_field;
+                $fields = $frm_field->getAll(array('fi.form_id' => $record->id), 'field_order');
+                //$fields = $wpdb->get_results("SELECT * FROM {$frmdb->fields} WHERE form_id={$record->id} ORDER BY field_order");
                 if(!empty($fields)){
-                    $xml .= $padding."<fields>\n";
+                    echo $padding."<fields>\n";
                     $padding .= "  ";
                     foreach($fields as $field){ 
-                        $xml .= $padding."<field>\n";
+                        echo $padding."<field>\n";
                         foreach(array('id', 'field_key', 'required', 'name', 'description', 'field_order', 'type', 'default_value', 'options', 'field_options', 'form_id') as $col){
                             if(isset($field->{$col})){
                                 $col_val = maybe_unserialize($field->{$col});
-                                $xml .= FrmProAppHelper::xml_item($col_val, $col, $padding);
+                                FrmProAppHelper::xml_item($col_val, $col, $padding);
                             }
                         }
-                        $xml .= $padding."</field>\n";
+                        echo $padding."</field>\n";
                     } 
                     $padding = "  ";
-                    $xml .= $padding."</fields>\n";
+                    echo $padding."</fields>\n";
                 }
             }else if($type == 'items'){
                 $metas = $wpdb->get_results("SELECT * FROM {$frmdb->entry_metas} WHERE item_id={$record->id}");
                 if($metas){
-                    $xml .= $padding."<item_meta>\n";
+                    echo $padding."<item_meta>\n";
                     foreach($metas as $meta){
-                        $xml .= $padding."<meta>\n";
-                        $xml .= $padding."  <field_id>$meta->field_id</field_id>\n";
-                        $xml .= $padding."  <item_id>$meta->item_id</item_id>\n";
+                        echo $padding."<meta>\n";
+                        echo $padding."  <field_id>$meta->field_id</field_id>\n";
+                        echo $padding."  <item_id>$meta->item_id</item_id>\n";
                         //$meta_values = maybe_unserialize($meta->meta_value);
                         //if(is_array($meta_values)){ 
                         //    foreach($meta_values as $meta_key => $meta_value)
-                        //        $xml .= $padding."<meta_value type=\"$meta_key\"><![CDATA[$meta_value]]></meta_value>\n";
+                        //        echo $padding."<meta_value type=\"$meta_key\"><![CDATA[$meta_value]]></meta_value>\n";
                         //}else
-                            $xml .= $padding."  <meta_value><![CDATA[$meta->meta_value]]></meta_value>\n";
-                        $xml .= $padding."</meta>\n";
+                            echo $padding."  <meta_value><![CDATA[$meta->meta_value]]></meta_value>\n";
+                        echo $padding."</meta>\n";
                     }
-                    $xml .= $padding."</item_meta>\n";
+                    echo $padding."</item_meta>\n";
                 }
             }
             $padding = "  ";
-            $xml .= $padding."</$singular>\n";
+            echo $padding."</$singular>\n";
         }
-        $xml .= "</$type>\n";
-        
-        return $xml;
+        echo "</$type>\n";
     }
     
-    function xml_item($col_val, $col, $padding){
-        $xml = '';
+    public static function xml_item($col_val, $col, $padding){
         if(is_array($col_val)){
             $singular = trim($col, 's');
-            $xml .= $padding."<$col>\n";
-            foreach($col_val as $col_key => $col_val){
-                $xml .= $padding."  <$singular type=\"$col_key\">". 
-                    ((is_numeric($col_val)) ? $col_val : "<![CDATA[$col_val]]>") .
-                    "</$singular>\n";
+            echo $padding."<$col>\n";
+            foreach($col_val as $col_key => $colv){
+                self::get_xml_line_item(compact('xml', 'singular', 'col_key', 'colv', 'padding', 'col'));
+                unset($col_key);
+                unset($colv);
             }
-            $xml .= $padding."</$col>\n";
+            echo $padding."</$col>\n";
         }else{
-            $xml .= $padding."<$col>". ((is_numeric($col_val)) ? $col_val : "<![CDATA[$col_val]]>") ."</$col>\n";
+            echo $padding."<$col>". ((is_numeric($col_val)) ? $col_val : "<![CDATA[$col_val]]>") ."</$col>\n";
         }
-        return $xml;
     }
     
-    function import_xml($content){
+    public static function get_xml_line_item($args){
+        extract($args);
+        $padding .= "  ";
+        if(is_array($colv)){
+            $col_val = $colv;
+            $old_col_key = $col_key;
+            $old_singular = $singular;
+            if(is_numeric($col_key))
+                echo $padding ."<$singular>\n";
+            else if(is_numeric($singular))
+                echo $padding ."<$col_key>\n";
+            else
+                echo $padding ."<$singular type=\"$col_key\">\n";
+            $old_padding = $padding;
+            $padding .= "  ";
+            $singular = $col_key;
+            //if(is_numeric($singular)) 
+            //    $singular = trim($singular, 's');
+            foreach($col_val as $col_key => $colv){
+                self::get_xml_line_item(compact('xml', 'singular', 'col_key', 'colv', 'padding', 'col'));
+                unset($col_key);
+                unset($colv);
+            }
+            $padding = $old_padding;
+
+            if(is_numeric($old_singular))
+                echo $padding."</$old_col_key>\n";
+            else
+                echo $padding."</$old_singular>\n";
+        }else{
+            if(is_numeric($singular))
+                echo $padding."<$col_key>". 
+                    ((is_numeric($colv)) ? $colv : "<![CDATA[$colv]]>") .
+                    "</$col_key>\n";
+            else
+                echo $padding."<$singular type=\"$col_key\">". 
+                    ((is_numeric($colv)) ? $colv : "<![CDATA[$colv]]>") .
+                    "</$singular>\n";
+        }
+    }
+    
+    public static function import_xml($content){
         $xml = FrmProAppHelper::xml2ary($content);  
         $to_import = array();
         
@@ -674,6 +713,9 @@ class FrmProAppHelper{
                  
                 foreach($xml_vars as $xml_var){   
                     $new_item = array();
+                    if(!isset($xml_var['_c']))
+                        $xml_var['_c'] = $xml_var;
+                    
                     foreach($xml_var['_c'] as $var_key => $var){
                         if(isset($var['_v'])){
                             $new_item[$var_key] = $var['_v'];
@@ -686,20 +728,23 @@ class FrmProAppHelper{
                                         if(isset($v1['_c'])){
                                             $new_join = array();
                                             foreach($v1['_c'] as $v_key => $v2){
-                                                if(isset($v2['_v']))
+                                                if(isset($v2['_v'])){
                                                     $new_join[$v_key] = $v2['_v'];
-                                                else
+                                                }else{
                                                     $new_join[$v_key] = FrmProAppHelper::xml_array_to_frm($v2);
+                                                }
                                             }
                                             $new_item[$var_key][] = $new_join;
                                         }
                                     }
                                 }
-                            }else
+                            }else{
                                 $new_item[$var_key] = FrmProAppHelper::xml_array_to_frm($var, $new_item[$var_key]);
+                            }
 
                         }
                     }
+                    
                     $to_import[$type][] = $new_item;
 
                 }
@@ -712,7 +757,9 @@ class FrmProAppHelper{
             foreach($datas as $data){
                 echo '<h1>'.$import_type.'</h1>';
                 if($import_type == 'forms'){
-                    //echo '<br/><br/>FORM: '; print_r($data);
+                    $print = $data;
+                    unset($print['fields']);
+                    echo '<br/><br/>FORM: '; print_r($print);
                     //FrmForm::create( $data );
                     //now add fields
                     foreach($data['fields'] as $field_data){
@@ -730,14 +777,128 @@ class FrmProAppHelper{
         }
     }
     
-    function xml_array_to_frm($var, $new=array()){
+    public static function xml_array_to_frm($var, $new=array()){
         foreach($var['_c'] as $v){
-            foreach($v as $v1){
-                if(isset($v1['_a']) and isset($v1['_a']['type']))
+            foreach($v as $var_key => $v1){
+                //echo '<br/>START: '. $var_key .' '; print_r($v1);
+                if(isset($v1['_a']) and isset($v1['_a']['type']) and isset($v1['_v'])){
                     $new[$v1['_a']['type']] = $v1['_v'];
-                else{
-                    echo '<br/><br/> OPTS? '.$var_key; print_r($v1);
+                }else if(isset($v1['_a']) and isset($v1['_a']['type']) and isset($v1['_c']) and is_array($v1['_c'])){
+                    $new[$v1['_a']['type']] = array();
+                    foreach($v1['_c'] as $v1ck => $v1c){
+                        if(isset($v1c['_a']) and $v1ck == $v1['_a']['type'] and isset($v1c['_v'])){
+                            $new[$v1['_a']['type']][$v1c['_a']['type']] = $v1c['_v'];
+                        }else if(is_array($v1c)){
+                            foreach($v1c as $v2ck => $v2c){
+                                if(isset($v2c['_c'])){
+                                    $new[$v1['_a']['type']] = self::xml_array_to_frm($v2c, $new[$v1['_a']['type']]);
+                                }else{
+                                    echo '<br/> nested array '.$v2ck; print_r($v2c);
+                                }
+                                unset($v2ck);
+                                unset($v2c);
+                            }
+                            echo '<br/>final '.print_r($new[$v1['_a']['type']]);
+                        }else{
+                            echo '<br/> nested array '; print_r($v1c);
+                            $new[$v1['_a']['type']] = self::xml_array_to_frm($v1);
+                            echo '<br/>final '. print_r($new[$v1['_a']['type']]);
+                        }
+                        unset($v1ck);
+                        unset($v1c);
+                    }
+                }else if($var_key == '_v' and !is_array($v1)){
+                    $new = $v1;
+                }else if(is_array($v1)){
+                    foreach($v1 as $v1ck => $v1c){
+                        echo '<br/>'. $v1c;
+                        $new[$v1ck] = $v1c;
+                        unset($v1ck);
+                        unset($v1c);
+                    }
+                }else{
+                    echo '<br/> OPTS? '.$var_key; print_r($v1);
+                    /*
+                    <option type="also_email_to">
+                        <also_email_to type="0">4968</also_email_to>
+                    </option>
+
+                    
+                     Array ( 
+                        [_a] => Array ( 
+                            [type] => also_email_to 
+                        ) 
+                        [_c] => Array ( 
+                            [also_email_to] => Array ( 
+                                [_a] => Array ( 
+                                    [type] => 0 
+                                ) 
+                                [_v] => 4968 
+                            ) 
+                        ) 
+                    )
+                    
+                <option type="hrs_list">
+                    <hrs_list type="twitter_account">
+                        <twitter_account type="tag">
+                            <tag type="0"><![CDATA[]]></tag>
+                        </twitter_account>
+                        <twitter_account type="location">
+                            <location type="0"><![CDATA[Business]]></location>
+                        </twitter_account>
+                    </hrs_list>
+                </option>
+                    
+                    ( [_a] => Array ( [type] => hrs_list ) 
+                    [_c] => Array ( 
+                        [hrs_list] => Array ( 
+                            [3] => Array ( 
+                                [_a] => Array ( [type] => company_name ) 
+                                [_c] => Array ( 
+                                    [company_name] => Array ( 
+                                        [_a] => Array ( [type] => tag ) 
+                                        [_v] => 
+                                    ) 
+                                ) 
+                            ) 
+                            [4] => Array ( 
+                                [_a] => Array ( [type] => email_address ) 
+                                [_c] => Array ( 
+                                    [email_address] => Array ( 
+                                        [0] => Array ( 
+                                            [_a] => Array ( [type] => tag ) 
+                                            [_c] => Array ( 
+                                                [tag] => Array ( 
+                                                    [_a] => Array ( [type] => 0 ) 
+                                                    [_v] => 
+                                                ) 
+                                            ) 
+                                        ) 
+                                        [1] => Array ( 
+                                            [_a] => Array ( [type] => location ) 
+                                            [_c] => Array ( 
+                                                [location] => Array ( 
+                                                    [_a] => Array ( [type] => 0 ) 
+                                                    [_v] => Work 
+                                                ) 
+                                            ) 
+                                        ) 
+                                    ) 
+                                ) 
+                            ) 
+                    
+                    Array ( 
+                        [conditions] => Array ( 
+                            [0] => Array ( [_a] => Array ( [type] => send_stop ) [_v] => send ) 
+                            [1] => Array ( [_a] => Array ( [type] => any_all ) [_v] => all ) 
+                            [2] => Array ( [_c] => Array ( [hide_field] => Array ( [_v] => 11752 ) [hide_field_cond] => Array ( [_v] => != ) [hide_opt] => Array ( [_v] => 4 ) ) ) 
+                            [3] => Array ( [_c] => Array ( [hide_field] => Array ( [_v] => 11752 ) [hide_field_cond] => Array ( [_v] => != ) [hide_opt] => Array ( [_v] => ) ) ) 
+                        ) 
+                    ) 
+                    */
                 }
+                unset($var_key);
+                unset($v1);
             }
         }
 
@@ -745,7 +906,7 @@ class FrmProAppHelper{
     }
     
     //Let WordPress process the uploads
-    function upload_file($field_id){
+    public static function upload_file($field_id){
         require_once(ABSPATH . 'wp-admin/includes/file.php');
         require_once(ABSPATH . 'wp-admin/includes/image.php');
         require_once(ABSPATH . 'wp-admin/includes/media.php');
@@ -798,7 +959,7 @@ class FrmProAppHelper{
     }
   
     //Upload files into "formidable" subdirectory
-    function upload_dir($uploads){
+    public static function upload_dir($uploads){
         $relative_path = apply_filters('frm_upload_folder', 'formidable');
         $relative_path = untrailingslashit($relative_path);
         
@@ -813,7 +974,7 @@ class FrmProAppHelper{
     
     
     // XML to Array
-    function xml2ary(&$string) {
+    public static function xml2ary(&$string) {
         $parser = xml_parser_create();
         xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
         xml_parse_into_struct($parser, $string, $vals, $index);
@@ -851,7 +1012,7 @@ class FrmProAppHelper{
     }
 
     // _Internal: Remove recursion in result array
-    function _del_p(&$ary) {
+    public static function _del_p(&$ary) {
         foreach ($ary as $k=>$v) {
             if ($k==='_p') unset($ary[$k]);
             elseif (is_array($ary[$k])) FrmProAppHelper::_del_p($ary[$k]);
@@ -859,20 +1020,25 @@ class FrmProAppHelper{
     }
 
     // Array to XML
-    function ary2xml($cary, $d=0, $forcetag='') {
+    public static function ary2xml($cary, $d=0, $forcetag='') {
         $res=array();
         foreach ($cary as $tag=>$r) {
             if (isset($r[0])) {
-                $res[]=FrmProAppHelper::ary2xml($r, $d, $tag);
+                $res[]=self::ary2xml($r, $d, $tag);
             } else {
-                if ($forcetag) $tag=$forcetag;
-                $sp=str_repeat("\t", $d);
-                $res[]="$sp<$tag";
-                if (isset($r['_a'])) {foreach ($r['_a'] as $at=>$av) $res[]=" $at=\"$av\"";}
-                $res[]=">".((isset($r['_c'])) ? "\n" : '');
-                if (isset($r['_c'])) $res[]=ary2xml($r['_c'], $d+1);
-                elseif (isset($r['_v'])) $res[]=$r['_v'];
-                $res[]=(isset($r['_c']) ? $sp : '')."</$tag>\n";
+                if ($forcetag) 
+                    $tag = $forcetag;
+                $sp = str_repeat("\t", $d);
+                $res[] = "$sp<$tag";
+                if (isset($r['_a'])) {
+                    foreach ($r['_a'] as $at=>$av) $res[]=" $at=\"$av\"";
+                }
+                $res[] = ">". ((isset($r['_c'])) ? "\n" : '');
+                if (isset($r['_c']))
+                    $res[] = self::ary2xml($r['_c'], $d+1);
+                else if (isset($r['_v'])) 
+                    $res[] = $r['_v'];
+                $res[] = (isset($r['_c']) ? $sp : '')."</$tag>\n";
             }
 
         }
@@ -880,13 +1046,13 @@ class FrmProAppHelper{
     }
 
     // Insert element into array
-    function ins2ary(&$ary, $element, $pos=0) {
+    public static function ins2ary(&$ary, $element, $pos=0) {
         $ar1 = array_slice($ary, 0, $pos); 
         $ar1[] = $element;
         $ary = array_merge($ar1, array_slice($ary, $pos));
     }
     
-    function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=','){
+    public static function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=','){
         global $importing_fields, $wpdb;
         if(!defined('WP_IMPORTING'))
             define('WP_IMPORTING', true);
@@ -903,7 +1069,7 @@ class FrmProAppHelper{
         
         if ($f = fopen($path, "r")) {
             unset($path);
-            global $frm_entry, $frmdb;
+            global $frm_entry, $frmdb, $frm_field;
             $row = 0;
             //setlocale(LC_ALL, get_locale());
             
@@ -924,13 +1090,14 @@ class FrmProAppHelper{
                         if(isset($importing_fields[$field_id])){
                             $field = $importing_fields[$field_id];
                         }else{
-                            $field = FrmField::getOne($field_id);
+                            $field = $frm_field->getOne($field_id);
                             $importing_fields[$field_id] = $field;
                         }
                         
-                        $values['item_meta'][$field_id] = $data[$key];
+                        $values['item_meta'][$field_id] = apply_filters('frm_import_val', $data[$key], $field);
                         
                         if($field->type == 'user_id'){
+                            $values['item_meta'][$field_id] = trim($values['item_meta'][$field_id]);
                             if(!is_numeric($values['item_meta'][$field_id])){
                                 if(!isset($user_array)){
                                      $users = $wpdb->get_results("SELECT ID, user_login, display_name FROM {$wpdb->users} ORDER BY display_name ASC");
@@ -938,9 +1105,12 @@ class FrmProAppHelper{
                                      foreach($users as $user){
                                          $ukey = (!empty($user->display_name)) ? $user->display_name : $user->user_login;
                                          $user_array[$ukey] = $user->ID;
+                                         if($ukey != $user->user_login)
+                                            $user_array[$user->user_login] = $user->ID;
                                          unset($ukey);
                                          unset($user);
                                      }
+                                     unset($users);
                                  }
                                  
                                  if(isset($user_array[$values['item_meta'][$field_id]]))
@@ -948,7 +1118,7 @@ class FrmProAppHelper{
                             }
                                 
                             $values['frm_user_id'] = $values['item_meta'][$field_id];
-                        }else if($field->type == 'checkbox' and !empty($values['item_meta'][$field_id])){
+                        }else if(($field->type == 'checkbox' or ($field->type == 'select' and isset($field->field_options['multiple']) and $field->field_options['multiple'])) and !empty($values['item_meta'][$field_id])){
                             if(!in_array($values['item_meta'][$field_id], (array)$field->options)){
                                 $checked = maybe_unserialize($values['item_meta'][$field_id]);
                                 if(!is_array($checked))
@@ -1050,7 +1220,7 @@ class FrmProAppHelper{
     }
     
     
-    function csvstring_to_array(&$string, $csv_del=',', $CSV_ENCLOSURE='"', $CSV_LINEBREAK="\n") {
+    public static function csvstring_to_array(&$string, $csv_del=',', $CSV_ENCLOSURE='"', $CSV_LINEBREAK="\n") {
         $o = array();
 
         $cnt = strlen($string);
@@ -1103,7 +1273,7 @@ class FrmProAppHelper{
         return $o;
     }
     
-    function get_rand($length){
+    public static function get_rand($length){
         $all_g = "ABCDEFGHIJKLMNOPQRSTWXZ";
         $pass = "";
         srand((double)microtime()*1000000);
@@ -1115,7 +1285,7 @@ class FrmProAppHelper{
     }
     
     //check if an array is multidimensional
-    function is_multi($a){
+    public static function is_multi($a){
         foreach($a as $v){
             if(is_array($v)) return true;
         }

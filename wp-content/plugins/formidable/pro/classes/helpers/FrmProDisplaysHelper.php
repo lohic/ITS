@@ -1,9 +1,8 @@
 <?php
 
 class FrmProDisplaysHelper{
-    function FrmProDisplaysHelper(){}
     
-    function setup_new_vars(){
+    public static function setup_new_vars(){
         $values = array();
         $defaults = FrmProDisplaysHelper::get_default_opts();
         foreach ($defaults as $var => $default)
@@ -12,7 +11,7 @@ class FrmProDisplaysHelper{
         return $values;
     }
     
-    function setup_edit_vars($post, $check_post=true){
+    public static function setup_edit_vars($post, $check_post=true){
         if(!$post) return false;
 
         $values = (object)$post;
@@ -41,7 +40,7 @@ class FrmProDisplaysHelper{
         return $values;
     }
     
-    function get_default_opts(){
+    public static function get_default_opts(){
         
         return array(
             'name' => '', 'description' => '', 'display_key' => '', 
@@ -56,8 +55,11 @@ class FrmProDisplaysHelper{
         );
     }
 
-    function get_shortcodes($content, $form_id) {
+    public static function get_shortcodes($content, $form_id) {
         global $frm_field;
+        
+        if(empty($form_id))
+            return false;
         
         $form_ids = array($form_id);
         //get linked form ids

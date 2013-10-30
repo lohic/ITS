@@ -18,7 +18,7 @@ if(in_array($display['type'], array('radio', 'checkbox', 'select')) and (!isset(
 
 if(in_array($field['type'], array('radio', 'checkbox', 'select', 'scale', 'user_id', 'data'))){ ?>
 <tr><td><?php _e('Dynamic Default Value', 'formidable'); ?> <img src="<?php echo FRM_IMAGES_URL ?>/tooltip.png" alt="?" class="frm_help" title="<?php _e('If your radio, checkbox, dropdown, or user ID field needs a dynamic default value like [get param=whatever], insert it in the field options. If using a GET or POST value, it must match one of the options in the field in order for that option to be selected. Data from entries fields require the ID of the linked entry.', 'formidable') ?>" /></td>
-    <td><input type="text" name="field_options[dyn_default_value_<?php echo $field['id'] ?>]" value="<?php echo esc_attr($field['dyn_default_value']) ?>" class="frm_long_input" /></td>
+    <td><input type="text" name="field_options[dyn_default_value_<?php echo $field['id'] ?>]" id="dyn_default_value_<?php echo $field['id'] ?>" value="<?php echo esc_attr($field['dyn_default_value']) ?>" class="dyn_default_value frm_long_input" /></td>
 </tr>
 <?php 
 }
@@ -236,10 +236,13 @@ if(!in_array($field['type'], array('break', 'hidden', 'user_id', 'divider', 'htm
 <?php 
     if($field['admin_only'] == 1) $field['admin_only'] = 'administrator'; 
     else if(empty($field['admin_only'])) $field['admin_only'] = '';
+    
+    if(!$frm_editable_roles)
+        $frm_editable_roles = get_editable_roles();
 ?>
 <select name="field_options[admin_only_<?php echo $field['id'] ?>]">
     <option value=""><?php _e('Everyone', 'formidable') ?></option>
-    <?php foreach($editable_roles as $role => $details){ ?>
+    <?php foreach($frm_editable_roles as $role => $details){ ?>
         <option value="<?php echo esc_attr($role) ?>" <?php echo ($field['admin_only'] == $role) ? ' selected="selected"' : ''; ?>><?php echo translate_user_role($details['name'] ) ?> </option>
     <?php } ?>
     <option value="loggedin" <?php echo ($field['admin_only'] == 'loggedin') ? ' selected="selected"' : ''; ?>><?php _e('Logged-in Users', 'formidable') ?></option>
@@ -268,17 +271,17 @@ if(in_array($field['type'], array('text', 'number', 'textarea', 'hidden'))){ ?>
 
 <?php }
 
-if ($form_fields and !in_array($field['type'], array('hidden', 'user_id', 'break'))){ ?>
+if ($form_fields and !in_array($field['type'], array('hidden', 'user_id'))){ ?>
 <tr valign="top"><td><?php _e('Conditional Logic', 'formidable'); ?></td>
     <td>
     <a href="javascript:frmToggleLogic('logic_<?php echo $field['id'] ?>')" class="button-secondary" id="logic_<?php echo $field['id'] ?>" <?php echo (!empty($field['hide_field']) and (count($field['hide_field']) > 1 or reset($field['hide_field']) != '')) ? ' style="display:none"' : ''; ?>><?php _e('Use Conditional Logic', 'formidable') ?></a>
     <div class="frm_logic_rows tagchecklist" <?php echo (!empty($field['hide_field']) and (count($field['hide_field']) > 1 or reset($field['hide_field']) != '')) ? '' : ' style="display:none"'; ?>>
         <div id="frm_logic_row_<?php echo $field['id'] ?>">
         <select name="field_options[show_hide_<?php echo $field['id'] ?>]">
-            <option value="show" <?php selected($field['show_hide'], 'show') ?>><?php _e('Show', 'formidable') ?></option>
-            <option value="hide" <?php selected($field['show_hide'], 'hide') ?>><?php _e('Hide', 'formidable') ?></option>
+            <option value="show" <?php selected($field['show_hide'], 'show') ?>><?php echo ($field['type'] == 'break') ? __('Do not skip', 'formidable') : __('Show', 'formidable'); ?></option>
+            <option value="hide" <?php selected($field['show_hide'], 'hide') ?>><?php echo ($field['type'] == 'break') ? __('Skip', 'formidable') : __('Hide', 'formidable'); ?></option>
         </select>
-        <?php _e('this field if', 'formidable'); ?>
+        <?php echo ($field['type'] == 'break') ?  __('next page if', 'formidable') : _e('this field if', 'formidable'); ?>
         <select name="field_options[any_all_<?php echo $field['id'] ?>]">
             <option value="any" <?php selected($field['any_all'], 'any') ?>><?php _e('any', 'formidable') ?></option>
             <option value="all" <?php selected($field['any_all'], 'all') ?>><?php _e('all', 'formidable') ?></option>

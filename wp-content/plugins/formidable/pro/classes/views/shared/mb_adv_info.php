@@ -1,6 +1,6 @@
 <div id="taxonomy-linkcategory" class="categorydiv">
 	<ul id="category-tabs" class="category-tabs frm-category-tabs">
-		<li class="tabs" ><a href="#frm-insert-fields" id="frm_insert_fields_tab"><?php _e( 'Insert Fields', 'formidable' ); ?></a></li>
+		<li class="tabs" ><a href="#frm-insert-fields-box" id="frm_insert_fields_tab"><?php _e( 'Insert Fields', 'formidable' ); ?></a></li>
 		<li class="hide-if-no-js"><a href="#frm-conditionals"><?php _e( 'Conditionals', 'formidable' ); ?></a></li>
 		<li class="hide-if-no-js"><a href="#frm-adv-info-tab"><?php _e( 'Advanced', 'formidable' ); ?></a></li>
 		<?php if($settings_tab){ ?>
@@ -8,7 +8,7 @@
 		<?php } ?>
 	</ul>
 
-	<div id="frm-insert-fields" class="tabs-panel" style="max-height:none;padding-right:0;">
+	<div id="frm-insert-fields-box" class="tabs-panel" style="max-height:none;padding-right:0;">
 	    <ul class="subsubsub" style="float:right;margin:0;">
             <li><a class="current frmids" onclick="frmToggleKeyID('frmids');"><?php _e('IDs', 'formidable') ?></a> |</li>
             <li><a class="frmkeys" onclick="frmToggleKeyID('frmkeys');"><?php _e('Keys', 'formidable') ?></a></li>
@@ -38,6 +38,7 @@
                         if(!in_array($linked_form, $linked_forms)){
                             $linked_forms[] = $linked_form;
                             $linked_fields = $frm_field->getAll("fi.type not in ('divider','captcha','break','html') and fi.form_id =". (int)$linked_form);
+                            $ldfe = '';
                             if($linked_fields){ 
                                 foreach ($linked_fields as $linked_field){ 
                                     FrmAppHelper::insert_opt_html(array('id' => $f->id ." show=". $linked_field->id, 'key' => $f->field_key ." show=". $linked_field->field_key, 'name' => $linked_field->name, 'type' => $linked_field->type));
@@ -113,9 +114,8 @@
 	    <ul class="alignleft" style="margin:5px 0 0;"><li><?php _e('Fields from your form', 'formidable') ?>:</li></ul>
 	    <ul class="frm_code_list frm_full_width" style="clear:both;max-height:150px;overflow:auto;">
 		    <?php if(!empty($fields)){
-		        foreach($fields as $f){ 
-		            $f->field_options = maybe_unserialize($f->field_options);
-                    if($f->type == 'data' and (!isset($f->field_options['data_type']) or $f->field_options['data_type'] == 'data' or $f->field_options['data_type'] == ''))
+		        foreach($fields as $f){
+                    if(in_array($f->type, array('divider','captcha','break','html')) or ($f->type == 'data' and (!isset($f->field_options['data_type']) or $f->field_options['data_type'] == 'data' or $f->field_options['data_type'] == '')))
                         continue;
                 ?>
                 <li>

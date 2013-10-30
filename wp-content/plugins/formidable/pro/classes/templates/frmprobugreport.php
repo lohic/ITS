@@ -7,7 +7,7 @@ $values['options']['custom_style'] = 1;
 if ($form){
     $form_id = $form->id;
     $frm_form->update($form_id, $values );
-    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id));
+    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
     if (!empty($form_fields)){
         foreach ($form_fields as $field)
             $frm_field->destroy($field->id);
@@ -19,14 +19,14 @@ if ($form){
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('text', $form_id));
 $field_values['name'] = 'Full Name';
 $field_values['required'] = 1;
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('text', $form_id));
 $field_values['name'] = 'Company Name';
 $field_values['required'] = 1;
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -34,7 +34,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Phone Number';
 $field_values['required'] = 1;
 $field_values['field_options']['size'] = '';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $field_values['field_options']['invalid'] = 'Please enter a valid phone number';
 $frm_field->create( $field_values );
 unset($field_values);
@@ -42,7 +42,7 @@ unset($field_values);
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('email', $form_id));
 $field_values['name'] = 'Email';
 $field_values['required'] = 1;
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $field_values['field_options']['invalid'] = 'Please enter a valid email address';
 $frm_field->create( $field_values );
 unset($field_values);
@@ -113,7 +113,7 @@ unset($field_values);
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('select', $form_id));
 $field_values['name'] = 'Reproducibility';
 $field_values['options'] = serialize(array('', 'I didn\'t try', 'Rarely', 'Sometimes', 'Always'));
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $field_values['required'] = 1;
 $frm_field->create( $field_values );
 unset($field_values);
@@ -121,7 +121,7 @@ unset($field_values);
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('select', $form_id));
 $field_values['name'] = 'Classification';
 $field_values['options'] = serialize(array('', 'Security', 'Crash/Hang/Data Loss', 'Performance', 'UI/Usability', 'Serious Bug', 'Other Bug/Has Workaround', 'Feature (New)', 'Enhancement'));
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $field_values['required'] = 1;
 $frm_field->create( $field_values );
 unset($field_values);

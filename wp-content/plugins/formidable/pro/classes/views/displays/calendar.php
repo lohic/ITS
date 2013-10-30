@@ -3,7 +3,7 @@
 for ($i=$week_begins; $i<($maxday+$startday); $i++){
     $pos = $i % 7;
     $end_tr = false;
-    if(($pos) == $week_begins ) echo "<tr>\n";
+    if($pos == $week_begins ) echo "<tr>\n";
     
     $day = $i - $startday + 1;
     

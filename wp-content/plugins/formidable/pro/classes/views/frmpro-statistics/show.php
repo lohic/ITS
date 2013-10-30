@@ -55,7 +55,7 @@
             <p><?php _e('Median', 'formidable') ?>: <?php echo FrmProFieldsHelper::get_field_stats($field->id, 'median'); ?></p>
             <?php }else if($field->type == 'user_id'){ 
                 $user_ids = $wpdb->get_col("SELECT ID FROM $wpdb->users ORDER BY display_name ASC");
-                $submitted_user_ids = FrmEntryMeta::get_entry_metas_for_field($field->id, '', '', array('unique' => true));
+                $submitted_user_ids = $frm_entry_meta->get_entry_metas_for_field($field->id, '', '', array('unique' => true));
                 $not_submitted = array_diff($user_ids, $submitted_user_ids); ?>
             <p><?php _e('Percent of users submitted', 'formidable') ?>: <?php echo round((count($submitted_user_ids) / count($user_ids)) *100, 2) ?>%</p>
             <form action="<?php echo admin_url('user-edit.php') ?>" method="get">

@@ -11,7 +11,9 @@
             </td>
             <td>
             <select name="options[post_type]">
-                <?php foreach($post_types as $post_key => $post_type){ ?>
+                <?php foreach($post_types as $post_key => $post_type){ 
+                    if($post_key == 'frm_display')
+                        continue; ?>
                     <option value="<?php echo $post_key ?>" <?php selected($values['post_type'], $post_key) ?>><?php echo $post_type->label ?></option>
 <?php
                     unset($post_type);
@@ -149,7 +151,7 @@
                 <img src="<?php echo FRM_IMAGES_URL ?>/tooltip.png" alt="?" class="frm_help" title="<?php _e('To set the featured image, use \'_thumbnail_id\' as the custom field name.', 'formidable') ?>" />
 
                 <div id="frm_postmeta_rows" class="tagchecklist" style="padding-bottom:8px;">
-                <?php 
+                <?php
                 foreach($values['post_custom_fields'] as $custom_data)
                     include(FRMPRO_VIEWS_PATH.'/frmpro-forms/_custom_field_row.php');
                 ?>

@@ -13,6 +13,33 @@ if (!class_exists('WP_Http')) {
 function jd_remote_json( $url, $array=true ) {
 	$input = jd_fetch_url( $url );
 	$obj = json_decode($input, $array );
+	try {
+		if (is_null($array)) {
+			switch ( json_last_error() ) {
+				case JSON_ERROR_DEPTH :
+					$msg = ' - Maximum stack depth exceeded';
+					break;
+				case JSON_ERROR_STATE_MISMATCH :
+					$msg = ' - Underflow or the modes mismatch';
+					break;
+				case JSON_ERROR_CTRL_CHAR :
+					$msg = ' - Unexpected control character found';
+					break;
+				case JSON_ERROR_SYNTAX :
+					$msg = ' - Syntax error, malformed JSON';
+					break;
+				case JSON_ERROR_UTF8 :
+					$msg = ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+					break;
+				default :
+					$msg = ' - Unknown error';
+					break;
+			}
+			throw new Exception($msg);
+		}
+	} catch (Exception $e) {
+		return $e -> getMessage();
+	}	
 	return $obj;
 	// TODO: some error handling ?
 }			
@@ -154,14 +181,21 @@ function wpt_post_attachment($post_ID) {
 		$attachment = get_post_thumbnail_id( $post_ID );
 		return $attachment;
 	} else {
-		$args = array( 'post_type' => 'attachment', 'numberposts' => 1, 'post_status' => 'published', 'post_parent' => $post_ID, 'post_mime_type'=>'image' ); 
+		$args = array( 
+			'post_type' => 'attachment', 
+			'numberposts' => 1, 
+			'post_status' => 'published', 
+			'post_parent' => $post_ID, 
+			'post_mime_type'=>'image' 
+			); 
 		$attachments = get_posts($args);
 		if ($attachments) {
 			return $attachments[0]->ID; //Return the first attachment.
 		} else {
-			return null;
+			return false;
 		}
 	}
+	return false; 
 }
 
 function wpt_get_support_form() {
@@ -211,7 +245,7 @@ get_currentuserinfo();
 			}
 		}
 	global $wpt_server_string;
-	$wpt_server_string = strip_tags( $wpt_server_string );
+	$wpt_server_string = trim(strip_tags( $wpt_server_string ) );
 	$data = "
 ================ Installation Data ====================
 ==WP to Twitter==
@@ -268,7 +302,6 @@ $plugins_string
 	}
 	if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) { $checked="checked='checked'"; } else { $checked=''; }
 		$admin_url = ( is_plugin_active('wp-tweets-pro/wpt-pro-functions.php') )?admin_url('admin.php?page=wp-tweets-pro'):admin_url('options-general.php?page=wp-to-twitter/wp-to-twitter.php');
-
 	echo "
 	<form method='post' action='$admin_url'>
 		<div><input type='hidden' name='_wpnonce' value='".wp_create_nonce('wp-to-twitter-nonce')."' /></div>
@@ -279,6 +312,16 @@ $plugins_string
 		<p>".
 		__('<strong>Please note</strong>: I do keep records of those who have donated, but if your donation came from somebody other than your account at this web site, you must note this in your message.','wp-to-twitter')
 		."</p>";
+		echo "
+		<p>".
+		__("If you're having trouble with WP to Twitter, please try to answer these questions in your message:",'wp-to-twitter')
+		."</p>";
+		echo "<ul>";
+			echo "<li>".__('Did this error happen only once, or repeatedly?','wp-to-twitter')."</li>";
+			echo "<li>".__('What was the Tweet, or an example Tweet, that produced this error?','wp-to-twitter')."</li>";
+			echo "<li>".__('If there was an error message from WP to Twitter, what was it?','wp-to-twitter')."</li>";
+			echo "<li>".__('What is the template you\'re using for your Tweets?','wp-to-twitter')."</li>";
+		echo "</ul>";
 		}
 		echo "
 		<p>
@@ -304,4 +347,14 @@ $plugins_string
 		</div>
 		</div>
 	</form>";
+}
+
+function wpt_is_writable( $file ) {
+	$is_writable = false;
+	if ( function_exists( 'wp_is_writable' ) ) {
+		$is_writable = wp_is_writable( $file );
+	} else {
+		$is_writable = is_writeable( $file );
+	}
+	return $is_writable;
 }

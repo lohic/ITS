@@ -2,17 +2,17 @@
 
 class FrmProEntriesHelper{
     function FrmProEntriesHelper(){
-        add_filter('frm_redirect_url', array(&$this, 'redirect_url'));
-        add_filter('frm_show_new_entry_page',array(&$this, 'allow_form_edit'), 10, 2);
-        add_filter('frm_setup_edit_entry_vars', array(&$this, 'setup_edit_vars'), 10, 2);
+        add_filter('frm_redirect_url', 'FrmProEntriesHelper::redirect_url');
+        add_filter('frm_show_new_entry_page', 'FrmProEntriesHelper::allow_form_edit', 10, 2);
+        add_filter('frm_setup_edit_entry_vars', 'FrmProEntriesHelper::setup_edit_vars', 10, 2);
     }
     
-    function redirect_url($url){
+    public static function redirect_url($url){
         $url = str_replace(array(' ', '[', ']', '|', '@'), array('%20', '%5B', '%5D', '%7C', '%40'), $url);
         return $url;
     }
     
-    function allow_form_edit($action, $form){
+    public static function allow_form_edit($action, $form){
         global $user_ID;
         if (!$form or !$form->editable or !$user_ID)
             return $action;
@@ -35,7 +35,7 @@ class FrmProEntriesHelper{
         return $action;
     }
     
-    function allow_delete($entry){
+    public static function allow_delete($entry){
         global $user_ID;
         
         $allowed = false;
@@ -59,7 +59,7 @@ class FrmProEntriesHelper{
         return apply_filters('frm_allow_delete', $allowed, $entry);
     }
     
-    function setup_edit_vars($values, $record=false){
+    public static function setup_edit_vars($values, $record=false){
         global $frm_form, $frmpro_settings;
         if(!$record)
             $record = $frm_form->getOne($values['form_id']);
@@ -71,7 +71,7 @@ class FrmProEntriesHelper{
         return $values;
     }
     
-    function resend_email_links($entry_id, $form_id){ ?>
+    public static function resend_email_links($entry_id, $form_id){ ?>
 <a href="#" onclick="frm_resend_email(<?php echo $entry_id ?>,<?php echo $form_id ?>,'email');return false;" id="frm_resend_email" title="<?php _e('Resend Email Notifications', 'formidable') ?>"><?php _e('Resend Email Notifications', 'formidable') ?></a>
 <script type="text/javascript">
 //<![CDATA[
@@ -86,7 +86,7 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
 <?php
     }
     
-    function before_table($footer, $form_id=false){
+    public static function before_table($footer, $form_id=false){
         if($footer)
             return;
             
@@ -106,7 +106,7 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
         } 
     }
     
-    function get_search_ids($s, $form_id){
+    public static function get_search_ids($s, $form_id){
         global $wpdb, $frmdb, $frm_entry_meta;
         
         if(empty($s)) return false;
@@ -118,6 +118,7 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
 		
         $p_search = $search = '';
         $search_or = '';
+        $e_ids = array();
         
         $data_field = FrmProForm::has_field('data', $form_id, false);
         
@@ -127,6 +128,8 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
 			
 			$search .= "{$search_or}meta_value LIKE '{$n}{$term}{$n}'";
             $search_or = ' OR ';
+            if(is_numeric($term))
+                $e_ids[] = (int)$term;
             
             if($data_field){
                 $df_form_ids = array();
@@ -157,14 +160,18 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
 		$p_ids = '';
 		$matching_posts = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE 1=1 $p_search");
 		if($matching_posts){
-		    $p_ids = $wpdb->get_col("SELECT id from $frmdb->entries WHERE post_id in (". implode(',', $matching_posts) .") AND form_id='$form_id'");
+		    $p_ids = $wpdb->get_col("SELECT id from $frmdb->entries WHERE post_id in (". implode(',', $matching_posts) .") AND form_id=". (int)$form_id);
 		    $p_ids = ($p_ids) ? " OR item_id in (". implode(',', $p_ids) .")" : '';
 		}
+		
+		if(!empty($e_ids))
+		    $p_ids .= " OR item_id in (". implode(',', $e_ids) .")";
+		    
 		
         return $frm_entry_meta->getEntryIds("(($search)$p_ids) and fi.form_id='$form_id'");
     }
     
-    function encode_value($line, $from_encoding, $to_encoding){
+    public static function encode_value($line, $from_encoding, $to_encoding){
         $convmap = false;
         
         switch($to_encoding){

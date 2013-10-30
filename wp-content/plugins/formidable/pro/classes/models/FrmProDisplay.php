@@ -170,7 +170,7 @@ class FrmProDisplay{
         if(!is_numeric($limit))
             $limit = (int)$limit;
             
-        //$query = 'SELECT * FROM ' . $frmprodb->displays . $frm_app_helper->prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
+        //$query = 'SELECT * FROM ' . $frmprodb->displays . FrmAppHelper::prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
         $query = array(
             'numberposts'   => $limit,
             'orber_by'      => $order_by,
@@ -237,7 +237,7 @@ class FrmProDisplay{
         return $display;
     }
     
-    function get_form_custom_display($form_id){
+    public static function get_form_custom_display($form_id){
         global $wpdb;
         
         $display_ids = $wpdb->get_col("SELECT post_ID FROM $wpdb->postmeta WHERE meta_key='frm_form_id' AND meta_value=". (int)$form_id);

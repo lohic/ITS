@@ -4,6 +4,7 @@ class FrmProField{
     function FrmProField(){
         add_filter('frm_before_field_created', array(&$this, 'create'));
         add_filter('frm_update_field_options', array(&$this, 'update'), 10, 3);
+        add_filter('frm_duplicated_field', array(&$this, 'duplicate'));
     }
     
     function create($field_data){
@@ -29,16 +30,13 @@ class FrmProField{
             case 'date':
                 $field_data['field_options']['size'] = '10';
                 $field_data['field_options']['max'] = '10';
-                $field_data['name'] = __('Date', 'formidable');
                 break;
             case 'time':
                 $field_data['field_options']['size'] = '10';
                 $field_data['field_options']['max'] = '10';
-                $field_data['name'] = __('Time', 'formidable');
                 break;
             case 'phone':
                 $field_data['field_options']['size'] = '15';
-                $field_data['name'] = __('Phone', 'formidable');
                 break;
             case 'rte':
                 $field_data['field_options']['max'] = '7';
@@ -52,23 +50,13 @@ class FrmProField{
                 //$field_data['default_value'] = 'http://';
                 //$field_data['field_options']['default_blank'] = true;
                 break;
-            case 'email':
-                $field_data['name'] = __('Email', 'formidable');
-                break;
-            case 'password':
-                $field_data['name'] = __('Password', 'formidable');
-                break;
-            case 'html':
-                $field_data['name'] = __('HTML', 'formidable');
-                break;
             case 'divider':
-                $field_data['name'] = __('Heading', 'formidable');
                 $field_data['field_options']['label'] = 'top';
                 break;
             case 'break':
                 global $frmdb;
                 $page_num = $frmdb->get_count($frmdb->fields, array("form_id" => $field_data['form_id'], "type" => 'break'));
-                $field_data['name'] = __('Page', 'formidable') .' '. ($page_num + 2);
+                $field_data['name'] = __('Next', 'formidable');
                 //$field_data['field_options']['label'] = 'top';
         }
         return $field_data;
@@ -116,9 +104,48 @@ class FrmProField{
                 $options[] = $i;
             
             $frm_field->update($field->id, array('options' => serialize($options)));
+        }else if($field->type == 'hidden' and isset($field_options['required']) and $field_options['required']){
+            $field_options['required'] = false;
         }
         
         return $field_options;
+    }
+    
+    function duplicate($values){
+        global $frm_duplicate_ids;
+        if(empty($frm_duplicate_ids))
+            return $values;
+
+        $values['field_options'] = maybe_unserialize($values['field_options']);
+        if(!empty($values['field_options'])){
+            if(isset($values['field_options']['calc']) and !empty($values['field_options']['calc'])){
+                $ids = implode(array_keys($frm_duplicate_ids), '|');
+                preg_match_all( "/\[($ids)\]/s", $values['field_options']['calc'], $matches, PREG_PATTERN_ORDER);
+                unset($ids);
+                
+                if (isset($matches[1])){
+                    foreach ($matches[1] as $val){
+                        $values['field_options']['calc'] = str_replace('['. $val .']', '['. $frm_duplicate_ids[$val] .']', $values['field_options']['calc']);
+                        unset($val);
+                    }
+                }
+                unset($matches);
+            }
+            
+            if(isset($values['field_options']['hide_field']) and !empty($values['field_options']['hide_field'])){
+                $values['field_options']['hide_field_cond'] = maybe_unserialize($values['field_options']['hide_field_cond']);
+                $values['field_options']['hide_opt'] = maybe_unserialize($values['field_options']['hide_opt']);
+                $values['field_options']['hide_field'] = maybe_unserialize($values['field_options']['hide_field']);
+                foreach($values['field_options']['hide_field'] as $k => $f){
+                    if(isset($frm_duplicate_ids[$f]))
+                        $values['field_options']['hide_field'][$k] = $frm_duplicate_ids[$f];
+                    unset($k);
+                    unset($f);
+                }
+            }
+        }
+        
+        return $values;
     }
     
     function delete(){
@@ -178,7 +205,7 @@ class FrmProField{
             $hidden = ($field->field_options['show_hide'] == 'show') ? true : false;
         else if($field->field_options['any_all'] == 'any' and $field->field_options['show_hide'] == 'show' and isset($hide[0]))
             $hidden = false;
-            
+        
         return $hidden;
     }
     
@@ -197,5 +224,30 @@ class FrmProField{
         }
 
         return $visible;
+    }
+    
+    function on_current_page($field){
+        global $frm_prev_page, $frm_next_page, $frm_field;
+        $current = true;
+        
+        $prev = 0;
+        $next = 9999;
+        if(!is_object($field))
+            $field = $frm_field->getOne($field);
+        
+        if($frm_prev_page and is_array($frm_prev_page) and isset($frm_prev_page[$field->form_id]))
+            $prev = $frm_prev_page[$field->form_id];
+        
+        if($frm_next_page and is_array($frm_next_page) and isset($frm_next_page[$field->form_id])){
+            $next = $frm_next_page[$field->form_id];
+            if(is_object($next))
+                $next = $next->field_order;
+        }
+        
+        if($field->field_order < $prev or $field->field_order > $next)
+            $current = false;
+        
+        $current = apply_filters('frm_show_field_on_page', $current, $field);
+        return $current;
     }
 }

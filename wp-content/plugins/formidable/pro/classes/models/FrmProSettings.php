@@ -274,7 +274,7 @@ class FrmProSettings{
         
         $this->submit_style = isset($params['frm_submit_style']) ? $params['frm_submit_style'] : 0;
         $this->auto_width = isset($params['frm_auto_width']) ? $params['frm_auto_width'] : 0;
-        $this->error_icon = str_replace(FRMPRO_ICONS_URL .'/', '', $params['frm_error_icon']);
+        $this->error_icon = str_replace(FRMPRO_IMAGES_URL .'/error_icons/', '', $params['frm_error_icon']);
         
         foreach($this as $k => $v){
             $this->{$k} = stripslashes_deep($v);

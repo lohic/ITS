@@ -1,7 +1,7 @@
 <?php if (in_array($field['type'], array('website', 'phone', 'tag', 'date', 'email', 'url', 'number', 'password'))){ ?>
-    <input type="text" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo esc_attr($field['default_value']); ?>" <?php do_action('frm_field_input_html', $field) ?>/>
+    <input type="text" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo esc_attr($field['default_value']); ?>" <?php do_action('frm_field_input_html', $field) ?> />
 <?php }else if ($field['type'] == 'hidden'){ ?>
-    <input type="text" name="<?php echo $field_name ?>" value="<?php echo esc_attr($field['default_value']); ?>"/> 
+    <input type="text" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo esc_attr($field['default_value']); ?>" class="dyn_default_value" /> 
     <p class="howto clear"><?php _e('Note: This field will not show in the form. Enter the value to be hidden.', 'formidable') ?></p>
 <?php }else if($field['type'] == 'time'){ ?>
 <select name="<?php echo $field_name ?>" id="field_<?php echo $field['field_key'] ?>" <?php do_action('frm_field_input_html', $field) ?>>
@@ -12,7 +12,7 @@
 <?php }else if ($field['type'] == 'user_id'){ ?>
     <p class="howto clear"><?php _e('Note: This field will not show in the form, but will link the user id to it as long as the user is logged in at the time of form submission.', 'formidable') ?></p>
 <?php }else if ($field['type'] == 'image'){ ?>
-    <input type="url" name="<?php echo $field_name ?>" value="<?php echo $field['default_value'] ?>" <?php do_action('frm_field_input_html', $field) ?> />
+    <input type="url" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo $field['default_value'] ?>" <?php do_action('frm_field_input_html', $field) ?> />
     <?php if ($field['default_value']){ ?><img src="<?php echo $field['default_value'] ?>" height="50px"><?php } ?>
 <?php }else if ($field['type'] == '10radio' or $field['type'] == 'scale'){
         require(FRMPRO_VIEWS_PATH .'/frmpro-fields/10radio.php');
@@ -37,10 +37,9 @@ global $frmpro_settings; ?>
     <?php if (!isset($field['data_type']) || $field['data_type'] == 'data'){ ?>
         <?php _e('This data is dynamic on change', 'formidable') ?>
     <?php }else if ($field['data_type'] == 'select'){ ?>        
-        <select name='<?php echo $field_name ?>' id='<?php echo $field_name ?>'>
-            <option value=""></option>
+        <select name="<?php echo $field_name ?>" id="<?php echo $field_name ?>">
             <?php
-                if ($field['options']){ 
+                if ($field['options']){
                 foreach ($field['options'] as $opt_key => $opt){ 
                     $selected = ($field['default_value'] == $opt_key)?(' selected="selected"'):(''); ?>
                     <option value="<?php echo $opt_key ?>"<?php echo $selected ?>><?php echo $opt ?></option>
@@ -66,7 +65,7 @@ global $frmpro_settings; ?>
         if ($field['options']){
             foreach ($field['options'] as $opt_key => $opt){ 
                 $checked = ($field['default_value'] == $opt_key ) ? ' checked="true"':''; ?>
-                <input type="radio" name="<?php echo $field_name ?>" id="<?php echo $field_name ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?><br/>
+                <input type="radio" name="<?php echo $field_name ?>" id="field_<?php echo $field['id'] ?>-<?php echo esc_attr($opt_key) ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?><br/>
             <?php }
         }else _e('There are no options', 'formidable'); ?>
     <?php }else{ 

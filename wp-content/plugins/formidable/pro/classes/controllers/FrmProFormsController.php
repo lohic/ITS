@@ -2,29 +2,32 @@
 
 class FrmProFormsController{
     function FrmProFormsController(){
-        add_filter('frm_admin_list_form_action', array(&$this, 'process_bulk_form_actions'));
-        add_action('frm_additional_form_options', array(&$this, 'add_form_options'));
-        add_action('frm_additional_form_notification_options', array(&$this, 'notifications'), 10, 2);
-        add_action('wp_ajax_frm_add_email_list', array(&$this, 'add_email_list'));
-        add_action('wp_ajax_frm_add_postmeta_row', array(&$this, '_postmeta_row'));
-        add_action('wp_ajax_frm_add_posttax_row', array(&$this, '_posttax_row'));
-        add_action('frm_extra_form_instruction_tabs', array(&$this, 'instruction_tabs'));
-        add_action('frm_extra_form_instructions', array(&$this, 'instructions'));
-        add_action('frm_translation_page', array(&$this, 'translate'), 10, 2);
-        add_filter('get_frm_stylesheet', array(&$this, 'custom_stylesheet'), 10, 2);
-        add_action('frm_template_action_links', array(&$this, 'template_action_links'));
-        add_filter('frmpro_field_links', array(&$this, 'add_field_link'), 10, 3);
-        add_filter('frm_drag_field_class', array(&$this, 'drag_field_class'));
-        add_action('formidable_shortcode_atts', array(&$this, 'formidable_shortcode_atts'));
-        add_filter('frm_content', array(&$this, 'filter_content'), 10, 3);
-        add_filter('frm_submit_button', array(&$this, 'submit_button_label'), 5, 2);
-        add_filter('frm_error_icon', array(&$this, 'error_icon'));
-        add_filter('frm_form_replace_shortcodes', array(&$this, 'replace_shortcodes'));
-        add_action('wp_ajax_frm_add_form_logic_row', array(&$this, '_logic_row'));
-        add_action('wp_ajax_frm_get_default_html', array(&$this, 'get_email_html'));
+        add_filter('frm_admin_list_form_action', 'FrmProFormsController::process_bulk_form_actions');
+        add_action('frm_additional_form_options', 'FrmProFormsController::add_form_options');
+        add_action('frm_additional_form_notification_options', 'FrmProFormsController::notifications', 10, 2);
+        add_action('wp_ajax_frm_add_email_list', 'FrmProFormsController::add_email_list');
+        add_action('wp_ajax_frm_add_postmeta_row', 'FrmProFormsController::_postmeta_row');
+        add_action('wp_ajax_frm_add_posttax_row', 'FrmProFormsController::_posttax_row');
+        add_action('frm_extra_form_instruction_tabs', 'FrmProFormsController::instruction_tabs');
+        add_action('frm_extra_form_instructions', 'FrmProFormsController::instructions');
+        add_action('frm_translation_page', 'FrmProFormsController::translate', 10, 2);
+        add_filter('get_frm_stylesheet', 'FrmProFormsController::custom_stylesheet');
+        add_action('frm_template_action_links', 'FrmProFormsController::template_action_links');
+        add_action('frm_ajax_forms_export', 'FrmProFormsController::export_template');
+        add_action('frm_ajax_forms_import', 'FrmProFormsController::import_templates');
+        add_filter('frmpro_field_links', 'FrmProFormsController::add_field_link', 10, 3);
+        add_filter('frm_drag_field_class', 'FrmProFormsController::drag_field_class');
+        add_action('formidable_shortcode_atts', 'FrmProFormsController::formidable_shortcode_atts');
+        add_filter('frm_form_fields_class', 'FrmProFormsController::form_fields_class', 10, 2);
+        add_filter('frm_content', 'FrmProFormsController::filter_content', 10, 3);
+        add_filter('frm_submit_button', 'FrmProFormsController::submit_button_label', 5, 2);
+        add_filter('frm_error_icon', 'FrmProFormsController::error_icon');
+        add_filter('frm_form_replace_shortcodes', 'FrmProFormsController::replace_shortcodes', 10, 2);
+        add_action('wp_ajax_frm_add_form_logic_row', 'FrmProFormsController::_logic_row');
+        add_action('wp_ajax_frm_get_default_html', 'FrmProFormsController::get_email_html');
     }
     
-    function process_bulk_form_actions($errors){
+    public static function process_bulk_form_actions($errors){
         if(!isset($_POST)) return;
         global $frm_form;
         
@@ -79,9 +82,11 @@ class FrmProFormsController{
         return $errors;
     }
     
-    function add_form_options($values){ 
-        global $frm_ajax_url;
-        $editable_roles = get_editable_roles();
+    public static function add_form_options($values){ 
+        global $frm_editable_roles;
+        
+        if(!$frm_editable_roles)
+            $frm_editable_roles = get_editable_roles();
         $post_types = FrmProAppHelper::get_custom_post_types();
         $show_post_type = false;
         if(isset($values['fields']) and $values['fields']){
@@ -94,13 +99,13 @@ class FrmProFormsController{
         require(FRMPRO_VIEWS_PATH.'/frmpro-forms/add_form_options.php');
     }
     
-    function notifications($values, $atts){
+    public static function notifications($values, $atts){
         global $wpdb, $frmdb;
         extract($atts);
         require(FRMPRO_VIEWS_PATH.'/frmpro-forms/notifications.php');
     }
     
-    function add_email_list(){
+    public static function add_email_list(){
         global $frm_field;
         $email_key = $_POST['list_id'];
         $form_id = $_POST['form_id'];
@@ -119,9 +124,7 @@ class FrmProFormsController{
         die();
     }
     
-    function post_options($values){
-        global $frm_ajax_url;
-        
+    public static function post_options($values){
         $post_types = FrmProAppHelper::get_custom_post_types();
         if(!$post_types) return;
         
@@ -149,18 +152,21 @@ class FrmProFormsController{
         require(FRMPRO_VIEWS_PATH.'/frmpro-forms/post_options.php');
     }
     
-    function _postmeta_row(){
+    public static function _postmeta_row(){
+        global $frm_field;
         $custom_data = array('meta_name' => $_POST['meta_name'], 'field_id' => '');
         $values = array();
         
         if(isset($_POST['form_id']))
-            $values['fields'] = FrmField::getAll("fi.form_id='$_POST[form_id]' and fi.type not in ('divider', 'html', 'break', 'captcha')", ' ORDER BY field_order');
+            $values['fields'] = $frm_field->getAll("fi.form_id='$_POST[form_id]' and fi.type not in ('divider', 'html', 'break', 'captcha')", ' ORDER BY field_order');
         $echo = false;
         include(FRMPRO_VIEWS_PATH.'/frmpro-forms/_custom_field_row.php');
         die();
     }
     
-    function _posttax_row(){
+    public static function _posttax_row(){
+        global $frm_field;
+        
         $field_vars = array('meta_name' => '', 'field_id' => '', 'show_exclude' => 0, 'exclude_cat' => 0);
         $post_type = $_POST['post_type'];
         $tax_key = $_POST['meta_name'];
@@ -171,7 +177,7 @@ class FrmProFormsController{
         $values = array();
         
         if(isset($_POST['form_id'])){
-            $values['fields'] = FrmField::getAll("fi.form_id='$_POST[form_id]' and fi.type in ('checkbox', 'radio', 'select', 'tag', 'data')", ' ORDER BY field_order');
+            $values['fields'] = $frm_field->getAll("fi.form_id='$_POST[form_id]' and fi.type in ('checkbox', 'radio', 'select', 'tag', 'data')", ' ORDER BY field_order');
             $values['id'] = $_POST['form_id'];
         }
         $echo = false;
@@ -179,34 +185,34 @@ class FrmProFormsController{
         die();
     }
     
-    function instruction_tabs(){
+    public static function instruction_tabs(){
         include(FRMPRO_VIEWS_PATH.'/frmpro-forms/instruction_tabs.php');
     }
     
-    function instructions(){
+    public static function instructions(){
         $tags = array(
             'date' => __('Current Date', 'formidable'), 
             'time' => __('Current Time', 'formidable'), 
-            'email' => __('User Email', 'formidable'), 
-            'login' => __('User Login', 'formidable'), 
-            'display_name' => __('User Display Name', 'formidable'), 
-            'first_name' => __('User First Name', 'formidable'), 
-            'last_name' => __('User Last Name', 'formidable'), 
+            'email' => __('Email', 'formidable'), 
+            'login' => __('Login', 'formidable'), 
+            'display_name' => __('Display Name', 'formidable'), 
+            'first_name' => __('First Name', 'formidable'), 
+            'last_name' => __('Last Name', 'formidable'), 
             'user_id' => __('User ID', 'formidable'), 
             'user_meta key=whatever' => __('User Meta', 'formidable'), 
             'post_id' => __('Post ID', 'formidable'), 
             'post_title' => __('Post Title', 'formidable'),
             'post_author_email' => __('Author Email', 'formidable'),
             'post_meta key=whatever' => __('Post Meta', 'formidable'),
-            'ip' => __('Client IP Address', 'formidable'), 
+            'ip' => __('IP Address', 'formidable'), 
             'auto_id start=1' => __('Auto Increment', 'formidable'), 
-            'get param=whatever' => __('GET/POST variable', 'formidable')
+            'get param=whatever' => array('label' => __('GET/POST', 'formidable'), 'title' => __('A variable from the URL or value posted from previous page.', 'formidable') .' '. __('Replace \'whatever\' with the parameter name. In url.com?product=form, the variable is \'product\'. You would use [get param=product] in your field.', 'formidable'))
         );
         include(FRMPRO_VIEWS_PATH.'/frmpro-forms/instructions.php');
     }
     
-    function translate($form, $action){
-        global $frm_field, $wpdb, $sitepress;
+    public static function translate($form, $action){
+        global $frm_field, $wpdb, $sitepress, $sitepress_settings;
         
         if(!function_exists('icl_t')){
             _e('You do not have WPML installed', 'formidable');
@@ -239,6 +245,7 @@ class FrmProFormsController{
         
         $id = $form->id;
         $langs = $sitepress->get_active_languages();
+        $default_language = !empty($sitepress_settings['st']['strings_language']) ? $sitepress_settings['st']['strings_language'] : $sitepress->get_default_language();
         ksort($langs);
         $lang_count = (count($langs)-1);
         
@@ -256,10 +263,7 @@ class FrmProFormsController{
                 FROM {$wpdb->prefix}icl_string_translations WHERE string_id in (". implode(',', array_keys($strings)).") 
                 ORDER BY language ASC"
             );
-            $base_lang = reset($strings)->language;
-            $col_order = array($base_lang);
-        }else{
-            $base_lang = reset($langs);
+            $col_order = array($default_language);
         }
         
         $fields = $frm_field->getAll(array('fi.form_id' => $id), 'field_order');
@@ -268,7 +272,7 @@ class FrmProFormsController{
         include(FRMPRO_VIEWS_PATH . '/frmpro-forms/translate.php');
     }
     
-    function custom_stylesheet($previous_css, $location='header'){
+    public static function custom_stylesheet($previous_css){
         global $frmpro_settings, $frm_datepicker_loaded, $frm_css_loaded;
         $uploads = wp_upload_dir();
         $css_file = array();
@@ -278,27 +282,28 @@ class FrmProFormsController{
             if(is_readable($uploads['basedir'] .'/formidable/css/formidablepro.css')){
                 if(is_ssl() and !preg_match('/^https:\/\/.*\..*$/', $uploads['baseurl']))
                     $uploads['baseurl'] = str_replace('http://', 'https://', $uploads['baseurl']);
-                $css_file[] = $uploads['baseurl'] .'/formidable/css/formidablepro.css';
+                $css_file['formidable'] = $uploads['baseurl'] .'/formidable/css/formidablepro.css';
             }else
-                $css_file[] = FRM_SCRIPT_URL . '&amp;controller=settings';
+                $css_file['formidable'] = FRM_SCRIPT_URL . '&amp;controller=settings';
         }
 
-        if($frm_datepicker_loaded)
+        if($frm_datepicker_loaded and !empty($frm_datepicker_loaded))
             wp_enqueue_style('jquery-theme');
 
         return $css_file;
     }
     
-    function template_action_links($form){
+    public static function template_action_links($form){
         echo '| <span><a href="'.FRM_SCRIPT_URL.'&controller=forms&frm_action=export&id='. $form->id .'" title="'. __('Export Template', 'formidable') . ' '. $form->name .'">'. __('Export Template', 'formidable') .'</a></span>';
     }
     
-    function export_template($form_id){
+    public static function export_template(){
+        $form_id = FrmAppHelper::get_param('id');
         if(current_user_can('frm_edit_forms')){
             global $frmdb, $frm_form, $frm_field, $current_user, $frm_settings, $frmpro_settings;
             $form = $frm_form->getOne($form_id);
             $form->options = maybe_unserialize($form->options);
-            $fields = $frm_field->getAll(array('fi.form_id' => $form_id));
+            $fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
             
             require(FRMPRO_VIEWS_PATH.'/frmpro-forms/export_template.php');
         }else{
@@ -307,7 +312,7 @@ class FrmProFormsController{
         }
     }
     
-    function import_templates(){
+    public static function import_templates(){
         if(current_user_can('frm_edit_forms')){
             global $frmpro_settings;
             $path = (isset($_POST) and isset($_POST['path'])) ? $_POST['path'] : $frmpro_settings->template_path;         
@@ -318,15 +323,15 @@ class FrmProFormsController{
         }
     }
     
-    function add_field_link($field_type, $id, $field_key){
+    public static function add_field_link($field_type, $id, $field_key){
         return "<a href=\"javascript:add_frm_field_link($id,'$field_key');\">$field_type</a>";
     }
     
-    function drag_field_class($class){
+    public static function drag_field_class($class){
         return ' class="field_type_list"';
     }
     
-    function formidable_shortcode_atts($atts){
+    public static function formidable_shortcode_atts($atts){
         global $frm_readonly, $frm_editing_entry, $frm_show_fields, $frmdb;
         $frm_readonly = $atts['readonly'];
         $frm_editing_entry = false;
@@ -347,7 +352,15 @@ class FrmProFormsController{
         }
     }
     
-    function filter_content($content, $form, $entry=false){
+    public static function form_fields_class($class, $values){
+        global $frm_page_num;
+        if($frm_page_num)
+            $class .= ' frm_page_num_'. $frm_page_num;
+
+        return $class;
+    }
+    
+    public static function filter_content($content, $form, $entry=false){
         if($entry and is_numeric($entry)){
             global $frm_entry;
             $entry = $frm_entry->getOne($entry);
@@ -366,27 +379,53 @@ class FrmProFormsController{
         return $content;
     }
     
-    function submit_button_label($submit, $form){
+    public static function submit_button_label($submit, $form){
         global $frm_next_page;
-        if(isset($frm_next_page[$form->id])) 
+        if(isset($frm_next_page[$form->id])){ 
             $submit = $frm_next_page[$form->id];
+            if(is_object($submit))
+                $submit = $submit->name;
+        }
         return $submit;
     }
     
-    function error_icon(){
+    public static function error_icon(){
         global $frmpro_settings;
-        $icon = FRMPRO_ICONS_URL .'/'. $frmpro_settings->error_icon;
+        $icon = FRMPRO_IMAGES_URL .'/error_icons/'. $frmpro_settings->error_icon;
         return $icon;
     }
     
-    function replace_shortcodes($html){
-        preg_match_all("/\[(deletelink)\b(.*?)(?:(\/))?\]/s", $html, $shortcodes, PREG_PATTERN_ORDER);
+    public static function replace_shortcodes($html, $form){
+        preg_match_all("/\[(if )?(deletelink|back_label|back_hook|back_button)\b(.*?)(?:(\/))?\](?:(.+?)\[\/\2\])?/s", $html, $shortcodes, PREG_PATTERN_ORDER);
+        
+        if(empty($shortcodes[0]))
+            return $html;
+            
         foreach ($shortcodes[0] as $short_key => $tag){
-            $atts = shortcode_parse_atts( $shortcodes[2][$short_key] );
-            if($shortcodes[1][$short_key] == 'deletelink'){
-                $replace_with = FrmProEntriesController::entry_delete_link($atts);
+            $replace_with = '';
+            $atts = shortcode_parse_atts( $shortcodes[3][$short_key] );
+            
+            switch($shortcodes[2][$short_key]){
+                case 'deletelink':
+                    $replace_with = FrmProEntriesController::entry_delete_link($atts);
+                break;
+                case 'back_label':
+                    $replace_with = __('Previous', 'formidable');
+                break;
+                case 'back_hook':
+                    $replace_with = apply_filters('frm_back_button_action', '', $form);
+                break;
+                case 'back_button':
+                    global $frm_prev_page;
+                    if(!$frm_prev_page or !is_array($frm_prev_page) or !isset($frm_prev_page[$form->id]) or empty($frm_prev_page[$form->id]))
+                        unset($replace_with);
+                    else
+                        $html = str_replace('[/if back_button]', '', $html);
+                break;
+            } 
+            
+            if(isset($replace_with))
                 $html = str_replace($shortcodes[0][$short_key], $replace_with, $html);
-            }
             
             unset($short_key);
             unset($tag);
@@ -396,15 +435,15 @@ class FrmProFormsController{
         return $html;
     }
     
-    function _logic_row(){
-	    global $frm_ajax_url, $frm_form;
+    public static function _logic_row(){
+	    global $frm_form, $frm_field;
 	    
 	    $meta_name = FrmAppHelper::get_param('meta_name');
 	    $form_id = FrmAppHelper::get_param('form_id');
 	    $email_key = FrmAppHelper::get_param('email_id');
 	    $hide_field = '';
         
-        $form_fields = FrmField::getAll("fi.form_id = ". (int)$form_id ." and (type in ('select','radio','checkbox','10radio','scale','data') or (type = 'data' and (field_options LIKE '\"data_type\";s:6:\"select\"%' OR field_options LIKE '%\"data_type\";s:5:\"radio\"%' OR field_options LIKE '%\"data_type\";s:8:\"checkbox\"%') ))", " ORDER BY field_order");
+        $form_fields = $frm_field->getAll("fi.form_id = ". (int)$form_id ." and (type in ('select','radio','checkbox','10radio','scale','data') or (type = 'data' and (field_options LIKE '\"data_type\";s:6:\"select\"%' OR field_options LIKE '%\"data_type\";s:5:\"radio\"%' OR field_options LIKE '%\"data_type\";s:8:\"checkbox\"%') ))", " ORDER BY field_order");
         
         $form = $frm_form->getOne($form_id);
         $form->options = maybe_unserialize($form->options);
@@ -425,7 +464,7 @@ class FrmProFormsController{
         die();
 	}
 	
-	function get_email_html(){
+	public static function get_email_html(){
 	    echo FrmProEntriesController::show_entry_shortcode(array('form_id' => $_POST['form_id'], 'default_email' => true, 'plain_text' => $_POST['plain_text']));
 	    die();
 	}

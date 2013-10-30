@@ -125,11 +125,23 @@ class FrmProEntryMeta{
     }
 
     function validate($errors, $field){
-        global $frm_field, $frm_show_fields, $frm_settings;
+        if(FrmProFormsHelper::going_to_prev($field->form_id))
+            return array();
+        
+        global $frm_field, $frm_show_fields, $frm_settings, $frmpro_field;
         $field->field_options = maybe_unserialize($field->field_options);
         
-        if(isset($errors['field'. $field->id]) and in_array($field->type, array('break', 'html', 'divider')))
-            unset($errors['field'. $field->id]);
+        if(in_array($field->type, array('break', 'html', 'divider'))){
+            $hidden = $frmpro_field->is_field_hidden($field, $_POST);
+            global $frm_hidden_break, $frm_hidden_divider;
+            if($field->type == 'break')
+                $frm_hidden_break = array('field_order' => $field->field_order, 'hidden' => $hidden);
+            else if($field->type == 'divider')
+                $frm_hidden_divider = array('field_order' => $field->field_order, 'hidden' => $hidden);
+            
+            if(isset($errors['field'. $field->id]))
+                unset($errors['field'. $field->id]);
+        }
         
         $value = $_POST['item_meta'][$field->id];
         if((($field->type != 'tag' and $value == 0) or ($field->type == 'tag' and $value == '')) and isset($field->field_options['post_field']) and $field->field_options['post_field'] == 'post_category' and $field->required == '1'){
@@ -137,16 +149,26 @@ class FrmProEntryMeta{
         }
         
         //Don't require fields hidden with shortcode fields="25,26,27"
-        if(!empty($frm_show_fields) and is_array($frm_show_fields) and $field->required == '1' and isset($errors['field'.$field->id]) and !in_array($field->id, $frm_show_fields) and !in_array($field->field_key, $frm_show_fields)){
+        if(!empty($frm_show_fields) and is_array($frm_show_fields) and $field->required == '1' and isset($errors['field'. $field->id]) and !in_array($field->id, $frm_show_fields) and !in_array($field->field_key, $frm_show_fields)){
             unset($errors['field'. $field->id]);
             $_POST['item_meta'][$field->id] = $value = '';
         }
         
         //Don't require a conditionally hidden field
         if (isset($field->field_options['hide_field']) and !empty($field->field_options['hide_field'])){
-            $hidden = FrmProField::is_field_hidden($field, $_POST);
-            if($hidden){
-                unset($errors['field'.$field->id]);
+            if($frmpro_field->is_field_hidden($field, $_POST)){
+                if(isset($errors['field'. $field->id]))
+                    unset($errors['field'. $field->id]);
+                $_POST['item_meta'][$field->id] = $value = '';
+            }
+        }
+        
+        //Don't require a field hidden in a conditional page or section heading
+        if(isset($errors['field'. $field->id]) or $_POST['item_meta'][$field->id] != ''){
+            global $frm_hidden_break, $frm_hidden_divider;
+            if(($frm_hidden_break and $frm_hidden_break['hidden']) or ($frm_hidden_divider and $frm_hidden_divider['hidden'] and (!$frm_hidden_break or $frm_hidden_break['field_order'] < $frm_hidden_divider['field_order']))){
+                if(isset($errors['field'. $field->id]))
+                    unset($errors['field'. $field->id]);
                 $_POST['item_meta'][$field->id] = $value = '';
             }
         }
@@ -180,7 +202,7 @@ class FrmProEntryMeta{
         
         $errors = $this->set_post_fields($field, $value, $errors);
         
-        if (!FrmProField::is_visible_to_user($field) and !is_admin()){
+        if (!$frmpro_field->is_visible_to_user($field) and !is_admin()){
             //don't validate admin only fields that can't be seen
             unset($errors['field'. $field->id]);
             return $errors;
@@ -238,6 +260,54 @@ class FrmProEntryMeta{
                 $value = esc_url_raw( $value );
 		        $_POST['item_meta'][$field->id] = $value = preg_match('/^(https?|ftps?|mailto|news|feed|telnet):/is', $value) ? $value : 'http://'. $value;
 	        }
+		}
+		
+		if(false and isset($field->field_options['use_calc']) and !empty($field->field_options['use_calc']) and !empty($field->field_options['calc'])){
+		    $field->field_options['calc'] = trim($field->field_options['calc']);
+		    preg_match_all( "/\[(.*?)\]/s", $field->field_options['calc'], $calc_matches, PREG_PATTERN_ORDER);
+		    if(isset($calc_matches[1])){
+		        foreach($calc_matches[1] as $c){
+		            if(is_numeric($c)){
+		                $c_id = $c;
+		            }else{
+		                $c_field = $frm_field->getOne($c);
+		                if(!$c_field){
+		                    $field->field_options['calc'] = str_replace('['. $c .']', 0, $field->field_options['calc']);
+		                    continue;
+		                }
+		                $c_id = $c_field->id;
+		                unset($c_field);
+		            }
+		            $c_val = trim($_POST['item_meta'][$c_id]);
+		            if(!is_numeric($c_val)){
+		                preg_match_all('/[0-9,]*\.?[0-9]+/', $c_val, $c_matches);
+                        $c_val = ($c_matches) ? end($c_matches[0]) : 0;
+                        unset($c_matches);
+                    }
+                    if($c_val == '')
+                        $c_val = 0;
+                    
+		            $field->field_options['calc'] = str_replace('['. $c .']', $c_val, $field->field_options['calc']);
+		            unset($c);
+		            unset($c_id);
+		        }
+		        
+		        include_once(FRMPRO_PATH .'/classes/helpers/FrmProMathHelper.php');
+		        $m = new EvalMath;
+		        if(strpos($field->field_options['calc'], ').toFixed(')){
+		            $field->field_options['calc'] = str_replace(').toFixed(2', '', $field->field_options['calc']);
+		            $round = 2;
+		        }
+		        
+		        $result = $m->evaluate(str_replace('Math.', '', '('. $field->field_options['calc'] .')'));
+            	if(isset($round) and $round)
+            	    $result = sprintf('%.'. $round .'f', $result);
+            	unset($m);
+                
+                $_POST['item_meta'][$field->id] = $value = $result;
+                unset($result);
+            }
+            unset($calc_matches);
 		}
 
         //Don't validate the format if field is blank
@@ -316,6 +386,9 @@ class FrmProEntryMeta{
                     if(isset($field->field_options['taxonomy']) and $field->field_options['taxonomy'] != 'category'){
                         $new_value = array();
                         foreach($value as $val){
+                            if($val == 0)
+                                continue;
+                            
                             $term = get_term($val, $field->field_options['taxonomy']);
 
                             if(!isset($term->errors))
@@ -339,21 +412,44 @@ class FrmProEntryMeta{
                     }
                     
                 }else if($field->type == 'tag' and $field->field_options['post_field'] == 'post_category'){
-                    //$tags = explode(',', $value);
                     $value = trim($value);
+                    $value = array_map('trim', explode(',', $value));
                     
                     $tax_type = (isset($field->field_options['taxonomy']) and !empty($field->field_options['taxonomy'])) ? $field->field_options['taxonomy'] : 'frm_tag';
 
                     if(!isset($_POST['frm_tax_input']))
                         $_POST['frm_tax_input'] = array();
                     
-                    if(!isset($_POST['frm_tax_input'][$tax_type])){
-                        $_POST['frm_tax_input'][$tax_type] = $value;
-                    }else if(!empty($value)){
-                        $_POST['frm_tax_input'][$tax_type] = array_merge($_POST['frm_tax_input'][$tax_type], array_map('trim', explode(',', $value)));
-                    }
+                    if ( is_taxonomy_hierarchical($tax_type) ){
+                        //create the term or check to see if it exists
+                        $terms = array();
+                        foreach($value as $v){
+                            if(function_exists('term_exists'))
+                                $term_id = term_exists($v, $tax_type);
+                            else
+                                $term_id = is_term($v, $tax_type);
 
-                    //unset($tags);
+                            if(!$term_id)
+                                $term_id = wp_insert_term($v, $tax_type);
+
+                            if($term_id and is_array($term_id))  
+                               $term_id = $term_id['term_id'];
+                            
+                            if(is_numeric($term_id))
+                                $terms[$term_id] = $v;
+
+                            unset($term_id);
+                            unset($v);
+                        }
+                        
+                        $value = $terms;
+                        unset($terms);
+                    }
+                    
+                    if(!isset($_POST['frm_tax_input'][$tax_type]))
+                        $_POST['frm_tax_input'][$tax_type] = (array)$value;
+                    else
+                        $_POST['frm_tax_input'][$tax_type] += (array)$value;
                 }
 
             	if($field->field_options['post_field'] != 'post_category')

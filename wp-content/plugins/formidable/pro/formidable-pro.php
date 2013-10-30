@@ -3,22 +3,11 @@
  * @package Formidable
  */
  
-define('FRMPRO_PATH',FRM_PATH.'/pro');
-define('FRMPRO_CONTROLLERS_PATH',FRMPRO_PATH.'/classes/controllers');
-define('FRMPRO_HELPERS_PATH',FRMPRO_PATH.'/classes/helpers');
-define('FRMPRO_MODELS_PATH',FRMPRO_PATH.'/classes/models');
-define('FRMPRO_VIEWS_PATH',FRMPRO_PATH.'/classes/views');
-define('FRMPRO_TEMPLATES_PATH',FRMPRO_PATH.'/classes/templates');
+define('FRMPRO_PATH', FRM_PATH .'/pro');
+define('FRMPRO_VIEWS_PATH', FRMPRO_PATH .'/classes/views');
+define('FRMPRO_IMAGES_URL', FRM_URL .'/pro/images');
 
-define('FRMPRO_URL',FRM_URL.'/pro');
-define('FRMPRO_MODELS_URL',FRMPRO_URL.'/classes/models');
-define('FRMPRO_VIEWS_URL',FRMPRO_URL.'/classes/views');
-define('FRMPRO_IMAGES_URL',FRMPRO_URL.'/images');
-define('FRMPRO_ICONS_URL',FRMPRO_IMAGES_URL.'/error_icons');
-
-define('FRM_WIDGETS_PATH',FRMPRO_PATH.'/classes/widgets');
-
-require_once(FRMPRO_MODELS_PATH.'/FrmProSettings.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProSettings.php');
 
 global $frmpro_settings;
 
@@ -65,13 +54,13 @@ global $frm_settings;
 if(!is_admin() and $frm_settings->jquery_css)
     $frm_datepicker_loaded = true;
     
-require_once(FRMPRO_MODELS_PATH.'/FrmProDb.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProDisplay.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProEntry.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProEntryMeta.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProField.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProForm.php');
-require_once(FRMPRO_MODELS_PATH.'/FrmProNotification.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProDb.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProDisplay.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProEntry.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProEntryMeta.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProField.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProForm.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProNotification.php');
 
 global $frmprodb;
 global $frmpro_display;
@@ -90,25 +79,22 @@ $frmpro_form        = new FrmProForm();
 $frmpro_notification = new FrmProNotification();
 
 // Instansiate Controllers
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProAppController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProDisplaysController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProEntriesController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProFieldsController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProFormsController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProSettingsController.php");
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProStatisticsController.php");
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProAppController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProDisplaysController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProEntriesController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProFieldsController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProFormsController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProSettingsController.php');
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProStatisticsController.php');
 
-global $frmpro_app_controller;
-global $frmpro_displays_controller;
-global $frmpro_entries_controller;
 global $frmpro_fields_controller;
 global $frmpro_forms_controller;
 global $frmpro_settings_controller;
 global $frmpro_statistics_controller;
 
-$frmpro_app_controller         = new FrmProAppController();
-$frmpro_displays_controller    = new FrmProDisplaysController();
-$frmpro_entries_controller     = new FrmProEntriesController();
+$obj = new FrmProAppController();
+$obj = new FrmProDisplaysController();
+$obj = new FrmProEntriesController();
 $frmpro_fields_controller      = new FrmProFieldsController();
 $frmpro_forms_controller       = new FrmProFormsController();
 $frmpro_settings_controller    = new FrmProSettingsController();
@@ -116,37 +102,30 @@ $frmpro_statistics_controller  = new FrmProStatisticsController();
 
 if (IS_WPMU){
 //Models
-require_once(FRMPRO_MODELS_PATH.'/FrmProCopy.php');
+require_once(FRMPRO_PATH .'/classes/models/FrmProCopy.php');
 global $frmpro_copy;
 $frmpro_copy = new FrmProCopy();
     
 //Add options to copy forms and displays
-require_once(FRMPRO_CONTROLLERS_PATH . "/FrmProCopiesController.php");
+require_once(FRMPRO_PATH .'/classes/controllers/FrmProCopiesController.php');
 global $frmpro_copies_controller;
 $frmpro_copies_controller = new FrmProCopiesController();
 }
 
 // Instansiate Helpers
-require_once(FRMPRO_HELPERS_PATH. "/FrmProAppHelper.php");
-require_once(FRMPRO_HELPERS_PATH. "/FrmProDisplaysHelper.php");
-require_once(FRMPRO_HELPERS_PATH. "/FrmProEntriesHelper.php");
-require_once(FRMPRO_HELPERS_PATH. "/FrmProEntryMetaHelper.php");
-require_once(FRMPRO_HELPERS_PATH. "/FrmProFieldsHelper.php");
-require_once(FRMPRO_HELPERS_PATH. "/FrmProFormsHelper.php");
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProAppHelper.php');
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProDisplaysHelper.php');
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProEntriesHelper.php');
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProEntryMetaHelper.php');
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProFieldsHelper.php');
+require_once(FRMPRO_PATH .'/classes/helpers/FrmProFormsHelper.php');
 
-global $frmpro_app_helper;
-global $frmpro_displays_helper;
-global $frmpro_entries_helper;
-global $frmpro_entry_meta_helper;
-global $frmpro_fields_helper;
-global $frmpro_forms_helper;
-
-$frmpro_app_helper      = new FrmProAppHelper();
-$frmpro_displays_helper = new FrmProDisplaysHelper();
-$frmpro_entries_helper  = new FrmProEntriesHelper();
-$frmpro_entry_meta_helper = new FrmProEntryMetaHelper();
-$frmpro_fields_helper   = new FrmProFieldsHelper();
-$frmpro_forms_helper    = new FrmProFormsHelper();
+$obj = new FrmProAppHelper();
+$obj = new FrmProDisplaysHelper();
+$obj = new FrmProEntriesHelper();
+$obj = new FrmProEntryMetaHelper();
+$obj = new FrmProFieldsHelper();
+$obj = new FrmProFormsHelper();
 
 global $frm_next_page, $frm_prev_page;
 $frm_next_page = $frm_prev_page = array();
@@ -157,8 +136,8 @@ $frm_media_id = array();
 // Register Widgets
 if(class_exists('WP_Widget')){
     // Include Widgets
-    require_once(FRM_WIDGETS_PATH . "/FrmListEntries.php");
-    //require_once(FRM_WIDGETS_PATH . "/FrmPollResults.php");
+    require_once(FRMPRO_PATH.'/classes/widgets/FrmListEntries.php');
+    //require_once(FRMPRO_PATH.'/classes/widgets/FrmPollResults.php');
     
     add_action('widgets_init', create_function('', 'return register_widget("FrmListEntries");'));
     //add_action('widgets_init', create_function('', 'return register_widget("FrmPollResults");'));

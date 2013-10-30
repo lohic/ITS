@@ -1,16 +1,12 @@
-<tr class="success_action_page_box success_action_box" <?php echo ($values['success_action'] == 'page') ? '' : 'style="display:none;"'; ?>><td><label><?php _e('Use Content from Page', 'formidable') ?></label></td>
-    <td>
-        <?php FrmAppHelper::wp_pages_dropdown( 'options[success_page_id]', $values['success_page_id'] ) ?>
-    </td>
-</tr>
-
-<tr><td colspan="2"><input type="checkbox" name="options[ajax_submit]" id="ajax_submit" value="1"<?php echo ($values['ajax_submit']) ? ' checked="checked"' : ''; ?> /> <label for="ajax_submit"><?php _e('Submit this Form with AJAX', 'formidable') ?></label></td></tr>
+<tr><td colspan="2"><input type="checkbox" name="options[ajax_submit]" id="ajax_submit" value="1"<?php echo ($values['ajax_submit']) ? ' checked="checked"' : ''; ?> /> <label for="ajax_submit"><?php _e('Submit this Form with AJAX', 'formidable') ?></label>
+<img src="<?php echo FRM_IMAGES_URL ?>/tooltip.png" alt="?" class="frm_help" title="<?php _e('If your form includes a file upload field, ajax submission will not be used.', 'formidable') ?>" />
+</td></tr>
 
 <tr><td colspan="2">
     <input type="checkbox" name="logged_in" id="logged_in" value="1"<?php echo ($values['logged_in']) ? ' checked="checked"' : ''; ?> /> <label for="logged_in"><?php _e('Only', 'formidable') ?></label> 
     <select name="options[logged_in_role]" id="logged_in_role">
         <option value=""><?php _e('Logged-in Users', 'formidable') ?></option>
-        <?php foreach($editable_roles as $role => $details){ 
+        <?php foreach($frm_editable_roles as $role => $details){ 
             $role_name = translate_user_role($details['name'] ); ?>
             <option value="<?php echo esc_attr($role) ?>" <?php echo (($values['logged_in_role'] == $role) ?' selected="selected"':''); ?>><?php echo $role_name ?> </option>
         <?php } ?> 
@@ -20,7 +16,7 @@
 <tr><td colspan="2"><input type="checkbox" name="editable" id="editable" value="1"<?php echo ($values['editable']) ? ' checked="checked"' : ''; ?> /> <label for="editable"><?php _e('Allow','formidable') ?></label>
     <select name="options[editable_role]" id="editable_role">
         <option value=""><?php _e('Logged-in Users', 'formidable') ?></option>
-        <?php foreach($editable_roles as $role => $details){ 
+        <?php foreach($frm_editable_roles as $role => $details){ 
             $role_name = translate_user_role($details['name'] ); ?>
             <option value="<?php echo esc_attr($role) ?>" <?php echo (($values['editable_role'] == $role) ?' selected="selected"':''); ?>><?php echo $role_name ?> </option>
         <?php } ?> 
@@ -31,7 +27,7 @@
     <td colspan="2" style="padding-left:45px;"><input type="checkbox" name="options[open_editable]" id="open_editable" value="1"<?php echo ($values['open_editable'])?(' checked="checked"'):(''); ?> /> <label for="open_editable"><?php _e('Also Allow', 'formidable') ?></label>
     <select name="options[open_editable_role]" id="open_editable_role">
         <option value=""><?php _e('Logged-in Users', 'formidable') ?></option>
-        <?php foreach($editable_roles as $role => $details){ 
+        <?php foreach($frm_editable_roles as $role => $details){ 
             $role_name = translate_user_role($details['name'] ); ?>
             <option value="<?php echo esc_attr($role) ?>" <?php echo (($values['open_editable_role'] == $role) ?' selected="selected"':''); ?>><?php echo $role_name ?> </option>
         <?php } ?> 
@@ -77,7 +73,7 @@
 function frm_add_postmeta_row(){
 var meta_name=frmGetMetaValue('frm_postmeta_', jQuery('#frm_postmeta_rows > div').size());
 jQuery.ajax({
-    type:"POST",url:"<?php echo $frm_ajax_url ?>",
+    type:"POST",url:"<?php echo admin_url('admin-ajax.php') ?>",
     data:"action=frm_add_postmeta_row&form_id=<?php echo $values['id'] ?>&meta_name="+meta_name,
     success:function(html){jQuery('#frm_postmeta_rows').append(html);}
 });
@@ -87,7 +83,7 @@ function frm_add_posttax_row(){
 var post_type=jQuery('select[name="options[post_type]"]').val();
 var meta_name=frmGetMetaValue('frm_posttax_', jQuery('#frm_posttax_rows > div').size());
 jQuery.ajax({
-    type:"POST",url:"<?php echo $frm_ajax_url ?>",
+    type:"POST",url:"<?php echo admin_url('admin-ajax.php') ?>",
     data:"action=frm_add_posttax_row&form_id=<?php echo $values['id'] ?>&post_type="+post_type+"&meta_name="+meta_name,
     success:function(html){jQuery('#frm_posttax_rows').append(html);}
 });

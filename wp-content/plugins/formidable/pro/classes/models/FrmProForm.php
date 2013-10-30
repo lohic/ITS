@@ -153,7 +153,7 @@ class FrmProForm{
 
         //update dependent fields
         if (isset($values['field_options'])){
-            $all_fields = $frm_field->getAll(array('fi.form_id' => $id));
+            $all_fields = $frm_field->getAll(array('fi.form_id' => $id), 'field_order');
             if ($all_fields){
                 foreach($all_fields as $field){
                     $option_array[$field->id] = maybe_unserialize($field->field_options);
@@ -175,9 +175,11 @@ class FrmProForm{
                     }
                     unset($field);
                 }
-
+                unset($all_fields);
+                
                 foreach($option_array as $field_id => $field_options){
                     $frm_field->update($field_id, array('field_options' => $field_options));
+                    unset($field_id);
                     unset($field_options);
                 }
                 unset($option_array);
@@ -218,7 +220,7 @@ class FrmProForm{
         return $errors;
     }
     
-    function has_field($type, $form_id, $single=true){
+    public static function has_field($type, $form_id, $single=true){
         global $frmdb;
         if($single)
             $included = $frmdb->get_one_record($frmdb->fields, compact('form_id', 'type'));
@@ -227,7 +229,7 @@ class FrmProForm{
         return $included;
     }
     
-    function post_type($form_id){
+    public static function post_type($form_id){
         if(is_numeric($form_id)){
             global $frmdb;
             $cache = wp_cache_get($form_id, 'frm_form');
@@ -237,6 +239,8 @@ class FrmProForm{
                 $form_options = $frmdb->get_var($frmdb->forms, array('id' => $form_id), 'options');
             $form_options = maybe_unserialize($form_options);
             return (isset($form_options['post_type'])) ? $form_options['post_type'] : 'post';
+        }else if(is_object($form_id)){
+            return (isset($form->options['post_type'])) ? $form->options['post_type'] : 'post';
         }else{
             $form = (array) $form_id;
             return (isset($form['post_type'])) ? $form['post_type'] : 'post';

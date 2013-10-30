@@ -120,7 +120,7 @@ class FrmListEntries extends WP_Widget {
 	}
 
 	function form( $instance ) { 
-	    global $frmpro_display, $frm_ajax_url; 
+	    global $frmpro_display; 
         $pages = get_posts( array('post_type' => 'page', 'post_status' => 'publish', 'numberposts' => 999, 'order_by' => 'post_title', 'order' => 'ASC'));
         $displays = $frmpro_display->getAll(array('meta_key' => 'show_count', 'meta_value' => 'dynamic'));
         
@@ -218,11 +218,11 @@ function frm_toggle_cat_opt(checked){
 
 function frm_get_display_fields(display_id){
     if (display_id != ''){
-      jQuery.ajax({ type:"POST", url:"<?php echo $frm_ajax_url ?>",
+      jQuery.ajax({ type:"POST", url:"<?php echo admin_url('admin-ajax.php') ?>",
          data:"action=frm_get_cat_opts&display_id="+display_id,
          success:function(msg){jQuery("#<?php echo $this->get_field_id('cat_id'); ?>").html(msg);}
       });
-      jQuery.ajax({ type:"POST", url:"<?php echo $frm_ajax_url ?>",
+      jQuery.ajax({ type:"POST", url:"<?php echo admin_url('admin-ajax.php') ?>",
            data:"action=frm_get_title_opts&display_id="+display_id,
            success:function(msg){jQuery("#<?php echo $this->get_field_id('title_id'); ?>").html(msg);}
        });

@@ -7,7 +7,7 @@ $values['options']['custom_style'] = 1;
 if ($form){
     $form_id = $form->id;
     $frm_form->update($form_id, $values );
-    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id));
+    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
     if (!empty($form_fields)){
         foreach ($form_fields as $field)
             $frm_field->destroy($field->id);
@@ -20,7 +20,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Name';
 $field_values['description'] = 'First';
 $field_values['required'] = 1;
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -28,7 +28,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = $field_values['description'] = 'Last';
 $field_values['required'] = 1;
 $field_values['field_options']['label'] = 'hidden';
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -36,14 +36,14 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Email';
 $field_values['required'] = 1;
 $field_values['field_options']['invalid'] = 'Please enter a valid email address';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('url', $form_id));
 $field_values['name'] = 'Website';
 $field_values['field_options']['invalid'] = 'Please enter a valid website';
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -63,7 +63,7 @@ unset($field_values);
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('text', $form_id));
 $field_values['name'] = 'City';
 $field_values['required'] = 1;
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -77,7 +77,7 @@ unset($field_values);
 
 $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup_new_vars('text', $form_id));
 $field_values['name'] = 'Postal Code';
-$field_values['field_options']['classes'] = 'frm_right_fourth';
+$field_values['field_options']['classes'] = 'frm_last_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 

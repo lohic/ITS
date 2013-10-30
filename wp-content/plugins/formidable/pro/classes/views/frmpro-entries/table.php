@@ -32,7 +32,7 @@
 <?php       }
 
             if($edit_link){ ?>
-        <td><?php if(FrmProEntry::user_can_edit($entry, $form)){ ?><a href="<?php echo esc_url(add_query_arg(array('frm_action' => 'edit', 'entry' => $entry->id), $permalink) . $anchor)  ?>"><?php echo $edit_link ?></a><?php } ?></td>
+        <td><?php if($frmpro_entry->user_can_edit($entry, $form)){ ?><a href="<?php echo esc_url(add_query_arg(array('frm_action' => 'edit', 'entry' => $entry->id), $permalink) . $anchor)  ?>"><?php echo $edit_link ?></a><?php } ?></td>
 <?php       } ?>
         </tr>
 <?php

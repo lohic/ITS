@@ -7,7 +7,7 @@ $values['options']['custom_style'] = 1;
 if ($form){
     $form_id = $form->id;
     $frm_form->update($form_id, $values );
-    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id));
+    $form_fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
     if (!empty($form_fields)){
         foreach ($form_fields as $field)
             $frm_field->destroy($field->id);
@@ -20,7 +20,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'MLS ID';
 $field_values['required'] = 1;
 $field_values['field_order'] = '0';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -29,7 +29,7 @@ $field_values['name'] = 'Featured';
 $field_values['options'] = serialize(array('Featured'));
 $field_values['field_order'] = '1';
 $field_values['field_options']['label'] = 'hidden';
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -47,7 +47,7 @@ $field_values['name'] = 'City';
 $field_values['description'] = 'e.g., "Anytown"';
 $field_values['required'] = 1;
 $field_values['field_order'] = '3';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -64,7 +64,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Zip Code';
 $field_values['required'] = 1;
 $field_values['field_order'] = '5';
-$field_values['field_options']['classes'] = 'frm_right_fourth';
+$field_values['field_options']['classes'] = 'frm_last_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -79,7 +79,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Type';
 $field_values['options'] = serialize(array('', 'Single Family Home', 'Condo/Townhome/Row Home/Co-Op', 'Multi-Family Home', 'Mfd/Mobile Home', 'Farms/Ranches', 'Land'));
 $field_values['field_order'] = '6';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -88,7 +88,7 @@ $field_values['name'] = 'Property Status';
 $field_values['required'] = 1;
 $field_values['field_order'] = '7';
 $field_values['options'] = serialize(array('Active', 'Sale Pending', 'Sold', 'Lease Pending', 'Rented' ));
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -97,7 +97,7 @@ $field_values['name'] = 'List Price';
 $field_values['required'] = 1;
 $field_values['field_order'] = '8';
 $field_values['field_options']['size'] = '12';
-$field_values['field_options']['classes'] = 'frm_left_fourth';
+$field_values['field_options']['classes'] = 'frm_first_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -123,7 +123,7 @@ $field_values['name'] = 'Sale Date';
 $field_values['field_order'] = '11';
 $field_values['field_options']['blank'] = '';
 $field_values['field_options']['size'] = 10;
-$field_values['field_options']['classes'] = 'frm_right_fourth';
+$field_values['field_options']['classes'] = 'frm_last_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -164,7 +164,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Garage Spaces';
 $field_values['field_order'] = '17';
 $field_values['field_options']['size'] = '5';
-$field_values['field_options']['classes'] = 'frm_right_fourth';
+$field_values['field_options']['classes'] = 'frm_last_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -172,7 +172,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Sqft (Living)';
 $field_values['field_order'] = '18';
 $field_values['field_options']['size'] = '5';
-$field_values['field_options']['classes'] = 'frm_left_fourth';
+$field_values['field_options']['classes'] = 'frm_first_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -196,7 +196,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Year Built';
 $field_values['field_order'] = '14';
 $field_values['field_options']['size'] = '5';
-$field_values['field_options']['classes'] = 'frm_left_fourth';
+$field_values['field_options']['classes'] = 'frm_first_fourth';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -204,7 +204,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Main Photo URL';
 $field_values['description'] = 'If using a photo that is already online, you can insert the URL here.';
 $field_values['field_order'] = '21';
-$field_values['field_options']['classes'] = 'frm_left_half';
+$field_values['field_options']['classes'] = 'frm_first_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -212,7 +212,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Main Photo Upload';
 $field_values['description'] = 'Or if you would like to upload the photo, this would be a good spot.';
 $field_values['field_order'] = '22';
-$field_values['field_options']['classes'] = 'frm_right_half';
+$field_values['field_options']['classes'] = 'frm_last_half';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -228,7 +228,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Property Features';
 $field_values['field_order'] = '24';
 $field_values['field_options']['label'] = 'top';
-$field_values['field_options']['classes'] = 'frm_left_third';
+$field_values['field_options']['classes'] = 'frm_first_third';
 $frm_field->create( $field_values );
 unset($field_values);
 
@@ -286,7 +286,7 @@ $field_values = apply_filters('frm_before_field_created', FrmFieldsHelper::setup
 $field_values['name'] = 'Column 3';
 $field_values['field_order'] = '32';
 $field_values['field_options']['label'] = 'hidden';
-$field_values['field_options']['classes'] = 'frm_right_third';
+$field_values['field_options']['classes'] = 'frm_last_third';
 $frm_field->create( $field_values );
 unset($field_values);
 

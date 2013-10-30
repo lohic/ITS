@@ -6,14 +6,14 @@ class FrmProFormsHelper{
         add_filter('frm_setup_edit_form_vars', array(&$this, 'setup_edit_vars'));
     }
     
-    function setup_new_vars($values){
+    public static function setup_new_vars($values){
         
         foreach (FrmProFormsHelper::get_default_opts() as $var => $default)
             $values[$var] = FrmAppHelper::get_param($var, $default);
         return $values;
     }
     
-    function setup_edit_vars($values){
+    public static function setup_edit_vars($values){
         global $frm_form, $frmpro_settings;
         
         $record = $frm_form->getOne($values['id']);
@@ -97,7 +97,7 @@ class FrmProFormsHelper{
         return $values;
     }
     
-    function get_default_opts(){
+    public static function get_default_opts(){
         global $frmpro_settings;
         
         return array(
@@ -122,7 +122,7 @@ class FrmProFormsHelper{
         */
     }
     
-    function get_default_notification_opts(){
+    public static function get_default_notification_opts(){
         global $frm_settings;
         
         return array(
@@ -135,11 +135,29 @@ class FrmProFormsHelper{
         );
     }
     
-    function get_taxonomy_count($taxonomy, $post_categories, $tax_count=0){
+    public static function get_taxonomy_count($taxonomy, $post_categories, $tax_count=0){
         if(isset($post_categories[$taxonomy . $tax_count])){
             $tax_count++;
             $tax_count = FrmProFormsHelper::get_taxonomy_count($taxonomy, $post_categories, $tax_count);
         }
         return $tax_count;
+    }
+    
+    public static function going_to_prev($form_id){
+        $back = false;
+        if($_POST and isset($_POST['frm_next_page']) and $_POST['frm_next_page'] != ''){
+            $prev_page = FrmAppHelper::get_param('frm_page_order_'. $form_id, false);
+            if(!$prev_page or ($_POST['frm_next_page'] < $prev_page))
+                $back = true; //no errors if going back a page
+        }
+        return $back;
+    }
+    
+    public static function get_prev_button($form, $class=''){
+        $html = '[if back_button]<input type="submit" value="[back_label]" name="frm_prev_page" formnovalidate="formnovalidate" class="'. $class .'" [back_hook] />[/if back_button]';
+        $html = FrmProFormsController::replace_shortcodes($html, $form);
+        if(strpos($html, '[if back_button]') !== false)
+            $html = preg_replace('/(\[if\s+back_button\])(.*?)(\[\/if\s+back_button\])/mis', '', $html);
+        return $html;
     }
 }

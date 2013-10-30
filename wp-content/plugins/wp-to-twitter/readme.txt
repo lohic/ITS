@@ -2,16 +2,16 @@
 Contributors: joedolson
 Donate link: http://www.joedolson.com/donate.php
 Tags: twitter, microblogging, su.pr, bitly, yourls, redirect, shortener, post, links
-Requires at least: 3.1.4
-Tested up to: 3.5.1
+Requires at least: 3.3.3
+Tested up to: 3.7.0
 License: GPLv2 or later
-Stable tag: trunk
+Stable tag: 2.7.5
 
 Auto-posts a Twitter update when you update your WordPress blog or blogroll, with your chosen URL shortening service.
 
 == Description ==
 
-WP to Twitter automatically posts Tweets from WordPress to Twitter using your URL shortening service to provide a link back to your post from Twitter. 
+WP to Twitter automatically posts Tweets from WordPress to Twitter using your URL shortening service to provide a link back to your post from Twitter. You can also use WP to Twitter to display a feed of recent Tweets using widgets.
 
 Upgrade to [WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/)
 
@@ -41,7 +41,7 @@ Translations:
 Visit the [WP to Twitter translations page](http://translate.joedolson.com/projects/wp-to-twitter) to see how complete these are.
 
 Languages available (in order of completeness):
-Italian, French, Danish, Catalan, Dutch, Chinese, Portuguese, Japanese, Romanian, Estonian, Russian, German, Ukrainian, Lithuanian, Belarusian, Irish, Spanish, Turkish, Persian
+Italian, French, Danish, Catalan, Dutch, Portuguese, Chinese, Japanese, Romanian, Estonian, Spanish, German, Russian, Swedish, Irish, Ukrainian, Lithuanian, Belarusian, Turkish, Persian
 
 Translating my plug-ins is always appreciated. Visit <a href="http://translate.joedolson.com">my translations site</a> to start getting your language into shape!
 
@@ -50,6 +50,82 @@ Credits:
 Contributions by [Thor Erik](http://www.thorerik.net), Bill Berry and [Andrea Baccega](http://www.andreabaccega.com).  Some code previously contributed is no longer in this plug-in. Other bug fixes and related citations can be found in the changelog.
 
 == Changelog ==
+
+= 2.7.6 =
+
+* Added citation for StormTwitter feed source.
+* Reverted use of 'extract()' due to very obscure bug.
+* New feature for WP Tweets PRO: custom templates for re-posts
+* Update Dutch translation.
+
+= 2.7.5 =
+
+* Setting a post to 'pending' or any custom status caused a Tweet to be published in 2.7.4
+
+= 2.7.4 =
+
+* Update API endpoint for Bit.ly
+* Added filter to modify "Tweet this" value during editing, based on $_POST data. ('wpt_tweet_this_edit')
+* Altered order of limits for determining whether to Tweet.
+* Deprecated upgrade routine for versions below 2.2.9. (Upgrade will still work.)
+* Added questions to support request form.
+* Added option to delete Tweet history for a post.
+* Made Twitter Feed available via shortcode [get_tweets id='twitter_username']
+* Debugging improvements.
+* Moved to save_post actions
+* Removed option to disable XMLRPC-based Tweeting.
+* Deprecated support for WP versions older than 3.3.3.
+* Renamed StormTwitter class for better namespacing and because it's substantively changed as I'm using it.
+* Modified Twitter feed caching to save as local file or as transient if file system not available.
+* Removed PHP < 5 warning, since I no longer support versions of WordPress that allow PHP 4.
+* #author# Template tag only worked if WP Tweets PRO installed.
+* Updated Portuguese Brazilian & added Swedish translations. (Partial)
+
+= 2.7.3 =
+
+* Don't display promotional notice if donation option checked.
+* WP Tweets PRO: fix for broken prepend text.
+* WP Tweets PRO: Improved truncating if image uploads enabled.
+* Updated translation: Italian
+
+= 2.7.2 =
+
+* Bug fix: Twitter Feed CSS enqueued on all pages, instead of just when activated.
+* Bug fix: test parameters in tmhOAuth caused plug-in conflict.
+* Bug fix: Major issue with WP Tweets PRO if no individual accounts were authorized with Twitter.
+
+= 2.7.1 =
+
+* Cleared un-noticed PHP warnings.
+* Updated .pot language files.
+
+= 2.7.0 =
+
+* Bug fix to character counter to adapt to updated t.co lengths.
+* Bug fix to test URL to return unencoded URL. 
+* Bug fix: could not save setting to use dynamic campaign ID with Google Analytics
+* Bug fix: Could not re-order template tag truncation order.
+* Bug fix: Corrected encoding of category names and descriptions.
+* Bug fix: Better handling of wp_get_shortlink for custom post types. (Custom post types don't support wp_get_shortlink)
+* Adds a Twitter Feed widget. Original code source from StormTwitter feed by [Liam Gladdy](http://www.stormconsultancy.co.uk/blog/development/tools-plugins/oauth-twitter-feed-for-developers-library-and-wordpress-plugin/)
+* Deprecated support for WP 3.1.4.
+
+= 2.6.9 =
+
+* Error with post_with_media check. All apologies.
+
+= 2.6.8 =
+
+* Filter post_with_media to only handle posts with attached media. (WP Tweets PRO)
+* Expose past and failed Tweets on edited posts when Tweeting edits disabled.
+
+= 2.6.7 =
+
+* Fix tmhOAuth already exists issue.
+* Bug fix: do not Tweet edits unless explicitly directed to, rather than depending on meta data. 
+* Bug fix: Scheduled posts/image uploads (for WP Tweets PRO)
+* Improved error messaging.
+* Misc. minor bug fixes
 
 = 2.6.6 =
 
@@ -823,10 +899,11 @@ Writing and maintaining a plug-in is a lot of work. You can help me by providing
 
 == Screenshots ==
 
-1. WP to Twitter main settings page.
+1. WP to Twitter OAuth settings.
 2. WP to Twitter custom Tweet settings.
-3. WP to Twitter user settings.
+3. WP Tweets PRO settings.
+4. Twitter Feed
 
 == Upgrade Notice ==
 
-* 2.6.6 Tweeting comments improved and moved into WP Tweets PRO upgrade.
+* 2.7.6 New WP Tweets PRO feature; bug fixes.

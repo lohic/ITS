@@ -4,7 +4,7 @@ if (is_array($field['options'])){
         $field['value'] = maybe_unserialize($field['default_value']);
         
     foreach($field['options'] as $opt_key => $opt){
-        $checked = ($field['value'] == $opt)?'checked="true"':'';
+        $checked = ($field['value'] == $opt) ? 'checked="true"' : '';
         $last =  (end($field['options']) == $opt) ? ' frm_last' : '';
         
         

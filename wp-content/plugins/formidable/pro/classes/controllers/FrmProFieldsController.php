@@ -5,24 +5,27 @@ class FrmProFieldsController{
         add_filter('frm_show_normal_field_type', array(&$this, 'show_normal_field'), 10, 2);
         add_filter('frm_normal_field_type_html', array(&$this, 'normal_field_html'), 10, 2);
         add_action('frm_show_other_field_type', array(&$this, 'show_other'), 10, 2);
-        add_filter('frm_field_type', array( &$this, 'change_type'), 15, 2);
+        add_filter('frm_field_type', 'FrmProFieldsController::change_type', 15, 2);
         add_filter('frm_field_value_saved', array( &$this, 'use_field_key_value'), 10, 3);
         add_action('frm_get_field_scripts', array(&$this, 'show_field'));
         add_action('frm_display_added_fields', array(&$this, 'show'));
         add_filter('frm_html_label_position', array(&$this, 'label_position'));
         add_filter('frm_display_field_options', array(&$this, 'display_field_options'));
         add_action('frm_form_fields', array(&$this, 'form_fields'), 10, 2);
-        add_action('frm_field_input_html', array(&$this, 'input_html'), 10, 2);
+        add_action('frm_field_input_html', 'FrmProFieldsController::input_html', 10, 2);
         add_filter('frm_field_classes', array(&$this, 'add_field_class'), 20, 2);
         add_action('frm_add_multiple_opts_labels', array($this, 'add_separate_value_opt_label')); 
         add_action('frm_field_options_form', array(&$this, 'options_form'), 10, 3);
         add_action('wp_ajax_frm_get_field_selection', array(&$this, 'get_field_selection'));
         add_action('wp_ajax_frm_get_field_values', array(&$this, 'get_field_values'));
         add_action('wp_ajax_frm_get_cat_opts', array(&$this, 'get_cat_opts'));
-        add_action('wp_ajax_frm_get_title_opts', array(&$this, 'get_title_opts'));
+        add_action('wp_ajax_frm_get_title_opts', array(&$this, 'get_title_opts'));        
         add_action('frm_date_field_js', array(&$this, 'date_field_js'), 10, 2);
+        add_action('frm_ajax_fields_ajax_get_data', array(&$this, 'ajax_get_data'));
+        add_action('frm_ajax_fields_ajax_data_options', array(&$this, 'ajax_data_options'));
         add_action('wp_ajax_frm_add_field_option',array(&$this, 'add_option'), 5); // run before the add_option in the FrmFieldsController class
         add_action('wp_ajax_frm_add_table_row',array(&$this, 'add_table_row'));
+        add_action('frm_ajax_fields_ajax_time_options', array(&$this, 'ajax_time_options'));
         add_action('wp_ajax_frm_add_logic_row', array(&$this, '_logic_row'));
     }
     
@@ -43,15 +46,15 @@ class FrmProFieldsController{
         require(FRMPRO_VIEWS_PATH .'/frmpro-fields/show-other.php');
     }
     
-    function &change_type($type, $field){
-        global $frm_show_fields;
+    public static function &change_type($type, $field){
+        global $frm_show_fields, $frmpro_field;
         if($type != 'user_id' and !empty($frm_show_fields) and !in_array($field->id, $frm_show_fields) and !in_array($field->field_key, $frm_show_fields))
             $type = 'hidden';
         if($type == 'website') $type = 'url';
         
         if(!is_admin() and $type != 'hidden'){
             $field->field_options = maybe_unserialize($field->field_options);
-            if(!FrmProField::is_visible_to_user($field))
+            if(!$frmpro_field->is_visible_to_user($field))
                 $type = 'hidden';
         }
         
@@ -59,7 +62,7 @@ class FrmProFieldsController{
     }
     
     function use_field_key_value($opt, $opt_key, $field){
-        //if(in_array($field['post_field'], array('post_category', 'post_status')) or ($field['type'] == 'user_id' and is_admin() and current_user_can('administrator')))
+        //if(in_array($field['post_field'], array('post_category', 'post_status')) or ($field['type'] == 'user_id' and is_admin() and is_super_admin()))
         if((isset($field['use_key']) and $field['use_key']) or 
             (isset($field['type']) and $field['type'] == 'data') or 
             (isset($field['post_field']) and $field['post_field'] == 'post_status')
@@ -84,7 +87,6 @@ class FrmProFieldsController{
     }
     
     function show($field){
-        global $frm_ajax_url;
         $field_name = "item_meta[". $field['id'] ."]";
         require(FRMPRO_VIEWS_PATH.'/frmpro-fields/show.php');    
     }
@@ -109,6 +111,8 @@ class FrmProFieldsController{
                 $display['options'] = true;
                 $display['default_blank'] = false;
                 $display['css'] = false;
+                $display['label_position'] = false;
+                $display['description'] = false;
                 break;
             case 'email':
             case 'url':
@@ -160,24 +164,24 @@ class FrmProFieldsController{
     }
 
     function form_fields($field, $field_name){
-        global $frmpro_settings, $frm_settings, $frm_editing_entry;
+        global $frmpro_settings, $frm_settings, $frm_editing_entry, $frm_field, $frm_readonly;
         $entry_id = $frm_editing_entry;
         
         if($field['type'] == 'form' and $field['form_select'])
-            $dup_fields = FrmField::getAll("fi.form_id='$field[form_select]' and fi.type not in ('break', 'captcha')");
+            $dup_fields = $frm_field->getAll("fi.form_id='$field[form_select]' and fi.type not in ('break', 'captcha')");
         
         require(FRMPRO_VIEWS_PATH.'/frmpro-fields/form-fields.php');
     }
     
-    function input_html($field, $echo=true){
+    public static function input_html($field, $echo=true){
         global $frm_settings, $frm_novalidate;
         
         $add_html = '';
-        
+
         if(isset($field['read_only']) and $field['read_only']){
             global $frm_readonly;
 
-            if($frm_readonly == 'disabled' or (current_user_can('administrator') and is_admin())){
+            if($frm_readonly == 'disabled' or (is_super_admin() and is_admin())){
                 //not read only
             //}else if($field['type'] == 'select'){
                 //$add_html .= ' disabled="disabled" ';
@@ -188,6 +192,14 @@ class FrmProFieldsController{
         
         if(isset($field['multiple']) and $field['multiple'] and ($field['type'] == 'select' or ($field['type'] == 'data' and isset($field['data_type']) and $field['data_type'] == 'select'))){
             $add_html .= ' multiple="multiple" ';
+        }
+        
+        if(isset($_GET) and isset($_GET['page']) and ($_GET['page'] == 'formidable' or $_GET['page'] == 'formidable-new')){
+            if($echo)
+                echo $add_html;
+
+            //don't continue if we are on the form builder page
+            return $add_html;
         }
         
         if($frm_settings->use_html){
@@ -204,12 +216,12 @@ class FrmProFieldsController{
                 if(!is_numeric($field['step']))
                     $field['step'] = 1;
                 $add_html .= ' min="'.$field['minnum'].'" max="'.$field['maxnum'].'" step="'.$field['step'].'"';
-            }else if(in_array($field['type'], array('url', 'email'))){
-                if(!$frm_novalidate and isset($field['value']) and $field['default_value'] == $field['value'])
+            }else if(in_array($field['type'], array('url', 'email', 'image'))){
+                if(!$frm_novalidate and ($field['type'] != 'email' or (isset($field['value']) and $field['default_value'] == $field['value'])))
                     $frm_novalidate = true;
             }
         }
-        
+
         if(isset($field['dependent_fields']) and $field['dependent_fields']){
             $trigger = ($field['type'] == 'checkbox' or $field['type'] == 'radio') ? 'onclick' : 'onchange';            
             
@@ -246,13 +258,12 @@ class FrmProFieldsController{
     }
     
     function options_form($field, $display, $values){
-        global $frm_field, $frm_settings, $frm_ajax_url;
-        $form_fields = $frm_field->getAll("fi.form_id = ".$field['form_id']." and (type in ('select','radio','checkbox','10radio','scale','data','number','text','time','email','url','hidden') or (type = 'data' and (field_options LIKE '\"data_type\";s:6:\"select\"%' OR field_options LIKE '%\"data_type\";s:5:\"radio\"%' OR field_options LIKE '%\"data_type\";s:8:\"checkbox\"%') )) and fi.id != ".$field['id'], " ORDER BY field_order");
+        global $frm_field, $frm_settings, $frm_editable_roles, $frm_opt_form_fields;
         
-        $editable_roles = get_editable_roles();
-        $post_type = FrmProForm::post_type($values);
-        if(function_exists('get_object_taxonomies'))
-            $taxonomies = get_object_taxonomies($post_type);
+        if($frm_opt_form_fields)
+            $form_fields = $frm_opt_form_fields;
+        else
+            $form_fields = $frm_field->getAll(array('fi.form_id' => (int)$field['form_id']), 'field_order');
         
         $frm_field_selection = FrmFieldsHelper::field_selection();     
         $field_types = array();
@@ -326,7 +337,7 @@ class FrmProFieldsController{
         $current_field_id = (int)$_POST['field_id'];
         if(is_numeric($_POST['form_id'])){
             $selected_field = '';
-            $fields = $frm_field->getAll(array('fi.form_id' => (int)$_POST['form_id']));
+            $fields = $frm_field->getAll(array('fi.form_id' => (int)$_POST['form_id']), 'field_order');
             if ($fields)
                 require(FRMPRO_VIEWS_PATH.'/frmpro-fields/field-selection.php');
         }else{
@@ -426,7 +437,11 @@ class FrmProFieldsController{
         //echo ',beforeShowDay: $.datepicker.noWeekends';
     }
     
-    function ajax_get_data($entry_id, $field_id, $current_field){
+    function ajax_get_data(){
+        $entry_id = FrmAppHelper::get_param('entry_id'); 
+        $field_id = FrmAppHelper::get_param('field_id');
+        $current_field = FrmAppHelper::get_param('current_field');
+        
         global $frm_entry_meta, $frm_field;
         $data_field = $frm_field->getOne($field_id);
         $current = $frm_field->getOne($current_field);
@@ -474,7 +489,12 @@ class FrmProFieldsController{
         die();
     }
     
-    function ajax_data_options($hide_field, $entry_id, $selected_field_id, $field_id){
+    function ajax_data_options(){
+        $hide_field = FrmAppHelper::get_param('hide_field');
+        $entry_id = FrmAppHelper::get_param('entry_id');
+        $selected_field_id = FrmAppHelper::get_param('selected_field_id');
+        $field_id = FrmAppHelper::get_param('field_id');
+        
         global $frmpro_entry_meta, $frm_field;
         $data_field = $frm_field->getOne($selected_field_id);
         $entry_id = explode(',', $entry_id);
@@ -506,11 +526,24 @@ class FrmProFieldsController{
             $field['options'] = array();
             
             $metas = $frmpro_entry_meta->meta_through_join($hide_field, $data_field, $entry_id);
+            if($metas and (!isset($field_data->field_options['multiple']) or !$field_data->field_options['multiple']))
+                $field['options'][''] = '';
             foreach ($metas as $meta)
                 $field['options'][$meta->item_id] = FrmProEntryMetaHelper::display_value($meta->meta_value, $data_field, 
                     array('type' => $data_field->type, 'show_icon' => true, 'show_filename' => false)
                 );
         }else if($selected_field_id == 'taxonomy'){
+            if($entry_id == 0)
+                die();
+            
+            if(is_array($entry_id)){
+                $zero = array_search(0, $entry_id);
+                if($zero !== false)
+                    unset($entry_id[$zero]);
+                if(empty($entry_id))
+                    die();
+            }
+            
             $cat_ids = array_keys($field['options']);
             
             $args = array('include' => implode(',', $cat_ids), 'hide_empty' => false);
@@ -519,7 +552,7 @@ class FrmProFieldsController{
                 $post_type = FrmProForm::post_type($field_data->form_id);
                 $args['taxonomy'] = FrmProAppHelper::get_custom_taxonomy($post_type, $field_data);
                 if(!$args['taxonomy'])
-                    return;
+                    die();
             }
             
             $cats = get_categories($args);
@@ -527,6 +560,9 @@ class FrmProFieldsController{
                 if(!in_array($cat->parent, (array)$entry_id))
                     unset($field['options'][$cat->term_id]);
             }
+            
+            if(count($field['options']) == 1 and reset($field['options']) == '')
+                die();
         }
 
         $auto_width = (isset($field['size']) && $field['size'] > 0) ? 'class="auto_width"' : '';
@@ -535,7 +571,7 @@ class FrmProFieldsController{
     }
     
     function add_option(){
-        global $frm_field, $frm_ajax_url;
+        global $frm_field;
         
         $id = $_POST['field_id'];
         $t = (isset($_POST['t'])) ? $_POST['t'] : false;
@@ -629,16 +665,21 @@ class FrmProFieldsController{
 	}
 	
 	function _logic_row(){
-	    global $frm_ajax_url;
+	    if(!current_user_can('frm_edit_forms')){
+	        global $frm_settings;
+            die($frm_settings->admin_permission);
+        }
+	    
+	    global $frm_field;
 	    
 	    $meta_name = FrmAppHelper::get_param('meta_name');
 	    $form_id = FrmAppHelper::get_param('form_id');
 	    $field_id = FrmAppHelper::get_param('field_id');
 	    $hide_field = '';
         
-        $form_fields = FrmField::getAll("fi.form_id = ". $form_id ." and (type in ('select','radio','checkbox','10radio','scale','data','number','text','time','email','url','hidden') or (type = 'data' and (field_options LIKE '\"data_type\";s:6:\"select\"%' OR field_options LIKE '%\"data_type\";s:5:\"radio\"%' OR field_options LIKE '%\"data_type\";s:8:\"checkbox\"%') )) and fi.id != ". $field_id, " ORDER BY field_order");
+        $form_fields = $frm_field->getAll(array('fi.form_id' => (int)$form_id), 'field_order');
         
-        $field = FrmField::getOne($field_id);
+        $field = $frm_field->getOne($field_id);
         $field = FrmFieldsHelper::setup_edit_vars($field);
         
         if(!isset($field['hide_field_cond'][$meta_name]))

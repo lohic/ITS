@@ -12,7 +12,7 @@
 setTimeout( "frmImportCsv()", 250 );
 function frmImportCsv(){ 
     jQuery('#frm_import_link').replaceWith('<img src="<?php echo FRM_IMAGES_URL; ?>/wpspin_light.gif" alt="<?php _e('Loading...', 'formidable'); ?>" />');
-    jQuery.ajax({type:"POST",url:"<?php echo $frm_ajax_url ?>",data:"action=frm_import_csv&frm_skip_cookie=1<?php echo $url_vars ?>",
+    jQuery.ajax({type:"POST",url:"<?php echo admin_url('admin-ajax.php') ?>",data:"action=frm_import_csv&frm_skip_cookie=1<?php echo $url_vars ?>",
     success:function(count){
         if(parseInt(count) > 0){ jQuery("#frm_import_message .frm_message").html('The next 250 of the remaining '+count+' entries are importing.<br/> If your browser doesn&#8217;t start loading the next set automatically, click this button: <a id="frm_import_link"  class="button-secondary" href="javascript:frmImportCsv()">Import Now</a>');
             location.href = "?page=<?php echo $_GET['page'] ?>&frm_action=import&step=import<?php echo $url_vars ?>";
@@ -94,7 +94,10 @@ function frmImportCsv(){
                             <td>
                                 <select name="data_array[<?php echo $i ?>]" id="mapping_<?php echo $i ?>">
                                     <option value=""></option>
-                                    <?php foreach ($fields as $field){ ?>
+                                    <?php foreach ($fields as $field){ 
+                                        if(in_array($field->type, array('break','divider','captcha','html')))
+                                            continue;
+                                    ?>
                                         <option value="<?php echo $field->id ?>" <?php selected(strip_tags($field->name), htmlspecialchars($header)) ?>><?php echo FrmAppHelper::truncate($field->name, 50) ?></option>
                                     <?php
                                         unset($field);

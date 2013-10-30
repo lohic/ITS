@@ -345,8 +345,9 @@
 					<select name="frm_theme_selector" style="line-height:1;">
                 	    <?php 
                 	        foreach($jquery_themes as $theme_name => $theme_title){  ?>
-                        <option value="<?php echo $theme_name ?>" id="theme_<?php echo $theme_name ?>" <?php selected($theme_title, $frmpro_settings->theme_name) ?>><?php echo $theme_title ?></option> 
+                        <option value="<?php echo $theme_name ?>" id="theme_<?php echo $theme_name ?>" <?php selected($theme_title, $frmpro_settings->theme_name) ?>><?php echo $theme_title ?></option>
                         <?php } ?>
+                        <option value="-1" <?php selected('-1', $frmpro_settings->theme_name) ?>>- <?php _e('None', 'formidable') ?> -</option>
                 	</select>
                 	<span id="frm_show_cal" class="theme_<?php echo $frmpro_settings->theme_css ?>"></span>
                 	<input type="hidden" value="<?php echo esc_attr($frmpro_settings->theme_css) ?>" id="frm_theme_css" name="frm_theme_css" />
@@ -465,7 +466,7 @@
 					<select name="frm_error_icon" class="texture">
                 	    <?php for($i = count($error_icons) - 1; $i >= 0; $i--){
                             $filename = str_replace(FRMPRO_PATH .'/images/error_icons/', '', $error_icons[$i]);
-                            $image_url = FRMPRO_ICONS_URL .'/'.$filename;
+                            $image_url = FRMPRO_IMAGES_URL .'/error_icons/'.$filename;
                         ?>
                         <option value="<?php echo $image_url ?>" data-texturewidth="16" data-textureheight="16" <?php selected($filename, $frmpro_settings->error_icon) ?>><?php echo $filename ?></option> 
                         <?php } ?>
@@ -552,7 +553,8 @@ display:inline-block;
 #frm_show_cal.theme_trontastic{ background-position: 0 -560px; } 
 #frm_show_cal.theme_ui-darkness{ background-position: 0 -588px; } 
 #frm_show_cal.theme_ui-lightness{ background-position: 0 -616px; } 
-#frm_show_cal.theme_vader{ background-position: 0 -644px; } 
+#frm_show_cal.theme_vader{ background-position: 0 -644px; }
+#frm_show_cal.theme_-1{ background:none;} 
 </style>
 
 

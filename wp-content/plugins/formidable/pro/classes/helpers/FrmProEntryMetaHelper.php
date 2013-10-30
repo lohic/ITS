@@ -2,10 +2,10 @@
 
 class FrmProEntryMetaHelper{
     function FrmProEntryMetaHelper(){
-        add_filter('frm_email_value', array(&$this, 'email_value'), 10, 3);
+        add_filter('frm_email_value', 'FrmProEntryMetaHelper::email_value', 10, 3);
     }
     
-    function email_value($value, $meta, $entry){
+    public static function email_value($value, $meta, $entry){
         global $frm_field, $frm_entry;
         
         if($entry->id != $meta->item_id)
@@ -56,8 +56,8 @@ class FrmProEntryMetaHelper{
         return $value;
     }
     
-    function display_value($value, $field, $atts=array()){
-        global $wpdb;
+    public static function display_value($value, $field, $atts=array()){
+        global $wpdb, $frm_field;
         
         $defaults = array(
             'type' => '', 'show_icon' => true, 'show_filename' => true, 
@@ -173,7 +173,7 @@ class FrmProEntryMetaHelper{
                 $new_value = FrmProFieldsHelper::get_data_value($value, $field, $atts);
                 
                 if($field->field_options['data_type'] == 'data' or $field->field_options['data_type'] == ''){
-                    $linked_field = FrmField::getOne($field->field_options['form_select']);
+                    $linked_field = $frm_field->getOne($field->field_options['form_select']);
                     if($linked_field->type == 'file'){
                         $old_value = explode(', ', $new_value);
                         $new_value = '';
@@ -198,7 +198,7 @@ class FrmProEntryMetaHelper{
         return apply_filters('frm_display_value', $value, $field, $atts);
     }
     
-    function get_post_or_meta_value($entry, $field, $atts=array()){
+    public static function get_post_or_meta_value($entry, $field, $atts=array()){
         global $frm_entry_meta;
         
         if(!is_object($entry)){
@@ -207,8 +207,6 @@ class FrmProEntryMetaHelper{
         }
         if(!$entry)
             return '';
-            
-        //$field->field_options = maybe_unserialize($field->field_options);
          
         if($entry->post_id){
             if(!isset($field->field_options['custom_field']))
@@ -256,7 +254,7 @@ class FrmProEntryMetaHelper{
         return $value;
     }
     
-    function get_post_value($post_id, $post_field, $custom_field, $atts){
+    public static function get_post_value($post_id, $post_field, $custom_field, $atts){
         if(!$post_id) return '';
         $post = get_post($post_id);
         if(!$post) return '';
