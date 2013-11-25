@@ -101,7 +101,8 @@
                     		<!-- TITRE RUBRIQUE -->
                 			<table width="100%" border="0" cellpadding="0" cellspacing="0"> 
                                 <tr>
-                                    <td><img src="<?php bloginfo('template_url') ?>/images/rub-gauche/news-<?php the_sub_field('titre_de_rubrique');?>.png" width="400" height="20" style="margin:15px 0;" alt="<?php the_sub_field('titre_de_rubrique');?>" /></td>
+                                    <td><!--<img src="<?php bloginfo('template_url') ?>/images/rub-gauche/news-<?php the_sub_field('titre_de_rubrique');?>.png" width="400" height="20" style="margin:15px 0;" alt="<?php the_sub_field('titre_de_rubrique');?>" />-->
+                                        <h1 style="background:#000;color:#FFF;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:17px;text-transform:uppercase;margin:10px 0 3px;padding:2px;"><?php the_sub_field('rubrique_texte'); ?></h1></td>
                                 </tr>
                             </table>
                     <?php elseif(get_row_layout() == "sous_rubrique"):?>
@@ -204,7 +205,10 @@ $label = $field['choices'][ $value ]; echo $label;//the_sub_field('titre_de_la_s
                     		<!-- TITRE RUBRIQUE -->
                 			<table width="100%" border="0" cellpadding="0" cellspacing="0"> 
                                 <tr>
-                                    <td><img src="<?php bloginfo('template_url') ?>/images/rub-droite/news-d-<?php the_sub_field('titre_de_la_rubrique');?>.png" width="140" height="35" alt="<?php the_sub_field('titre_de_la_rubrique');?>" style="margin-top:10px;" /></td>
+                                    <td><!--<img src="<?php bloginfo('template_url') ?>/images/rub-droite/news-d-<?php the_sub_field('titre_de_la_rubrique');?>.png" width="140" height="35" alt="<?php the_sub_field('titre_de_la_rubrique');?>" style="margin-top:10px;" />-->
+                                        <h1 style="color:#000;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:10px 0 3px;border-bottom:solid 10px #000;padding-bottom:7px;"><?php the_sub_field('rubrique_texte'); ?></h1>
+                                    </td>
+
                                 </tr>
                                 <!--<tr>
                                     <td bgcolor="#000" height="10"><font style="font-size:5px;">&nbsp;</font></td>
@@ -214,9 +218,10 @@ $label = $field['choices'][ $value ]; echo $label;//the_sub_field('titre_de_la_s
                     		<!-- TITRE SOUS RUBRIQUE -->
                 			<table width="100%" border="0" cellpadding="0" cellspacing="0"> 
                                 <tr>
-                                    <td><h2 style="color:#F03;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:10px 0 3px;"><?php $field = get_sub_field_object('titre_de_la_sous_rubrique');
-$value = get_sub_field('titre_de_la_sous_rubrique');
-$label = $field['choices'][ $value ]; echo $label;//the_sub_field('titre_de_la_sous_rubrique');?></h2></td>
+                                    <td><h2 style="color:#F03;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:10px 0 3px;"><?php //$field = get_sub_field_object('titre_de_la_sous_rubrique');
+//$value = get_sub_field('titre_de_la_sous_rubrique');
+//$label = $field['choices'][ $value ]; echo $label;//the_sub_field('titre_de_la_sous_rubrique');
+                                    the_sub_field('sousrubrique_texte');?></h2></td>
                                 </tr>
                             </table>
                     <?php elseif(get_row_layout() == "image"):?>

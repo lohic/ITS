@@ -427,6 +427,17 @@ if( ! function_exists ( 'get_the_content_by_id' ) ) {
 		
 		$content_post = get_post($id);
 		$content = $content_post->post_content;
+
+		$dom = new DOMDocument;
+		$dom->loadHTML(utf8_decode($content));
+		$xpath = new DOMXPath($dom);
+
+		$nodes = $xpath->query('//img|//a[img]');
+		foreach($nodes as $node) {
+			$node->parentNode->removeChild($node);
+		}
+		$content = ($dom->saveHTML());
+
 		$content = apply_filters('the_content', $content);
 		$content = str_replace(']]>', ']]&gt;', $content);
 		
