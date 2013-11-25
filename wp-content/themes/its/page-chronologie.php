@@ -70,6 +70,7 @@ article.chronologie{
 			
 			<!-- IMPORT CSS DE LA TIMELINE -->
 			<link rel="stylesheet" type="text/css" href="<?php bloginfo( 'template_url' ); ?>/timeline/timeline.css">
+			<link rel="stylesheet" type="text/css" href="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-theme.css">
 			<style type="text/css">
 				
 		        div.timeline-event-content{
@@ -106,6 +107,8 @@ article.chronologie{
 
 	<!-- SCRIPT DE LA TIMELINE -->
 	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-min.js" ></script>
-	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-values.js"  ></script>
+	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-locales.js" ></script>
+	<!--<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-values.js"  ></script>-->
+	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'wpurl' ); ?>/category/chronologie/"></script>
 
 <?php get_template_part('part','footer');?>

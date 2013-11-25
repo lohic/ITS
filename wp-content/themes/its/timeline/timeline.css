@@ -1,3 +1,26 @@
+#show_previous{
+    float: left;
+
+}
+#show_next{
+    float: right;
+}
+
+input#group{
+    display: inline-block;
+}
+#add_screen{
+    display: inline-block;
+}
+
+#mytimeline{
+    margin-top:30px;
+}
+
+/*
+MISE EN FORME DE LA TIMELINE
+ */
+
 div.timeline-frame {
     border: 1px solid #BEBEBE;
     overflow: hidden;
@@ -45,7 +68,7 @@ div.timeline-event-selected {
 
 div.timeline-event-cluster {
     /* TODO: use another color or pattern? */
-    background: #97B0F8 url('img/cluster_bg.png');
+    background: #97B0F8 url('images/cluster_bg.png');
     color: white;
 }
 div.timeline-event-cluster div.timeline-event-dot {
@@ -143,27 +166,27 @@ div.timeline-navigation-move-left, div.timeline-navigation-move-right {
 }
 
 div.timeline-navigation-new {
-    background: url('img/16/new.png') no-repeat center;
+    background: url('images/16/new.png') no-repeat center;
 }
 
 div.timeline-navigation-delete {
     padding: 0px;
     padding-left: 5px;
-    background: url('img/16/delete.png') no-repeat center;
+    background: url('images/16/delete.png') no-repeat center;
 }
 
 div.timeline-navigation-zoom-in {
-    background: url('img/16/zoomin.png') no-repeat center;
+    background: url('images/16/zoomin.png') no-repeat center;
 }
 
 div.timeline-navigation-zoom-out {
-    background: url('img/16/zoomout.png') no-repeat center;
+    background: url('images/16/zoomout.png') no-repeat center;
 }
 
 div.timeline-navigation-move-left {
-    background: url('img/16/moveleft.png') no-repeat center;
+    background: url('images/16/moveleft.png') no-repeat center;
 }
 
 div.timeline-navigation-move-right {
-    background: url('img/16/moveright.png') no-repeat center;
+    background: url('images/16/moveright.png') no-repeat center;
 }

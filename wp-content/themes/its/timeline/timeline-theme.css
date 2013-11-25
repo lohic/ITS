@@ -1,0 +1,99 @@
+div.timeline-frame {
+}
+
+div.timeline-axis {
+}
+
+div.timeline-axis-grid {
+}
+
+div.timeline-axis-grid-minor {
+}
+
+div.timeline-axis-grid-major {
+}
+
+div.timeline-axis-text {
+}
+
+div.timeline-event {
+}
+
+div.timeline-event-selected {
+}
+
+div.timeline-event.timeline-event-box {
+
+}
+
+div.timeline-event.timeline-event-dot {
+    border: 2px solid #F00;
+    padding: 6px;
+    -webkit-border-radius:10px;
+    background: #FF0;
+}
+
+div.timeline-event.timeline-event-range {
+}
+
+div.timeline-frame div.timeline-event-dot-container {
+}
+
+div.timeline-event-range-drag-left {
+}
+
+div.timeline-event-range-drag-right {
+}
+
+div.timeline-event-line {
+
+}
+
+div.timeline-event-content {
+}
+
+div.timeline-groups-axis {
+}
+
+div.timeline-groups-axis-onleft {
+}
+
+div.timeline-groups-axis-onright {
+
+}
+
+div.timeline-groups-text {
+
+}
+
+div.timeline-currenttime {
+
+}
+
+div.timeline-customtime {
+}
+
+div.timeline-navigation-new, div.timeline-navigation-delete,
+div.timeline-navigation-zoom-in, div.timeline-navigation-zoom-out,
+div.timeline-navigation-move-left, div.timeline-navigation-move-right {
+
+}
+
+div.timeline-navigation-new-line {
+}
+
+div.timeline-navigation-delete {
+
+}
+
+div.timeline-selectable div.timeline-event {
+    cursor: pointer;
+}
+
+div.timeline-selectable div.timeline-event-content {
+    cursor: pointer;
+}
+
+div.timeline-event-selected div.timeline-event-content {
+    cursor: move;
+}
