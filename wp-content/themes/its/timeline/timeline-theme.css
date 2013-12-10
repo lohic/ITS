@@ -1,4 +1,10 @@
 div.timeline-frame {
+	background: #FAFAFA;
+	border-color:#CCCCCC;
+	border-top-width:0;
+	border-bottom-width:0;
+	border-left-width:3px;
+	border-right-width:3px;
 }
 
 div.timeline-axis {
@@ -27,13 +33,21 @@ div.timeline-event.timeline-event-box {
 }
 
 div.timeline-event.timeline-event-dot {
-    border: 2px solid #F00;
-    padding: 6px;
-    -webkit-border-radius:10px;
-    background: #FF0;
+    border: 0;
+    padding: 4px;
+    -webkit-border-radius:8px;
+    -moz-border-radius:8px;
+    border-radius:8px;
+    background: #FF3333;
 }
 
 div.timeline-event.timeline-event-range {
+    -webkit-border-radius:0;
+    -moz-border-radius:0;
+    border-radius:0;
+    border: none;
+    background: none;
+    border-bottom:solid 8px #F33;
 }
 
 div.timeline-frame div.timeline-event-dot-container {
@@ -50,6 +64,8 @@ div.timeline-event-line {
 }
 
 div.timeline-event-content {
+	text-align: left;
+	font-size: 14px;
 }
 
 div.timeline-groups-axis {
@@ -71,6 +87,12 @@ div.timeline-currenttime {
 }
 
 div.timeline-customtime {
+}
+
+div.timeline-navigation{
+    -webkit-border-radius:0;
+    -moz-border-radius:0;
+    border-radius:0;
 }
 
 div.timeline-navigation-new, div.timeline-navigation-delete,

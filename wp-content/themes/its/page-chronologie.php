@@ -72,11 +72,6 @@ article.chronologie{
 			<link rel="stylesheet" type="text/css" href="<?php bloginfo( 'template_url' ); ?>/timeline/timeline.css">
 			<link rel="stylesheet" type="text/css" href="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-theme.css">
 			<style type="text/css">
-				
-		        div.timeline-event-content{
-		            text-align:left;
-		            font-size: 9px;
-		        }
 
 		        div.timeline-event-content p{
 		            display:none;

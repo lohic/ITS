@@ -9,7 +9,8 @@ function drawVisualization() {
 	//$json = new stdClass();
 	$json = array();
 
-	query_posts( 'posts_per_page=-1' );
+	global $query_string;
+	query_posts( $query_string . '&posts_per_page=-1' );
 
 	if ( have_posts() ) :
 		while( have_posts() ) :
@@ -57,6 +58,7 @@ function drawVisualization() {
         'style': 'dot',
         'axisOnTop': true,
 		'zoomMin' : 1000*60*60*24*4,
+		'zoomMax' : 1000*60*60*24*31*12*10,
 		'min' : new Date(1954, 0, 1),
 		'max' : new Date(<?php 	$date = date_create();
 								date_modify($date, '+1 year');
