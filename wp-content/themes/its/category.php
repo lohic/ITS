@@ -58,7 +58,7 @@
 				?>
 					
 				<?php
-					if(!$test_frise){
+					if(!$test_frise && count($lesAnnees)>0){
 				?>
 						<section id="frise" class="normal mb1 pl3">
 						<?php
