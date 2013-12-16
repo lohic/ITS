@@ -490,3 +490,13 @@ if( ! function_exists ( 'the_excerpt_max_charlength') ) {
 }
 
 
+function timeline_date(){
+	$ladate = get_the_date('Y,m,d ');
+
+	$ladate = explode(',',$ladate);
+
+	$ladate[1] = $ladate[1]-1;
+
+	return implode(',',$ladate);
+}
+

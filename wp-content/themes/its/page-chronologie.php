@@ -85,9 +85,13 @@ article.chronologie{
 
 					<?php the_content(); ?>
 
+				<div id="event_detail"></div>
 				<div id="mytimeline"></div>
 
+				<div style="clear:both"></div>
+
 				</div>
+				
 			</article>
 			
 		<?php endwhile; ?>

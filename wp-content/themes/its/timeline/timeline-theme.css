@@ -1,10 +1,10 @@
 div.timeline-frame {
 	background: #FAFAFA;
-	border-color:#CCCCCC;
+	border-color:rgb(237, 237, 237);
 	border-top-width:0;
 	border-bottom-width:0;
-	border-left-width:3px;
-	border-right-width:3px;
+	border-left-width:4px;
+	border-right-width:4px;
 }
 
 div.timeline-axis {
@@ -14,6 +14,8 @@ div.timeline-axis-grid {
 }
 
 div.timeline-axis-grid-minor {
+    border-style: dotted;
+    border-width: 1px;
 }
 
 div.timeline-axis-grid-major {
@@ -26,14 +28,21 @@ div.timeline-event {
 }
 
 div.timeline-event-selected {
+    background: #FFBBBB;
 }
 
 div.timeline-event.timeline-event-box {
-
+    font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
+    -webkit-border-radius:0;
+    -moz-border-radius:0;
+    border-radius:0;
+    border: none;
+    color:#FAFAFA;
+    background: #F33;
 }
 
 div.timeline-event.timeline-event-dot {
-    border: 0;
+    border: none;
     padding: 4px;
     -webkit-border-radius:8px;
     -moz-border-radius:8px;
@@ -48,6 +57,8 @@ div.timeline-event.timeline-event-range {
     border: none;
     background: none;
     border-bottom:solid 8px #F33;
+    /*border-left:solid 2px #F33;
+    border-right:dotted 1px #F33;*/
 }
 
 div.timeline-frame div.timeline-event-dot-container {
@@ -60,12 +71,14 @@ div.timeline-event-range-drag-right {
 }
 
 div.timeline-event-line {
+    border-color:#F33;
 
 }
 
 div.timeline-event-content {
-	text-align: left;
 	font-size: 14px;
+    overflow: hidden;
+    margin: 1px 2px;
 }
 
 div.timeline-groups-axis {
@@ -119,3 +132,62 @@ div.timeline-selectable div.timeline-event-content {
 div.timeline-event-selected div.timeline-event-content {
     cursor: move;
 }
+
+
+div#event_detail{
+    width: 271px;
+    min-height: 350px;
+    float:right;
+    display: none;
+    padding-left:20px;
+    font-size: 8px;
+    border-left: 1px solid rgb(204, 204, 204);
+}
+
+div#event_detail h4.tag{
+    display: none;
+}
+
+div#event_detail article,div#event_detail .pb2, div#event_detail .pbt1{
+    padding:0;
+    margin: 0;
+    border:0;
+}
+
+div#event_detail .post, div#event_detail .post_content{
+    width:auto;
+}
+
+div#event_detail .post_content h2{
+    background: none;
+    color:#F33;
+    font-size: 2.2em;
+    padding:1px 0 0;
+}
+
+div#event_detail .post h2.titre{
+    margin-top:0;
+    background: none;
+    color:#F33;
+    font-size: 2.2em;
+    padding:1px 0 0;
+}
+
+.post_content div#event_detail h3{
+    font-size: 1.8em;
+}
+
+
+div#event_detail .tags{
+    display: none;
+}
+
+div#event_detail .normal{
+    font-size:1.8em;
+}
+
+div#event_detail img{
+    max-width: 100%;
+    height: auto;
+}
+
