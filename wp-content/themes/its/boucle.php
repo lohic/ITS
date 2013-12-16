@@ -7,7 +7,9 @@
 	$tags = get_the_tags();
 	if($tags){
 		foreach ($tags as $tag){
-			$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
+			//echo 'OK OK '.$tag->term_id;
+			$liste_tags .= '<a href="'.get_tag_link($tag->term_id).'">'.$tag->name.'</a>, ';
+			//$liste_tags .= '<a href="'.get_bloginfo('url').'?tag='.$tag->slug.'">'.$tag->name.'</a>, ';
 		}
 	}
 	$liste_tags = substr($liste_tags, 0, -2);
