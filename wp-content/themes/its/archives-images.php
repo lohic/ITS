@@ -24,7 +24,8 @@ Template Name: Page archive d'images
 								if(isset($_GET['annees'])){
 									$params_annees=array();
 									foreach($_GET['annees'] as $annee){
-										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$annee.'</a></li>';
+										$anneeTxt = $annee == 0 ? 'SD' : $annee;
+										echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$anneeTxt.'</a></li>';
 										$params_annees[]=$annee;
 									}
 									$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
@@ -88,16 +89,17 @@ Template Name: Page archive d'images
 									if($annees){
 										foreach($annees as $annee){
 											if($annee!=""){
+												$anneeTxt = $annee == 0 ? 'SD' : $annee;
 												if(isset($_GET['annees'])){
 													if(in_array($annee,$_GET['annees'])){
-														echo '<li class="actif">'.$annee.'</li>';
+														echo '<li class="actif">'.$anneeTxt.'</li>';
 													}
 													else{
-														echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+														echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$anneeTxt.'</a></li>';
 													}
 												}
 												else{
-													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+													echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$anneeTxt.'</a></li>';
 												}
 											}
 										}

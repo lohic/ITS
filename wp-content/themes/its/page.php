@@ -10,7 +10,7 @@
 				<h1 class="super_biggest sans mb4"><?php the_title(); ?></h1>
 			<?php
 				$id_page = get_the_ID();
-				$page_children = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>get_the_ID()));
+				$page_children = new WP_Query( array( 'post_type' => 'page', 'posts_per_page'=>-1, 'post_parent'=>get_the_ID(), 'orderby'=>'menu_order', 'order'=>'ASC'));
 
 				if ( $page_children->have_posts() ) {
 			?>

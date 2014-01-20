@@ -51,9 +51,7 @@ function drawVisualization() {
 		'minHeight' : 350,
 		'maxHeight' : 700,
         'start': new Date(1954, 0, 1),
-        'end': new Date(<?php 	$date = date_create();
-								date_modify($date, '+1 year');
-								echo date_format($date, 'Y,m,d');?>),
+        'end': new Date(1990, 11, 31),
         'cluster': false,
         'box.align': 'right',
         'style': 'box',
@@ -67,6 +65,7 @@ function drawVisualization() {
 		'stackEvents' : true,
         'locale' : 'fr',
         'showNavigation': true ,
+        'showCurrentTime':false,
 		//'showMinorLabels' : false,
         // 'editable': true
         'eventMargin' : 10,

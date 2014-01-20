@@ -11,10 +11,11 @@
 					if(isset($_POST['annees'])){
 						$params_annees=array();
 						foreach($_POST['annees'] as $annee){
+							$anneeTxt = $annee == 0 ? 'SD' : $annee;
 							/*$new_url = str_replace ( '&annees[]='.$annee , '' , $_SERVER['REQUEST_URI']);
 							$new_url = str_replace ( 'annees[]='.$annee.'&' , '' , $new_url);
 							$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);*/
-							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$annee.'</a></li>';
+							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$anneeTxt.'</a></li>';
 							$params_annees[]=$annee;
 							if($complement=="images-darchives/?"){
 								$complement .="annees[]=".$annee;
@@ -130,16 +131,17 @@
 						if($annees){
 							foreach($annees as $annee){
 								if($annee!=""){
+									$anneeTxt = $annee == 0 ? 'SD' : $annee;
 									if(isset($_POST['annees'])){
 										if(in_array($annee,$_POST['annees'])){
 											echo '<li class="actif">'.$annee.'</li>';
 										}
 										else{
-											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+											echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$anneeTxt.'</a></li>';
 										}
 									}
 									else{
-										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$annee.'</a></li>';
+										echo '<li><a href="http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].$caractere.'annees[]='.$annee.'">'.$anneeTxt.'</a></li>';
 									}
 								}
 							}

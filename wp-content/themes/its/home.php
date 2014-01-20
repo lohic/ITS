@@ -132,7 +132,7 @@
 			?>
 				                    <div class="pb1 mb1">
 				                        <div class="small mb1">
-											<?php the_excerpt_max_charlength_by_param(300,get_the_ID());?>
+											<?php the_excerpt_max_charlength_by_param(500,get_the_ID());?>
 										</div>
 				                    </div>
 			<?php
