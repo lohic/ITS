@@ -1,3 +1,6 @@
+//javascript
+//
+//
 var timeline;
 var data;
 
@@ -56,8 +59,10 @@ function drawVisualization() {
         'box.align': 'right',
         'style': 'box',
         'axisOnTop': true,
-		'zoomMin' : 1000*60*60*24*4,
-		'zoomMax' : 1000*60*60*24*31*12*10,
+		//'zoomMin' : 1000*60*60*24*4,
+        'zoomMin' : 1000*60*60*24*31*12*3,
+        //'zoomMax' : 1000*60*60*24*31*12*10,
+		'zoomMax' : 1000*60*60*24*31*12*3,
 		'min' : new Date(1954, 0, 1),
 		'max' : new Date(<?php 	$date = date_create();
 								date_modify($date, '+1 year');
