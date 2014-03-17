@@ -1,7 +1,7 @@
-
 <div class="clearfix frm_settings_page">
-
-	<fieldset class="clearfix">			    
+<input class="button-primary" type="submit" value="<?php _e('Update Options', 'formidable') ?>" style="margin:0 5px 10px 0;" />
+<input type="button" value="<?php esc_attr_e('Reset to Default', 'formidable') ?>" class="button-secondary frm_reset_style" />	
+	<fieldset class="clearfix frm_style_roller">		    
 	    <div class="widget clearfix">
 			<div class="widget-top">
 				<div class="widget-title-action"><a class="widget-action"></a></div>
@@ -148,17 +148,16 @@
 			</div>
 		</div>
 		
-        <div class="widget clearfix">
+        <div class="widget clearfix global-font">
 			<div class="widget-top">
 				<div class="widget-title-action"><a class="widget-action"></a></div>
-				<div class="widget-title"><h4><?php _e('Corner Radius', 'formidable') ?></h4></div>
+				<div class="widget-title"><h4><?php _e('Corner Radius', 'formidable') ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e('Formidable uses CSS3 border-radius for corner rounding, which is not currently supported by Internet Explorer.', 'formidable') ?>" ></span></h4></div>
 			</div>
-			<div class="widget-inside">
-				<div class="field-group field-group-corners clearfix">
+			<div class="widget-inside" style="padding-top:10px;">
+				<div class="field-group-corners clearfix">
 					<label><?php _e('Corners', 'formidable') ?></label>
 					<input type="text" value="<?php echo esc_attr($frmpro_settings->border_radius) ?>" name="frm_border_radius" id="frm_border_radius" size="4"/>
 				</div>
-				<p class="cornerWarning" style="margin-top:.9em"><em><strong>Note:</strong> <?php _e('Formidable uses CSS3 border-radius for corner rounding, which is not currently supported by Internet Explorer.', 'formidable') ?></em></p>
 			</div><!-- /theme group content -->
 		</div><!-- /theme group -->
 		
@@ -174,14 +173,20 @@
 				</div>
 				
 				<div class="field-group clearfix">
+					<label><?php _e('Height', 'formidable') ?></label>
+					<input type="text" name="frm_field_height" id="frm_field_height" value="<?php echo esc_attr($frmpro_settings->field_height) ?>"  size="5" />
+				</div>
+				
+				<div class="field-group clearfix">
 					<label><?php _e('Width', 'formidable') ?></label>
 					<input type="text" name="frm_field_width" id="frm_field_width" value="<?php echo esc_attr($frmpro_settings->field_width) ?>"  size="5" />
 				</div>
 				
-				<div class="clear">
-					<label><input type="checkbox" name="frm_auto_width" id="frm_auto_width" value="1" <?php checked($frmpro_settings->auto_width , 1) ?> /></label>
-					<?php _e('Automatic Width for drop-down fields', 'formidable') ?>
+				<div class="clearfix">
+				<label><input type="checkbox" name="frm_auto_width" id="frm_auto_width" value="1" <?php checked($frmpro_settings->auto_width , 1) ?> />
+					<?php _e('Automatic Width for drop-down fields', 'formidable') ?></label>
 				</div>
+				
 				
 				<div class="field-group clearfix clear">
 					<label><?php _e('Padding', 'formidable') ?></label>
@@ -290,7 +295,7 @@
 		<div class="widget clearfix global-font">
 			<div class="widget-top">
 				<div class="widget-title-action"><a class="widget-action"></a></div>
-				<div class="widget-title"><h4><?php _e('Radio Buttons & Check Boxes', 'formidable') ?></h4></div>
+				<div class="widget-title"><h4><?php _e('Radios & Check Boxes', 'formidable') ?></h4></div>
 			</div>
 			<div class="widget-inside" style="padding-top:10px;">
     				<div class="field-group clearfix">
@@ -347,7 +352,7 @@
                 	        foreach($jquery_themes as $theme_name => $theme_title){  ?>
                         <option value="<?php echo $theme_name ?>" id="theme_<?php echo $theme_name ?>" <?php selected($theme_title, $frmpro_settings->theme_name) ?>><?php echo $theme_title ?></option>
                         <?php } ?>
-                        <option value="-1" <?php selected('-1', $frmpro_settings->theme_name) ?>>- <?php _e('None', 'formidable') ?> -</option>
+                        <option value="-1" <?php selected('-1', $frmpro_settings->theme_name) ?>>&mdash; <?php _e('None', 'formidable') ?> &mdash;</option>
                 	</select>
                 	<span id="frm_show_cal" class="theme_<?php echo $frmpro_settings->theme_css ?>"></span>
                 	<input type="hidden" value="<?php echo esc_attr($frmpro_settings->theme_css) ?>" id="frm_theme_css" name="frm_theme_css" />
@@ -364,11 +369,10 @@
 			</div>
 			<div class="widget-inside" style="padding-top:10px;">
 				<div class="clearfix">
-					<input type="checkbox" name="frm_submit_style" id="frm_submit_style" <?php echo ($frmpro_settings->submit_style)? 'checked="checked"': ''; ?> value="1" /> <label for="frm_submit_style"><?php _e('Disable submit button styling', 'formidable'); ?></label>
+					<label for="frm_submit_style"><input type="checkbox" name="frm_submit_style" id="frm_submit_style" <?php echo ($frmpro_settings->submit_style)? 'checked="checked"': ''; ?> value="1" /> <?php _e('Disable submit button styling', 'formidable'); ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e('Note: If disabled, you may not see the change take effect until you make 2 more styling changes or click "Update Options".', 'formidable') ?>" ></span></label>
 				</div>
-				<p class="cornerWarning"><em><?php _e('Note: If disabled, you may not see the change take effect until you make 2 more styling changes or click "Update Options".', 'formidable') ?></em></p>
 				
-			    <div class="clearfix">
+			    <div class="field-group clearfix">
 					<label><?php _e('Weight', 'formidable') ?></label>
 					<select name="frm_submit_weight" id="frm_submit_weight">
 						<option value="normal" <?php selected($frmpro_settings->submit_weight, 'normal') ?>><?php _e('normal', 'formidable') ?></option>
@@ -376,7 +380,7 @@
 					</select>
 				</div>
 				
-				<div class="clearfix">
+				<div class="field-group clearfix">
 					<label><?php _e('Corners', 'formidable') ?></label>
 					<input type="text" value="<?php echo esc_attr($frmpro_settings->submit_border_radius) ?>" name="frm_submit_border_radius" id="frm_submit_border_radius" size="4"/>
 				</div>
@@ -462,18 +466,6 @@
 				</div>
 				
 				<div class="field-group clearfix">
-					<label><?php _e('Icon', 'formidable') ?></label>
-					<select name="frm_error_icon" class="texture">
-                	    <?php for($i = count($error_icons) - 1; $i >= 0; $i--){
-                            $filename = str_replace(FRMPRO_PATH .'/images/error_icons/', '', $error_icons[$i]);
-                            $image_url = FRMPRO_IMAGES_URL .'/error_icons/'.$filename;
-                        ?>
-                        <option value="<?php echo $image_url ?>" data-texturewidth="16" data-textureheight="16" <?php selected($filename, $frmpro_settings->error_icon) ?>><?php echo $filename ?></option> 
-                        <?php } ?>
-                	</select>
-				</div>
-				
-				<div class="field-group clearfix">
 					<label><?php _e('Size', 'formidable') ?></label>
 					<input type="text" name="frm_error_font_size" id="frm_error_font_size" value="<?php echo esc_attr($frmpro_settings->error_font_size) ?>"  size="3" />
 				</div>
@@ -519,15 +511,13 @@
                 <p><em><?php _e('You can add custom css here or in your theme style.css', 'formidable') ?></em></p>
 			</div>
 		</div>
-
 	</fieldset>
-
 </div>
 
 <style type="text/css">
 #frm_show_cal{
 vertical-align:bottom; height:27px; width:30px;
-background:url(<?php echo FRMPRO_IMAGES_URL ?>/themeGallery.png) no-repeat; 
+background:url(<?php echo FrmAppHelper::plugin_url() ?>/pro/images/themeGallery.png) no-repeat; 
 display:inline-block;
 }
 #frm_show_cal.theme_black-tie{ background-position: 0 0; } 
@@ -557,29 +547,10 @@ display:inline-block;
 #frm_show_cal.theme_-1{ background:none;} 
 </style>
 
-
 <script type="text/javascript">
-//<![CDATA[
-jQuery(document).ready(function($){ $("#datepicker_sample").datepicker(); frmUpdateCSS('<?php echo FrmProAppHelper::jquery_css_url($frmpro_settings->theme_css) ?>'); });
-//function to append a new theme stylesheet with the new style changes
-function updateCSS(locStr){
-	jQuery("head").append('<link href="<?php echo FRM_SCRIPT_URL ?>&amp;controller=settings&amp;'+ locStr +'" type="text/css" rel="Stylesheet" class="frm-custom-theme"/>');
-	if( jQuery("link.frm-custom-theme").size() > 3){
-		jQuery("link.frm-custom-theme:first").remove();
-	}
-};
-
-function frm_import_templates(thisid){
-    var dataObj={'controller':'forms','frm_action':'import','path':jQuery('#frm_template_path').val()};
-    jQuery('#'+thisid).replaceWith('<img id="' + thisid + '" src="<?php echo FRM_IMAGES_URL; ?>/wpspin_light.gif" alt="<?php _e('Loading...', 'formidable'); ?>" />');
-    jQuery.ajax({type:"POST",url:"<?php echo FRM_SCRIPT_URL ?>",data:dataObj,
-        success:function(msg){ jQuery('#'+thisid).replaceWith('<?php _e('Templates Updated', 'formidable') ?>');}
-    });
-}
-
-function frmSetPosClass(value){
-if(value=='none') value='top';
-jQuery('.frm_pos_container').removeClass('frm_top_container frm_left_container frm_right_container').addClass('frm_'+value+'_container');    
-}
-//]]>
+/*<![CDATA[*/
+jQuery(document).ready(function($){ $("#datepicker_sample").datepicker(); 
+frmUpdateUICSS('<?php echo FrmProAppHelper::jquery_css_url($frmpro_settings->theme_css) ?>'); 
+});
+/*]]>*/
 </script>

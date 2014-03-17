@@ -3,7 +3,7 @@
 class FrmProAppHelper{
     
     public static function jquery_themes(){
-        return array(
+        $themes = array(
             'ui-lightness'  => 'UI Lightness',
             'ui-darkness'   => 'UI Darkness',
             'smoothness'    => 'Smoothness',
@@ -29,6 +29,9 @@ class FrmProAppHelper{
             'trontastic'    => 'Trontastic',
             'swanky-purse'  => 'Swanky Purse'
         );
+        
+        $themes = apply_filters('frm_jquery_themes', $themes);
+        return $themes;
     }
     
     public static function jquery_css_url($theme_css){
@@ -37,7 +40,7 @@ class FrmProAppHelper{
 
         $uploads = wp_upload_dir();
         if(!$theme_css or $theme_css == '' or $theme_css == 'ui-lightness'){
-            $css_file = FRM_URL . '/css/ui-lightness/jquery-ui.css';
+            $css_file = FrmAppHelper::plugin_url() . '/css/ui-lightness/jquery-ui.css';
         }else if(preg_match('/^http.?:\/\/.*\..*$/', $theme_css)){
             $css_file = $theme_css;
         }else{
@@ -69,20 +72,21 @@ class FrmProAppHelper{
     }
     
     public static function get_user_id_param($user_id){
-        if($user_id and !empty($user_id) and !is_numeric($user_id)){
-            if($user_id == 'current'){
-                global $user_ID;
-                $user_id = $user_ID;
-            }else{
-                if(function_exists('get_user_by'))
-                    $user = get_user_by('login', $user_id);
-                else
-                    $user = get_userdatabylogin($user_id);
-                if($user)
-                    $user_id = $user->ID;
-                unset($user);
-            }
+        if ( !$user_id || empty($user_id) || is_numeric($user_id) ) {
+            return $user_id;
         }
+        
+        if($user_id == 'current'){
+            $user_ID = get_current_user_id();
+            $user_id = $user_ID;
+        }else{
+            $user = get_user_by('login', $user_id);
+            if ( $user ) {
+                $user_id = $user->ID;
+            }
+            unset($user);
+        }
+        
         return $user_id;
     }
     
@@ -117,7 +121,7 @@ class FrmProAppHelper{
         return $formatted;
     }
     
-    public static function human_time_diff($from, $to=''){
+    public static function human_time_diff( $from, $to = '' ) {
     	if ( empty($to) )
     		$to = time();
 
@@ -136,8 +140,8 @@ class FrmProAppHelper{
     	$diff = (int) ($to - $from);
 
     	// Something went wrong with date calculation and we ended up with a negative date.
-    	if ( 0 > $diff )
-    		return '';
+    	if ( $diff < 1)
+    		return '0 ' . __( 'seconds', 'formidable' );
 
     	/**
     	 * We only want to output one chunks of time here, eg:
@@ -188,11 +192,11 @@ class FrmProAppHelper{
     }
     
     public static function get_edit_link($id){
-        global $current_user, $frm_siteurl;
+        global $current_user;
 
     	$output = '';
     	if($current_user && $current_user->wp_capabilities['administrator'] == 1) 
-    		$output = "<a href='{$frm_siteurl}/wp-admin/admin.php?page=formidable-entries&frm_action=edit&id={$id}'>". __('Edit', 'formidable') ."</a>";
+    		$output = "<a href='". admin_url() ."?page=formidable-entries&frm_action=edit&id={$id}'>". __('Edit') ."</a>";
     	
     	return $output;
     }
@@ -222,14 +226,14 @@ class FrmProAppHelper{
     
     //Bulk Actions
     public static function header_checkbox(){ ?>
-        <input type="checkbox" name="check-all" class="select-all-item-action-checkboxes" value="" /> &nbsp;
-    <?php    
+<input type="checkbox" name="check-all" class="select-all-item-action-checkboxes" value="" /> &nbsp;
+<?php    
     }
     
 
     public static function item_checkbox($id){ ?>
-        <input type="checkbox" name="item-action[]" class="item-action-checkbox" value="<?php echo $id; ?>" /> &nbsp;
-    <?php    
+<input type="checkbox" name="item-action[]" class="item-action-checkbox" value="<?php echo $id; ?>" /> &nbsp;
+<?php    
     }
     
     public static function bulk_actions($footer){ 
@@ -237,8 +241,7 @@ class FrmProAppHelper{
         <div class="alignleft actions">
         <select name="bulkaction<?php echo $name ?>" id="bulkaction<?php echo $name ?>">
             <option value="-1"><?php _e('Bulk Actions', 'formidable') ?></option>
-            <option value="delete"><?php _e('Delete', 'formidable') ?></option>
-            <option value="export"><?php _e('Export to XML', 'formidable') ?></option>
+            <option value="delete"><?php _e('Delete') ?></option>
             <?php if(isset($_GET) and isset($_GET['page']) and $_GET['page'] == 'formidable-entries'){ ?>
             <option value="csv"><?php _e('Export to CSV', 'formidable') ?></option>
             <?php } ?>
@@ -248,48 +251,11 @@ class FrmProAppHelper{
     <?php    
     }
     
-    public static function search_form($sort_str, $sdir_str, $search_str, $fid=false){
-        if(isset($_GET['page']) and $_GET['page'] == 'formidable-entries'){
-            global $frm_form, $frm_field;
-            if(isset($_GET['form']))
-                $form = $frm_form->getOne($_GET['form']);
-            else
-                $form = $frm_form->getAll("is_template=0 AND (status is NULL OR status = '' OR status = 'published')", ' ORDER BY name', ' LIMIT 1');
-            if($form)
-                $field_list = $frm_field->getAll("fi.type not in ('divider','captcha','break','html') and fi.form_id=". $form->id, 'field_order');
-        }
-            ?>
-        <div id="search_pane" style="float: right;">
-            <form method="post" >
-                <p class="search-box">
-                    <input type="hidden" name="paged" id="paged" value="1" />
-                    <input type="hidden" name="sort" id="sort" value="<?php echo esc_attr($sort_str); ?>" />
-                    <input type="hidden" name="sdir" id="sort" value="<?php echo esc_attr($sdir_str); ?>" />
-                    <?php if(isset($field_list) and !empty($field_list)){ ?>
-                    <select name="fid">
-                        <option value="">- <?php _e('All Fields', 'formidable') ?> -</option>
-                        <option value="created_at" <?php selected($fid, 'created_at') ?>><?php _e('Entry creation date', 'formidable') ?></option>
-                        <?php foreach($field_list as $f){ ?>
-                        <option value="<?php echo $f->id ?>" <?php selected($fid, $f->id) ?>><?php echo FrmAppHelper::truncate($f->name, 30);  ?></option>
-                        <?php } ?>
-                    </select>
-                    <?php } ?>
-                    <input type="text" name="search" id="search" value="<?php echo esc_attr($search_str); ?>"/>
-                    <input type="submit" class="button" value="<?php _e('Search', 'formidable') ?>"/>
-                    <?php if(!empty($search_str)){ ?>
-                    or <a href=""><?php _e('Reset', 'formidable') ?></a>
-                    <?php } ?>
-                </p>
-            </form>
-        </div>
-    <?php
-    }
-    
     public static function get_shortcodes($content, $form_id){
         global $frm_field;
         $fields = $frm_field->getAll("fi.type not in ('divider','captcha','break','html') and fi.form_id=".$form_id);
         
-        $tagregexp = 'editlink|siteurl|sitename|id|key|post_id|ip|created-at|updated-at';
+        $tagregexp = 'editlink|siteurl|sitename|id|key|post[-|_]id|ip|created[-|_]at|updated[-|_]at|updated[-|_]by';
         foreach ($fields as $field)
             $tagregexp .= '|'. $field->id . '|'. $field->field_key;
 
@@ -299,13 +265,11 @@ class FrmProAppHelper{
     }
     
     public static function get_custom_post_types(){
-        if(function_exists('get_post_types')){
-            $custom_posts = get_post_types(array(), 'object');
-            foreach(array('revision', 'attachment', 'nav_menu_item') as $unset)
-                unset($custom_posts[$unset]);
-            return $custom_posts;
+        $custom_posts = get_post_types(array(), 'object');
+        foreach (array('revision', 'attachment', 'nav_menu_item') as $unset) {
+            unset($custom_posts[$unset]);
         }
-        return false;
+        return $custom_posts;
     }
     
     public static function get_custom_taxonomy($post_type, $field){
@@ -360,7 +324,7 @@ class FrmProAppHelper{
         $defaults = array(
             'where_opt' => false, 'where_is' => '=', 'where_val' => '', 
             'form_id' => false, 'form_posts' => array(), 'after_where' => false,
-            'display' => false
+            'display' => false, 'drafts' => 0
         );
         
         extract(wp_parse_args($args, $defaults));
@@ -379,38 +343,74 @@ class FrmProAppHelper{
     
         if($where_field->type == 'date' and !empty($where_val))
             $where_val = date('Y-m-d', strtotime($where_val));
-        else if($where_is == '=' and ($where_field->type == 'checkbox' or ($where_field->type == 'data' and $where_field->field_options['data_type'] == 'checkbox')))
+        else if($where_is == '=' and $where_val != '' and ($where_field->type == 'checkbox' or ($where_field->type == 'select' and isset($where_field->field_options['multiple']) and $where_field->field_options['multiple']) or ($where_field->type == 'data' and $where_field->field_options['data_type'] == 'checkbox' and is_numeric($where_val))))
             $where_is =  'LIKE';
-            
+  
         $field_options = maybe_unserialize($where_field->field_options);
-            
+
         if($where_field->form_id != $form_id){
             //TODO: get linked entry IDs and get entries where data field value(s) in linked entry IDs
         }
-            
-        if($where_field->type == 'data' and !is_numeric($where_val)){
-            $linked_id = $frmdb->get_var($frmdb->entries, array('item_key' => $where_val));
-            if($linked_id)
-                $where_val = $linked_id;
-            unset($linked_id);
-        }
-              
+        
         $temp_where_is = str_replace(array('!', 'not '), '', $where_is);
-            
+
         //get values that aren't blank and then remove them from entry list
         if($where_val == '' and $temp_where_is == '=')
             $temp_where_is = '!=';
-            
-        if($where_is == 'LIKE' or $where_is == 'not LIKE')
+
+        
+		$orig_where_val = $where_val;
+		if($where_is == 'LIKE' or $where_is == 'not LIKE'){
+             //add extra slashes to match values that are escaped in the database
+            $where_val_esc = "'%". str_replace('\\', '\\\\\\\\\\', esc_sql(like_escape($where_val))) ."%'";
             $where_val = "'%". esc_sql(like_escape($where_val)) ."%'";
-        else if(!strpos($where_is, 'in'))
+        }else if(!strpos($where_is, 'in')){
+            $where_val_esc = "'". str_replace('\\', '\\\\\\', esc_sql($where_val)) ."'";
             $where_val = "'". esc_sql($where_val) ."'";
-                
-        $where_statement = "meta_value ". ($where_field->type == 'number' ? ' +0 ' : '') . $temp_where_is ." ". $where_val ." and fi.id='$where_opt'";
+        }
+
+        //Filter by DFE text 
+		if ( $where_field->type == 'data' && !is_numeric($where_val) && $orig_where_val != '' && (!isset($field_options['post_field']) || $field_options['post_field'] != 'post_category')){			
+			//Get entry IDs by DFE text
+			if ($where_is == 'LIKE' or $where_is == 'not LIKE'){
+				$linked_id = $frm_entry_meta->search_entry_metas($orig_where_val, $where_field->field_options['form_select'], $temp_where_is);
+			}else{
+				$linked_id = $wpdb->get_col($wpdb->prepare("SELECT item_id FROM $frmdb->entry_metas WHERE field_id=%d AND meta_value $temp_where_is %s", $where_field->field_options['form_select'], $orig_where_val));
+				}
+
+			//If text doesn't return any entry IDs, get entry IDs from entry key
+			if(!$linked_id){
+				$linked_field = $frm_field->getOne($where_field->field_options['form_select']);
+				$linked_id = $wpdb->get_col("SELECT id FROM $frmdb->entries WHERE form_id={$linked_field->form_id} AND item_key $temp_where_is $where_val");
+			}
+
+			//Change $where_val to linked entry IDs
+            if($linked_id){
+				$linked_id = (array)$linked_id;
+                if($where_field->field_options['data_type'] == 'checkbox'){
+					$where_val = "'%". implode("%' OR meta_value LIKE '%", $linked_id) ."%'";
+					if ($where_is == '!=' or $where_is == 'not LIKE')
+						$temp_where_is = 'LIKE';
+					else if ($where_is == '=' or $where_is == 'LIKE')
+						$where_is = $temp_where_is = 'LIKE';
+				}else{
+                    $where_is = $temp_where_is = (strpos($where_is, '!') === false and strpos($where_is, 'not') === false) ? ' in ' : ' not in ';
+                    $where_val = '('. implode(',', $linked_id) .')';	
+                }
+				unset($where_val_esc);
+            }
+            unset($linked_id);
+        }
+    
+        $where_statement = "(meta_value ". ($where_field->type == 'number' ? ' +0 ' : '') . $temp_where_is ." ". $where_val ." ";
+        if(isset($where_val_esc) and $where_val_esc != $where_val)
+            $where_statement .= " OR meta_value ". ($where_field->type == 'number' ? ' +0 ' : '') . $temp_where_is ." ". $where_val_esc;
+        
+        $where_statement .= ") and fi.id=". (int)$where_opt;
         $where_statement = apply_filters('frm_where_filter', $where_statement, $args);
-            
-        $new_ids = $frm_entry_meta->getEntryIds($where_statement);
-            
+		
+        $new_ids = $frm_entry_meta->getEntryIds($where_statement, '', '', true, $drafts);
+        
         if ($where_is != $temp_where_is)
             $new_ids = array_diff($entry_ids, $new_ids);
             
@@ -489,420 +489,21 @@ class FrmProAppHelper{
     }
     
     public static function get_current_form_id(){
-        global $frm_current_form;
+        global $frm_vars;
         
         $form_id = 0;
-        if($frm_current_form)
-            $form_id = $frm_current_form->id;
+        if(isset($frm_vars['current_form']) and $frm_vars['current_form'])
+            $form_id = $frm_vars['current_form']->id;
         
         if(!$form_id)
             $form_id = FrmAppHelper::get_param('form', false);
             
         if(!$form_id){
-            global $frm_form;
-            $frm_current_form = $frm_form->getAll("is_template=0 AND (status is NULL OR status = '' OR status = 'published')", ' ORDER BY name', ' LIMIT 1');
-            $form_id = $frm_current_form ? $frm_current_form->id : 0;
+            $frm_form = new FrmForm();
+            $frm_vars['current_form'] = $frm_form->getAll("is_template=0 AND (status is NULL OR status = '' OR status = 'published')", ' ORDER BY name', ' LIMIT 1');
+            $form_id = (isset($frm_vars['current_form']) and $frm_vars['current_form']) ? $frm_vars['current_form']->id : 0;
         }
         return $form_id;
-    }
-    
-    public static function export_xml($type, $args = array() ) {
-    	global $wpdb, $frmdb, $frmprodb;
-	    
-	    if(!is_array($type)){
-	        $table = ($type == 'items') ? $frmdb->entries : (($type == 'displays') ? $frmprodb->{$type} : $frmdb->{$type});
-	    }
-	        
-	    $defaults = array('is_template' => false, 'ids' => false);
-	    $args = wp_parse_args( $args, $defaults );
-
-	    $where = $join = '';
-    	
-        if(function_exists('sanitize_key'))
-    	    $sitename = sanitize_key( get_bloginfo( 'name' ) );
-    	else
-    	    $sitename = sanitize_title_with_dashes( get_bloginfo( 'name' ) );
-    	    
-    	if ( ! empty($sitename) ) $sitename .= '.';
-    	$filename = $sitename . 'formidable.' . date( 'Y-m-d' ) . '.xml';
-
-    	header( 'Content-Description: File Transfer' );
-    	header( 'Content-Disposition: attachment; filename=' . $filename );
-    	header( 'Content-Type: text/xml; charset=' . get_option( 'blog_charset' ), true );
-
-
-        if($type == 'forms'){
-            $where .= $wpdb->prepare( "{$table}.is_template = %d AND {$table}.status != 'draft'" , $args['is_template'] );
-    	}else if($type == 'entries'){
-    	    //$join = "INNER JOIN {$frmdb->entry_metas} ON ({$frmdb->entries}.id = {$frmdb->entry_metas}.item_id)";
-    	}else if($type == 'displays'){
-    	    
-    	}
-    	
-    	if(is_array($args['ids']))
-	        $args['ids'] = implode(',', $args['ids']);
-	        
-    	if (isset($table) and $args['ids']){
-    	    if(!empty($where))
-    	        $where .= " AND ";
-    	    
-    	    //$ids = array_fill( 0, count($args['ids']), '%s' );
-    		$where .= "{$table}.id IN (". $args['ids'] .")";
-        }
-
-        echo '<?xml version="1.0" encoding="'. get_bloginfo('charset') .'" ?>'."\n";
-        echo "<formidable>\n";
-        if(is_array($type)){
-            foreach($type as $tb_type){
-                $table = ($tb_type == 'items') ? $frmdb->entries :  (($tb_type == 'displays') ? $frmprodb->{$tb_type} : $frmdb->{$tb_type});
-                
-                $where = '';
-                if($tb_type == 'forms'){
-                    //add forms
-                    $where = $wpdb->prepare( "{$table}.is_template = %d AND {$table}.status != 'draft'" , $args['is_template'] );
-                    if ( $args['ids'] )
-                	    $where .= " AND {$table}.id IN (". $args['ids'] .")";
-
-                }else if(($tb_type == 'items' or $tb_type == 'displays') and $args['ids'])
-                    $where = "{$table}.form_id IN (". $args['ids'] .")"; 
-                
-                if(!empty($where))
-                    $where = " WHERE ". $where;
-                $records = $wpdb->get_results( "SELECT * FROM {$table}$where" );
-        	    FrmProAppHelper::get_xml_for_type($tb_type, $records);
-
-    	    }
-        }else{
-    	    $records = $wpdb->get_results( "SELECT * FROM {$table} $join WHERE $where" );
-    	    FrmProAppHelper::get_xml_for_type($type, $records);
-    	}
-        echo "</formidable>\n";
-    }
-    
-    public static function get_xml_for_type($type, $records){
-        global $frmdb, $wpdb;
-        
-        echo "<$type>\n";
-        $padding = "  ";
-        foreach($records as $record){
-            $singular = trim($type, 's');
-            $object_key = $singular .'_key';
-            echo $padding. "<$singular>\n";
-            $padding .= "  ";
-            echo $padding."<". $singular ."_key><![CDATA[". $record->{$object_key} ."]]></". $singular."_key>\n";
-            
-            foreach(array('id', 'name', 'description', 'options', 'logged_in', 'editable', 'is_template', 'default_template', 'form_id', 'entry_id', 'post_id', 'ip', 'created_at') as $col){
-                if(isset($record->{$col})){
-                    $col_val = maybe_unserialize($record->{$col});
-                    FrmProAppHelper::xml_item($col_val, $col, $padding);
-                }
-            }
-
-            if($type == 'forms'){
-                global $frm_field;
-                $fields = $frm_field->getAll(array('fi.form_id' => $record->id), 'field_order');
-                //$fields = $wpdb->get_results("SELECT * FROM {$frmdb->fields} WHERE form_id={$record->id} ORDER BY field_order");
-                if(!empty($fields)){
-                    echo $padding."<fields>\n";
-                    $padding .= "  ";
-                    foreach($fields as $field){ 
-                        echo $padding."<field>\n";
-                        foreach(array('id', 'field_key', 'required', 'name', 'description', 'field_order', 'type', 'default_value', 'options', 'field_options', 'form_id') as $col){
-                            if(isset($field->{$col})){
-                                $col_val = maybe_unserialize($field->{$col});
-                                FrmProAppHelper::xml_item($col_val, $col, $padding);
-                            }
-                        }
-                        echo $padding."</field>\n";
-                    } 
-                    $padding = "  ";
-                    echo $padding."</fields>\n";
-                }
-            }else if($type == 'items'){
-                $metas = $wpdb->get_results("SELECT * FROM {$frmdb->entry_metas} WHERE item_id={$record->id}");
-                if($metas){
-                    echo $padding."<item_meta>\n";
-                    foreach($metas as $meta){
-                        echo $padding."<meta>\n";
-                        echo $padding."  <field_id>$meta->field_id</field_id>\n";
-                        echo $padding."  <item_id>$meta->item_id</item_id>\n";
-                        //$meta_values = maybe_unserialize($meta->meta_value);
-                        //if(is_array($meta_values)){ 
-                        //    foreach($meta_values as $meta_key => $meta_value)
-                        //        echo $padding."<meta_value type=\"$meta_key\"><![CDATA[$meta_value]]></meta_value>\n";
-                        //}else
-                            echo $padding."  <meta_value><![CDATA[$meta->meta_value]]></meta_value>\n";
-                        echo $padding."</meta>\n";
-                    }
-                    echo $padding."</item_meta>\n";
-                }
-            }
-            $padding = "  ";
-            echo $padding."</$singular>\n";
-        }
-        echo "</$type>\n";
-    }
-    
-    public static function xml_item($col_val, $col, $padding){
-        if(is_array($col_val)){
-            $singular = trim($col, 's');
-            echo $padding."<$col>\n";
-            foreach($col_val as $col_key => $colv){
-                self::get_xml_line_item(compact('xml', 'singular', 'col_key', 'colv', 'padding', 'col'));
-                unset($col_key);
-                unset($colv);
-            }
-            echo $padding."</$col>\n";
-        }else{
-            echo $padding."<$col>". ((is_numeric($col_val)) ? $col_val : "<![CDATA[$col_val]]>") ."</$col>\n";
-        }
-    }
-    
-    public static function get_xml_line_item($args){
-        extract($args);
-        $padding .= "  ";
-        if(is_array($colv)){
-            $col_val = $colv;
-            $old_col_key = $col_key;
-            $old_singular = $singular;
-            if(is_numeric($col_key))
-                echo $padding ."<$singular>\n";
-            else if(is_numeric($singular))
-                echo $padding ."<$col_key>\n";
-            else
-                echo $padding ."<$singular type=\"$col_key\">\n";
-            $old_padding = $padding;
-            $padding .= "  ";
-            $singular = $col_key;
-            //if(is_numeric($singular)) 
-            //    $singular = trim($singular, 's');
-            foreach($col_val as $col_key => $colv){
-                self::get_xml_line_item(compact('xml', 'singular', 'col_key', 'colv', 'padding', 'col'));
-                unset($col_key);
-                unset($colv);
-            }
-            $padding = $old_padding;
-
-            if(is_numeric($old_singular))
-                echo $padding."</$old_col_key>\n";
-            else
-                echo $padding."</$old_singular>\n";
-        }else{
-            if(is_numeric($singular))
-                echo $padding."<$col_key>". 
-                    ((is_numeric($colv)) ? $colv : "<![CDATA[$colv]]>") .
-                    "</$col_key>\n";
-            else
-                echo $padding."<$singular type=\"$col_key\">". 
-                    ((is_numeric($colv)) ? $colv : "<![CDATA[$colv]]>") .
-                    "</$singular>\n";
-        }
-    }
-    
-    public static function import_xml($content){
-        $xml = FrmProAppHelper::xml2ary($content);  
-        $to_import = array();
-        
-        foreach($xml['formidable'] as $xmls){
-            foreach($xmls as $type => $xml_content){
-            $to_import[$type] = array();
-
-            foreach($xmls[$type]['_c'] as $xml_vars){
-                if(!isset($xml_vars[0]))
-                    $xml_vars[] = $xml_vars;
-                 
-                foreach($xml_vars as $xml_var){   
-                    $new_item = array();
-                    if(!isset($xml_var['_c']))
-                        $xml_var['_c'] = $xml_var;
-                    
-                    foreach($xml_var['_c'] as $var_key => $var){
-                        if(isset($var['_v'])){
-                            $new_item[$var_key] = $var['_v'];
-                        }else{
-                            $new_item[$var_key] = array();
-                            
-                            if($var_key == 'fields' or $var_key == 'item_meta'){
-                                foreach($var['_c'] as $v){
-                                    foreach($v as $v1){
-                                        if(isset($v1['_c'])){
-                                            $new_join = array();
-                                            foreach($v1['_c'] as $v_key => $v2){
-                                                if(isset($v2['_v'])){
-                                                    $new_join[$v_key] = $v2['_v'];
-                                                }else{
-                                                    $new_join[$v_key] = FrmProAppHelper::xml_array_to_frm($v2);
-                                                }
-                                            }
-                                            $new_item[$var_key][] = $new_join;
-                                        }
-                                    }
-                                }
-                            }else{
-                                $new_item[$var_key] = FrmProAppHelper::xml_array_to_frm($var, $new_item[$var_key]);
-                            }
-
-                        }
-                    }
-                    
-                    $to_import[$type][] = $new_item;
-
-                }
-                }
-            }
-        }
-
-        //now add $to_import to the db
-        foreach($to_import as $import_type => $datas){
-            foreach($datas as $data){
-                echo '<h1>'.$import_type.'</h1>';
-                if($import_type == 'forms'){
-                    $print = $data;
-                    unset($print['fields']);
-                    echo '<br/><br/>FORM: '; print_r($print);
-                    //FrmForm::create( $data );
-                    //now add fields
-                    foreach($data['fields'] as $field_data){
-                        //echo '<br/><br/>FIELD: '; print_r($field_data);
-                        //FrmFields::create( $field_data, false );
-                    }
-                }else if($import_type == 'items'){
-                    //echo '<br/><br/>ENTRY: '; print_r($data);
-                    //FrmEntry::create( $data );
-                }else if($import_type == 'displays'){
-                    //echo '<br/><br/>DISPLAY: '; print_r($data);
-                    //FrmProDisplay::create( $data );
-                }
-            }
-        }
-    }
-    
-    public static function xml_array_to_frm($var, $new=array()){
-        foreach($var['_c'] as $v){
-            foreach($v as $var_key => $v1){
-                //echo '<br/>START: '. $var_key .' '; print_r($v1);
-                if(isset($v1['_a']) and isset($v1['_a']['type']) and isset($v1['_v'])){
-                    $new[$v1['_a']['type']] = $v1['_v'];
-                }else if(isset($v1['_a']) and isset($v1['_a']['type']) and isset($v1['_c']) and is_array($v1['_c'])){
-                    $new[$v1['_a']['type']] = array();
-                    foreach($v1['_c'] as $v1ck => $v1c){
-                        if(isset($v1c['_a']) and $v1ck == $v1['_a']['type'] and isset($v1c['_v'])){
-                            $new[$v1['_a']['type']][$v1c['_a']['type']] = $v1c['_v'];
-                        }else if(is_array($v1c)){
-                            foreach($v1c as $v2ck => $v2c){
-                                if(isset($v2c['_c'])){
-                                    $new[$v1['_a']['type']] = self::xml_array_to_frm($v2c, $new[$v1['_a']['type']]);
-                                }else{
-                                    echo '<br/> nested array '.$v2ck; print_r($v2c);
-                                }
-                                unset($v2ck);
-                                unset($v2c);
-                            }
-                            echo '<br/>final '.print_r($new[$v1['_a']['type']]);
-                        }else{
-                            echo '<br/> nested array '; print_r($v1c);
-                            $new[$v1['_a']['type']] = self::xml_array_to_frm($v1);
-                            echo '<br/>final '. print_r($new[$v1['_a']['type']]);
-                        }
-                        unset($v1ck);
-                        unset($v1c);
-                    }
-                }else if($var_key == '_v' and !is_array($v1)){
-                    $new = $v1;
-                }else if(is_array($v1)){
-                    foreach($v1 as $v1ck => $v1c){
-                        echo '<br/>'. $v1c;
-                        $new[$v1ck] = $v1c;
-                        unset($v1ck);
-                        unset($v1c);
-                    }
-                }else{
-                    echo '<br/> OPTS? '.$var_key; print_r($v1);
-                    /*
-                    <option type="also_email_to">
-                        <also_email_to type="0">4968</also_email_to>
-                    </option>
-
-                    
-                     Array ( 
-                        [_a] => Array ( 
-                            [type] => also_email_to 
-                        ) 
-                        [_c] => Array ( 
-                            [also_email_to] => Array ( 
-                                [_a] => Array ( 
-                                    [type] => 0 
-                                ) 
-                                [_v] => 4968 
-                            ) 
-                        ) 
-                    )
-                    
-                <option type="hrs_list">
-                    <hrs_list type="twitter_account">
-                        <twitter_account type="tag">
-                            <tag type="0"><![CDATA[]]></tag>
-                        </twitter_account>
-                        <twitter_account type="location">
-                            <location type="0"><![CDATA[Business]]></location>
-                        </twitter_account>
-                    </hrs_list>
-                </option>
-                    
-                    ( [_a] => Array ( [type] => hrs_list ) 
-                    [_c] => Array ( 
-                        [hrs_list] => Array ( 
-                            [3] => Array ( 
-                                [_a] => Array ( [type] => company_name ) 
-                                [_c] => Array ( 
-                                    [company_name] => Array ( 
-                                        [_a] => Array ( [type] => tag ) 
-                                        [_v] => 
-                                    ) 
-                                ) 
-                            ) 
-                            [4] => Array ( 
-                                [_a] => Array ( [type] => email_address ) 
-                                [_c] => Array ( 
-                                    [email_address] => Array ( 
-                                        [0] => Array ( 
-                                            [_a] => Array ( [type] => tag ) 
-                                            [_c] => Array ( 
-                                                [tag] => Array ( 
-                                                    [_a] => Array ( [type] => 0 ) 
-                                                    [_v] => 
-                                                ) 
-                                            ) 
-                                        ) 
-                                        [1] => Array ( 
-                                            [_a] => Array ( [type] => location ) 
-                                            [_c] => Array ( 
-                                                [location] => Array ( 
-                                                    [_a] => Array ( [type] => 0 ) 
-                                                    [_v] => Work 
-                                                ) 
-                                            ) 
-                                        ) 
-                                    ) 
-                                ) 
-                            ) 
-                    
-                    Array ( 
-                        [conditions] => Array ( 
-                            [0] => Array ( [_a] => Array ( [type] => send_stop ) [_v] => send ) 
-                            [1] => Array ( [_a] => Array ( [type] => any_all ) [_v] => all ) 
-                            [2] => Array ( [_c] => Array ( [hide_field] => Array ( [_v] => 11752 ) [hide_field_cond] => Array ( [_v] => != ) [hide_opt] => Array ( [_v] => 4 ) ) ) 
-                            [3] => Array ( [_c] => Array ( [hide_field] => Array ( [_v] => 11752 ) [hide_field_cond] => Array ( [_v] => != ) [hide_opt] => Array ( [_v] => ) ) ) 
-                        ) 
-                    ) 
-                    */
-                }
-                unset($var_key);
-                unset($v1);
-            }
-        }
-
-        return $new;
     }
     
     //Let WordPress process the uploads
@@ -970,307 +571,6 @@ class FrmProAppHelper{
         }
 
         return $uploads;
-    }
-    
-    
-    // XML to Array
-    public static function xml2ary(&$string) {
-        $parser = xml_parser_create();
-        xml_parser_set_option($parser, XML_OPTION_CASE_FOLDING, 0);
-        xml_parse_into_struct($parser, $string, $vals, $index);
-        xml_parser_free($parser);
-
-        $mnary=array();
-        $ary=&$mnary;
-        foreach ($vals as $r) {
-            $t=$r['tag'];
-            if ($r['type']=='open') {
-                if (isset($ary[$t])) {
-                    if (isset($ary[$t][0])) $ary[$t][]=array(); else $ary[$t]=array($ary[$t], array());
-                    $cv=&$ary[$t][count($ary[$t])-1];
-                } else $cv=&$ary[$t];
-                if (isset($r['attributes'])) {foreach ($r['attributes'] as $k=>$v) $cv['_a'][$k]=$v;}
-                $cv['_c']=array();
-                $cv['_c']['_p']=&$ary;
-                $ary=&$cv['_c'];
-
-            } elseif ($r['type']=='complete') {
-                if (isset($ary[$t])) { // same as open
-                    if (isset($ary[$t][0])) $ary[$t][]=array(); else $ary[$t]=array($ary[$t], array());
-                    $cv=&$ary[$t][count($ary[$t])-1];
-                } else $cv=&$ary[$t];
-                if (isset($r['attributes'])) {foreach ($r['attributes'] as $k=>$v) $cv['_a'][$k]=$v;}
-                $cv['_v']=(isset($r['value']) ? $r['value'] : '');
-
-            } elseif ($r['type']=='close') {
-                $ary=&$ary['_p'];
-            }
-        }    
-
-        FrmProAppHelper::_del_p($mnary);
-        return $mnary;
-    }
-
-    // _Internal: Remove recursion in result array
-    public static function _del_p(&$ary) {
-        foreach ($ary as $k=>$v) {
-            if ($k==='_p') unset($ary[$k]);
-            elseif (is_array($ary[$k])) FrmProAppHelper::_del_p($ary[$k]);
-        }
-    }
-
-    // Array to XML
-    public static function ary2xml($cary, $d=0, $forcetag='') {
-        $res=array();
-        foreach ($cary as $tag=>$r) {
-            if (isset($r[0])) {
-                $res[]=self::ary2xml($r, $d, $tag);
-            } else {
-                if ($forcetag) 
-                    $tag = $forcetag;
-                $sp = str_repeat("\t", $d);
-                $res[] = "$sp<$tag";
-                if (isset($r['_a'])) {
-                    foreach ($r['_a'] as $at=>$av) $res[]=" $at=\"$av\"";
-                }
-                $res[] = ">". ((isset($r['_c'])) ? "\n" : '');
-                if (isset($r['_c']))
-                    $res[] = self::ary2xml($r['_c'], $d+1);
-                else if (isset($r['_v'])) 
-                    $res[] = $r['_v'];
-                $res[] = (isset($r['_c']) ? $sp : '')."</$tag>\n";
-            }
-
-        }
-        return implode('', $res);
-    }
-
-    // Insert element into array
-    public static function ins2ary(&$ary, $element, $pos=0) {
-        $ar1 = array_slice($ary, 0, $pos); 
-        $ar1[] = $element;
-        $ary = array_merge($ar1, array_slice($ary, $pos));
-    }
-    
-    public static function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=','){
-        global $importing_fields, $wpdb;
-        if(!defined('WP_IMPORTING'))
-            define('WP_IMPORTING', true);
-
-        $form_id = (int)$form_id;
-        if(!$form_id)
-            return $start_row;
-         
-        if(!$importing_fields)
-           $importing_fields = array();
-        
-        if( !ini_get('safe_mode') )
-            set_time_limit(0); //Remove time limit to execute this function
-        
-        if ($f = fopen($path, "r")) {
-            unset($path);
-            global $frm_entry, $frmdb, $frm_field;
-            $row = 0;
-            //setlocale(LC_ALL, get_locale());
-            
-            while (($data = fgetcsv($f, 100000, $del)) !== FALSE) {
-                $row++;
-                if($start_row > $row) continue;
-                
-                $values = array('form_id' => $form_id);
-                $values['item_meta'] = array();
-                foreach($field_ids as $key => $field_id){
-                    $data[$key] = (isset($data[$key])) ? $data[$key] : '';
-                    //if($data[$key] == ''){ 
-                    //    error_log($row .' key:'. $key .' $data[$key] empty'); 
-                    //    return $row-1;
-                    //}
-                    
-                    if(is_numeric($field_id)){
-                        if(isset($importing_fields[$field_id])){
-                            $field = $importing_fields[$field_id];
-                        }else{
-                            $field = $frm_field->getOne($field_id);
-                            $importing_fields[$field_id] = $field;
-                        }
-                        
-                        $values['item_meta'][$field_id] = apply_filters('frm_import_val', $data[$key], $field);
-                        
-                        if($field->type == 'user_id'){
-                            $values['item_meta'][$field_id] = trim($values['item_meta'][$field_id]);
-                            if(!is_numeric($values['item_meta'][$field_id])){
-                                if(!isset($user_array)){
-                                     $users = $wpdb->get_results("SELECT ID, user_login, display_name FROM {$wpdb->users} ORDER BY display_name ASC");
-                                     $user_array = array();
-                                     foreach($users as $user){
-                                         $ukey = (!empty($user->display_name)) ? $user->display_name : $user->user_login;
-                                         $user_array[$ukey] = $user->ID;
-                                         if($ukey != $user->user_login)
-                                            $user_array[$user->user_login] = $user->ID;
-                                         unset($ukey);
-                                         unset($user);
-                                     }
-                                     unset($users);
-                                 }
-                                 
-                                 if(isset($user_array[$values['item_meta'][$field_id]]))
-                                     $values['item_meta'][$field_id] = (int)$user_array[$values['item_meta'][$field_id]];
-                            }
-                                
-                            $values['frm_user_id'] = $values['item_meta'][$field_id];
-                        }else if(($field->type == 'checkbox' or ($field->type == 'select' and isset($field->field_options['multiple']) and $field->field_options['multiple'])) and !empty($values['item_meta'][$field_id])){
-                            if(!in_array($values['item_meta'][$field_id], (array)$field->options)){
-                                $checked = maybe_unserialize($values['item_meta'][$field_id]);
-                                if(!is_array($checked))
-                                    $checked = explode(',', $checked);
-                                    
-                                if($checked and count($checked) > 1)
-                                    $values['item_meta'][$field_id] = array_map('trim', $checked);
-                            }
-                        }else if($field->type == 'data'){
-                            $field->field_options = maybe_unserialize($field->field_options);
-                            if($field->field_options['data_type'] != 'data'){
-                                $new_id = $wpdb->get_var($wpdb->prepare(
-                                    "SELECT item_id FROM $frmdb->entry_metas WHERE field_id=%d and meta_value=%s", 
-                                    $field->field_options['form_select'],
-                                    $values['item_meta'][$field_id]
-                                ));
-                                
-                                if($new_id and is_numeric($new_id))
-                                    $values['item_meta'][$field_id] = $new_id;
-                                unset($new_id);
-                            }
-                        }else if($field->type == 'file'){
-                            $values['item_meta'][$field_id] = explode(',', $values['item_meta'][$field_id]);
-                            foreach($values['item_meta'][$field_id] as $pos => $m){
-                                $m = trim($m);
-                                if(!is_numeric($m)){
-                                    //get the ID from the URL if on this site
-                                    $m = $wpdb->get_col($wpdb->prepare("SELECT ID FROM {$wpdb->posts} WHERE guid='%s';", $m ));
-                                }
-                                
-                                if(!is_numeric($m))
-                                    unset($values['item_meta'][$field_id][$pos]);
-                                else
-                                    $values['item_meta'][$field_id][$pos] = $m;
-                                
-                                unset($pos);
-                                unset($m);
-                            }
-                        }
-                        
-                        if(isset($_POST['item_meta'][$field_id]) and ($field->type == 'checkbox' or ($field->type == 'data' and $field->field_options['data_type'] != 'checkbox'))){
-                            if(empty($values['item_meta'][$field_id])){
-                                $values['item_meta'][$field_id] = $_POST['item_meta'][$field_id];
-                            }else if(!empty($_POST['item_meta'][$field_id])){
-                                $values['item_meta'][$field_id] = array_merge((array)$_POST['item_meta'][$field_id], (array)$values['item_meta'][$field_id]);
-                            }
-                        }
-                        
-                        $_POST['item_meta'][$field_id] = $values['item_meta'][$field_id];
-                        FrmProEntryMeta::set_post_fields($field, $values['item_meta'][$field_id]);
-                        unset($field);    
-                    }else if(is_array($field_id)){
-                        $field_type = isset($field_id['type']) ? $field_id['type'] : false;
-                        $linked = isset($field_id['linked']) ? $field_id['linked'] : false;
-                        $field_id = $field_id['field_id'];
-
-                        if($field_type == 'data'){
-                            if($linked){
-                                $entry_id = $frmdb->get_var($frmdb->entry_metas, array('meta_value' => $data[$key], 'field_id' => $linked), 'item_id');
-                            }else{
-                                //get entry id of entry with item_key == $data[$key]
-                                $entry_id = $frmdb->get_var($frmdb->entries, array('item_key' => $data[$key]));
-                            }
-
-                            if($entry_id)
-                                $values['item_meta'][$field_id] = $entry_id;
-                        }
-                        unset($field_type);
-                        unset($linked);
-                    }else{
-                        $values[$field_id] = $data[$key];
-                    }
-                    
-               }
-               
-               if(!isset($values['item_key']) or empty($values['item_key']))
-                   $values['item_key'] = $data[$entry_key];
-                   
-               if(isset($values['created_at']))
-                   $values['created_at'] = date('Y-m-d H:i:s', strtotime($values['created_at']));
-                   
-               if(isset($values['updated_at']))
-                   $values['updated_at'] = date('Y-m-d H:i:s', strtotime($values['updated_at']));
-            
-
-               $created = $frm_entry->create($values);
-               unset($_POST);
-               unset($values);
-               unset($created);
-               
-               if(($row-$start_row) >= 250){ //change max rows here
-                   fclose($f);
-                   return $row;
-               }
-           }
-           fclose($f);
-           return $row;
-        }
-    }
-    
-    
-    public static function csvstring_to_array(&$string, $csv_del=',', $CSV_ENCLOSURE='"', $CSV_LINEBREAK="\n") {
-        $o = array();
-
-        $cnt = strlen($string);
-        $esc = $escesc = false;
-        $num = $i = 0;
-        while ($i < $cnt){
-            $s = $string[$i];
-
-            if ($s == $CSV_LINEBREAK){
-                if ($esc){
-                    $o[$num] .= $s;
-                }else{
-                    $i++;
-                    break;
-                }
-            }else if ($s == $csv_del){
-                if ($esc){
-                    $o[$num] .= $s;
-                }else{
-                    $num++;
-                    $esc = $escesc = false;
-                }
-            }else if ($s == $CSV_ENCLOSURE){
-                if ($escesc){
-                    $o[$num] .= $CSV_ENCLOSURE;
-                    $escesc = false;
-                }
-
-                if ($esc){
-                    $esc = false;
-                    $escesc = true;
-                }else{
-                    $esc = true;
-                    $escesc = false;
-                }
-            }else{
-                if ($escesc){
-                    $o[$num] .= $CSV_ENCLOSURE;
-                    $escesc = false;
-                }
-
-                $o[$num] .= $s;
-            }
-
-            $i++;
-        }
-
-        //  $string = substr($string, $i);
-
-        return $o;
     }
     
     public static function get_rand($length){

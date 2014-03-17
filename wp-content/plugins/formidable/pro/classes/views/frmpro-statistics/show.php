@@ -1,11 +1,10 @@
-<div class="wrap frm_charts">
-    <div class="frm_report_icon icon32"><br/></div>
-    <h2><?php echo (isset($form)) ? $form->name .' ' : ''; _e('Form Reports', 'formidable') ?></h2>
-
-    <?php require(FRM_VIEWS_PATH.'/shared/errors.php'); ?>
-    <?php if (!isset($form)){ ?>
-        <div id="menu-management" class="clear nav-menus-php" style="margin-top:30px;">
-            <div class="menu-edit" style="width:300px;">
+<div id="form_reports_page" class="wrap frm_charts">
+    <div class="frmicon icon32"><br/></div>
+    <h2><?php _e('Reports', 'formidable') ?></h2>
+	
+	<?php if (!isset($form)){ ?>
+        <div id="menu-management" class="nav-menus-php frm-menu-boxes">
+            <div class="menu-edit">
             <div id="nav-menu-header"><div class="major-publishing-actions" style="padding:8px 0;">
                 <div style="font-size:15px;background:transparent;" class="search"><?php _e('Go to Report', 'formidable') ?></div>
             </div></div>
@@ -26,18 +25,15 @@
             </div>
 
         </div>
+        <div class="clear"></div>
     <?php }else{
             FrmAppController::get_form_nav($form->id, true);
             $class = 'odd';
-    ?>
-        <form method="get" class="frm_no_print">
-            <input type="hidden" name="frm_action" value="show" />
-            <input type="hidden" name="page" value="formidable-reports" />
-            <p><?php FrmFormsHelper::forms_dropdown('form', '', __('Switch Form', 'formidable')); ?>
-            <input type="submit" class="button-secondary" value="<?php _e('Go', 'formidable') ?>" /></p>
-        </form>
-
-        <?php if(isset($data['time']))
+        ?>
+        <div class="clear"></div>
+        <div class="frm_white_bg">
+        <?php
+        if(isset($data['time']))
                 echo $data['time'];
         
         foreach ($fields as $field){ 
@@ -74,8 +70,5 @@
         if(isset($data['month']))
             echo $data['month'];
     } ?>
+        </div>
 </div>
-
-<script type="text/javascript">
-function frmRedirectToStats(form){if(form !='') window.location='?page=formidable-reports&frm_action=show&form='+form}
-</script>

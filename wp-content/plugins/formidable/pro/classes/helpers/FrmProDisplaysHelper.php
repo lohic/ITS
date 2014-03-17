@@ -36,6 +36,10 @@ class FrmProDisplaysHelper{
                 $values->{'frm_'. $var} = $default;
             }
         }
+	    
+	    $values->frm_form_id = (int) $values->frm_form_id;
+		$values->frm_order_by = (array)$values->frm_order_by;		
+		$values->frm_order = (array)$values->frm_order;
 
         return $values;
     }
@@ -44,12 +48,12 @@ class FrmProDisplaysHelper{
         
         return array(
             'name' => '', 'description' => '', 'display_key' => '', 
-            'form_id' => '', 'date_field_id' => '', 'edate_field_id' => '', 'entry_id' => '', 
+            'form_id' => 0, 'date_field_id' => '', 'edate_field_id' => '', 'entry_id' => '', 
             'post_id' => '', 'before_content' => '', 'content' => '', 
             'after_content' => '', 'dyncontent' => '', 'param' => 'entry', 
             'type' => '', 'show_count' => 'all', 'insert_loc' => 'none', 
-            'insert_pos' => 1,
-            'order_by' => '', 'order' => '', 'limit' => '', 'page_size' => '', 
+            'insert_pos' => 1, 'no_rt' => 0,
+            'order_by' => array(), 'order' => array(), 'limit' => '', 'page_size' => '', 
             'empty_msg' => __('No Entries Found', 'formidable'), 'copy' => 0, 
             'where' => array(), 'where_is' => array(), 'where_val' => array()
         );
@@ -77,7 +81,7 @@ class FrmProDisplaysHelper{
         
         $fields = $frm_field->getAll("fi.type not in ('divider','captcha','break','html') and fi.form_id in (".implode(',', $form_ids) .')');
         
-        $tagregexp = 'editlink|deletelink|detaillink|id|post-id|post_id|key|ip|created-at|updated-at|evenodd|get|siteurl|sitename';
+        $tagregexp = 'editlink|deletelink|detaillink|id|post[-|_]id|key|ip|created[-|_]at|updated[-|_]at|updated[-|_]by|evenodd|get|siteurl|sitename|entry_count';
         foreach ($fields as $field)
             $tagregexp .= '|'. $field->id . '|'. $field->field_key;
 

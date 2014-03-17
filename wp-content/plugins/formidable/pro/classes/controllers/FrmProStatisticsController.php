@@ -1,66 +1,59 @@
 <?php
 
 class FrmProStatisticsController{
-    function FrmProStatisticsController(){
-        add_action('admin_menu', array( &$this, 'menu' ), 24);
-        add_shortcode('frm-graph', array(&$this, 'graph_shortcode'));
-        add_shortcode('frm-stats', array(&$this, 'stats_shortcode'));
+    public static function load_hooks() {
+        add_action('admin_menu', 'FrmProStatisticsController::menu', 24);
+        add_shortcode('frm-graph', 'FrmProStatisticsController::graph_shortcode');
+        add_shortcode('frm-stats', 'FrmProStatisticsController::stats_shortcode');
     }
     
-    function menu(){
+    public static function menu(){
         global $frm_settings;
-        add_submenu_page('formidable', 'Formidable | '. __('Reports', 'formidable'), __('Reports', 'formidable'), 'frm_view_reports', 'formidable-reports', array(&$this, 'show'));
+        add_submenu_page('formidable', 'Formidable | '. __('Reports', 'formidable'), __('Reports', 'formidable'), 'frm_view_reports', 'formidable-reports', 'FrmProStatisticsController::show');
     }
     
-    function show(){
-        global $frmdb, $frm_form, $frm_field, $frm_entry_meta, $frm_entry, $wpdb;
+    public static function show(){
+        global $frmdb, $frm_field, $frm_entry_meta, $frm_entry, $wpdb;
         if  (!isset($_GET['form'])){
-            require_once(FRMPRO_VIEWS_PATH.'/frmpro-statistics/show.php');
+            require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-statistics/show.php');
             return;
         }
         
+        $frm_form = new FrmForm();
         $form = $frm_form->getOne($_GET['form']);
         $form_options = maybe_unserialize($form->options);
         $fields = $frm_field->getAll("fi.type not in ('divider','captcha','break','rte','textarea','file','grid','html') and fi.form_id=".$form->id, 'field_order ASC');
         
         $js = '';
         $data = array();
-        $odd = true;
         $colors = '#21759B,#EF8C08,#C6C6C6';
-        $col_array = explode(',', $colors);
         
-        $data['time'] = $this->get_daily_entries($form, array('is3d' => true, 'colors' => $colors));
-        $data['month'] = $this->get_daily_entries($form, array('is3d' => true, 'colors' => $colors), 'MONTH');
+        $data['time'] = self::get_daily_entries($form, array('is3d' => true, 'colors' => $colors));
+        $data['month'] = self::get_daily_entries($form, array('is3d' => true, 'colors' => $colors), 'MONTH');
         
-        foreach ($fields as $field){
-            //$first = array_shift($col_array);
-            //$col_array[] = $first;
-            //$colors = implode(',', $col_array);
-                
-            $data[$field->id] = $this->graph_shortcode(array(
+        foreach ( $fields as $field ) {
+            $data[$field->id] = self::graph_shortcode(array(
                 'id' => $field->id, 'field' => $field, 'is3d' => true, 'min' => 0,
                 'colors' => $colors, 'width' => 650
             ));
+            unset($field);
         }
         
-        include(FRMPRO_VIEWS_PATH.'/frmpro-statistics/show.php');
+        include(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-statistics/show.php');
     }
     
-    function get_google_graph($field, $args){
-        $defaults = array(
-            'ids' => false, 
-            'colors' => '', 'grid_color' => '#CCC', 'bg_color' => '#FFFFFF', 'is3d' => false,
-            'odd' => false, 'truncate' => 40, 'truncate_label' => 15, 'response_count' => 10, 
-            'user_id' => false, 'type' => 'default', 'x_axis' => false, 'data_type' => 'count',
-            'limit' => '', 'x_start' => '', 'x_end' => '', 'show_key' => false, 'min' => '', 'max' => '',
-            'include_zero' => false, 'width' => 400, 'height' => 400, 'allowed_col_types' => array('string', 'number')
-        );
-        
+    static function get_google_graph($field, $args){
+        $defaults = array('allowed_col_types' => array('string', 'number'));
+	       
         $args = wp_parse_args($args, $defaults);
-        $vals = $this->get_graph_values($field, $args);
+        $vals = self::get_graph_values($field, $args);
+        
+        if ( empty($vals) ) {
+            return;
+		}
+        
         extract($vals);
         extract($args);
-        
         
         $pie = ($type == 'default') ? $pie : (($type == 'pie') ? true : false);
         if ($pie){
@@ -104,6 +97,14 @@ class FrmProStatisticsController{
             
             if(!empty($min))
                 $options['vAxis']['minValue'] = $min;
+
+			if ( isset($y_title) && !empty($y_title) ) {
+                $options['vAxis']['title'] = $y_title;
+			}
+
+			if ( isset($x_title) && !empty($x_title) ) {
+                $options['hAxis']['title'] = $x_title;
+			}
         }
         
         if(isset($rn_order) and !empty($rn_order)){
@@ -128,39 +129,39 @@ class FrmProStatisticsController{
             $type = 'column';
         
         $options = apply_filters('frm_google_chart', $options, compact('rows', 'cols', 'type', 'atts'));
-        return $this->convert_to_google($rows, $cols, $options, $type);
+        return self::convert_to_google($rows, $cols, $options, $type);
     }
     
-    function get_graph_values($field, $args){
+    static function get_graph_values($field, $args){
         global $frm_entry_meta, $frm_field, $frmdb, $wpdb;           
         $values = $labels = $f_values = $f_labels = $rows = $cols = array();
         $pie = false;
         
         extract($args);
-        
-        $show_key = (int)$show_key;
+
+        $user_id = (int) $user_id;
+        $show_key = (int) $show_key;
         if($show_key and $show_key < 5)
             $show_key = 10;
             
         $options = array('width' => $width, 'height' => $height, 'legend' => 'none', 'title' => '', 'titleTextStyle'=> '');
         if(!empty($colors))
             $options['colors'] = $colors;
-        
-		$options['title'] = preg_replace("/&#?[a-z0-9]{2,8};/i", "", FrmAppHelper::truncate($field->name, $truncate, 0));
 
 		if(!empty($title))
             $options['title'] = $title;
+        else
+            $options['title'] = preg_replace("/&#?[a-z0-9]{2,8};/i", "", FrmAppHelper::truncate($field->name, $truncate, 0));
 
 		if(!empty($title_size) or !empty($title_font))
             $options['titleTextStyle'] = array('fontSize' => $title_size, 'fontName' => $title_font);
-
              
         if($show_key)
             $options['legend'] = array('position' => 'right', 'textStyle' => array('fontSize' => $show_key));
             
         $fields = $f_inputs = array();
         $fields[$field->id] = $field;
-
+		
         if($ids){ 
             $ids = explode(',', $ids);
 
@@ -184,18 +185,46 @@ class FrmProStatisticsController{
         
         $cols['xaxis'] = array('type' => 'string');
         
+        if ($atts){
+			//Sets up variables for get_field_matches function
+			global $frm_post_ids;
+			$entry_ids = array();
+			$after_where = '';
+			if(isset($frm_post_ids[$field->id])){
+	            $form_posts = $frm_post_ids[$field->id];
+	        }else{
+	            $where_post = array('form_id' => $field->form_id, 'post_id >' => 1, 'is_draft' => 0);
+	            if($user_id)
+	                $where_post['user_id'] = $user_id;
+	            $form_posts = $frmdb->get_records($frmdb->entries, $where_post, '', '', 'id,post_id');
+	        }
+	        //Returns the entry IDs for fields being used to filter graph data
+			foreach($atts as $orig_f => $val){
+				$entry_ids = FrmProFieldsHelper::get_field_matches(array(
+					'entry_ids' => $entry_ids, 'orig_f' => $orig_f, 'val' => $val, 
+					'id' => $field->id, 'atts' => $atts, 'field' => $field, 
+					'form_posts' => $form_posts, 'after_where' => $after_where 
+				));
+				$after_where = true;
+			}
+	    }
+	
+		//If start date is set, prepare the start date
+		if ( $start_date ) {
+			$start_date = $wpdb->prepare('%s', date('Y-m-d', strtotime($start_date)));
+		}
+        
         if($x_axis){
             $x_field = $frm_field->getOne($x_axis);
             
-            $query = $x_query = "SELECT meta_value, item_id FROM $frmdb->entry_metas em";
-            if(!$x_field)
+            $query = $x_query = "SELECT em.meta_value, em.item_id FROM $frmdb->entry_metas em";
+
+            if ( !$x_field ) {
                 $x_query = "SELECT id, {$x_axis} FROM $frmdb->entries e";
-            
-            if($user_id){
-                $query .= " LEFT JOIN $frmdb->entries e ON (e.id=em.item_id)";
-                if($x_field)
-                    $x_query .= " LEFT JOIN $frmdb->entries e ON (e.id=em.item_id)";
-            }
+			} else {
+            	$x_query .= " LEFT JOIN $frmdb->entries e ON (e.id=em.item_id)";
+			}
+            $query .= " LEFT JOIN $frmdb->entries e ON (e.id=em.item_id)";
               
             if($x_field){
                 if(isset($allowed_col_types))
@@ -232,86 +261,212 @@ class FrmProStatisticsController{
                     $x_query .= " and e.{$x_axis} <= '$x_end'";
                 }
             }            
-            
+           
             $q = array();
             foreach($fields as $f_id => $f){
                 if($f_id != $field->id)
-                    $q[$f_id] = $query ." WHERE em.field_id='{$f_id}'". ( ($user_id) ? " AND user_id='$user_id'" : '');
+                    $q[$f_id] = $query . " WHERE em.field_id=". (int)$f_id . ( ($user_id) ? " AND user_id='$user_id'" : '');
                 unset($f);
                 unset($f_id);
             }
                 
-            $query .= " WHERE em.field_id='{$field->id}'";
+            $query .= " WHERE em.field_id=". (int)$field->id;
             
-            if($user_id){
-                $query .= " AND user_id='$user_id'";
-                $x_query .= " AND user_id='$user_id'";
+            if ( $user_id ) { //If user_id parameter is set
+                $query .= $wpdb->prepare(" AND user_id=%d", $user_id);
+                $x_query .= $wpdb->prepare(" AND user_id=%d", $user_id);
+            }
+			if ( $entry ) { //If entry_id parameter is set
+				$query .= " AND em.item_id in ({$entry})";
+				$x_query .= " AND e.id in ({$entry})";
             }
 
-            $query = apply_filters('frm_graph_query', $query, $field, $args);
-            $x_query = apply_filters('frm_graph_xquery', $x_query, $field, $args);
+			if ( $start_date ) {//If start_date is set
+				$query .= " AND em.created_at >= $start_date";
+				$x_query .= " AND e.created_at >= $start_date";//Is e the best table to use?
+			}
+
+            $query .= " AND is_draft=0";
+            $x_query .= " AND is_draft=0";
+
+			//Set up $x_query for data from entries fields.
+			if ( $x_field && $x_field->type == 'data' ) {
+				$linked_field = $x_field->field_options['form_select'];
+				$x_query = str_replace('SELECT em.meta_value, em.item_id', 'SELECT dfe.meta_value, em.item_id', $x_query);
+				$x_query = str_replace($wpdb->prefix . 'frm_item_metas em', $wpdb->prefix . 'frm_item_metas dfe, ' . $wpdb->prefix . 'frm_item_metas em', $x_query);
+				$x_query = str_replace('WHERE', 'WHERE dfe.item_id=em.meta_value AND dfe.field_id=' . $linked_field . ' AND', $x_query);
+			}
             
-            $inputs = $wpdb->get_results($query, ARRAY_A);
-            $x_inputs = $wpdb->get_results($x_query, ARRAY_A);
+			//If filtering by another field ID	
+			if ($atts){				
+				//If there are matching entry IDs, add entry IDs onto query
+				if(!empty($entry_ids)){
+					//if field is a post field, retrieve inputs differently
+					if(isset($field->field_options['post_field']) and $field->field_options['post_field'] != ''){
+		            	foreach($form_posts as $form_post){
+		                	if(in_array($form_post->id, $entry_ids)){
+								$query = $wpdb->get_var($wpdb->prepare("SELECT ". $field->field_options['post_field'] ." FROM $wpdb->posts WHERE ID = %d", $form_post->post_id));
+								$temp_inputs[] = array('meta_value' => $query, 'item_id' => $form_post->id);
+							}
+							unset($form_post);
+						}
+						unset($form_posts);
+						$skip_posts_code = true;
+					}else{
+						$query .= " AND em.item_id in (". implode(',', $entry_ids).")";
+					}
+					$x_query .= " AND e.id in (". implode(',', $entry_ids).")";
+				}else{ //If entry ids is blank
+					$query = false;
+					$x_query = false;
+				}
+			}
+			
+			if($query)
+                $query = apply_filters('frm_graph_query', $query, $field, $args);
+                
+            if($x_query)
+                $x_query = apply_filters('frm_graph_xquery', $x_query, $field, $args);			
+			
+			if(isset($temp_inputs))
+				$inputs = $temp_inputs;
+			else if($query)
+			    $inputs = $wpdb->get_results($query, ARRAY_A);
+			else
+			    $inputs = false;
             
-            if(!$x_inputs)
-                $x_inputs = array('id' => '0');
- 
+            if($x_query)
+			    $x_inputs = $wpdb->get_results($x_query, ARRAY_A);
+			else
+			    $x_inputs = false;
+
+            if ( !$x_inputs ) {
+				return;
+			}
+			
             unset($query);
             unset($x_query);
-            
+			unset($temp_inputs);
+			
+            //If there are multiple fields being graphed
             foreach($q as $f_id => $query){
+				if ( !empty($entry_ids) ) { //If a filter is set, only get filtered data from additional fields
+					$query .= " AND item_id in (". implode(',', $entry_ids).")";
+				} else if ( $entry ) { //If entry_id parameter is set, only get data for this entry
+					$query .= " AND item_id in ({$entry})";
+				}
+				if ( $start_date ) {
+					$query .= " AND em.created_at >= $start_date";
+				}
                 $f_inputs[$f_id] = $wpdb->get_results($query, ARRAY_A);
                 unset($query);
             }
+            unset($q);
+			
+		//If filtering by another field ID
+		}else if($atts){
+			//If there are matching entry IDs, declare inputs	
+			if (!empty($entry_ids)){
+				//If field is a post field, retrieve inputs in a different way - TODO: change database call for post fields so filters like entry ID, start_date, user ID, etc. are included	
+				if(isset($field->field_options['post_field']) and $field->field_options['post_field'] != ''){
+	            	foreach($form_posts as $form_post){
+	            	    if(in_array($form_post->id, $entry_ids))
+	                	    $post_ids[$form_post->id] = $form_post->post_id;
+	                	unset($form_post);
+	                }
+	                unset($form_posts);
+					
+					if(!empty($post_ids))
+						$inputs = $wpdb->get_col("SELECT {$field->field_options['post_field']} FROM $wpdb->posts WHERE ID in (".implode(',', $post_ids) .")");
+					$skip_posts_code = true;
+				}else{
+					$inputs = $wpdb->get_col("SELECT meta_value FROM $frmdb->entry_metas em LEFT JOIN $frmdb->entries e ON (e.id=em.item_id) WHERE is_draft=0 AND em.field_id='". (int)$field->id ."' AND item_id in (". implode(',', $entry_ids).")". ( $user_id ? " AND user_id=". (int)$user_id : '') . ( $start_date ? " AND em.created_at >= $start_date" : ''));
+				}
+				
+				//If there are multiple fields being graphed
+				foreach($fields as $f_id => $f){
+	                if($f_id != $field->id)
+	                    $f_inputs[$f_id] = $wpdb->get_col("SELECT meta_value FROM $frmdb->entry_metas em LEFT JOIN $frmdb->entries e ON (e.id=em.item_id) WHERE is_draft=0 AND em.field_id='{$f_id}' AND item_id in (". implode(',', $entry_ids).")". ( $user_id ? " AND user_id=". (int)$user_id : '') . ( $start_date ? " AND em.created_at >= $start_date" : ''));
+	                unset($f_id);
+	                unset($f);
+	            }
+			
+				//For checkbox fields, unserialize any arrays
+				if ($field->type == 'checkbox'){
+					foreach($inputs as $k => $input)
+						$inputs[$k] = maybe_unserialize($input);
+				}
+			}		
+        }else{ 
+			if( $user_id ) { //If UserID is the only filtering parameter defined
+                $inputs = $wpdb->get_col($wpdb->prepare("SELECT meta_value FROM {$wpdb->prefix}frm_item_metas em LEFT JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE is_draft=%d AND em.field_id=%d AND user_id=%d" . ( $start_date ? " AND em.created_at >= $start_date" : ''), 0, $field->id, $user_id));
+			} else if ( $entry ) { //If entry ID is the only filtering parameter defined
+				$inputs = $wpdb->get_col($wpdb->prepare("SELECT meta_value FROM {$wpdb->prefix}frm_item_metas em LEFT JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE is_draft=%d AND em.field_id=%d AND em.item_id in ({$entry})", 0, $field->id));
+			} else { //If no user ID, atts, or x_axis defined
+				$inputs = $wpdb->get_col($wpdb->prepare("SELECT em.meta_value FROM {$wpdb->prefix}frm_item_metas em INNER JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE em.field_id=%d AND e.is_draft=%d" . ( $start_date ? " AND em.created_at >= $start_date" : ''), $field->id, 0));
+			}
+			
+			//Maybe unserialize arrays
+			foreach($inputs as $k => $i) {
+                $inputs[$k] = maybe_unserialize($i);
+                unset($k);
+                unset($i);
+            }
+			
+			//Strip slashes from inputs
+            $inputs = stripslashes_deep($inputs);
             
-            unset($q);            
-        }else{            
-            if($user_id)
-                $inputs = $wpdb->get_col("SELECT meta_value FROM $frmdb->entry_metas em LEFT JOIN $frmdb->entries e ON (e.id=em.item_id) WHERE em.field_id='{$field->id}' AND user_id='$user_id'");
-            else
-                $inputs = $frm_entry_meta->get_entry_metas_for_field($field->id);
-            
-            foreach($fields as $f_id => $f){
-                if($f_id != $field->id)
-                    $f_inputs[$f_id] = $wpdb->get_col("SELECT meta_value FROM $frmdb->entry_metas em LEFT JOIN $frmdb->entries e ON (e.id=em.item_id) WHERE em.field_id='{$f_id}'". ( ($user_id) ? " AND user_id='$user_id'" : ''));
+            foreach ( $fields as $f_id => $f ) { //Get the meta_values for additional fields being graphed
+                if($f_id != $field->id){
+                    $f_where = array(0, $f_id);
+                    if($user_id)
+                        $f_where[] = $user_id;
+                    $f_inputs[$f_id] = $wpdb->get_col($wpdb->prepare("SELECT meta_value FROM {$wpdb->prefix}frm_item_metas em LEFT JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE is_draft=%d AND em.field_id=%d". ( $user_id ? " AND user_id=%d" : '') . ( $entry ? " AND item_id in ({$entry})" : ''), $f_where));
+                    unset($f_where);
+                }
                 unset($f_id);
                 unset($f);
             }
         }
-        
+		
+		if(isset($form_posts))
+			unset($form_posts);
+		
         foreach($f_inputs as $f_id => $f){
             $f = array_map('maybe_unserialize', $f);
             $f_inputs[$f_id] = stripslashes_deep($f);
             unset($f_id);
             unset($f);
         }
-        
+    
         if(isset($allowed_col_types)){
         //add columns for each field
+			$count = 0;
             foreach($fields as $f_id => $f){
-                $cols[$f->name] = array('type' => ((in_array($f->type, $allowed_col_types)) ? $f->type : 'number'), 'id' => $f->id);
+				if ( isset($tooltip_label[$count]) && !empty($tooltip_label[$count]) ) { //If tooltip label is set, change the tooltip label
+					$cols[$tooltip_label[$count]] = array('type' => ((in_array($f->type, $allowed_col_types)) ? $f->type : 'number'), 'id' => $f->id);
+					$count++;
+				} else { //if tooltip label is not set, use the field name
+					$cols[$f->name] = array('type' => ((in_array($f->type, $allowed_col_types)) ? $f->type : 'number'), 'id' => $f->id);
+				}
                 unset($f);
                 unset($f_id);
             }
             unset($allowed_col_types);
+			unset($count);
         }
         
-        $field_options = maybe_unserialize($field->options);
-        $field->field_options = maybe_unserialize($field->field_options);
-        
-        global $frm_posts;
-        
-        if($user_id){
-            $form_posts = $frmdb->get_records($frmdb->entries, array('form_id' => $field->form_id, 'post_id >' => 1, 'user_id' => $user_id), '', '', 'id,post_id');
-        }else if($frm_posts and isset($frm_posts[$field->form_id])){
-            $form_posts = $frm_posts[$field->form_id];
-        }else{
-            $form_posts = $frmdb->get_records($frmdb->entries, array('form_id' => $field->form_id, 'post_id >' => 1), '', '', 'id,post_id');
-            
-            $frm_posts = array($field->form_id => $form_posts);
-        }
-       
+		//Declare $field_options variable.
+		$field_options = $field->options;
+
+		//Declare $form_posts. This will return empty if the form does not create posts.
+		$query = "SELECT id, post_id FROM {$wpdb->prefix}frm_items WHERE form_id = %d AND post_id >= %d" . ( $user_id ? " AND user_id=%d" : '') . ( $entry ? " AND id in ({$entry})" : '');
+		$temp_values = array_filter(array($field->form_id, 1, $user_id));
+		$form_posts = $wpdb->get_results($wpdb->prepare($query, $temp_values));
+		unset($query);
+		unset($temp_values);
+		
+		//If form creates posts and graph field is a post field or custom field
         if(!empty($form_posts)){
             if(isset($field->field_options['post_field']) and $field->field_options['post_field'] != ''){
                 if($field->field_options['post_field'] == 'post_category'){
@@ -329,21 +484,22 @@ class FrmProStatisticsController{
                     }
                 }else{ //if field is post field
                     if($field->field_options['post_field'] == 'post_status')
-                        $field_options = FrmProFieldsHelper::get_status_options($field);
-                    
-                    foreach($form_posts as $form_post){
-                        $post_value = $wpdb->get_var("SELECT ". $field->field_options['post_field'] ." FROM $wpdb->posts WHERE ID=".$form_post->post_id);
-                        if($post_value){
-                            if($x_axis)
-                                $inputs[] = array('meta_value' => $post_value, 'item_id' => $form_post->id);
-                            else
-                                $inputs[] = $post_value;
-                        }
-                    }
+                        $field_options = FrmProFieldsHelper::get_status_options($field); 
+               		if (!isset($skip_posts_code)){
+                    	foreach($form_posts as $form_post){
+                        	$post_value = $wpdb->get_var("SELECT ". $field->field_options['post_field'] ." FROM $wpdb->posts WHERE ID=".$form_post->post_id);
+                        	if($post_value){
+                            	if($x_axis)
+                                	$inputs[] = array('meta_value' => $post_value, 'item_id' => $form_post->id);
+                            	else
+                                	$inputs[] = $post_value;	
+                        	}
+                    	}
+					}
                 }
             }
         }
-        
+
         if($field->type == 'data'){
             foreach($inputs as $k => $i){
                 if(is_numeric($i)){
@@ -379,7 +535,6 @@ class FrmProStatisticsController{
             $y_temp = array();
             foreach($inputs as $input)
                 $y_temp[$input['item_id']] = $input['meta_value'];
-            
             foreach($ids as $f_id){
                 if(!isset($f_values[$f_id]))
                     $f_values[$f_id] = array();
@@ -392,6 +547,11 @@ class FrmProStatisticsController{
             unset($y_temp);
             unset($input);
         }
+        
+        //there is no data, so don't graph
+        if ( !isset($inputs) || empty($inputs) ) {//TODO: consolidate?
+            return array();
+		}
         
         $inputs = apply_filters('frm_graph_value', $inputs, $field, $args);
 
@@ -420,12 +580,14 @@ class FrmProStatisticsController{
             unset($input);
             unset($f);
         }
-        
-        
-        if (in_array($field->type, array('select', 'checkbox', 'radio', '10radio', 'scale')) and (!isset($x_inputs) or !$x_inputs)){ 
-            if($limit == '') $limit = 10;
-            $field_opt_count = count($field_options);
 
+        if (in_array($field->type, array('select', 'checkbox', 'radio', 'scale')) and (!isset($x_inputs) or !$x_inputs)){
+            if($limit == '') $limit = 10;
+            
+            if (!in_array($field->type, array('checkbox', 'scale'))) //and count($field_options) == 2
+                $pie = true;
+			
+			$field_opt_count = count($field_options);
             if($field_options){
             foreach ($field_options as $opt_key => $opt){
                 $field_val = apply_filters('frm_field_value_saved', $opt, $opt_key, $field->field_options);
@@ -434,8 +596,6 @@ class FrmProStatisticsController{
                 
                 if(empty($opt))
                     continue;
-                    
-                //$opt = stripslashes_deep($opt);
                 
                 foreach ($inputs as $in){
                     if (FrmAppHelper::check_selected($in, $field_val)){
@@ -446,11 +606,11 @@ class FrmProStatisticsController{
                     }
                 }
                 
-                $new_val = FrmAppHelper::truncate($opt, $truncate_label, 2);
+                $new_val = FrmAppHelper::truncate($opt, ($pie ? 50 : $truncate_label), 2);
                 
                 if($count > 0 or $field_opt_count < $limit or (!$count and $include_zero)){
-                    $labels[$new_val] = $new_val;
-                    $values[$new_val] = $count;
+                    $labels[$opt] = $new_val;
+                    $values[$opt] = $count;
                 }
                 unset($count);
                 
@@ -498,16 +658,13 @@ class FrmProStatisticsController{
             
             }
             
-            if (!in_array($field->type, array('checkbox', '10radio', 'scale'))) //and count($field_options) == 2
-                $pie = true;
-            
         }else if ($field->type == 'user_id'){
-            $form = $frmdb->get_one_record($frmdb->forms, array('id' => $field->form_id));
+            $form = $frmdb->get_one_record($wpdb->prefix .'frm_forms', array('id' => $field->form_id));
             $form_options = maybe_unserialize($form->options);
             $id_count = array_count_values($inputs);
             if ($form->editable and (isset($form_options['single_entry']) and $form_options['single_entry'] and isset($form_options['single_entry_type']) and $form_options['single_entry_type'] == 'user')){
                 //if only one response per user, do a pie chart of users who have submitted the form
-                $users_of_blog = (function_exists('get_users')) ? get_users() : get_users_of_blog();
+                $users_of_blog = get_users();
                 $total_users = count( $users_of_blog );
                 unset($users_of_blog);
                 $id_count = count($id_count);
@@ -720,7 +877,7 @@ class FrmProStatisticsController{
                 unset($label);
                 unset($l_key);
             }
-            
+
             if(!empty($calc_array)){
                 foreach($calc_array as $label => $calc){
                     if(isset($used_vals[$label])){
@@ -787,6 +944,7 @@ class FrmProStatisticsController{
             }
             
             $values = FrmProAppHelper::sort_by_array($values, array_keys($labels));
+
             foreach($ids as $f_id){
                 $f_values[$f_id] = FrmProAppHelper::sort_by_array($f_values[$f_id], array_keys($labels));
                 $f_values[$f_id] = FrmProAppHelper::reset_keys($f_values[$f_id]);
@@ -819,20 +977,23 @@ class FrmProStatisticsController{
         
         $labels = FrmProAppHelper::reset_keys($labels);
         $values = FrmProAppHelper::reset_keys($values);
-        
+
+		$labels = apply_filters('frm_graph_labels', $labels, $args);
+
         $return = array('total_count' => count($inputs), 'f_values' => $f_values, 'labels' => $labels, 
             'values' => $values, 'pie' => $pie, 'combine_dates' => $combine_dates, 'ids' => $ids, 'cols' => $cols, 
             'rows' => $rows, 'options' => $options, 'fields' => $fields
         );
-        
+
         if(isset($x_inputs))
             $return['x_inputs'] = $x_inputs;
-        
+
         return $return;
     }
     
-    function convert_to_google($rows, $cols, $options, $type){
+    static function convert_to_google($rows, $cols, $options, $type){
         $gcontent = '';
+
         if(!empty($cols)){
             foreach((array)$cols as $col_name => $col){
                 $gcontent .= "data.addColumn('". $col['type'] ."','". addslashes($col_name) ."');";
@@ -840,7 +1001,7 @@ class FrmProStatisticsController{
                 unset($col);
             }
         }
-        
+     
         if(!empty($rows)){
             if($type == 'table'){
                 $last = end($rows);
@@ -862,7 +1023,7 @@ class FrmProStatisticsController{
         return compact('gcontent', 'type');
     }
     
-    function get_daily_entries($form, $opts=array(), $type="DATE"){
+    static function get_daily_entries($form, $opts=array(), $type="DATE"){
         global $wpdb, $frmdb;
         
         $options = array();
@@ -891,9 +1052,9 @@ class FrmProStatisticsController{
         $end_timestamp = time();
         
         if($type == 'HOUR'){
-            $query = "SELECT en.created_at as endate,COUNT(*) as encount FROM $frmdb->entries en WHERE en.created_at >= '".date("Y-n-j H", $start_timestamp).":00:00' AND en.form_id=$form->id GROUP BY endate";
+            $query = "SELECT en.created_at as endate,COUNT(*) as encount FROM $frmdb->entries en WHERE en.created_at >= '".date("Y-n-j H", $start_timestamp).":00:00' AND en.form_id=$form->id AND en.is_draft=0 GROUP BY endate";
         }else{
-            $query = "SELECT DATE(en.created_at) as endate,COUNT(*) as encount FROM $frmdb->entries en WHERE en.created_at >= '".date("Y-n-j", $start_timestamp)." 00:00:00' AND en.form_id=$form->id GROUP BY $type(en.created_at)";
+            $query = "SELECT DATE(en.created_at) as endate,COUNT(*) as encount FROM $frmdb->entries en WHERE en.created_at >= '".date("Y-n-j", $start_timestamp)." 00:00:00' AND en.form_id=$form->id AND en.is_draft=0 GROUP BY $type(en.created_at)";
         }
 
         $entries_array = $wpdb->get_results($query);
@@ -940,6 +1101,10 @@ class FrmProStatisticsController{
 
             $date_format = get_option('date_format');
         }
+
+		if ( empty($dates_array) ) {
+            return;
+		}
         
         // Make sure counts array is in order and includes zero click days
         foreach($dates_array as $date_str){
@@ -958,12 +1123,8 @@ class FrmProStatisticsController{
             unset($date);
             unset($count);
         }
-          
-        if (empty($rows))
-            return;
             
         $options['title'] = $title;
-		$options['titleTextStyle'] = array($title_size, $title_font);
         $options['legend'] = 'none';
         $cols = array('xaxis' => array('type' => 'string'), __('Count', 'formidable') => array('type' => 'number'));
         
@@ -976,7 +1137,7 @@ class FrmProStatisticsController{
         $options['height'] = $height;
         $options['width'] = $width;  
         
-        $graph = $this->convert_to_google($rows, $cols, $options, 'line');
+        $graph = self::convert_to_google($rows, $cols, $options, 'line');
         
         $html = $js = $js_content2 = '';
         
@@ -1003,28 +1164,32 @@ class FrmProStatisticsController{
         return $js_content . $html;
     }
     
-    function graph_shortcode($atts){
+    public static function graph_shortcode($atts){
         $type = isset($atts['type']) ? $atts['type'] : 'default';
 
         $defaults = array(
             'id' => false, 'id2' => false, 'id3' => false, 'id4' => false, 'ids' => false,
             'include_js' => true, 'colors' => '', 'grid_color' => '#CCC', 'is3d' => false,
             'height' => 400, 'width' => 400, 'truncate_label' => 7,
-            'bg_color' => '#FFFFFF', 'truncate' => 40, 'response_count' => 10, 'user_id' => false, 
+            'bg_color' => '#FFFFFF', 'truncate' => 40, 'response_count' => 10, 'user_id' => false, 'entry_id' => false, 
             'title'=> '', 'type' => 'default', 'x_axis' => false, 'data_type' => 'count', 'limit' => '',
-            'x_start' => '', 'x_end' => '', 'show_key' => false, 'min' => '', 'max' => '',
-            'include_zero' => false, 'field' => false, 'title_size' => '', 'title_font' => ''
+            'x_start' => '', 'x_end' => '', 'show_key' => false, 'min' => '', 'max' => '', 'y_title' => '', 'x_title' => '',
+            'include_zero' => false, 'field' => false, 'title_size' => '', 'title_font' => '', 'tooltip_label' => '',
+			'start_date' => ''
         );
         
         if($type == 'geo'){
             $defaults['truncate_label'] = 100;
             $defaults['width'] = 600;
         }
-        
+ 
         extract(shortcode_atts($defaults, $atts));
-        
+		
+		foreach($defaults as $unset => $val)
+            unset($atts[$unset]);
+
         if (!$id) return;
-        global $frm_field, $frm_google_chart;
+        global $frm_field, $frm_google_chart, $wpdb;
         
         if(!$ids and ($id2 or $id3 or $id4)){
             $ids = array($id2, $id3, $id4);
@@ -1034,13 +1199,45 @@ class FrmProStatisticsController{
         $x_axis = (!$x_axis or $x_axis == 'false') ? false : $x_axis;
         
         $user_id = FrmProAppHelper::get_user_id_param($user_id);
+
+        if ( !$entry_id || $entry_id == 'false') {
+			$entry = false;
+		} else {
+			$entry = explode(',', $entry_id);
+			
+        	//make sure all values are numeric
+        	$entry = array_filter( $entry, 'is_numeric' );
+        	if ( empty($entry) ) {
+            	// don't continue if there are no field ids
+            	return;
+        	}
+        	$entry = implode(',', $entry);
+		}
+		
+		//Convert $tooltip_label to array
+		if ( $tooltip_label ) {
+		$tooltip_label = explode(',' , $tooltip_label);
+		}
         
         $html = $js = $js_content2 = '';
+
+		if ( !is_numeric($id) ){ //If using field key, retrieve the field ID
+			$id = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_fields WHERE field_key=%s", $id));
+		}
         
-        if(is_object($field))
+        if(is_object($field)){
             $fields = array($field);
-        else
+        }else{
+            $id = explode(',', $id);
+            //make sure all values are numeric
+            $id = array_filter( $id, 'is_numeric' );
+            if ( empty($id) ) {
+                // don't continue if there are no field ids
+                return;
+            }
+            $id = implode(',', $id);
             $fields = $frm_field->getAll("fi.id in ($id)");
+        }
             
         if(!empty($colors))
             $colors = explode(',', $colors);
@@ -1059,9 +1256,16 @@ class FrmProStatisticsController{
         global $frm_gr_count;
         if(!$frm_gr_count)
             $frm_gr_count = 0;
+
         foreach ($fields as $field){
-            $data = $this->get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'include_zero', 'width', 'height', 'title', 'title_size', 'title_font'));
+            $data = self::get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'entry', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'y_title', 'x_title', 'include_zero', 'width', 'height', 'title', 'title_size', 'title_font', 'tooltip_label', 'start_date', 'atts' /*other field ID*/));
             
+			if ( empty($data) ) {
+				$html .= '<div class="frm_no_data_graph">No Data</div>';
+				$html = apply_filters('frm_no_data_graph', $html);
+				continue;
+			}
+				
             $frm_gr_count++;
             $this_id = $field->id .'_'. $frm_gr_count;
             $html .= '<div id="chart_'. $this_id .'" style="height:'.$height.';width:'.$width.'"></div>';
@@ -1083,7 +1287,7 @@ class FrmProStatisticsController{
 	 *
 	 * @param array $atts 
 	 */
-    function stats_shortcode($atts){
+    public static function stats_shortcode($atts){
         $defaults = array(
             'id' => false, //the ID of the field to show stats for
             'type' => 'total', //total, count, average, median, deviation, star, minimum, maximum, unique

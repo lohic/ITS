@@ -1,18 +1,32 @@
 <?php
 if ($field['data_type'] == 'select'){ 
-    if(!empty($field['options'])){ ?>
+    if(!empty($field['options'])){ 
+        if($field['read_only'] && (!isset($frm_vars['readonly']) || $frm_vars['readonly'] != 'disabled') && (!is_super_admin() || !is_admin() || defined('DOING_AJAX'))){ ?>
+<select disabled="disabled" <?php do_action('frm_field_input_html', $field) ?>>
+<?php   }else{ ?>
 <select name="<?php echo $field_name ?>" id="field_<?php echo $field['field_key'] ?>" <?php do_action('frm_field_input_html', $field) ?>>
-<?php if ($field['options']){
-    foreach ($field['options'] as $opt_key => $opt){ 
+<?php   }
+
+        if ($field['options']){
+            foreach ($field['options'] as $opt_key => $opt){ 
 $selected = ($field['value'] == $opt_key or in_array($opt_key, (array)$field['value'])) ? ' selected="selected"' : ''; ?>
 <option value="<?php echo $opt_key ?>"<?php echo $selected ?>><?php echo ($opt == '') ? ' ' : $opt; ?></option>
-<?php }
-} ?>
+<?php       }
+        } ?>
 </select>
 <?php 
-    }else if(!empty($field['value'])){ ?>
-<input name="<?php echo $field_name ?>" id="field_<?php echo $field['field_key'] ?>" type="hidden" value="<?php echo esc_attr($field['value']) ?>" />
+    }
+    
+    if((empty($field['options']) || ($field['read_only'] && (!isset($frm_vars['readonly']) || $frm_vars['readonly'] != 'disabled') && (!is_super_admin() || !is_admin() || defined('DOING_AJAX')))) && !empty($field['value'])){ 
+        if(is_array($field['value'])){ 
+            foreach($field['value'] as $v){ ?>
+<input name="<?php echo $field_name ?>" id="field_<?php echo $field['field_key'] ?>" type="hidden" value="<?php echo esc_attr($v) ?>" />
 <?php
+                unset($v);
+            }   
+        }else{ ?>
+<input name="<?php echo $field_name ?>" id="field_<?php echo $field['field_key'] ?>" type="hidden" value="<?php echo esc_attr($field['value']) ?>" />
+<?php   }
     }
 }else if ($field['data_type'] == 'data' && is_numeric($field['hide_opt']) && is_numeric($field['form_select'])){ 
     global $frm_entry_meta;
@@ -56,8 +70,8 @@ $selected = ($field['value'] == $opt_key or in_array($opt_key, (array)$field['va
     if (!empty($field['options'])){
         foreach ($field['options'] as $opt_key => $opt){
             $checked = ((!is_array($field['value']) && $field['value'] == $opt_key ) || (is_array($field['value']) && in_array($opt_key, $field['value'])))?' checked="true"' : ''; ?>
-<div class="frm_checkbox"><input type="checkbox" name="<?php echo $field_name ?>[]"  id="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>" value="<?php echo $opt_key ?>" <?php echo $checked ?> <?php do_action('frm_field_input_html', $field) ?> /><label for="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>"><?php echo $opt ?></label></div>
-        <?php }
+<div class="<?php echo apply_filters('frm_checkbox_class', 'frm_checkbox', $field, $opt_key)?>"><label for="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>"><input type="checkbox" name="<?php echo $field_name ?>[]"  id="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>" value="<?php echo $opt_key ?>" <?php echo $checked ?> <?php do_action('frm_field_input_html', $field) ?> /> <?php echo $opt ?></label></div>
+<?php   }
     }else if(!empty($field['value'])){
         foreach((array)$field['value'] as $v){ ?>
 <input name="<?php echo $field_name ?>[]" type="hidden" value="<?php echo esc_attr($v) ?>" />
@@ -65,10 +79,10 @@ $selected = ($field['value'] == $opt_key or in_array($opt_key, (array)$field['va
     }//else echo 'There are no options'; 
 
 }else if ($field['data_type'] == 'radio'){
-    if ($field['options']){
+    if(!empty($field['options'])){
         foreach ($field['options'] as $opt_key => $opt){ 
-            $checked = ($field['value'] == $opt_key)?(' checked="checked"'):(''); ?>
-<div class="frm_radio"><input type="radio" name="<?php echo $field_name ?>" id="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>" value="<?php echo $opt_key ?>" <?php echo $checked; ?> <?php do_action('frm_field_input_html', $field) ?> /><label for="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>"><?php echo $opt ?></label></div>
+            $checked = ($field['value'] == $opt_key) ? ' checked="checked"' : ''; ?>
+<div class="<?php echo apply_filters('frm_radio_class', 'frm_radio', $field, $opt_key) ?>"><label for="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>"><input type="radio" name="<?php echo $field_name ?>" id="field_<?php echo $field['id'] ?>-<?php echo $opt_key ?>" value="<?php echo $opt_key ?>" <?php echo $checked; ?> <?php do_action('frm_field_input_html', $field) ?> /> <?php echo $opt ?></label></div>
         <?php }
     }//else echo 'There are no options'; ?> 
 <?php }

@@ -1,8 +1,10 @@
-<div class="wrap">
-    <div id="icon-edit-pages" class="icon32"><br/></div>
-    <h2><?php _e('View Entry', 'formidable') ?></h2>
+<div id="form_entries_page" class="wrap">
+    <div class="frmicon icon32"><br/></div>
+    <h2><?php _e('View Entry', 'formidable') ?>
+        <a href="?page=formidable-entries&amp;frm_action=new" class="add-new-h2"><?php _e('Add New', 'formidable'); ?></a>
+    </h2>
     
-    <div class="form-wrap">
+    <div>
         <div class="frm_forms">
 
         <?php FrmAppController::get_form_nav($entry->form_id, true); 
@@ -10,7 +12,7 @@
         if(version_compare( $GLOBALS['wp_version'], '3.3.3', '<')){ ?>
         <div id="poststuff" class="metabox-holder has-right-sidebar">
         <?php   
-            require(FRMPRO_VIEWS_PATH .'/frmpro-entries/sidebar-show.php'); 
+            require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/sidebar-show.php'); 
         }else{ ?>
         <div id="poststuff">
         <?php } ?>
@@ -30,7 +32,7 @@
                         <br/><h4><?php echo $field->name ?></h4>
                         <table class="form-table"><tbody>
                         <?php }else{?>
-                        <tr valign="top">
+                        <tr>
                             <th scope="row"><?php echo $field->name ?>:</th>
                             <td>
                             <?php 
@@ -91,18 +93,18 @@
                     <div class="inside">
         
                         <table class="form-table"><tbody> 
-                            <tr valign="top">
+                            <tr>
                                 <th scope="row"><?php _e('IP Address', 'formidable') ?>:</th>
                                 <td><?php echo $entry->ip; ?></td>
                             </tr>
                             <?php if(isset($data['browser'])){ ?>
-                            <tr valign="top">
+                            <tr>
                                 <th scope="row"><?php _e('User-Agent (Browser/OS)', 'formidable') ?>:</th>
                                 <td><?php echo $data['browser']; ?></td>
                             </tr>
                             <?php }
                             if(isset($data['referrer'])){ ?>
-                            <tr valign="top">
+                            <tr>
                                 <th scope="row"><?php _e('Referrer', 'formidable') ?>:</th>
                                 <td><?php echo str_replace("\r\n", '<br/>', $data['referrer']); ?></td>
                             </tr>
@@ -121,7 +123,7 @@
                             if(!isset($meta['comment']))
                                 continue;
                         ?>
-                            <tr valign="top" class="frm_comment_block">
+                            <tr class="frm_comment_block">
                                 <th scope="row"><p><strong><?php echo FrmProFieldsHelper::get_display_name($meta['user_id'], 'display_name', array('link' => true)) ?></strong><br/>
                                     <?php echo FrmProAppHelper::get_formatted_time($comment->created_at, $date_format, $time_format)  ?></p>
                                 </th>
@@ -139,14 +141,14 @@
                             <?php wp_nonce_field('add-option'); ?>
                             
                             <table class="form-table"><tbody> 
-                                <tr valign="top">
+                                <tr>
                                     <th scope="row"><?php _e('Comment/Note', 'formidable') ?>:</th>
                                     <td><textarea name="frm_comment" id="frm_comment" cols="50" rows="5" style="width:98%"> </textarea>
                                     <!--
                                     </td>
                                 </tr>
                                 
-                                <tr valign="top">
+                                <tr>
                                     <th scope="row"><?php _e('Send Emails to', 'formidable') ?>:</th>
                                     <td>
                                         <input type="text" name="frm_send_to[]" value="" class="frm_long_input"/><br/>
@@ -168,7 +170,7 @@
             </div>
             <?php
                 if(version_compare( $GLOBALS['wp_version'], '3.3.2', '>'))
-                    require(FRMPRO_VIEWS_PATH .'/frmpro-entries/sidebar-show.php'); 
+                    require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/sidebar-show.php'); 
             ?>
             </div>
         </div>

@@ -3,14 +3,14 @@
 class FrmProCopy{
     var $table_name;
 
-    function FrmProCopy(){
+    function __construct(){
         global $wpmuBaseTablePrefix, $wpdb;
         $prefix = ($wpmuBaseTablePrefix) ? $wpmuBaseTablePrefix : $wpdb->base_prefix;
         $this->table_name = "{$prefix}frmpro_copies";
     }
     
     function create( $values ){
-        global $wpdb, $blog_id, $frm_form, $frmpro_display;
+        global $wpdb, $blog_id, $frmpro_display;
         
         $exists = $wpdb->query("DESCRIBE {$this->table_name}");
         if(!$exists)
@@ -22,6 +22,7 @@ class FrmProCopy{
         $new_values['form_id'] = isset($values['form_id']) ? (int)$values['form_id']: null;
         $new_values['type'] = isset($values['type']) ? $values['type']: 'form'; //options here are: form, display
         if ($new_values['type'] == 'form'){
+            $frm_form = new FrmForm();
             $form_copied = $frm_form->getOne($new_values['form_id']);
             $new_values['copy_key'] = $form_copied->form_key;
         }else{
@@ -47,7 +48,7 @@ class FrmProCopy{
     }
     
     function getAll($where = '', $order_by = '', $limit = ''){
-        global $wpdb, $frm_form;
+        global $wpdb;
         $query = "SELECT * FROM $this->table_name ". 
                 FrmAppHelper::prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
         if ($limit == ' LIMIT 1')
@@ -108,7 +109,7 @@ class FrmProCopy{
 
             foreach ($templates as $temp){
                 if ($temp->type == 'form'){
-                    global $frm_form;
+                    $frm_form = new FrmForm();
                     if (!$frm_form->getOne($temp->copy_key))
                         $frm_form->duplicate($temp->form_id, false, true, $temp->blog_id);
                 }else{

@@ -6,7 +6,7 @@ foreach($values['fields'] as $fo_key => $fo){
     if($fo['post_field'] == $post_key)
         $values[$post_key] = $fo['id'];
     ?>
-    <option value="<?php echo $fo['id'] ?>" <?php selected($values[$post_key], $fo['id']) ?>><?php echo FrmAppHelper::truncate($fo['name'], 80);
+    <option value="<?php echo $fo['id'] ?>" <?php selected($values[$post_key], $fo['id']) ?>><?php echo FrmAppHelper::truncate($fo['name'], 50);
     unset($fo); 
     ?></option>
     <?php 

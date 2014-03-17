@@ -1,53 +1,15 @@
 <?php
 class FrmProDb{
     
-    function FrmProDb(){
-        global $wpdb;
-        $this->displays = $wpdb->prefix . "frm_display";
-    }
-    
     function upgrade(){
         global $wpdb, $frmdb;
-        $db_version = 21; // this is the version of the database we're moving to
+        $db_version = FrmAppHelper::$pro_db_version; // this is the version of the database we're moving to
         $old_db_version = get_option('frmpro_db_version');
 
         if ($db_version != $old_db_version){
-            /*
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-          
-            $charset_collate = '';
-            if( $wpdb->has_cap( 'collation' ) ){
-                if( !empty($wpdb->charset) )
-                    $charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-                if( !empty($wpdb->collate) )
-                    $charset_collate .= " COLLATE $wpdb->collate";
-            }
-
-            $sql = "CREATE TABLE {$this->displays} (
-                id int(11) NOT NULL auto_increment,
-                display_key varchar(255) default NULL,
-                name varchar(255) default NULL,
-                description text default NULL,
-                content longtext default NULL,
-                dyncontent longtext default NULL,
-                insert_loc varchar(255) default NULL,
-                param varchar(255) default NULL,
-                type varchar(255) default NULL,
-                show_count varchar(255) default NULL,
-                options longtext default NULL,
-                form_id int(11) default NULL,
-                entry_id int(11) default NULL,
-                post_id int(11) default NULL,
-                created_at datetime NOT NULL,
-                PRIMARY KEY id (id),
-                KEY form_id (form_id),
-                KEY entry_id (entry_id),
-                KEY post_id (post_id),
-                UNIQUE KEY display_key (display_key)
-            ) {$charset_collate};";
-
-            dbDelta($sql);
-            */
+            
+            // update rewrite rules for views
+            flush_rewrite_rules();
           
             if($db_version >= 3 and $old_db_version < 3){ //migrate hidden field data into the parent field
                 global $frm_field;
@@ -98,11 +60,12 @@ class FrmProDb{
           
             if($db_version >= 16 and $old_db_version < 16){ //migrate table into wp_posts
                 $display_posts = array();
-                if($wpdb->get_var( "SHOW TABLES LIKE '$this->displays'" )) //only migrate if table exists
-                    $dis = $wpdb->get_results("SELECT * FROM $this->displays");
-                else
+                if ( $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}frm_display'" ) ) { //only migrate if table exists
+                    $dis = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}frm_display");
+                } else {
                     $dis = array();
-                    
+                }
+                
                 foreach($dis as $d){
                     $post = array(
                         'post_title'      => $d->name,
@@ -167,14 +130,14 @@ class FrmProDb{
             }
             
             if($db_version >= 17 and $old_db_version < 17){
-                global $frm_form;
+                $frm_form = new FrmForm();
                 //migrate "allow one per field" into "unique"
                 $form = $frm_form->getAll();
                 $field_ids = array();
                 foreach($form as $f){
                     if (isset($f->options['single_entry']) and $f->options['single_entry'] and is_numeric($f->options['single_entry_type'])){
                         $f->options['single_entry'] = 0;
-                        $wpdb->update( $frmdb->forms, array('options' => serialize($f->options)), array( 'id' => $f->id ) );
+                        $wpdb->update( $wpdb->prefix .'frm_forms', array('options' => serialize($f->options)), array( 'id' => $f->id ) );
                         $field_ids[] = $f->options['single_entry_type'];
                     }
                     unset($f);
@@ -190,9 +153,16 @@ class FrmProDb{
                     }
                 }
             }
+            
+            if ( $db_version >= 25 and $old_db_version < 25) {
+                // let's remove the old displays now
+                $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}frm_display");
+            }
       
             /**** ADD DEFAULT TEMPLATES ****/
-            FrmFormsController::add_default_templates(FRMPRO_PATH .'/classes/templates');
+            if ( class_exists('FrmXMLController') ) {
+                FrmXMLController::add_default_templates();
+            }
         
             update_option('frmpro_db_version', $db_version);
           
@@ -207,9 +177,15 @@ class FrmProDb{
             wp_die($frm_settings->admin_permission);
         }
         global $wpdb;
-        $wpdb->query('DROP TABLE IF EXISTS ' . $this->displays);
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}frm_display");
         delete_option('frmpro_options');
         delete_option('frmpro_db_version');
+        delete_option('frm_usloc_options'); //locations
+        
+        global $frm_update;
+        delete_option($frm_update->pro_last_checked_store);
+        delete_option($frm_update->pro_auth_store);
+        delete_option($frm_update->pro_cred_store);
     }
 
 }

@@ -1,49 +1,12 @@
 <?php
+if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+
+if(class_exists('FrmSettings'))
+    return;
+
 class FrmSettings{
-    // Page Setup Variables
-    var $menu;
-    var $mu_menu;
-    var $preview_page_id;
-    var $preview_page_id_str;
-    var $lock_keys;
-    var $track;
-    
-    var $pubkey;
-    var $privkey;
-    var $re_theme;
-    var $re_lang;
-    var $re_msg;
-    
-    var $use_html;
-    var $custom_style;
-    var $load_style;
-    var $custom_stylesheet;
-    var $jquery_css;
-    var $accordion_js;
-    
-    var $success_msg;
-    var $failed_msg;
-    var $blank_msg;
-    var $unique_msg;
-    var $invalid_msg;
-    var $submit_value;
-    var $login_msg;
-    var $admin_permission;
-    var $email_to;
-    
-    var $frm_view_forms;
-    var $frm_edit_forms;
-    var $frm_delete_forms;
-    var $frm_change_settings;
-    var $frm_view_entries;
-    var $frm_create_entries;
-    var $frm_edit_entries;
-    var $frm_delete_entries;
-    var $frm_view_reports;
-    var $frm_edit_displays;
 
-
-    function FrmSettings(){
+    function __construct(){
         $this->set_default_options();
     }
     
@@ -71,16 +34,11 @@ class FrmSettings{
         );
     }
 
-    function set_default_options(){          
-        $this->preview_page_id_str = 'frm-preview-page-id';
-          
+    function set_default_options(){
         if(!isset($this->pubkey)){
-            if(IS_WPMU)
-               $recaptcha_opt = get_site_option('recaptcha'); // get the options from the database
-            else
-               $recaptcha_opt = get_option('recaptcha');
+            $recaptcha_opt = is_multisite() ? get_site_option('recaptcha') : get_option('recaptcha'); // get the options from the database
 
-            $this->pubkey = (isset($recaptcha_opt['pubkey'])) ? $recaptcha_opt['pubkey'] : ''; 
+            $this->pubkey = isset($recaptcha_opt['pubkey']) ? $recaptcha_opt['pubkey'] : ''; 
         } 
         
         if(!isset($this->privkey))
@@ -113,7 +71,7 @@ class FrmSettings{
             unset($default);
         }
         
-        if(IS_WPMU and is_admin()){
+        if(is_multisite() and is_admin()){
             $mu_menu = get_site_option('frm_admin_menu_name');
             if($mu_menu and !empty($mu_menu)){
                 $this->menu = $mu_menu;
@@ -126,17 +84,9 @@ class FrmSettings{
             if(!isset($this->$frm_role))
                 $this->$frm_role = 'administrator';
         }
-        
-        foreach($this as $k => $v){
-            //$this->{$k} = stripslashes_deep($v);
-            unset($k);
-            unset($v);
-        }
     }
 
-    function validate($params,$errors){   
-        //if($params[ $this->preview_page_id_str ] == 0)
-        //  $errors[] = "The Preview Page Must Not Be Blank.";
+    function validate($params,$errors){
         $errors = apply_filters( 'frm_validate_settings', $errors, $params );
         return $errors;
     }
@@ -147,7 +97,7 @@ class FrmSettings{
         $this->mu_menu = isset($params['frm_mu_menu']) ? $params['frm_mu_menu'] : 0;
         if($this->mu_menu)
             update_site_option('frm_admin_menu_name', $this->menu);
-        else if(FrmAppHelper::is_super_admin())
+        else if(is_super_admin())
             update_site_option('frm_admin_menu_name', false);
         
         $this->pubkey = trim($params['frm_pubkey']);
@@ -166,7 +116,7 @@ class FrmSettings{
         }
         
         $this->load_style = $params['frm_load_style'];
-        $this->preview_page_id = (int)$params[ $this->preview_page_id_str ];
+        $this->preview_page_id = (int)$params['frm-preview-page-id'];
         $this->lock_keys = isset($params['frm_lock_keys']) ? $params['frm_lock_keys'] : 0;
         $this->track = isset($params['frm_track']) ? $params['frm_track'] : 0;
         
@@ -191,12 +141,6 @@ class FrmSettings{
 		}
         
         do_action( 'frm_update_settings', $params );
-        
-        foreach($this as $k => $v){
-            $this->{$k} = stripslashes_deep($v);
-            unset($k);
-            unset($v);
-        }
     }
 
     function store(){

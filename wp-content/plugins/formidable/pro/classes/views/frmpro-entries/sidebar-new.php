@@ -3,7 +3,9 @@
     <h3 class="hndle"><span><?php _e('Publish', 'formidable') ?></span></h3>
     <div class="inside">
         <div class="submitbox">
-
+        <div class="misc-pub-section">
+            <?php echo FrmProFormsHelper::get_draft_button($form, 'button-secondary'); ?>
+        </div>
         <div id="major-publishing-actions">
     	    <div id="delete-action">
     	    <a class="submitdelete deletion" onclick="history.back(-1)" title="<?php _e('Cancel', 'formidable') ?>"><?php _e('Cancel', 'formidable') ?></a>

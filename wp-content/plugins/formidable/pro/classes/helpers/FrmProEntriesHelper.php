@@ -1,70 +1,168 @@
 <?php
 
 class FrmProEntriesHelper{
-    function FrmProEntriesHelper(){
-        add_filter('frm_redirect_url', 'FrmProEntriesHelper::redirect_url');
-        add_filter('frm_show_new_entry_page', 'FrmProEntriesHelper::allow_form_edit', 10, 2);
-        add_filter('frm_setup_edit_entry_vars', 'FrmProEntriesHelper::setup_edit_vars', 10, 2);
-    }
     
-    public static function redirect_url($url){
-        $url = str_replace(array(' ', '[', ']', '|', '@'), array('%20', '%5B', '%5D', '%7C', '%40'), $url);
-        return $url;
-    }
-    
+    // check if form should automatically be in edit mode (limited to one, has draft)
     public static function allow_form_edit($action, $form){
-        global $user_ID;
-        if (!$form or !$form->editable or !$user_ID)
+        $user_ID = get_current_user_id();
+        if (!$form or !$user_ID)
             return $action;
-
-        $form_options = maybe_unserialize($form->options);
-        if (isset($form_options['single_entry']) and $form_options['single_entry'] and $form_options['single_entry_type'] == 'user' and $action != 'destroy'){
+            
+        if(!$form->editable)
+            $action = 'new';
+        
+        $is_draft = false;
+        if($action == 'destroy')
+            return $action;
+        
+        if (($form->editable and (isset($form->options['single_entry']) and $form->options['single_entry'] and $form->options['single_entry_type'] == 'user') or (isset($form->options['save_draft']) and $form->options['save_draft']))){
             if($action == 'update' and ($form->id == FrmAppHelper::get_param('form_id'))){
                 //don't change the action is this is the wrong form
             }else{
                 global $frmdb;
-                $meta = $frmdb->get_var($frmdb->entries, array('user_id' => $user_ID, 'form_id' => $form->id));
+                $args = array('user_id' => $user_ID, 'form_id' => $form->id);
+                if(isset($form->options['save_draft']) and $form->options['save_draft'] and (!$form->editable or !isset($form->options['single_entry']) or !$form->options['single_entry'] or $form->options['single_entry_type'] != 'user'))
+                    $args['is_draft'] = $is_draft = 1;
+                
+                $meta = $frmdb->get_var($frmdb->entries, $args);
+                
                 if($meta)
                     $action = 'edit';
             }
         }
        
-        if ($action == 'edit' and isset($form_options['editable_role']) and !FrmAppHelper::user_has_permission($form_options['editable_role']))
-            $action = 'new';
-
+        //do not allow editing if user does not have permission
+        if ($action == 'edit' and !$is_draft){
+            $entry = FrmAppHelper::get_param('entry', 0);
+            if ( !FrmProEntriesHelper::user_can_edit($entry, $form) ) {
+                $action = 'new';
+            }
+        }
+        
         return $action;
     }
     
-    public static function allow_delete($entry){
-        global $user_ID;
-        
-        $allowed = false;
-        
-        if(current_user_can('frm_delete_entries')){
-            $allowed = true;
-        }else{
-            //TODO: isset($form_options['editable_role']) and !FrmAppHelper::user_has_permission($form_options['editable_role'])
+    public static function user_can_edit($entry, $form=false) {
+        if ( empty($form) ) {
+            if ( is_numeric($entry) ) {
+                $frm_entry = new FrmEntry();
+                $entry = $frm_entry->getOne($entry);
+            }
+            
+            if ( is_object($entry) ) {
+                $form = $entry->form_id;
+            }
         }
         
-        if($user_ID and !$allowed){
-            if(is_numeric($entry)){
-                global $frmdb;
+        if ( is_numeric($form) ) {
+            $frm_form = new FrmForm();
+            $form = $frm_form->getOne($form);
+        }
+        
+        $allowed = self::user_can_edit_check($entry, $form);
+        return apply_filters('frm_user_can_edit', $allowed, compact('entry', 'form'));
+    }
+    
+    public static function user_can_edit_check($entry, $form) {
+        global $frm_entry, $wpdb;
+        
+        $user_ID = get_current_user_id();
+        
+        if ( !$user_ID || empty($form) ) {
+            return false;
+        }
+        
+        if ( is_object($entry) && $entry->is_draft && $entry->user_id == $user_ID ) {
+            return true;
+        }
+        
+        //if editable and user can edit someone elses entry
+        if ( $entry && $form->editable && ((isset($form->options['open_editable']) && $form->options['open_editable']) || !isset($form->options['open_editable'])) && isset($form->options['open_editable_role']) && FrmAppHelper::user_has_permission($form->options['open_editable_role']) ) {
+            return true;
+        }
+        
+        $where = $wpdb->prepare('fr.id=%d', $form->id);
+        
+        if ( $form->editable && !empty($form->options['editable_role']) && !FrmAppHelper::user_has_permission($form->options['editable_role']) && (!isset($form->options['open_editable_role']) || $form->options['open_editable_role'] ==  '-1' || ((isset($form->options['open_editable']) && !$form->options['open_editable']) || (isset($form->options['open_editable']) && $form->options['open_editable'] && !empty($form->options['open_editable_role']) && !FrmAppHelper::user_has_permission($form->options['open_editable_role'])))) ) {
+            //only allow editing of drafts
+            $where .= $wpdb->prepare(" and user_id=%d and is_draft=%d", $user_ID, 1);
+        }
+        
+        // check if this user can edit entry from another user
+        if ( !$form->editable || !isset($form->options['open_editable_role']) || $form->options['open_editable_role'] == '-1' || (isset($form->options['open_editable']) && empty($form->options['open_editable'])) || !FrmAppHelper::user_has_permission($form->options['open_editable_role']) ) {            
+            $where .= $wpdb->prepare(" and user_id=%d", $user_ID);
+            
+            if ( is_object($entry) && $entry->user_id != $user_ID ) {
+                return false;
+            }
+            
+            if ( $form->editable && !FrmAppHelper::user_has_permission($form->options['open_editable_role']) && !FrmAppHelper::user_has_permission($form->options['editable_role']) ) {
+                // make sure user cannot edit their own entry, even if a higher user role can unless it's a draft
+                if ( is_object($entry) && !$entry->is_draft ) {
+                    return false;
+                } else if ( !is_object($entry) ) {
+                    $where .= ' and is_draft=1';
+                }
+            }
+        } else if ( $form->editable && $user_ID && empty($entry) ) {
+            // make sure user is editing their own draft by default, even if they have permission to edit others' entries
+           $where .= $wpdb->prepare(" and user_id=%d", $user_ID);
+        }
+        
+        if ( !$form->editable ) {
+            $where .= ' and is_draft=1';
 
-                $allowed = $frmdb->get_var( $frmdb->entries, array('id' => $entry, 'user_id' => $user_ID) );
-            }else{
-                $allowed = ($entry->user_id == $user_ID);
+            if ( is_object($entry) && !$entry->is_draft ) {
+                return false;
+            }
+        }
+        
+        // If entry object, and we made it this far, then don't do another db call
+        if ( is_object($entry) ) {
+            return true;
+        }
+        
+        if ( !empty($entry) ) {
+            $where .= $wpdb->prepare( is_numeric($entry) ? " and it.id=%d" : " and item_key=%s", $entry);
+        }
+        
+        return $frm_entry->getAll( $where, ' ORDER BY created_at DESC', 1, true);
+    }
+    
+    public static function user_can_delete($entry, $form = false) {
+        if ( is_numeric($entry) ) {
+            $frm_entry = new FrmEntry();
+            $entry = $frm_entry->getOne($entry);
+            if ( ! $entry ) {
+                return false;
+            }
+        }
+        
+        if ( current_user_can('frm_delete_entries') ) {
+            $allowed = true;
+        } else {
+            $allowed = self::user_can_edit($entry);
+            if ( !empty($allowed) ) {
+                $allowed = true;
             }
         }
         
         return apply_filters('frm_allow_delete', $allowed, $entry);
     }
     
+    public static function allow_delete($entry){
+        _deprecated_function( __FUNCTION__, '1.07.05', 'FrmProEntriesHelper::user_can_delete' );
+        return self::user_can_delete($entry);
+    }
+    
     public static function setup_edit_vars($values, $record=false){
-        global $frm_form, $frmpro_settings;
-        if(!$record)
+        global $frmpro_settings;
+        if(!$record){
+            $frm_form = new FrmForm();
             $record = $frm_form->getOne($values['form_id']);
+        }
         
-        foreach (array('edit_value' => 'Update', 'edit_msg' => $frmpro_settings->edit_msg) as $opt => $default){
+        foreach (array('edit_value' => __('Update', 'formidable'), 'edit_msg' => $frmpro_settings->edit_msg) as $opt => $default){
             if (!isset($values[$opt]))
                 $values[$opt] = ($_POST and isset($_POST['options'][$opt])) ? $_POST['options'][$opt] : $default;
         }
@@ -72,17 +170,7 @@ class FrmProEntriesHelper{
     }
     
     public static function resend_email_links($entry_id, $form_id){ ?>
-<a href="#" onclick="frm_resend_email(<?php echo $entry_id ?>,<?php echo $form_id ?>,'email');return false;" id="frm_resend_email" title="<?php _e('Resend Email Notifications', 'formidable') ?>"><?php _e('Resend Email Notifications', 'formidable') ?></a>
-<script type="text/javascript">
-//<![CDATA[
-function frm_resend_email(entry_id,form_id,type){
-jQuery('#frm_resend_'+type).replaceWith('<img id="frm_resend_'+type+'" src="<?php echo FRM_IMAGES_URL; ?>/wpspin_light.gif" alt="<?php _e('Loading...', 'formidable'); ?>" />');
-jQuery.ajax({type:"POST",url:"<?php echo FRM_SCRIPT_URL ?>",data:"controller=entries&frm_action=send_email&entry_id="+entry_id+"&form_id="+form_id+"&type="+type,
-success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email Resent to', 'formidable') ?> '+msg);}
-});
-}
-//]]>
-</script>
+<a href="#" onclick="frm_resend_email(<?php echo $entry_id ?>,<?php echo $form_id ?>);return false;" id="frm_resend_email" title="<?php _e('Resend Email Notifications', 'formidable') ?>"><?php _e('Resend Email Notifications', 'formidable') ?></a>
 <?php
     }
     
@@ -93,17 +181,49 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
         if ($_GET['page'] != 'formidable-entries')
             return;
         
+        $page_params = array('frm_action' => 0, 'action' => 'frm_entries_csv', 'form' => $form_id);
+        
+        if ( !empty( $_REQUEST['s'] ) )
+            $page_params['s'] = $_REQUEST['s'];
+        
+        if ( !empty( $_REQUEST['search'] ) )
+            $page_params['search'] = $_REQUEST['search'];
+
+    	if ( !empty( $_REQUEST['fid'] ) )
+    	    $page_params['fid'] = $_REQUEST['fid'];
+    	
         ?>
-        <div class="alignleft actions">
-            <?php FrmFormsHelper::forms_dropdown('form', ($form_id ? $form_id : ''), __('Switch Form', 'formidable')); ?>
-            <input type="submit" class="button-secondary" value="<?php _e('Filter', 'formidable') ?>" />
-        </div>
-        <?php            
-        if ($form_id){ 
-            if(current_user_can('frm_create_entries')){ ?>
-            <div class="alignleft"><a href="?page=formidable-entries&amp;frm_action=new&amp;form=<?php echo $form_id ?>" class="button-secondary"><?php _e('Add New Entry to this form', 'formidable') ?></a></div>
-        <?php } 
-        } 
+        <div class="alignleft actions"><a href="<?php echo esc_url(add_query_arg($page_params, admin_url( 'admin-ajax.php' ))) ?>" class="button"><?php _e('Download CSV', 'formidable'); ?></a></div>
+        <?php 
+        if ( apply_filters('frm_show_delete_all', current_user_can('frm_edit_entries'), $form_id) ) { 
+        ?><div class="frm_uninstall alignleft actions"><a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo $form_id ? '&amp;form='. $form_id : '' ?>" class="button" onclick="return confirm('<?php _e('Are you sure you want to permanently delete ALL the entries in this form?', 'formidable') ?>')"><?php _e('Delete ALL Entries', 'formidable') ?></a></div>
+        <?php
+        }
+    }
+    
+    // check if entry being updated just switched draft status
+    public static function is_new_entry($entry) {
+        if ( is_numeric($entry) ) {
+            $frm_entry = new FrmEntry;
+            $entry = $frm_entry->getOne($entry);
+        }
+        
+        // this function will only be correct if the entry has already gone through FrmProEntriesController::check_draft_status
+        if ( $entry->created_at == $entry->updated_at ) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public static function get_field($field = 'is_draft', $id) {
+        $entry = wp_cache_get( $id, 'frm_entry' );
+        if ( $entry && isset($entry->$field) ) {
+            return $entry->$field;
+        }
+        
+        global $wpdb;
+        return $wpdb->get_var($wpdb->prepare("SELECT $field FROM {$wpdb->prefix}frm_items WHERE id=%d", $id));
     }
     
     public static function get_search_ids($s, $form_id){
@@ -111,16 +231,15 @@ success:function(msg){ jQuery('#frm_resend_'+type).replaceWith('<?php _e('Email 
         
         if(empty($s)) return false;
         
-        $s = stripslashes($s);
 		preg_match_all('/".*?("|$)|((?<=[\\s",+])|^)[^\\s",+]+/', $s, $matches);
-		$search_terms = array_map('_search_terms_tidy', $matches[0]);
+		$search_terms = array_map('trim', $matches[0]);
 		$n = '%'; //!empty($q['exact']) ? '' : '%';
 		
         $p_search = $search = '';
         $search_or = '';
         $e_ids = array();
         
-        $data_field = FrmProForm::has_field('data', $form_id, false);
+        $data_field = FrmProFormsHelper::has_field('data', $form_id, false);
         
 		foreach( (array) $search_terms as $term ) {
 			$term = esc_sql( like_escape( $term ) );

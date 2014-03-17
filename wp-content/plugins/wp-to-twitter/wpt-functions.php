@@ -1,7 +1,7 @@
 <?php 
 // This file contains secondary functions supporting WP to Twitter
-// These functions don't perform any WP to Twitter actions, but are sometimes called for when 
-// support for primary functions is lacking.
+// These functions don't perform any WP to Twitter actions, but add 
+// support for primary functions if lacking.
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 if ( version_compare( $wp_version,"2.9.3",">" )) {
@@ -12,42 +12,43 @@ if (!class_exists('WP_Http')) {
 	
 function jd_remote_json( $url, $array=true ) {
 	$input = jd_fetch_url( $url );
-	$obj = json_decode($input, $array );
-	try {
-		if (is_null($array)) {
-			switch ( json_last_error() ) {
-				case JSON_ERROR_DEPTH :
-					$msg = ' - Maximum stack depth exceeded';
-					break;
-				case JSON_ERROR_STATE_MISMATCH :
-					$msg = ' - Underflow or the modes mismatch';
-					break;
-				case JSON_ERROR_CTRL_CHAR :
-					$msg = ' - Unexpected control character found';
-					break;
-				case JSON_ERROR_SYNTAX :
-					$msg = ' - Syntax error, malformed JSON';
-					break;
-				case JSON_ERROR_UTF8 :
-					$msg = ' - Malformed UTF-8 characters, possibly incorrectly encoded';
-					break;
-				default :
-					$msg = ' - Unknown error';
-					break;
+	$obj = json_decode( $input, $array );
+	if ( function_exists( 'json_last_error' ) ) { // > PHP 5.3
+		try {
+			if ( is_null( $obj ) ) {
+				switch ( json_last_error() ) {
+					case JSON_ERROR_DEPTH :
+						$msg = ' - Maximum stack depth exceeded';
+						break;
+					case JSON_ERROR_STATE_MISMATCH :
+						$msg = ' - Underflow or the modes mismatch';
+						break;
+					case JSON_ERROR_CTRL_CHAR :
+						$msg = ' - Unexpected control character found';
+						break;
+					case JSON_ERROR_SYNTAX :
+						$msg = ' - Syntax error, malformed JSON';
+						break;
+					case JSON_ERROR_UTF8 :
+						$msg = ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+						break;
+					default :
+						$msg = ' - Unknown error';
+						break;
+				}
+				throw new Exception($msg);
 			}
-			throw new Exception($msg);
+		} catch ( Exception $e ) {
+			return $e -> getMessage();
 		}
-	} catch (Exception $e) {
-		return $e -> getMessage();
-	}	
+	}
 	return $obj;
-	// TODO: some error handling ?
 }			
 
 function is_valid_url( $url ) {
-    if (is_string($url)) {
-		$url = urldecode($url);
-		return preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url);	
+    if ( is_string( $url ) ) {
+		$url = urldecode( $url );
+		return preg_match( '|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url );
 	} else {
 		return false;
 	}
@@ -55,14 +56,14 @@ function is_valid_url( $url ) {
 // Fetch a remote page. Input url, return content
 function jd_fetch_url( $url, $method='GET', $body='', $headers='', $return='body' ) {
 	$request = new WP_Http;
-	$result = $request->request( $url , array( 'method'=>$method, 'body'=>$body, 'headers'=>$headers, 'sslverify'=>false, 'user-agent'=>'WP to Twitter http://www.joedolson.com/articles/wp-to-twitter/' ) );
+	$result = $request->request( $url , array( 'method'=>$method, 'body'=>$body, 'headers'=>$headers, 'sslverify'=>false, 'user-agent'=>'WP to Twitter/http://www.joedolson.com/articles/wp-to-twitter/' ) );
 	// Success?
-	if ( !is_wp_error($result) && isset($result['body']) ) {
+	if ( !is_wp_error( $result ) && isset( $result['body'] ) ) {
 		if ( $result['response']['code'] == 200 ) {
-			if ($return == 'body') {
-			return $result['body'];
+			if ( $return == 'body' ) {
+				return $result['body'];
 			} else {
-			return $result;
+				return $result;
 			}
 		} else {
 			return $result['response']['code'];
@@ -74,15 +75,42 @@ function jd_fetch_url( $url, $method='GET', $body='', $headers='', $return='body
 }
 
 if (!function_exists('mb_strlen')) {
-	function mb_strlen($data) {
-		return strlen($data);
+	/**
+	 * Fallback implementation of mb_strlen, hardcoded to UTF-8.
+	 * @param string $str
+	 * @param string $enc optional encoding; ignored
+	 * @return int
+	 */
+	function mb_strlen( $str, $enc = '' ) {
+		$counts = count_chars( $str );
+		$total = 0;
+
+		// Count ASCII bytes
+		for( $i = 0; $i < 0x80; $i++ ) {
+			$total += $counts[$i];
+		}
+
+		// Count multibyte sequence heads
+		for( $i = 0xc0; $i < 0xff; $i++ ) {
+			$total += $counts[$i];
+		}
+		return $total;
 	}
 }
 
 if (!function_exists('mb_substr')) {
-	function mb_substr($data,$start,$length = null, $encoding = null) {
-		return substr($data,$start,$length);
-	}
+	function mb_substr( $str, $start, $count = 'end' ) {
+		if ( $start != 0 ) {
+			$split = self::mb_substr_split_unicode( $str, intval( $start ) );
+			$str = substr( $str, $split );
+		}
+
+		if ( $count !== 'end' ) {
+			$split = self::mb_substr_split_unicode( $str, intval( $count ) );
+			$str = substr( $str, 0, $split );
+		}
+		return $str;
+    }
 }
 
 // filter_var substitution for PHP <5.2
@@ -90,6 +118,30 @@ if ( !function_exists( 'filter_var' ) ) {
 	function filter_var( $url ) {
 		// this does not emulate filter_var; merely the usage of filter_var in WP to Twitter.
 		return ( stripos( $url, 'https:' ) !== false || stripos( $url, 'http:' ) !== false )?true:false;
+	}
+}
+
+if ( !function_exists( 'mb_strrpos' ) ) {
+	/**
+	 * Fallback implementation of mb_strrpos, hardcoded to UTF-8.
+	 * @param $haystack String
+	 * @param $needle String
+	 * @param $offset String: optional start position
+	 * @param $encoding String: optional encoding; ignored
+	 * @return int
+	 */
+	function mb_strrpos( $haystack, $needle, $offset = 0, $encoding = '' ) {
+		$needle = preg_quote( $needle, '/' );
+
+		$ar = array();
+		preg_match_all( '/' . $needle . '/u', $haystack, $ar, PREG_OFFSET_CAPTURE, $offset );
+
+		if( isset( $ar[0] ) && count( $ar[0] ) > 0 &&
+			isset( $ar[0][count( $ar[0] ) - 1][1] ) ) {
+			return $ar[0][count( $ar[0] ) - 1][1];
+		} else {
+			return false;
+		}
 	}
 }
 
@@ -292,11 +344,15 @@ $plugins_string
 		} else if ( !$request ) {
 			echo "<div class='message error'><p>".__('Please describe your problem. I\'m not psychic.','wp-to-twitter')."</p></div>";
 		} else {
-			wp_mail( "plugins@joedolson.com",$subject,$message,$from );
-			if ( $has_donated == 'Donor' || $has_purchased == 'Purchaser' ) {
-				echo "<div class='message updated'><p>".sprintf(__('Thank you for supporting the continuing development of this plug-in! I\'ll get back to you as soon as I can. Please ensure that you can receive email at <code>%s</code>.','wp-to-twitter'),$current_user->user_email)."</p></div>";		
+			$sent = wp_mail( "plugins@joedolson.com",$subject,$message,$from );
+			if ( $sent ) {
+				if ( $has_donated == 'Donor' || $has_purchased == 'Purchaser' ) {
+					echo "<div class='message updated'><p>".sprintf(__('Thank you for supporting the continuing development of this plug-in! I\'ll get back to you as soon as I can. Please ensure that you can receive email at <code>%s</code>.','wp-to-twitter'),$current_user->user_email)."</p></div>";		
+				} else {
+					echo "<div class='message updated'><p>".sprintf(__("Thanks for using WP to Twitter. Please ensure that you can receive email at <code>%s</code>.",'wp-to-twitter'),$current_user->user_email)."</p></div>";				
+				}
 			} else {
-				echo "<div class='message updated'><p>".sprintf(__("Thanks for using WP to Twitter. Please ensure that you can receive email at <code>%s</code>.",'wp-to-twitter'),$current_user->user_email)."</p></div>";				
+				echo "<div class='message error'><p>".__( "Sorry! I couldn't send that message. Here's the text of your message:", 'wp-to-twitter' )."</p><pre>$request</pre></div>";
 			}
 		}
 	}
@@ -328,7 +384,7 @@ $plugins_string
 		<code>".__('Reply to:','wp-to-twitter')." \"$current_user->display_name\" &lt;$current_user->user_email&gt;</code>
 		</p>
 		<p>
-		<input type='checkbox' name='has_read_faq' id='has_read_faq' value='on' /> <label for='has_read_faq'>".sprintf(__('I have read <a href="%1$s">the FAQ for this plug-in</a> <span>(required)</span>','wp-to-twitter'),'http://www.joedolson.com/articles/wp-to-twitter/support-2/')."
+		<input type='checkbox' name='has_read_faq' id='has_read_faq' value='on' required='required' aria-required='true' /> <label for='has_read_faq'>".sprintf(__('I have read <a href="%1$s">the FAQ for this plug-in</a> <span>(required)</span>','wp-to-twitter'),'http://www.joedolson.com/articles/wp-to-twitter/support-2/')."
         </p>
         <p>
         <input type='checkbox' name='has_donated' id='has_donated' value='on' $checked /> <label for='has_donated'>".sprintf(__('I have <a href="%1$s">made a donation to help support this plug-in</a>','wp-to-twitter'),'http://www.joedolson.com/donate.php')."</label>

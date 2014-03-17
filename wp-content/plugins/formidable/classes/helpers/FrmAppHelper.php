@@ -1,6 +1,36 @@
 <?php
+if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+
+if(class_exists('FrmAppHelper'))
+    return;
 
 class FrmAppHelper{
+    public static $db_version = 11; //version of the database we are moving to (skip 12)
+    public static $pro_db_version = 24;
+    
+    public static function plugin_version(){
+        $plugin_data = get_file_data( WP_PLUGIN_DIR .'/formidable/formidable.php', array('Version' => 'Version'), 'plugin' );
+        return $plugin_data['Version'];
+    }
+    
+    public static function plugin_path(){
+        return dirname(dirname(dirname(__FILE__)));
+    }
+    
+    public static function plugin_url($url=''){
+        //prevously FRM_URL constant
+        if(empty($url))
+            $url = plugins_url('', 'formidable/formidable.php');
+        if(is_ssl() and !preg_match('/^https:\/\/.*\..*$/', $url))
+            $url = str_replace('http://', 'https://', $url);
+        
+        return $url;
+    }
+    
+    public static function site_url(){
+        $url = self::plugin_url(site_url());
+        return $url;
+    }
     
     public static function get_param($param, $default='', $src='get'){
         if(strpos($param, '[')){
@@ -34,24 +64,14 @@ class FrmAppHelper{
     }
     
     public static function load_scripts($scripts){
-        global $wp_version;
-        if(version_compare( $wp_version, '3.3', '<')){
-            global $wp_scripts;
-            $wp_scripts->do_items( (array)$scripts );
-        }else{
-            foreach((array)$scripts as $s)
-                wp_enqueue_script($s);
+        foreach ( (array) $scripts as $s ) {
+            wp_enqueue_script($s);
         }
     }
     
     public static function load_styles($styles){
-        global $wp_version;
-        if(version_compare( $wp_version, '3.3', '<')){
-            global $wp_styles;
-            $wp_styles->do_items( (array)$styles );
-        }else{
-            foreach((array)$styles as $s)
-                wp_enqueue_style($s);
+        foreach ( (array) $styles as $s ) {
+            wp_enqueue_style($s);
         }
     }
     
@@ -62,7 +82,7 @@ class FrmAppHelper{
     public static function wp_pages_dropdown($field_name, $page_id, $truncate=false){
         $pages = FrmAppHelper::get_pages();
     ?>
-        <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" class="frm-dropdown frm-pages-dropdown">
+        <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" class="frm-pages-dropdown">
             <option value=""></option>
             <?php foreach($pages as $page){ ?>
                 <option value="<?php echo $page->ID; ?>" <?php echo (((isset($_POST[$field_name]) and $_POST[$field_name] == $page->ID) or (!isset($_POST[$field_name]) and $page_id == $page->ID))?' selected="selected"':''); ?>><?php echo ($truncate)? FrmAppHelper::truncate($page->post_title, $truncate) : $page->post_title; ?> </option>
@@ -72,44 +92,50 @@ class FrmAppHelper{
     }
     
     public static function wp_roles_dropdown($field_name, $capability){
-        global $frm_editable_roles;
+        global $frm_vars;
         $field_value = FrmAppHelper::get_param($field_name);
-        if(!$frm_editable_roles)
-    	    $frm_editable_roles = get_editable_roles();
+        if(!isset($frm_vars['editable_roles']) or !$frm_vars['editable_roles'])
+    	    $frm_vars['editable_roles'] = get_editable_roles();
 
     ?>
-        <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" class="frm-dropdown frm-pages-dropdown">
-            <?php foreach($frm_editable_roles as $role => $details){ 
+        <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" class="frm-pages-dropdown">
+            <?php foreach($frm_vars['editable_roles'] as $role => $details){ 
                 $name = translate_user_role($details['name'] ); ?>
                 <option value="<?php echo esc_attr($role) ?>" <?php echo (((isset($_POST[$field_name]) and $_POST[$field_name] == $role) or (!isset($_POST[$field_name]) and $capability == $role))?' selected="selected"':''); ?>><?php echo $name ?> </option>
-            <?php } ?>
+            <?php 
+                    unset($role);
+                    unset($details);
+                } ?>
         </select>
     <?php
     }
     
-    static public function frm_capabilities(){
-        global $frmpro_is_installed;
+    public static function frm_capabilities(){
+        global $frm_vars;
         $cap = array(
-            'frm_view_forms' => __('View Forms and Templates', 'formidable'),
-            'frm_edit_forms' => __('Add/Edit Forms and Templates', 'formidable'),
-            'frm_delete_forms' => __('Delete Forms and Templates', 'formidable'),
-            'frm_change_settings' => __('Access this Settings Page', 'formidable')
+            'frm_view_forms'        => __('View Forms and Templates', 'formidable'),
+            'frm_edit_forms'        => __('Add/Edit Forms and Templates', 'formidable'),
+            'frm_delete_forms'      => __('Delete Forms and Templates', 'formidable'),
+            'frm_change_settings'   => __('Access this Settings Page', 'formidable')
         );
-        if($frmpro_is_installed){
+        if($frm_vars['pro_is_installed']){
             $cap['frm_view_entries'] = __('View Entries from Admin Area', 'formidable');
             $cap['frm_create_entries'] = __('Add Entries from Admin Area', 'formidable');
             $cap['frm_edit_entries'] = __('Edit Entries from Admin Area', 'formidable');
             $cap['frm_delete_entries'] = __('Delete Entries from Admin Area', 'formidable');
             $cap['frm_view_reports'] = __('View Reports', 'formidable');
-            $cap['frm_edit_displays'] = __('Add/Edit Custom Displays', 'formidable');
+            $cap['frm_edit_displays'] = __('Add/Edit Views', 'formidable');
         }
         return $cap;
     }
     
-    public static function user_has_permission($needed_role){        
+    public static function user_has_permission($needed_role){
+        if($needed_role == '-1')
+            return false;
+            
         if($needed_role == '' or current_user_can($needed_role))
             return true;
-            
+           
         $roles = array( 'administrator', 'editor', 'author', 'contributor', 'subscriber' );
         foreach ($roles as $role){
         	if (current_user_can($role))
@@ -118,13 +144,6 @@ class FrmAppHelper{
         		break;
         }
         return false;
-    }
-    
-    public static function is_super_admin($user_id=false){
-        if(function_exists('is_super_admin'))
-            return is_super_admin($user_id);
-        else
-            return is_site_admin($user_id);
     }
     
     public static function checked($values, $current){
@@ -193,6 +212,10 @@ class FrmAppHelper{
     	return $ver;
     }
     
+    public static function js_redirect($url){
+        return '<script type="text/javascript">window.location="'. $url .'"</script>';
+    }
+    
     public static function get_file_contents($filename){
         if (is_file($filename)){
             ob_start();
@@ -210,10 +233,7 @@ class FrmAppHelper{
         $key = '';
         
         if (!empty($name)){
-            if(function_exists('sanitize_key'))
-                $key = sanitize_key($name);
-            else
-                $key = sanitize_title_with_dashes($name);
+            $key = sanitize_key($name);
         }
         
         if(empty($key)){
@@ -243,10 +263,10 @@ class FrmAppHelper{
     //Editing a Form or Entry
     public static function setup_edit_vars($record, $table, $fields='', $default=false, $post_values=array()){
         if(!$record) return false;
-        global $frm_entry_meta, $frm_form, $frm_settings, $frm_sidebar_width;
+        global $frm_entry_meta, $frm_settings, $frm_vars;
         
         if(empty($post_values))
-            $post_values = $_POST;
+            $post_values = stripslashes_deep($_POST);
         
         $values = array('id' => $record->id, 'fields' => array());
 
@@ -254,10 +274,9 @@ class FrmAppHelper{
               $values[$var] = FrmAppHelper::get_param($var, $default_val);
               
         if(apply_filters('frm_use_wpautop', true))
-            $values['description'] = wpautop($values['description']);
+            $values['description'] = wpautop(str_replace( '<br>', '<br />', $values['description']));
         
-        if ($fields){
-            foreach($fields as $field){
+            foreach((array)$fields as $field){
 
                 if ($default){
                     $meta_value = $field->default_value;
@@ -274,7 +293,7 @@ class FrmAppHelper{
                 }
                 
                 $field_type = isset($post_values['field_options']['type_'.$field->id]) ? $post_values['field_options']['type_'.$field->id] : $field->type;
-                $new_value = (isset($post_values['item_meta'][$field->id])) ? stripslashes_deep(maybe_unserialize($post_values['item_meta'][$field->id])) : $meta_value;
+                $new_value = isset($post_values['item_meta'][$field->id]) ? maybe_unserialize($post_values['item_meta'][$field->id]) : $meta_value;
 
                 $field_array = array(
                     'id' => $field->id,
@@ -302,14 +321,14 @@ class FrmAppHelper{
                 $opt_defaults = FrmFieldsHelper::get_default_field_opts($field_array['type'], $field, true);
                 
                 foreach ($opt_defaults as $opt => $default_opt){
-                    $field_array[$opt] = ($post_values and isset($post_values['field_options'][$opt.'_'.$field->id]) ) ? stripslashes_deep(maybe_unserialize($post_values['field_options'][$opt.'_'.$field->id])) : (isset($field->field_options[$opt]) ? $field->field_options[$opt] : $default_opt);
+                    $field_array[$opt] = ($post_values && isset($post_values['field_options'][$opt.'_'.$field->id]) ) ? maybe_unserialize($post_values['field_options'][$opt.'_'.$field->id]) : (isset($field->field_options[$opt]) ? $field->field_options[$opt] : $default_opt);
                     if($opt == 'blank' and $field_array[$opt] == ''){
                         $field_array[$opt] = $frm_settings->blank_msg;
                     }else if($opt == 'invalid' and $field_array[$opt] == ''){
                         if($field_type == 'captcha')
                             $field_array[$opt] = $frm_settings->re_msg;
                         else
-                            $field_array[$opt] = $field_array['name'] . ' ' . __('is invalid', 'formidable');
+                            $field_array[$opt] = sprintf(__('%s is invalid', 'formidable'), $field_array['name']);
                     }
                 }
                 
@@ -319,9 +338,12 @@ class FrmAppHelper{
                     $field_array['custom_html'] = FrmFieldsHelper::get_default_html($field_type);
                 
                 if ($field_array['size'] == '')
-                    $field_array['size'] = $frm_sidebar_width;
+                    $field_array['size'] = isset($frm_vars['sidebar_width']) ? $frm_vars['sidebar_width'] : '';
                 
                 $field_array = apply_filters('frm_setup_edit_fields_vars', $field_array, $field, $values['id']);
+                
+                if(!isset($field_array['unique']) or !$field_array['unique'])
+                    $field_array['unique_msg'] = '';
                 
                 foreach((array)$field->field_options as $k => $v){
                     if(!isset($field_array[$k]))
@@ -334,12 +356,10 @@ class FrmAppHelper{
                 
                 unset($field);   
             }
-        }
       
-        if ($table == 'entries')
-            $form = $frm_form->getOne( $record->form_id );
-        else if ($table == 'forms')
-            $form = $frm_form->getOne( $record->id );
+        $frm_form = new FrmForm();
+        $form = $frm_form->getOne( $table == 'entries' ? $record->form_id : $record->id );
+        unset($frm_form);
 
         if ($form){
             $form->options = maybe_unserialize($form->options);
@@ -347,9 +367,9 @@ class FrmAppHelper{
             if (is_array($form->options)){
                 foreach ($form->options as $opt => $value){
                     if(in_array($opt, array('email_to', 'reply_to', 'reply_to_name')))
-                        $values['notification'][0][$opt] = isset($post_values["notification[0][$opt]"]) ? stripslashes_deep(maybe_unserialize($post_values["notification[0][$opt]"])) : $value;
+                        $values['notification'][0][$opt] = isset($post_values["notification[0][$opt]"]) ? maybe_unserialize($post_values["notification[0][$opt]"]) : $value;
                     
-                    $values[$opt] = isset($post_values[$opt]) ? stripslashes_deep(maybe_unserialize($post_values[$opt])) : $value;
+                    $values[$opt] = isset($post_values[$opt]) ? maybe_unserialize($post_values[$opt]) : $value;
                 }
             }
         }
@@ -371,24 +391,33 @@ class FrmAppHelper{
                     }
                 }else{
                     $values[$opt] = ($post_values and isset($post_values['options'][$opt])) ? $post_values['options'][$opt] : $default;
+                }    
+            }else if($values[$opt] == 'notification'){
+                foreach($values[$opt] as $k => $n){
+                    foreach($default as $o => $d){
+                        if(!isset($n[$o]))
+                            $values[$opt][$k][$o] = ($post_values and isset($post_values[$opt][$k][$o])) ? $post_values[$opt][$k][$o] : $d;
+                        unset($o);
+                        unset($d);
+                    }
+                    unset($k);
+                    unset($n);
                 }
             }
+            
             unset($opt);
             unset($defaut);
         }
-            
+         
         if (!isset($values['custom_style']))
             $values['custom_style'] = ($post_values and isset($post_values['options']['custom_style'])) ? $_POST['options']['custom_style'] : ($frm_settings->load_style != 'none');
 
-        if (!isset($values['before_html']))
-            $values['before_html'] = (isset($post_values['options']['before_html']) ? $post_values['options']['before_html'] : FrmFormsHelper::get_default_html('before'));
-
-        if (!isset($values['after_html']))
-            $values['after_html'] = (isset($post_values['options']['after_html']) ? $post_values['options']['after_html'] : FrmFormsHelper::get_default_html('after'));
+        foreach(array('before', 'after', 'submit') as $h){
+            if (!isset($values[$h.'_html']))
+                $values[$h .'_html'] = (isset($post_values['options'][$h .'_html']) ? $post_values['options'][$h .'_html'] : FrmFormsHelper::get_default_html($h));
+            unset($h);
+        }
         
-        if (!isset($values['submit_html']))
-            $values['submit_html'] = (isset($post_values['options']['submit_html']) ? $post_values['options']['submit_html'] : FrmFormsHelper::get_default_html('submit'));
-
         if ($table == 'entries')
             $values = FrmEntriesHelper::setup_edit_vars( $values, $record );
         else if ($table == 'forms')
@@ -402,13 +431,13 @@ class FrmAppHelper{
         
         $class = '';
         
-        if(in_array($type, array('email', 'user_id', 'hidden', 'select', 'radio', 'checkbox')))
+        if(in_array($type, array('email', 'user_id', 'hidden', 'select', 'radio', 'checkbox', 'phone')))
             $class .= 'show_frm_not_email_to';
     ?>
 <li>
-    <a class="frmids alignright <?php echo $class ?>" onclick="frmInsertFieldCode(jQuery(this),'<?php echo $id ?>');return false;" href="#">[<?php echo $id ?>]</a>
-    <a class="frmkeys alignright <?php echo $class ?>" onclick="frmInsertFieldCode(jQuery(this),'<?php echo $key ?>');return false;" href="#">[<?php echo FrmAppHelper::truncate($key, 10) ?>]</a>
-    <a class="<?php echo $class ?>" onclick="frmInsertFieldCode(jQuery(this),'<?php echo $id ?>');return false;" href="#"><?php echo FrmAppHelper::truncate($name, 60) ?></a>
+    <a class="frmids frm_insert_code alignright <?php echo $class ?>" data-code="<?php echo esc_attr($id) ?>" href="javascript:void(0)">[<?php echo $id ?>]</a>
+    <a class="frmkeys frm_insert_code alignright <?php echo $class ?>" data-code="<?php echo esc_attr($key) ?>" href="javascript:void(0)">[<?php echo FrmAppHelper::truncate($key, 10) ?>]</a>
+    <a class="frm_insert_code <?php echo $class ?>" data-code="<?php echo esc_attr($id) ?>" href="javascript:void(0)"><?php echo FrmAppHelper::truncate($name, 60) ?></a>
 </li>
     <?php
     }
@@ -416,7 +445,8 @@ class FrmAppHelper{
     public static function get_us_states(){
         return apply_filters('frm_us_states', array(
             'AL' => 'Alabama', 'AK' => 'Alaska', 'AR' => 'Arkansas', 'AZ' => 'Arizona', 
-            'CA' => 'California', 'CO' => 'Colorado', 'CT' => 'Connecticut', 'DE' => 'Delaware', 
+            'CA' => 'California', 'CO' => 'Colorado', 'CT' => 'Connecticut', 'DE' => 'Delaware',
+            'DC' => 'District of Columbia', 
             'FL' => 'Florida', 'GA' => 'Georgia', 'HI' => 'Hawaii', 'ID' => 'Idaho', 
             'IL' => 'Illinois', 'IN' => 'Indiana', 'IA' => 'Iowa', 'KS' => 'Kansas', 
             'KY' => 'Kentucky', 'LA' => 'Louisiana', 'ME' => 'Maine','MD' => 'Maryland', 
@@ -508,26 +538,10 @@ class FrmAppHelper{
         ));
     }
     
-    public static function frm_get_main_message( $message = ''){
-        global $frmpro_is_installed;
-        
-        //if($frmpro_is_installed)
-            return $message;
-           
-        $frm_update = new FrmUpdatesController();
-         
-        include_once(ABSPATH.'/wp-includes/class-IXR.php');
-
-        $url = ($frmpro_is_installed or $frm_update->pro_is_authorized()) ? 'http://formidablepro.com/' : 'http://blog.strategy11.com/';
-        $client = new IXR_Client($url.'xmlrpc.php', false, 80, 5);
-        
-        if ($client->query('frm.get_main_message'))
-            $message = $client->getResponse();
-
-      return $message;
-    }
-    
     public static function truncate($str, $length, $minword = 3, $continue = '...'){
+        if(is_array($str))
+            return;
+        
         $length = (int)$length;
         $str = strip_tags($str);
         $original_len = (function_exists('mb_strlen')) ? mb_strlen($str) : strlen($str);
@@ -560,12 +574,16 @@ class FrmAppHelper{
     }
     
     public static function prepend_and_or_where( $starts_with = ' WHERE ', $where = '' ){
+        if ( empty($where) ) {
+            return '';
+        }
+        
         if(is_array($where)){
             global $frmdb, $wpdb;
             extract($frmdb->get_where_clause_and_values( $where ));
             $where = $wpdb->prepare($where, $values);
         }else{
-            $where = (( $where == '' ) ? '' : $starts_with . $where);
+            $where = $starts_with . $where;
         }
         
         return $where;
@@ -587,22 +605,6 @@ class FrmAppHelper{
         global $wpdb;
         $query = 'SELECT COUNT(*) FROM ' . $table_name . FrmAppHelper::prepend_and_or_where(' WHERE ', $where);
         return $wpdb->get_var($query);
-    }
-
-    public static function getPageCount($p_size, $where="", $table_name){
-        if(is_numeric($where))
-            return ceil((int)$where / (int)$p_size);
-        else
-            return ceil((int)self::getRecordCount($where, $table_name) / (int)$p_size);
-    }
-
-    public static function getPage($current_p,$p_size, $where = "", $order_by = '', $table_name){
-        global $wpdb;
-        $end_index = $current_p * $p_size;
-        $start_index = $end_index - $p_size;
-        $query = 'SELECT *  FROM ' . $table_name . FrmAppHelper::prepend_and_or_where(' WHERE', $where) . $order_by .' LIMIT ' . $start_index . ',' . $p_size;
-        $results = $wpdb->get_results($query);
-        return $results;
     }
     
     public static function get_referer_query($query) {
@@ -639,7 +641,7 @@ class FrmAppHelper{
         	
         	$referrerinfo .= "\r\n";
 	    }else{
-	        $referrerinfo = $_SERVER['HTTP_REFERER'];
+	        $referrerinfo = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
 	    }
 
     	$i = 1;
@@ -704,6 +706,18 @@ class FrmAppHelper{
         }
         
         return $vars;
+    }
+    
+    public static function maybe_json_decode($string){
+        $new_string = json_decode($string, true);
+        if ( function_exists('json_last_error') ) { // php 5.3+
+            if ( json_last_error() == JSON_ERROR_NONE ) {
+                $string = $new_string;
+            }
+        } else if ( isset($new_string) ) { // php < 5.3 fallback
+            $string = $new_string;
+        }
+        return $string;
     }
     
 }

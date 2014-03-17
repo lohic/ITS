@@ -1,13 +1,8 @@
 <?php
 
 class FrmProListHelper extends WP_List_Table {
-    var $plural;
-    var $singular;
-    var $table_name;
-    var $page_name;
-    var $params;
     
-	function FrmProListHelper($args) {
+	function __construct($args) {
 	    $args = wp_parse_args( $args, array(
 			'plural' => '',
 			'singular' => '',
@@ -48,12 +43,11 @@ class FrmProListHelper extends WP_List_Table {
 		$per_page = $this->get_items_per_page( 'formidable_page_formidable_'. str_replace('-', '_', $this->page_name) .'_per_page');
 
 		$start = ( isset( $_REQUEST['start'] ) ) ? $_REQUEST['start'] : (( $page - 1 ) * $per_page);
-		$s = isset( $_REQUEST['s'] ) ? $_REQUEST['s'] : '';
+		$s = isset( $_REQUEST['s'] ) ? stripslashes($_REQUEST['s']) : '';
 		$fid = isset( $_REQUEST['fid'] ) ? $_REQUEST['fid'] : '';
 		if($s != ''){
-		    $s = stripslashes($s);
 		    preg_match_all('/".*?("|$)|((?<=[\\s",+])|^)[^\\s",+]+/', $s, $matches);
-		    $search_terms = array_map('_search_terms_tidy', $matches[0]);
+		    $search_terms = array_map('trim', $matches[0]);
 		}
 		$s_query = '';
 		
@@ -81,12 +75,12 @@ class FrmProListHelper extends WP_List_Table {
     		    if(!empty($s)){
                     _e('No Entries Found', 'formidable');
                 }else{
-                    global $frm_form;
+                    $frm_form = new FrmForm();
                     $form_id = $this->params['form'];
                     $form = $frm_form->getOne($form_id);
                     $colspan = $this->get_column_count();
                     if($form)
-                        include(FRM_VIEWS_PATH .'/frm-entries/no_entries.php');
+                        include(FrmAppHelper::plugin_path() .'/classes/views/frm-entries/no_entries.php');
                 }
             break;
             default:
@@ -99,7 +93,8 @@ class FrmProListHelper extends WP_List_Table {
     		return;
 
         if($this->plural == 'entries'){
-            global $frm_form, $frm_field;
+            global $frm_field;
+            $frm_form = new FrmForm();
             if(isset($this->params['form']))
                 $form = $frm_form->getOne($this->params['form']);
             else
@@ -122,7 +117,7 @@ class FrmProListHelper extends WP_List_Table {
     <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
     <?php if(isset($field_list) and !empty($field_list)){ ?>
     <select name="fid">
-        <option value="">- <?php _e('All Fields', 'formidable') ?> -</option>
+        <option value="">&mdash; <?php _e('All Fields', 'formidable') ?> &mdash;</option>
         <option value="created_at" <?php selected($fid, 'created_at') ?>><?php _e('Entry creation date', 'formidable') ?></option>
         <option value="id" <?php selected($fid, 'id') ?>><?php _e('Entry ID', 'formidable') ?></option>
         <?php foreach($field_list as $f){ ?>
@@ -140,12 +135,12 @@ class FrmProListHelper extends WP_List_Table {
 	}
 	
 	function get_bulk_actions(){
-        $actions = array('bulk_delete' => __('Delete', 'formidable'));
+        $actions = array('bulk_delete' => __('Delete'));
         
         if($this->plural == 'entries' and !current_user_can('frm_delete_entries'))
             unset($actions['bulk_delete']);
         
-        $actions['bulk_export'] = __('Export to XML', 'formidable');
+        //$actions['bulk_export'] = __('Export to XML', 'formidable');
         
         if($this->plural == 'entries')
             $actions['bulk_csv'] = __('Export to CSV', 'formidable');
@@ -173,9 +168,8 @@ class FrmProListHelper extends WP_List_Table {
 		// Set up the hover actions for this user
 		$actions = array();
 		
-		
 		$edit_link = "?page=formidable-{$this->page_name}&frm_action=edit&id={$item->id}";
-		$actions['edit'] = "<a href='" . wp_nonce_url( $edit_link ) . "'>". __('Edit', 'formidable') ."</a>";
+		$actions['edit'] = "<a href='" . wp_nonce_url( $edit_link ) . "'>". __('Edit') ."</a>";
 		
 		$duplicate_link = "?page=formidable-{$this->page_name}&frm_action=duplicate&id={$item->id}";
 		$delete_link = "?page=formidable-{$this->page_name}&frm_action=destroy&id={$item->id}";
@@ -189,7 +183,7 @@ class FrmProListHelper extends WP_List_Table {
         }
         
         $actions['duplicate'] = "<a href='" . wp_nonce_url( $duplicate_link ) . "'>". __('Duplicate', 'formidable') ."</a>";
-		$actions['delete'] = "<a class='submitdelete' href='" . wp_nonce_url( $delete_link ) . "' onclick='return confirm(\"". __('Are you sure you want to delete that?', 'formidable') ."\")'>" . __( 'Delete', 'formidable' ) . "</a>";
+		$actions['delete'] = "<a class='submitdelete' href='" . wp_nonce_url( $delete_link ) . "' onclick='return confirm(\"". __('Are you sure you want to delete that?', 'formidable') ."\")'>" . __( 'Delete' ) . "</a>";
 		
 	    if($this->plural == 'entries'){
     		if(!current_user_can('frm_edit_entries'))
@@ -245,8 +239,11 @@ class FrmProListHelper extends WP_List_Table {
 				    $date = FrmProAppHelper::get_formatted_time($item->{$col_name}, $frmpro_settings->date_format);
 					$val = "<abbr title='". FrmProAppHelper::get_formatted_time($item->{$col_name}, $frmpro_settings->date_format, 'g:i:s A') ."'>". $date ."</abbr>";
 					break;
+				case 'is_draft':
+				    $val = empty($item->is_draft) ? __('No') : __('Yes');
+			        break;
 				case 'form_id':
-				    global $frm_form;
+				    $frm_form = new FrmForm();
 				    $form = $frm_form->getName($item->form_id);
 				    if($form)
 				        $val = '<a href="'. admin_url('admin.php') .'?page=formidable&frm_action=edit&id='. $item->form_id .'">'. FrmAppHelper::truncate($form, 40) .'</a>';
@@ -267,7 +264,7 @@ class FrmProListHelper extends WP_List_Table {
 				case 'shortcode':
 				    $code = '';
 				    
-				    $val = "<input type='text' style='font-size:10px;width:100%;' readonly='true' onclick='this.select();' onfocus='this.select();' value='{$code}' />";
+				    $val = '<input type="text" readonly="true" class="frm_select_box" value="'. esc_attr($code) .'" />';
 			        break;
 				default:
 				
@@ -283,8 +280,7 @@ class FrmProListHelper extends WP_List_Table {
 
     				    $field_value = isset($item->metas[$col->id]) ? $item->metas[$col->id] : false;
 
-                        if(!$field_value and $col->type == 'data' and $col->field_options['data_type'] == 'data' and
-                         isset($col->field_options['hide_field'])){
+                        if(!$field_value and $col->type == 'data' and (!isset($col->field_options['data_type']) or $col->field_options['data_type'] == 'data') and isset($col->field_options['hide_field'])){
                              $field_value = array();
                              foreach((array)$col->field_options['hide_field'] as $hfield ){
                                  if(isset($item->metas[$hfield]))

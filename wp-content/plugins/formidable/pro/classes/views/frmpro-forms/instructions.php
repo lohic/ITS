@@ -13,7 +13,7 @@
            
         ?>
             <li class="frm_col_<?php echo $col ?>">
-                <a class="frmbutton button show_dyn_default_value<?php if(!empty($title)) echo ' frm_help'; ?>" onclick="frmInsertFieldCode(jQuery(this),'<?php echo $tag ?>');return false;" href="#" <?php if(!empty($title)){ ?>title="<?php echo esc_attr($title); ?>"<?php } ?>><?php echo $label ?></a>
+                <a class="frmbutton button show_dyn_default_value frm_insert_code<?php if(!empty($title)) echo ' frm_help'; ?>" data-code="<?php echo esc_attr($tag) ?>" href="javascript:void(0)" <?php if(!empty($title)){ ?>title="<?php echo esc_attr($title); ?>"<?php } ?>><?php echo $label ?></a>
             </li>
         <?php 
             $col = ($col == 'one') ? 'two' : 'one';

@@ -1,8 +1,8 @@
-<?php 
+<?php
+FrmProFieldsHelper::set_field_js($field, (isset($entry_id) ? $entry_id : 0));
 if ($field['type'] == 'hidden'){
-    global $frmpro_field;
     $frm_action = (isset($_GET) and isset($_GET['frm_action'])) ? 'frm_action' : 'action';
-    if (is_admin() and (!isset($_GET[$frm_action]) or $_GET[$frm_action] != 'new') and $frmpro_field->on_current_page($field['id'])){ ?>
+    if ( is_admin() && !defined('DOING_AJAX') && (!isset($_GET[$frm_action]) || $_GET[$frm_action] != 'new') && FrmProFieldsHelper::field_on_current_page($field['id']) ) { ?>
 <div id="frm_field_<?php $field['id'] ?>_container" class="frm_form_field form-field frm_top_container">
 <label class="frm_primary_label"><?php echo $field['name'] ?>:</label> <?php echo $field['value']; ?>
 </div>
@@ -21,15 +21,15 @@ if (is_array($field['value'])){
 } 
 
 }else if ($field['type'] == 'user_id'){
-    global $user_ID;
+    $user_ID = get_current_user_id();
     echo '<input type="hidden" id="field_'. $field['field_key'] .'" name="'. $field_name .'" value="'. esc_attr((is_numeric($field['value'])) ? $field['value'] : ($user_ID ? $user_ID : '' )) .'"/>'."\n";
 
 }else if ($field['type'] == 'break'){   
-    global $frm_prev_page;
+    global $frm_vars;
 
-    if (isset($frm_prev_page[$field['form_id']]) and $frm_prev_page[$field['form_id']] == $field['field_order']){ 
+    if (isset($frm_vars['prev_page'][$field['form_id']]) and $frm_vars['prev_page'][$field['form_id']] == $field['field_order']){ 
         echo FrmFieldsHelper::replace_shortcodes($field['custom_html'], $field, array(), $form); ?>
-<input type="hidden" name="frm_next_page" class="frm_next_page" id="frm_next_p_<?php echo isset($frm_prev_page[$field['form_id']]) ? $frm_prev_page[$field['form_id']] : 0; ?>" value="" />
+<input type="hidden" name="frm_next_page" class="frm_next_page" id="frm_next_p_<?php echo isset($frm_vars['prev_page'][$field['form_id']]) ? $frm_vars['prev_page'][$field['form_id']] : 0; ?>" value="" />
 <?php
     }else{ ?>
 <input type="hidden" name="frm_page_order_<?php echo $field['form_id'] ?>" value="<?php echo esc_attr($field['field_order']); ?>" />

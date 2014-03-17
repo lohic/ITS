@@ -11,11 +11,9 @@ function wpt_get_user( $twitter_ID=false ) {
 	$token = get_option('oauth_token');
 	$token_secret = get_option('oauth_token_secret');	
     $connection = new jd_TwitterOAuth($key, $secret, $token, $token_secret);
-	$protocol = ( get_option( 'wpt_http' ) == '1' )?'http:':'https:';	
-    $result = $connection->get($protocol."//api.twitter.com/1.1/users/show.json?screen_name=$twitter_ID", $options);
+    $result = $connection->get( "https://api.twitter.com/1.1/users/show.json?screen_name=$twitter_ID", $options);
 	return json_decode($result);
 }
-
 
 add_shortcode( 'get_tweets', 'wpt_get_twitter_feed' );
 function wpt_get_twitter_feed( $atts, $content ) {
@@ -47,7 +45,10 @@ function wpt_get_twitter_feed( $atts, $content ) {
 
 function wpt_twitter_feed( $instance ) {
 	$return = '<div class="wpt-header">';
-		$user = wpt_get_user( $instance['twitter_id'] );
+		$user = wpt_get_user( $instance['twitter_id'] );		
+		if ( isset($user->errors) && $user->errors[0]->message ) {
+			return __("Error: ",'wp-to-twitter'). $user->errors[0]->message;
+		}
 		$avatar = $user->profile_image_url_https;
 		$name = $user->name;
 		$verified = $user->verified;
@@ -64,7 +65,7 @@ function wpt_twitter_feed( $instance ) {
 	$return .= '</div>';
 	$return .= '<ul>' . "\n";
 
-	$options['exclude_replies'] = $instance['twitter_hide_replies'];
+	$options['exclude_replies'] = ( isset( $instance['twitter_hide_replies'] ) ) ? $instance['twitter_hide_replies'] : false;
 	$options['include_rts'] = $instance['twitter_include_rts'];
 	$opts['links'] = $instance['link_links'];
 	$opts['mentions'] = $instance['link_mentions'];
@@ -157,7 +158,6 @@ function __construct() {
 function widget( $args, $instance ) {
 	extract( $args );
 	wp_enqueue_script( 'twitter-platform', "https://platform.twitter.com/widgets.js" );
-	wp_enqueue_style( 'wpt-twitter-feed' );
 	/** Merge with defaults */
 	$instance = wp_parse_args( (array) $instance, $this->defaults );
 	echo $before_widget;

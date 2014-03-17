@@ -3,27 +3,32 @@
  * @package Formidable
  */
  
+if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+
+if(class_exists('FrmEntriesController'))
+    return;
+
 class FrmEntriesController{
     
-    function FrmEntriesController(){
-        add_action('admin_menu', 'FrmEntriesController::menu', 20);
+    public static function load_hooks(){
+        add_action('admin_menu', 'FrmEntriesController::menu', 11);
         add_action('wp', 'FrmEntriesController::process_entry', 10, 0);
         add_action('frm_wp', 'FrmEntriesController::process_entry', 10, 0);
-        add_filter('frm_redirect_msg', 'FrmEntriesController::delete_entry_before_redirect', 50, 3);
-        add_filter('frm_redirect_url', 'FrmEntriesController::delete_entry_before_wpredirect', 50, 3);
+        add_filter('frm_redirect_url', 'FrmEntriesController::delete_entry_before_redirect', 50, 3);
         add_action('frm_after_entry_processed', 'FrmEntriesController::delete_entry_after_save', 100);
         add_filter('frm_email_value', 'FrmEntriesController::filter_email_value', 10, 3);
     }
     
     public static function menu(){
-        global $frmpro_is_installed;
-        if(!$frmpro_is_installed){
+        global $frm_vars;
+        if(!$frm_vars['pro_is_installed']){
             add_submenu_page('formidable', 'Formidable |'. __('Entries', 'formidable'), '<span style="opacity:.5;filter:alpha(opacity=50);">'. __('Entries', 'formidable') .'</span>', 'administrator', 'formidable-entries', 'FrmEntriesController::list_entries');
         }
     }
     
     public static function list_entries(){
-        global $frm_form, $frm_entry;
+        global $frm_entry;
+        $frm_form = new FrmForm();
         $form_select = $frm_form->getAll("is_template=0 AND (status is NULL OR status = '' OR status = 'published')", ' ORDER BY name');
         $form_id = FrmAppHelper::get_param('form', false);
         if($form_id)
@@ -34,95 +39,57 @@ class FrmEntriesController{
         if($form)
             $entry_count = $frm_entry->getRecordCount($form->id);
             
-        include(FRM_VIEWS_PATH.'/frm-entries/list.php');
+        include(FrmAppHelper::plugin_path() .'/classes/views/frm-entries/list.php');
     }
     
     public static function show_form($id='', $key='', $title=false, $description=false){
-        global $frm_form, $user_ID, $frm_settings, $post;
-        if ($id) $form = $frm_form->getOne((int)$id);
-        else if ($key) $form = $frm_form->getOne($key);
-        else $form = false;
-
-        $form = apply_filters('frm_pre_display_form', $form);
-        
-        if(!$form or 
-            (($form->is_template or $form->status == 'draft') and !isset($_GET) and !isset($_GET['form']) and 
-                (!isset($_GET['preview']) or $post and $post->ID != $frm_settings->preview_page_id))
-            ){
-            return __('Please select a valid form', 'formidable');
-        }else if ($form->logged_in and !$user_ID){
-            global $frm_settings;
-            return do_shortcode($frm_settings->login_msg);
-        }
-
-        if($form->logged_in and $user_ID and isset($form->options['logged_in_role']) and $form->options['logged_in_role'] != ''){
-            if(FrmAppHelper::user_has_permission($form->options['logged_in_role'])){
-                return FrmEntriesController::get_form(FRM_VIEWS_PATH.'/frm-entries/frm-entry.php', $form, $title, $description);
-            }else{
-                global $frm_settings;
-                return do_shortcode($frm_settings->login_msg);
-            }
-        }else    
-            return FrmEntriesController::get_form(FRM_VIEWS_PATH.'/frm-entries/frm-entry.php', $form, $title, $description);
+        _deprecated_function( __FUNCTION__, '1.07.05', 'FrmFormsController::show_form()' );
+        return FrmFormsController::show_form($id, $key, $title, $description);
     }
     
     public static function get_form($filename, $form, $title, $description) {
-        if (is_file($filename)) {
-            ob_start();
-            include $filename;
-            $contents = ob_get_contents();
-            ob_end_clean();
-            return $contents;
-        }
-        return false;
+        _deprecated_function( __FUNCTION__, '1.07.05', 'FrmFormsController::get_form()' );
+        return FrmFormsController::get_form($form, $title, $description);
     }
     
-    public static function process_entry($errors=''){
-        if(is_admin() or !isset($_POST) or !isset($_POST['form_id']) or !is_numeric($_POST['form_id']) or !isset($_POST['item_key']))
+    public static function process_entry($errors='', $ajax=false){
+        if((is_admin() and !defined('DOING_AJAX')) or !isset($_POST) or !isset($_POST['form_id']) or !is_numeric($_POST['form_id']) or !isset($_POST['item_key']))
             return;
 
-        global $frm_entry, $frm_form, $frm_created_entry, $frm_form_params;
+        global $frm_entry, $frm_vars;
         
+        $frm_form = new FrmForm();
         $form = $frm_form->getOne($_POST['form_id']);
         if(!$form)
             return;
         
-        if(!$frm_form_params)
-            $frm_form_params = array();
         $params = FrmEntriesController::get_params($form);
-        $frm_form_params[$form->id] = $params;
         
-        if(!$frm_created_entry)
-            $frm_created_entry = array();
-          
-        if(isset($frm_created_entry[$_POST['form_id']]))
+        if(!isset($frm_vars['form_params']))
+            $frm_vars['form_params'] = array();
+        $frm_vars['form_params'][$form->id] = $params;
+        
+        if(isset($frm_vars['created_entries'][$_POST['form_id']]))
             return;
-            
+           
         if($errors == '')
             $errors = $frm_entry->validate($_POST);
-        $frm_created_entry[$_POST['form_id']] = array('errors' => $errors);
+        $frm_vars['created_entries'][$_POST['form_id']] = array('errors' => $errors);
         
         if( empty($errors) ){
             $_POST['frm_skip_cookie'] = 1;
             if($params['action'] == 'create'){
-                if (apply_filters('frm_continue_to_create', true, $_POST['form_id']) and !isset($frm_created_entry[$_POST['form_id']]['entry_id']))
-                    $frm_created_entry[$_POST['form_id']]['entry_id'] = $frm_entry->create( $_POST );
+                if (apply_filters('frm_continue_to_create', true, $_POST['form_id']) and !isset($frm_vars['created_entries'][$_POST['form_id']]['entry_id']))
+                    $frm_vars['created_entries'][$_POST['form_id']]['entry_id'] = $frm_entry->create( $_POST );
             }
             
-            do_action('frm_process_entry', $params, $errors, $form);
+            do_action('frm_process_entry', $params, $errors, $form, array('ajax' => $ajax));
             unset($_POST['frm_skip_cookie']);
         }
     }
     
-    //Delete entry if it shouldn't be saved before redirect
-    public static function delete_entry_before_redirect($redirect_msg, $atts){
-        self::_delete_entry($atts['entry_id'], $atts['form']);
-        return $redirect_msg;
-    }
-    
-    public static function delete_entry_before_wpredirect($url, $form, $atts){
-        if(!defined('DOING_AJAX'))
-            self::_delete_entry($atts['id'], $form);
+    public static function delete_entry_before_redirect($url, $form, $atts){
+        self::_delete_entry($atts['id'], $form);
         return $url;
     }
     
@@ -142,9 +109,159 @@ class FrmEntriesController{
         }
     }
     
-    public static function &filter_email_value($value, $meta, $entry, $atts=array()){
-        global $frm_field;
+    public static function show_entry_shortcode($atts){
+        extract(shortcode_atts(array(
+            'id' => false, 'entry' => false, 'fields' => false, 'plain_text' => false,
+            'user_info' => false, 'include_blank' => false, 'default_email' => false,
+            'form_id' => false, 'format' => 'text',
+        ), $atts));
         
+        if ( $format != 'text' ) {
+            //format options are text, array, or json
+            $plain_text = true;
+        }
+        
+        global $frm_entry;
+        
+        if ( !$entry || !is_object($entry) ) {
+            if ( !$id && !$default_email ) {
+                return '';
+            }
+            
+            if($id)
+                $entry = $frm_entry->getOne($id, true);
+        }
+        
+        if ( $entry ) {
+            $form_id = $entry->form_id;
+            $id = $entry->id;
+        }
+        
+        if ( !$fields || !is_array($fields) ) {
+            global $frm_field;
+            $fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
+        }
+        
+        $content = ( $format != 'text' ) ? array() : '';
+        $odd = true;
+            
+        if ( !$plain_text ) {
+            global $frmpro_settings;
+            if ( !$frmpro_settings ) {
+                $frmpro_settings = array(
+                    'field_border_width' => '1px',
+                    'border_color' => 'dddddd',
+                    'bg_color' => 'f7f7f7',
+                    'bg_color_active' => 'ffffff',
+                    'text_color' => '444444',
+                );
+                $frmpro_settings = (object) $frmpro_settings;
+            }
+            $content .= "<table cellspacing='0' style='font-size:{$frmpro_settings->font_size};line-height:135%; border-bottom:{$frmpro_settings->field_border_width} solid #{$frmpro_settings->border_color};'><tbody>\r\n";
+            $bg_color = " style='background-color:#{$frmpro_settings->bg_color};'";
+            $bg_color_alt = " style='background-color:#{$frmpro_settings->bg_color_active};'";
+            $row_style = "style='text-align:left;color:#{$frmpro_settings->text_color};padding:7px 9px;border-top:{$frmpro_settings->field_border_width} solid #{$frmpro_settings->border_color}'";
+        }
+        
+        foreach ( $fields as $f ) {
+            if ( in_array($f->type, array('divider', 'captcha', 'break', 'html')) )
+                continue;
+            
+            if ( !isset($entry->metas[$f->id]) ) {
+                if ( $entry->post_id  && ( $f->type == 'tag' || (isset($f->field_options['post_field']) && $f->field_options['post_field'])) ) {
+                    $p_val = FrmProEntryMetaHelper::get_post_value($entry->post_id, $f->field_options['post_field'], $f->field_options['custom_field'], array(
+                        'truncate' => (($f->field_options['post_field'] == 'post_category') ? true : false), 
+                        'form_id' => $entry->form_id, 'field' => $f, 'type' => $f->type, 
+                        'exclude_cat' => (isset($f->field_options['exclude_cat']) ? $f->field_options['exclude_cat'] : 0)
+                    ));
+                    if ( $p_val != '' ) {
+                        $entry->metas[$f->id] = $p_val;
+                    }
+                }
+                
+                if ( !isset($entry->metas[$f->id]) && !$include_blank && !$default_email ) {
+                    continue;
+                }
+                
+                $entry->metas[$f->id] = $default_email ? '['. $f->id .']' : '';
+            }
+            
+            $prev_val = maybe_unserialize($entry->metas[$f->id]);
+            $meta = array('item_id' => $id, 'field_id' => $f->id, 'meta_value' => $prev_val, 'field_type' => $f->type);
+            
+            if ( $default_email ) {
+                $val = $prev_val;
+            } else {
+                $val = apply_filters('frm_email_value', $prev_val, (object)$meta, $entry);
+            }
+
+            if ( $f->type == 'textarea' and !$plain_text ) {
+                $val = str_replace(array("\r\n", "\r", "\n"), ' <br/>', $val);
+            }
+            
+            if ( is_array($val) && $format == 'text' ) {
+                $val = implode(', ', $val);
+            }
+             
+            $fname = $default_email ? '['. $f->id .' show=field_label]' : $f->name;
+            
+            if ( $format != 'text' ){
+                $content[$f->field_key] = $val;
+            } else if ( $plain_text ) {
+                $content .= $fname . ': ' . $val . "\r\n\r\n";
+            } else {
+             	if (!$default_email){
+             		$content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>" . $fname ."</th><td $row_style>$val</td></tr>\r\n";
+					$odd = ($odd) ? false : true;
+             	}else{
+					$content .= "[if $f->id]<tr style=\"[frm-alt-color]\"><th $row_style>" . $fname ."</th><td $row_style>$val</td></tr>\r\n[/if $f->id]";
+				}
+                
+            }
+            
+            unset($fname);
+            unset($f);
+        }
+        
+        if ( $user_info ) {
+            if ( isset($entry->description) ) {
+                $data = maybe_unserialize($entry->description);
+            } else if ( $default_email ) {
+                $entry->ip = '[ip]';
+                $data = array(
+                    'browser' => '[browser]',
+                    'referrer' => '[referrer]',
+                );
+            }
+            if ( $format != 'text' ) {
+                $content['ip'] = $entry->ip;
+                $content['browser'] = $data['browser'];
+                $content['referrer'] = $data['referrer'];
+            } else if ( $plain_text ) {
+                $content .= "\r\n\r\n" . __('User Information', 'formidable') ."\r\n";
+                $content .= __('IP Address', 'formidable') . ": ". $entry->ip ."\r\n";
+                $content .= __('User-Agent (Browser/OS)', 'formidable') . ": ". $data['browser']."\r\n";
+                $content .= __('Referrer', 'formidable') . ": ". $data['referrer']."\r\n";
+            } else {
+                $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>". __('IP Address', 'formidable') . "</th><td $row_style>". $entry->ip ."</td></tr>\r\n";
+                $odd = ($odd) ? false : true;
+                $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('User-Agent (Browser/OS)', 'formidable') . "</th><td $row_style>". $data['browser']."</td></tr>\r\n";
+                $odd = ($odd) ? false : true;
+                $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('Referrer', 'formidable') . "</th><td $row_style>". str_replace("\r\n", '<br/>', $data['referrer']) ."</td></tr>\r\n";
+            }
+        }
+
+        if(!$plain_text)
+            $content .= "</tbody></table>";
+        
+        if ( $format == 'json' )
+            $content = json_encode($content);
+        
+        return $content;
+    }
+    
+    public static function &filter_email_value($value, $meta, $entry, $atts=array()){
+        $frm_field = new FrmField();
         $field = $frm_field->getOne($meta->field_id);
         if(!$field)
             return $value; 
@@ -195,13 +312,16 @@ class FrmEntriesController{
     }
     
     public static function get_params($form=null){
-        global $frm_form, $frm_form_params;
-
+        global $frm_vars;
+        
+        $frm_form = new FrmForm();
         if(!$form)
             $form = $frm_form->getAll(array(), 'name', 1);
-            
-        if($frm_form_params and isset($frm_form_params[$form->id]))
-            return $frm_form_params[$form->id];
+        else if(!is_object($form))
+            $form = $frm_form->getOne($form);
+        
+        if(isset($frm_vars['form_params']) && is_array($frm_vars['form_params']) && isset($frm_vars['form_params'][$form->id]))
+            return $frm_vars['form_params'][$form->id];
            
         $action_var = isset($_REQUEST['frm_action']) ? 'frm_action' : 'action';
         $action = apply_filters('frm_show_new_entry_page', FrmAppHelper::get_param($action_var, 'new'), $form);

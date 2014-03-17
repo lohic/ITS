@@ -14,14 +14,14 @@
         </div>
     	<div id="major-publishing-actions">
     	    <div id="delete-action">                	    
-    	        <a class="submitdelete deletion" href="?page=formidable-entries&amp;frm_action=destroy&amp;id=<?php echo $id; ?>&amp;form=<?php echo $entry->form_id ?>" onclick="return confirm('<?php _e('Are you sure you want to delete that entry?', 'formidable') ?>');" title="<?php _e('Delete', 'formidable') ?>"><?php _e('Delete', 'formidable') ?></a>
+    	        <a class="submitdelete deletion" href="?page=formidable-entries&amp;frm_action=destroy&amp;id=<?php echo $id; ?>&amp;form=<?php echo $entry->form_id ?>" onclick="return confirm('<?php _e('Are you sure you want to delete that entry?', 'formidable') ?>');" title="<?php _e('Delete') ?>"><?php _e('Delete') ?></a>
     	        <?php if(!empty($entry->post_id)){ ?>
         	    <a class="submitdelete deletion" style="margin-left:10px;" href="?page=formidable-entries&amp;frm_action=destroy&amp;id=<?php echo $id; ?>&amp;form=<?php echo $entry->form_id ?>&amp;keep_post=1" onclick="return confirm('<?php _e('Are you sure you want to delete this entry?', 'formidable') ?>);" title="<?php _e('Delete entry but leave the post', 'formidable') ?>"><?php _e('Delete without Post', 'formidable') ?></a>
         	    <?php } ?>
     	    </div>
     	    
     	    <div id="publishing-action">
-    	        <a href="<?php echo add_query_arg('frm_action', 'edit') ?>" class="button-primary"><?php _e('Edit', 'formidable') ?></a>
+    	        <a href="<?php echo add_query_arg('frm_action', 'edit') ?>" class="button-primary"><?php _e('Edit') ?></a>
             </div>
             <div class="clear"></div>
         </div>

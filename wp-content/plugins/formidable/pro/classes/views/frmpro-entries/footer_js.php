@@ -1,35 +1,39 @@
 
 <script type="text/javascript">
-//<![CDATA[
-<?php 
-if(!defined('DOING_AJAX')){
-    echo "__FRMRULES=". json_encode($frm_rules) .";\n";
-    echo "__FRMURL='". FRM_SCRIPT_URL ."';\n";
+/*<![CDATA[*/
+<?php
+if(isset($frm_vars['tinymce_loaded']) and $frm_vars['tinymce_loaded'] === true)
+    echo 'var ajaxurl="'. admin_url( 'admin-ajax.php', 'relative' ) .'";'."\n";
+
+if(isset($frm_vars['rules']) and !empty($frm_vars['rules']))
+    echo "__FRMRULES=". json_encode($frm_vars['rules']) .";\n";
+
+if(isset($frm_vars['recaptcha_loaded']) and $frm_vars['recaptcha_loaded'])
+    echo $frm_vars['recaptcha_loaded'];
+
+if(isset($frm_vars['rte_loaded']) && !empty($frm_vars['rte_loaded'])){
+    foreach((array)$frm_vars['rte_loaded'] as $rte_field_id){ ?>
+new nicEditor({fullPanel:true,iconsPath:'<?php echo FrmAppHelper::plugin_url() ?>/pro/images/nicEditIcons.gif'<?php do_action('frm_rte_js', $rte_field_id) ?>}).panelInstance('<?php echo $rte_field_id ?>',{hasPanel:true});
+<?php }
 }
 
-if($frm_recaptcha_loaded)
-    echo $frm_recaptcha_loaded;
-
-if(!empty($frm_rte_loaded)){
-    foreach($frm_rte_loaded as $rte_field_id){ ?>
-new nicEditor({fullPanel:true,iconsPath:'<?php echo FRMPRO_IMAGES_URL ?>/nicEditIcons.gif'<?php do_action('frm_rte_js', $rte_field_id) ?>}).panelInstance(<?php echo $rte_field_id ?>,{hasPanel:true});
-<?php }
-} 
-
 ?>
-jQuery(document).ready(function($){<?php if(!defined('DOING_AJAX') and (!is_admin() or !isset($_GET) or !isset($_GET['page']) or $_GET['page'] != 'formidable-entries')){ ?>
-if($.isFunction($.fn.on)){$(document).off('submit.formidable','.frm-show-form');$(document).on('submit.formidable','.frm-show-form',frmOnSubmit);}else{$('.frm-show-form').live('submit',frmOnSubmit);}
+jQuery(document).ready(function($){
+<?php if((!defined('DOING_AJAX') or (isset($frm_vars['preview']) and $frm_vars['preview'])) and (!is_admin() or !isset($_GET) or !isset($_GET['page']) or $_GET['page'] != 'formidable-entries')){ ?>
+$(document).off('submit.formidable','.frm-show-form');$(document).on('submit.formidable','.frm-show-form',frmOnSubmit);
 <?php }
-if($frm_chosen_loaded){ ?>
+
+if(isset($frm_vars['chosen_loaded']) and $frm_vars['chosen_loaded']){ ?>
 $('.frm_chzn').chosen({<?php echo apply_filters('frm_chosen_js', 'allow_single_deselect:true') ?>});<?php 
 }
 
-if(!empty($frm_hidden_fields) or (!empty($frm_datepicker_loaded) and is_array($frm_datepicker_loaded))
-or (isset($load_lang) and !empty($load_lang)) or !empty($frm_timepicker_loaded) or !empty($frm_calc_fields)){
-if(!empty($frm_hidden_fields)){
-global $frm_field;
+if((isset($frm_vars['hidden_fields']) and !empty($frm_vars['hidden_fields'])) 
+or (isset($frm_vars['datepicker_loaded']) and !empty($frm_vars['datepicker_loaded']) and is_array($frm_vars['datepicker_loaded']))
+or (isset($load_lang) and !empty($load_lang)) or (isset($frm_vars['timepicker_loaded']) and !empty($frm_vars['timepicker_loaded'])) or (isset($frm_vars['calc_fields']) and !empty($frm_vars['calc_fields']))){
+if(isset($frm_vars['hidden_fields']) and !empty($frm_vars['hidden_fields'])){
+    global $frm_field;
     $hideme = array();
-    foreach($frm_hidden_fields as $field){
+    foreach((array)$frm_vars['hidden_fields'] as $field){
         foreach($field['hide_field'] as $i => $hide_field){
             if(!is_numeric($hide_field))
                 continue;
@@ -42,77 +46,77 @@ global $frm_field;
                         continue;
                     
                     $hideme[] = $observed_field->id;
-
-                    switch($observed_field->type){
-                    case "radio":
-                    case "10radio":
-                    case "scale": 
-                        include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-radio-js.php');
-                        break;
-                    case "checkbox":
-                        include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-checkbox-js.php');
-                        break;
-                    case "data":
+                    
+                    if($observed_field->type == 'data'){
                         if ($field['hide_opt'][$i] != '' and in_array($observed_field->field_options['data_type'], array('radio', 'checkbox', 'select'))){
-                            include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-'.$observed_field->field_options['data_type'].'-js.php');
-                        }else if($field['hide_opt'][$i] == ''){
+                            ?>$('#frm_field_<?php echo $field['id'] ?>_container').hide();<?php
+                        }else if($field['hide_opt'][$i] == '' and ($field['data_type'] == '' or $field['data_type'] == 'data')){
                             $observed_options = maybe_unserialize($observed_field->field_options);
-                            include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-data-js.php');
+                            if (in_array($observed_options['data_type'], array('checkbox', 'select'))){ ?>
+$('#frm_field_<?php echo $field['id'] ?>_container').hide();<?php
+                            }
+                            unset($observed_options);
                         }
-                        break;
-                    default:
-                        include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-select-js.php');
+                    }else{
+                        ?>$('#frm_field_<?php echo $field['id'] ?>_container').hide();<?php
                     }
-                }else if ($observed_field->type == 'data'){
+                }else if ($observed_field->type == 'data' and ($field['data_type'] == '' or $field['data_type'] == 'data')){
                     $observed_options = maybe_unserialize($observed_field->field_options);
-                    include(FRMPRO_VIEWS_PATH.'/frmpro-fields/show-data-js.php');
+                    if (in_array($observed_options['data_type'], array('checkbox', 'select'))){ ?>
+$('#frm_field_<?php echo $field['id'] ?>_container').hide();<?php
+                    }
+                    unset($observed_options);
                 }
+                ?>frmCheckDependent('und',<?php echo $observed_field->id ?>);<?php
             }
+            unset($observed_field);
+            unset($i);
+            unset($hide_field);
         }
+        unset($field);
     }
     unset($hideme);
 }
 
-if(!empty($frm_datepicker_loaded) and is_array($frm_datepicker_loaded)){
+if(isset($frm_vars['datepicker_loaded']) and !empty($frm_vars['datepicker_loaded']) and is_array($frm_vars['datepicker_loaded'])){
     global $frmpro_settings; 
     $load_lang = array();
-    reset($frm_datepicker_loaded);
-    $datepicker = key($frm_datepicker_loaded); 
-    
-foreach($frm_datepicker_loaded as $date_field_id => $options){ ?>  
+    reset($frm_vars['datepicker_loaded']);
+    $datepicker = key($frm_vars['datepicker_loaded']); 
+
+foreach($frm_vars['datepicker_loaded'] as $date_field_id => $options){ ?>
+$(document).on('focusin','#<?php echo $date_field_id ?>', function(){
 $.datepicker.setDefaults($.datepicker.regional['']);
-$("#<?php echo $date_field_id ?>").datepicker($.extend($.datepicker.regional['<?php echo $options['locale'] ?>'], {dateFormat:'<?php echo $frmpro_settings->cal_date_format ?>',changeMonth:true,changeYear:true,yearRange:'<?php echo $options['start_year'] .':'. $options['end_year'] ?>'<?php do_action('frm_date_field_js', $date_field_id, $options)?>}));
+$(this).datepicker($.extend($.datepicker.regional['<?php echo $options['locale'] ?>'], {dateFormat:'<?php echo $frmpro_settings->cal_date_format ?>',changeMonth:true,changeYear:true,yearRange:'<?php echo $options['start_year'] .':'. $options['end_year'] ?>'<?php do_action('frm_date_field_js', $date_field_id, $options)?>}));
+});
 <?php 
 if(!empty($options['locale'])) $load_lang[] = $options['locale'];
-} 
-} 
+}
 
-if(!empty($frm_timepicker_loaded)){
-    foreach($frm_timepicker_loaded as $time_field_id => $options){ ?>$("#<?php echo $time_field_id ?>").frmTimePicker({show24Hours:<?php echo (isset($options['clock']) and $options['clock']) ? 'true' : 'false'; ?>,step:<?php echo (isset($options['step']) and $options['step']) ? $options['step'] : '30'; ?>,startTime:"<?php echo (isset($options['start_time']) and $options['start_time']) ? $options['start_time'] : '00:00'; ?>",endTime:"<?php echo (isset($options['end_time']) and $options['end_time']) ? $options['end_time'] : '23:59'; ?>"});
-
-<?php if($options['unique'] and isset($datepicker)){ ?>
+if(isset($frm_vars['timepicker_loaded']) and !empty($frm_vars['timepicker_loaded'])){
+    foreach($frm_vars['timepicker_loaded'] as $time_field_id => $options){
+        if($options and isset($datepicker)){ ?>
 $("#<?php echo $datepicker ?>").change(function(){
+var e=$(this).parents('form:first').find('input[name="id"]');
 jQuery.ajax({
-type:'POST',url:'<?php echo FRM_SCRIPT_URL ?>',dataType:'json',
-data:'controller=fields&frm_action=ajax_time_options&time_field=<?php echo $time_field_id ?>&date_field=<?php echo $datepicker ?>&step=<?php echo $options["step"] ?>&start=<?php echo $options["start_time"] ?>&end=<?php echo $options["end_time"] ?>&clock=<?php echo $options["clock"] ?>&entry_id=<?php echo $options["entry_id"] ?>&date='+$(this).val(),
+type:'POST',url:'<?php echo admin_url( 'admin-ajax.php' ) ?>',dataType:'json',
+data:'action=frm_fields_ajax_time_options&time_field=<?php echo $time_field_id ?>&date_field=<?php echo $datepicker ?>&entry_id='+(e?e.val():'')+'&date='+$(this).val(),
 success:function(opts){
-    if(opts && opts!=''){
-    	var timeVal=$('#<?php echo $time_field_id ?>').val();
-    	$('#<?php echo $time_field_id ?>').find('option').remove();
-    	for(var opt in opts){$('#<?php echo $time_field_id ?>').append('<option value="'+opt+'">'+opt+'</option>');}
-    	if(timeVal) $('#<?php echo $time_field_id ?>').val(timeVal);
-    }
+    $('#<?php echo $time_field_id ?>').find('option').removeAttr('disabled');
+    if(opts && opts!=''){for(var opt in opts){$('#<?php echo $time_field_id ?>').find('option[value="'+opt+'"]').attr('disabled', 'disabled');}}
 }
 });
 });
 <?php }
     }
+    unset($datepicker);
+}
 }
 
-if(!empty($frm_calc_fields)){ 
+if(isset($frm_vars['calc_fields']) and !empty($frm_vars['calc_fields'])){ 
 global $frmdb, $frm_field; 
 
-foreach($frm_calc_fields as $result => $calc){ 
+foreach($frm_vars['calc_fields'] as $result => $calc){ 
     preg_match_all("/\[(.?)\b(.*?)(?:(\/))?\]/s", $calc, $matches, PREG_PATTERN_ORDER);
 
     //if (!isset($matches[0])) return $value;
@@ -121,9 +125,12 @@ foreach($frm_calc_fields as $result => $calc){
     foreach ($matches[0] as $match_key => $val){
         $val = trim(trim($val, '['), ']');
         $calc_fields[$val] = $frm_field->getOne($val); //get field
-        if(!$calc_fields[$val]) continue;
+        if ( !$calc_fields[$val] ) {
+            unset($calc_fields[$val]);
+            continue;
+        }
         
-        if($calc_fields[$val] and in_array($calc_fields[$val]->type, array('radio', 'scale', '10radio', 'checkbox'))){
+        if($calc_fields[$val] and in_array($calc_fields[$val]->type, array('radio', 'scale', 'checkbox'))){
             $field_keys[$calc_fields[$val]->id] = 'input[name^="item_meta['. $calc_fields[$val]->id .']"]';
         }else{
             $field_keys[$calc_fields[$val]->id] = ($calc_fields[$val]) ? '#field_'. $calc_fields[$val]->field_key : '#field_'. $val;
@@ -132,7 +139,7 @@ foreach($frm_calc_fields as $result => $calc){
         $calc = str_replace($matches[0][$match_key], 'vals[\''.$calc_fields[$val]->id.'\']', $calc);
     }
 ?>
-$('<?php echo implode(",", $field_keys) ?>').change(function(){
+$(document).on('change','<?php echo implode(",", $field_keys) ?>',function(){
 var vals=new Array();
 <?php foreach($calc_fields as $calc_field){ 
 if($calc_field->type == 'checkbox'){
@@ -146,10 +153,10 @@ vals['<?php echo $calc_field->id ?>'] += n; });
 global $frmpro_settings;
         if(in_array($frmpro_settings->date_format, array('d/m/Y', 'j/m/y'))){
 ?>var darr=d.split("/");
-vals['<?php echo $calc_field->id ?>']=new Date(darr[2],darr[1],darr[0]).getTime();
+vals['<?php echo $calc_field->id ?>']=new Date(darr[2],(darr[1] - 1),darr[0]).getTime();
 <?php   }else if($frmpro_settings->date_format == 'j-m-Y'){ 
 ?>var darr=d.split("-");
-vals['<?php echo $calc_field->id ?>']=new Date(darr[2],darr[1],darr[0]).getTime();
+vals['<?php echo $calc_field->id ?>']=new Date(darr[2],(darr[1] - 1),darr[0]).getTime();
 <?php   }else{
 ?>vals['<?php echo $calc_field->id ?>']=new Date(d).getTime();
 <?php   } 
@@ -157,7 +164,7 @@ vals['<?php echo $calc_field->id ?>']=new Date(darr[2],darr[1],darr[0]).getTime(
 <?php }else{
 ?>vals['<?php echo $calc_field->id ?>']=$('<?php 
 echo $field_keys[$calc_field->id]; 
-if(in_array($calc_field->type, array("radio", "scale", "10radio")))
+if(in_array($calc_field->type, array("radio", "scale")))
     echo ":checked, ". $field_keys[$calc_field->id] ."[type=hidden]";
 else if($calc_field->type == "select")
     echo " option:selected, ". $field_keys[$calc_field->id] .":hidden";
@@ -176,11 +183,11 @@ $('<?php echo reset($field_keys) ?>').change();
 
 if(!empty($frm_input_masks)){
     foreach((array)$frm_input_masks as $f_key => $mask){
-        if(is_numeric($f_key)){
-?>$('input[name="item_meta[<?php echo $f_key ?>]"]').mask("<?php echo $mask ?>");
-<?php   }else{ 
-?>$('#field_<?php echo $f_key ?>]').mask("<?php echo $mask ?>");
-<?php   }
+        if(!$mask)
+            continue;
+        
+?>$(document).on('focusin','<?php echo is_numeric($f_key) ? 'input[name="item_meta['. $f_key .']"]' : '#field_'. $f_key; ?>', function(){ $(this).mask("<?php echo $mask ?>"); });
+<?php   
         unset($f_key);
         unset($mask);
     }
@@ -188,12 +195,11 @@ if(!empty($frm_input_masks)){
 
 ?>
 });
-
 <?php if(isset($load_lang) and !empty($load_lang)){ ?>
 var frmJsHost=(("https:"==document.location.protocol)?"https://":"http://");
 <?php foreach($load_lang as $lang){ ?>
 document.write(unescape("%3Cscript src='"+frmJsHost+"ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/i18n/jquery.ui.datepicker-<?php echo $lang ?>.js' type='text/javascript'%3E%3C/script%3E"));
 <?php }
 } ?>
-//]]>
+/*]]>*/
 </script>

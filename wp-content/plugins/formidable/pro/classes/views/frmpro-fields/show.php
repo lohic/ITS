@@ -14,15 +14,16 @@
 <?php }else if ($field['type'] == 'image'){ ?>
     <input type="url" id="field_<?php echo $field['field_key'] ?>" name="<?php echo $field_name ?>" value="<?php echo $field['default_value'] ?>" <?php do_action('frm_field_input_html', $field) ?> />
     <?php if ($field['default_value']){ ?><img src="<?php echo $field['default_value'] ?>" height="50px"><?php } ?>
-<?php }else if ($field['type'] == '10radio' or $field['type'] == 'scale'){
-        require(FRMPRO_VIEWS_PATH .'/frmpro-fields/10radio.php');
+<?php }else if ($field['type'] == 'scale'){
+        require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-fields/10radio.php');
 
-      }else if ($field['type'] == 'rte'){ ?>
-          <!--
+      }else if ($field['type'] == 'rte'){
+        /*
         <div id="<?php //echo user_can_richedit() ? 'postdivrich' : 'postdiv'; ?>" class="postarea">
         	<?php //the_editor($field['default_value'], $field_name, 'title', false); ?>
         </div>
-        -->
+        */
+?>
     <div class="frm_rte">
         <p class="howto"><?php _e('These buttons are for illustrative purposes only. They will be functional in your form.', 'formidable')?></p>
         <textarea name="<?php echo $field_name ?>" rows="<?php echo $field['max']; ?>"><?php echo FrmAppHelper::esc_textarea($field['default_value']); ?></textarea> 
@@ -45,7 +46,7 @@ global $frmpro_settings; ?>
                     <option value="<?php echo $opt_key ?>"<?php echo $selected ?>><?php echo $opt ?></option>
             <?php }
                 }else{ ?>
-                <option value="">- <?php _e('This data is dynamic on change', 'formidable') ?> -</option>
+                <option value="">&mdash; <?php _e('This data is dynamic on change', 'formidable') ?> &mdash;</option>
             <?php } ?>
         </select>
     <?php }else if ($field['data_type'] == 'data' && is_numeric($field['hide_opt'])){ 
@@ -58,7 +59,7 @@ global $frmpro_settings; ?>
             foreach ($field['options'] as $opt_key => $opt){
                 $checked = (FrmAppHelper::check_selected($checked_values, $opt_key)) ? ' checked="checked"' : '';
             ?>
-                <input type="checkbox" name="<?php echo $field_name ?>[]" id="<?php echo $field_name ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?><br/>
+                <label for="<?php echo $field_name ?>"><input type="checkbox" name="<?php echo $field_name ?>[]" id="<?php echo $field_name ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?></label><br/>
             <?php }
         }else _e('There are no options', 'formidable'); ?>
     <?php }else if ($field['data_type'] == 'radio'){
@@ -72,7 +73,8 @@ global $frmpro_settings; ?>
     _e('This data is dynamic on change', 'formidable');
         } 
     }else if ($field['type'] == 'file'){ ?>
-    <input type="file" name="<?php echo $field_name ?>" <?php echo (isset($field['size']) and $field['size']) ? 'style="width:auto" size="'. $field['size'] .'"' : ''; ?> />
+    <input type="file"  disabled="disabled" <?php echo (isset($field['size']) and $field['size']) ? 'style="width:auto" size="'. $field['size'] .'"' : ''; ?> />
+    <input type="hidden" name="<?php echo $field_name ?>" />
 <?php }else if($field['type'] == 'form'){
     echo "FORM";
 } ?>

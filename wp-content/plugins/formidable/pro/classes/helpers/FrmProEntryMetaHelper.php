@@ -1,9 +1,6 @@
 <?php
 
 class FrmProEntryMetaHelper{
-    function FrmProEntryMetaHelper(){
-        add_filter('frm_email_value', 'FrmProEntryMetaHelper::email_value', 10, 3);
-    }
     
     public static function email_value($value, $meta, $entry){
         global $frm_field, $frm_entry;
@@ -86,8 +83,6 @@ class FrmProEntryMetaHelper{
         if ($value == '') return $value;
         
         $value = maybe_unserialize($value);
-        //if(is_array($value))
-        //    $value = stripslashes_deep($value);
         $value = apply_filters('frm_display_value_custom', $value, $field, $atts);
         
         $new_value = '';
@@ -205,9 +200,9 @@ class FrmProEntryMetaHelper{
             global $frm_entry;
             $entry = $frm_entry->getOne($entry);
         }
-        if(!$entry)
+        if(empty($entry) or empty($field))
             return '';
-         
+        
         if($entry->post_id){
             if(!isset($field->field_options['custom_field']))
                 $field->field_options['custom_field'] = '';
@@ -221,10 +216,11 @@ class FrmProEntryMetaHelper{
                 
             if($field->type == 'tag' or $field->field_options['post_field']){
                 $post_args = array('type' => $field->type, 'form_id' => $field->form_id, 'field' => $field, 'links' => $links, 'exclude_cat' => $field->field_options['exclude_cat']);
-                if(isset($atts['show']))
-                    $post_args['show'] = $atts['show'];
-                if(isset($atts['truncate']))
-                    $post_args['truncate'] = $atts['truncate'];
+                foreach(array('show', 'truncate', 'sep') as $p){
+                    if(isset($atts[$p]))
+                        $post_args[$p] = $atts[$p];
+                }
+
                 $value = FrmProEntryMetaHelper::get_post_value($entry->post_id, $field->field_options['post_field'], $field->field_options['custom_field'], $post_args);               
                 unset($post_args);
             }else{
@@ -270,7 +266,7 @@ class FrmProEntryMetaHelper{
         if ($atts['type'] == 'tag'){
             if(isset($atts['field']->field_options)){
                 $field_options = maybe_unserialize($atts['field']->field_options);
-                $tax = $field_options['taxonomy'];
+                $tax = isset($field_options['taxonomy']) ? $field_options['taxonomy'] : 'frm_tag';
 
             
                 if($tags = get_the_terms($post_id, $tax)){
@@ -290,7 +286,7 @@ class FrmProEntryMetaHelper{
                 $value = get_post_meta($post_id, $custom_field, true);
             }else if($post_field == 'post_category'){
                 if($atts['form_id']){
-                    $post_type = FrmProForm::post_type($atts['form_id']);
+                    $post_type = FrmProFormsHelper::post_type($atts['form_id']);
                     $taxonomy = FrmProAppHelper::get_custom_taxonomy($post_type, $atts['field']);
                 }else{
                     $taxonomy = 'category';
@@ -327,6 +323,241 @@ class FrmProEntryMetaHelper{
             }
         }
         return $value;
+    }
+    
+    public static function set_post_fields($field, $value, $errors = null) {
+        $field->field_options = maybe_unserialize($field->field_options);
+        
+        if ( !isset($field->field_options['post_field']) || $field->field_options['post_field'] == '' ) {
+            if ( isset($errors) ) {
+                return $errors;
+            }
+            
+            return;
+        }
+        
+        
+        if ( $field->type == 'file' ) {
+            global $frm_vars;
+            if ( !isset($frm_vars['media_id']) ) {
+                $frm_vars['media_id'] = array();
+            }
+            
+            $frm_vars['media_id'][$field->id] = $value;
+        }
+        
+        global $frmpro_settings;
+            
+        if ( $value && !empty($value) && isset($field->field_options['unique']) && $field->field_options['unique'] ) {
+            global $frmdb;
+            
+            $entry_id = (isset($_POST) && isset($_POST['id'])) ? $_POST['id'] : false;
+            $post_id = $entry_id  ? $frmdb->get_var($frmdb->entries, array('id' => $entry_id), 'post_id') : false;
+            
+            if ( isset($errors) && FrmProEntryMetaHelper::post_value_exists($field->field_options['post_field'], $value, $post_id, $field->field_options['custom_field']) ) {
+                $errors['field'. $field->id] = FrmProFieldsHelper::get_error_msg($field, 'unique_msg');
+            }
+                
+            unset($entry_id);
+            unset($post_id);
+        }
+        
+        if ( $field->field_options['post_field'] == 'post_custom' ) {
+            if ( $field->type == 'date' and !preg_match('/^\d{4}-\d{2}-\d{2}/', trim($value)) ) {
+                $value = FrmProAppHelper::convert_date($value, $frmpro_settings->date_format, 'Y-m-d');
+            }
+                
+            $_POST['frm_wp_post_custom'][$field->id.'='.$field->field_options['custom_field']] = $value;
+            
+            if ( isset($errors) ) {
+                return $errors;
+            }
+            return;
+        }
+        
+        if ( $field->field_options['post_field'] == 'post_date' ) {
+            if ( !preg_match('/^\d{4}-\d{2}-\d{2}/', trim($value)) ) {
+                $value = FrmProAppHelper::convert_date($value, $frmpro_settings->date_format, 'Y-m-d H:i:s');
+            }
+        } else if ( $field->type != 'tag' && $field->field_options['post_field'] == 'post_category' ) {
+            $value = (array) $value;
+            if ( isset($field->field_options['taxonomy']) && $field->field_options['taxonomy'] != 'category' ) {
+                $new_value = array();
+                foreach ( $value as $val ) {
+                    if ( $val == 0 ) {
+                        continue;
+                    }
+                    
+                    $term = get_term($val, $field->field_options['taxonomy']);
+
+                    if ( !isset($term->errors) ) {
+                        $new_value[$val] = $term->name;
+                    } else {
+                        $new_value[$val] = $val;
+                    } 
+                }
+                
+                if ( !isset($_POST['frm_tax_input']) ) {
+                    $_POST['frm_tax_input'] = array();
+                }
+
+                if ( isset($_POST['frm_tax_input'][$field->field_options['taxonomy']]) ) {
+                    foreach ( $new_value as $new_key => $new_name ) {
+                        $_POST['frm_tax_input'][$field->field_options['taxonomy']][$new_key] = $new_name;
+                    }
+                } else {
+                    $_POST['frm_tax_input'][$field->field_options['taxonomy']] = $new_value;
+                }
+            } else {
+                $_POST['frm_wp_post'][$field->id .'='. $field->field_options['post_field']] = $value;
+            }
+            
+        } else if ( $field->type == 'tag' && $field->field_options['post_field'] == 'post_category' ) {
+            $value = trim($value);
+            $value = array_map('trim', explode(',', $value));
+            
+            $tax_type = (isset($field->field_options['taxonomy']) && !empty($field->field_options['taxonomy'])) ? $field->field_options['taxonomy'] : 'frm_tag';
+
+            if ( !isset($_POST['frm_tax_input']) ) {
+                $_POST['frm_tax_input'] = array();
+            }
+            
+            if ( is_taxonomy_hierarchical($tax_type) ) {
+                //create the term or check to see if it exists
+                $terms = array();
+                foreach ( $value as $v ) {
+                    $term_id = term_exists($v, $tax_type);
+
+                    if ( !$term_id ) {
+                        $term_id = wp_insert_term($v, $tax_type);
+                    }
+                    
+                    if ( $term_id && is_array($term_id) )  {
+                        $term_id = $term_id['term_id'];
+                    }
+                    
+                    if ( is_numeric($term_id) ) {
+                        $terms[$term_id] = $v;
+                    }
+
+                    unset($term_id);
+                    unset($v);
+                }
+                
+                $value = $terms;
+                unset($terms);
+            }
+            
+            if ( !isset($_POST['frm_tax_input'][$tax_type]) ) {
+                $_POST['frm_tax_input'][$tax_type] = (array) $value;
+            } else {
+                $_POST['frm_tax_input'][$tax_type] += (array)$value;
+            }
+        }
+
+    	if ( $field->field_options['post_field'] != 'post_category' ) {
+            $_POST['frm_wp_post'][$field->id.'='.$field->field_options['post_field']] = $value;
+        }
+        
+        if ( isset($errors) ) {
+            return $errors;
+        }
+    }
+    
+    public static function meta_through_join($hide_field, $selected_field, $observed_field_val) {
+        if ( !is_numeric($observed_field_val) && !is_array($observed_field_val) ) {
+            return array();
+        }
+        
+        global $frm_field, $frm_entry_meta;
+        
+        $observed_info = $frm_field->getOne($hide_field);
+        
+        if ( $selected_field ) {
+            $join_fields = $frm_field->getAll(array('fi.form_id' => $selected_field->form_id, 'type' => 'data'));
+        }
+        
+        if ( isset($join_fields) && $join_fields ) {
+            foreach ( $join_fields as $jf ) {
+                if ( isset($jf->field_options['form_select']) && isset($observed_info->field_options['form_select']) && $jf->field_options['form_select'] == $observed_info->field_options['form_select'] ) {
+                    $join_field = $jf->id;
+                }
+            }
+            
+            if ( isset($join_field) ) {
+                $observed_field_val = array_filter( (array) $observed_field_val);
+                $query = "(it.meta_value in (". implode(',', $observed_field_val) .")";
+                foreach ( $observed_field_val as $obs_val ) {
+                    $query .= " or it.meta_value LIKE '%s:". strlen($obs_val). ":\"". $obs_val ."\"%'";
+                }
+                
+                $query .= ") and field_id =". (int)$join_field;
+                $entry_ids = $frm_entry_meta->getEntryIds($query);
+            }
+        }
+        
+        if ( isset($entry_ids) && !empty($entry_ids) ) {
+            $metas = $frm_entry_meta->getAll("item_id in (".implode(',', $entry_ids).") and field_id=". $selected_field->id, ' ORDER BY meta_value');
+        } else {
+            $metas = array();
+        }
+            
+        return $metas;
+    }
+    
+    public static function value_exists($field_id, $value, $entry_id = false) {
+        global $wpdb;
+        if ( is_object($field_id) ) {
+            $field_id = $field->id;
+        }
+        
+        $query = $wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_item_metas WHERE meta_value=%s AND field_id=%d", $value, $field_id);
+        if ( $entry_id ) {
+            $query .= $wpdb->prepare(" AND item_id != %d", $entry_id);
+        }
+        
+        return $wpdb->get_var($query);
+    }
+    
+    public static function post_value_exists($post_field, $value, $post_id, $custom_field = '') {
+        global $wpdb;
+        if ( $post_field == 'post_custom' ) {
+            $query = $wpdb->prepare("SELECT post_id FROM $wpdb->postmeta pm LEFT JOIN $wpdb->posts p ON (p.ID=pm.post_id) WHERE meta_value=%s and meta_key=%s", $value, $custom_field);
+            if($post_id and is_numeric($post_id))
+                $query .= $wpdb->prepare(" and post_id != %d", $post_id);
+        } else {
+            $query = $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE $post_field=%s", $value);
+            if ( $post_id && is_numeric($post_id) ) {
+                $query .= $wpdb->prepare(" and ID != %d", $post_id);
+            }
+        }
+        $query .= " and post_status in ('publish','draft','pending','future')";
+
+        return $wpdb->get_var($query);
+    }
+    
+    public static function &get_max($field) {
+        global $wpdb, $frmdb;
+        
+        if ( !is_object($field) ) {
+            global $frm_field;
+            $field = $frm_field->getOne($field);
+        }
+        
+        if ( !$field ) {
+            return;
+        }
+            
+        $max = $wpdb->get_var($wpdb->prepare("SELECT meta_value +0 as odr FROM {$wpdb->prefix}frm_item_metas WHERE field_id=%d ORDER BY odr DESC LIMIT 1", $field->id));
+        
+        if ( isset($field->field_options['post_field']) && $field->field_options['post_field'] == 'post_custom' ) {
+            $post_max = $wpdb->get_var($wpdb->prepare("SELECT meta_value +0 as odr FROM $wpdb->postmeta WHERE meta_key= %s ORDER BY odr DESC LIMIT 1", $field->field_options['custom_field']));
+            if ( $post_max && (float) $post_max > (float) $max ) {
+                $max = $post_max;
+            }
+        }
+        
+        return $max;
     }
 
 }

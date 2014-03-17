@@ -34,7 +34,7 @@ class FrmProDisplay{
         $meta['options']['copy'] = false;
         
         if ($blog_id){
-            global $frm_form;
+            $frm_form = new FrmForm();
             $old_form = $frm_form->getOne($values->frm_form_id, $blog_id);
             $new_form = $frm_form->getOne($old_form->form_key);
             $meta['form_id'] = $new_form->id;
@@ -80,7 +80,7 @@ class FrmProDisplay{
             
         global $wpdb, $frmdb;
         
-        //update 'frm_display_id' post metas for automatically used custom displays
+        //update 'frm_display_id' post metas for automatically used views
         $posts = $wpdb->get_col("SELECT post_id FROM $frmdb->entries WHERE post_id > 0 and form_id=". (int)$new_values['frm_form_id']);
         $first_post = $posts ? reset($posts) : false;
         $qualified = $this->get_auto_custom_display(array('form_id' => $new_values['frm_form_id'], 'post_id' => $first_post));
@@ -99,7 +99,7 @@ class FrmProDisplay{
                 $wpdb->delete($wpdb->postmeta, array('meta_key' => 'frm_display_id', 'meta_value' => $id));
             }            
         }else{
-            //this display is not qualified, so set any posts to the next qualified display
+            //this view is not qualified, so set any posts to the next qualified view
             $update_display_posts = $wpdb->query("UPDATE $wpdb->postmeta SET meta_value=$qualified->ID WHERE meta_key='frm_display_id' AND meta_value=$id");
         }
         
@@ -108,32 +108,17 @@ class FrmProDisplay{
             update_post_meta($new_values['frm_post_id'], 'frm_display_id', $id);
             
     }
-
-    function destroy( $id ){
-        global $wpdb, $frmprodb;
-
-        $display = $this->getOne($id);
-        if (!$display) return false;
-
-        $query_results = $wpdb->query("DELETE FROM $frmprodb->displays WHERE id=$id");
-        if ($query_results){
-            wp_cache_delete($id, 'frm_display');
-            do_action('frm_destroy_display', $id);
-        }
-        
-        return $query_results;   
-    }
     
     function getOne( $id, $blog_id=false, $get_meta=false, $atts=array() ){
         global $wpdb;
 
-        if ($blog_id and IS_WPMU)
+        if ($blog_id and is_multisite())
             switch_to_blog($blog_id);
             
         if (!is_numeric($id)){
             $id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND post_status != %s", $id, 'frm_display', 'trash' ) );
             
-            if (IS_WPMU and empty($id))
+            if (is_multisite() and empty($id))
                 return false;
         }
         
@@ -160,7 +145,7 @@ class FrmProDisplay{
             $post = FrmProDisplaysHelper::setup_edit_vars($post, $check_post);
         }
         
-        if ($blog_id and IS_WPMU)
+        if ($blog_id and is_multisite())
             restore_current_blog();
 
         return $post;
@@ -169,8 +154,7 @@ class FrmProDisplay{
     function getAll( $where = '', $order_by = 'post_date', $limit = 99 ){
         if(!is_numeric($limit))
             $limit = (int)$limit;
-            
-        //$query = 'SELECT * FROM ' . $frmprodb->displays . FrmAppHelper::prepend_and_or_where(' WHERE ', $where) . $order_by . $limit;
+        
         $query = array(
             'numberposts'   => $limit,
             'orber_by'      => $order_by,
@@ -182,7 +166,7 @@ class FrmProDisplay{
     }
     
     /**
-     * Check for a qualified custom display.
+     * Check for a qualified view.
      * Qualified:   1. set to show calendar or dynamic
      *              2. published
      *              3. form has posts/entry is linked to a post

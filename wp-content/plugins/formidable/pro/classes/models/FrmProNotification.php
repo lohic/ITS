@@ -1,25 +1,28 @@
 <?php
-class FrmProNotification{
-    function FrmProNotification(){
-        add_filter('frm_stop_standard_email', array(&$this, 'stop_standard_email'));
-        add_action('frm_after_create_entry', array(&$this, 'entry_created'), 41, 2);
-        add_action('frm_after_update_entry', array(&$this, 'entry_updated'), 41, 2);
-        add_action('frm_after_create_entry', array(&$this, 'autoresponder'), 41, 2);
+class FrmProNotification{    
+    function __construct(){
+        add_filter('frm_stop_standard_email', '__return_true');
+        add_action('frm_after_create_entry', 'FrmProNotification::entry_created', 41, 2);
+        add_action('frm_after_update_entry', 'FrmProNotification::entry_updated', 41, 2);
+        add_action('frm_after_create_entry', 'FrmProNotification::autoresponder', 41, 2);
     }
     
-    function stop_standard_email(){
-        return true;
-    }
-    
-    function entry_created($entry_id, $form_id, $create=true){
+    public static function entry_created($entry_id, $form_id, $create=true){
         if(defined('WP_IMPORTING'))
             return;
-            
-        global $frm_form, $frm_field, $frm_entry, $frm_entry_meta, $frm_notification, $frmpro_settings, $frmpro_notification;
+        
+        global $frm_field, $frm_entry, $frm_entry_meta, $frmpro_settings;
 
+        $frm_form = new FrmForm();
         $form = $frm_form->getOne($form_id);
+        if ( !$form ) {
+            return;
+        }
         $form_options = maybe_unserialize($form->options);
         $entry = $frm_entry->getOne($entry_id, true);
+        if(!$entry or $entry->form_id != $form_id or $entry->is_draft)
+            return;
+        
         $sent_to = array();
         $notifications = (isset($form_options['notification'])) ? $form_options['notification'] : array(0 => $form_options);
         $fields = $frm_field->getAll(array('fi.form_id' => $form_id), 'field_order');
@@ -46,6 +49,7 @@ class FrmProNotification{
         
         $fields = $temp_fields;
         unset($temp_fields);
+        $frm_notification = new FrmNotification();
         
         foreach($notifications as $email_key => $notification){
             if(isset($notification['update_email'])){
@@ -57,7 +61,7 @@ class FrmProNotification{
             }
             
             //check if conditions are met
-            $stop = $frmpro_notification->conditions_met($notification, $entry);
+            $stop = self::conditions_met($notification, $entry);
             if($stop)
                 continue;
                 
@@ -262,7 +266,7 @@ class FrmProNotification{
         if(isset($notification['email_subject']) and $notification['email_subject'] != ''){
             $shortcodes = FrmProAppHelper::get_shortcodes($notification['email_subject'], $entry->form_id);
             $subject = FrmProFieldsHelper::replace_shortcodes($notification['email_subject'], $entry, $shortcodes);
-            $subject = apply_filters('frm_email_subject', $subject, compact('form', 'entry'));
+            $subject = apply_filters('frm_email_subject', $subject, compact('form', 'entry', 'email_key'));
             
             if(isset($notification['ar']) and $notification['ar'])
                 $subject = apply_filters('frm_ar_subject', $subject, $form);
@@ -285,7 +289,8 @@ class FrmProNotification{
             unset($default);
         }
         
-        $to_emails = apply_filters('frm_to_email', $to_emails, $values, $form_id);
+        $to_emails = apply_filters('frm_to_email', $to_emails, $values, $form_id, compact('email_key', 'entry'));
+        
         $to_emails = array_unique((array)$to_emails);
         $sent = array();
         foreach((array)$to_emails as $to_email){
@@ -299,6 +304,8 @@ class FrmProNotification{
                 if(($e == '[admin_email]' or is_email($e)) and !in_array($e, $sent)){
                     $sent_to[] = $sent[] = $e;
                     $frm_notification->send_notification_email($e, $subject, $mail_body, $reply_to, $reply_to_name, $plain_text, $attachments);
+                }else if(!in_array($e, $sent)){
+                    do_action('frm_send_to_not_email', compact('e', 'subject', 'mail_body', 'reply_to', 'reply_to_name', 'plain_text', 'attachments', 'form', 'email_key'));
                 }
                 unset($e);
             }
@@ -319,11 +326,10 @@ class FrmProNotification{
         return $sent_to;
     }
     
-    function entry_updated($entry_id, $form_id){
-        //send update email notification
-        global $frm_form;
+    //send update email notification
+    public static function entry_updated($entry_id, $form_id){
+        $frm_form = new FrmForm();
         $form = $frm_form->getOne($form_id);
-        $form->options = maybe_unserialize($form->options);
         $notifications = (isset($form->options['notification'])) ? $form->options['notification'] : array(0 => $form->options);
         
         $email = false;
@@ -343,25 +349,33 @@ class FrmProNotification{
         }
         
         if($email)
-            $this->entry_created($entry_id, $form_id, false);
+            self::entry_created($entry_id, $form_id, false);
             
         if($ar)
-            $this->autoresponder($entry_id, $form_id);
+            self::autoresponder($entry_id, $form_id);
     }
     
-    function autoresponder($entry_id, $form_id){
+    public static function autoresponder($entry_id, $form_id){
         if(defined('WP_IMPORTING'))
             return;
             
-        global $frm_form, $frm_entry, $frm_entry_meta, $frm_notification;
+        global $frm_entry, $frm_entry_meta;
 
+        $frm_form = new FrmForm();
         $form = $frm_form->getOne($form_id);
+        if ( !$form ) {
+            return;
+        }
         $form_options = maybe_unserialize($form->options);
 
         if (!isset($form_options['auto_responder']) or !$form_options['auto_responder'] or !isset($form_options['ar_email_message']) or $form_options['ar_email_message'] == '') 
             return; //don't continue forward unless a message has been inserted
         
         $entry = $frm_entry->getOne($entry_id, true);
+        if(!$entry or $entry->is_draft)
+            return;
+        
+        $frm_notification = new FrmNotification();
         $entry_ids = array($entry->id);
         
         $email_field = (isset($form_options['ar_email_to'])) ? $form_options['ar_email_to'] : 0;
@@ -410,26 +424,6 @@ class FrmProNotification{
         $reply_to = (isset($form_options['ar_reply_to'])) ? $form_options['ar_reply_to'] : '[admin_email]';  //default sender email
 
         foreach ($values as $value){
-            /*
-            if((int)$reply_field == $value->field_id){
-                if($value->field_type == 'user_id'){
-                    $user_data = get_userdata($value->meta_value);
-                    $reply_to = $user_data->user_email;
-                }else{
-                    $val = apply_filters('frm_email_value', maybe_unserialize($value->meta_value), $value, $entry);
-                    if(is_email($val))
-                        $reply_to = $val;
-                }
-            }
-            
-            if((int)$reply_name_field == $value->field_id){
-                if($value->field_type == 'user_id'){
-                    $user_data = get_userdata($value->meta_value);
-                    $reply_to_name = $user_data->display_name;
-                }else
-                    $reply_to_name = apply_filters('frm_email_value', maybe_unserialize($value->meta_value), $value, $entry);
-            } */
-
             if((int)$email_field == $value->field_id){
                 if($value->field_type == 'user_id'){
                     $user_data = get_userdata($value->meta_value);
@@ -460,7 +454,7 @@ class FrmProNotification{
     }
     
     //check if conditions are met
-    function conditions_met($notification, $entry){
+    private static function conditions_met($notification, $entry){
         $stop = false;
         $met = array();
  
