@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once('WP_OAuth.php');
 
-if (!class_exists('jd_TwitterOAuth')) {
+if ( !class_exists( 'jd_TwitterOAuth' ) ) {
 
 /**
  * Twitter WPOAuth class
@@ -183,7 +183,7 @@ class jd_TwitterOAuth {
 		}		
 		$connect = array( 'consumer_key'=>$ack, 'consumer_secret'=>$acs, 'user_token'=>$ot, 'user_secret'=>$ots );
 		$tmhOAuth = new tmhOAuth( $connect );
-		$attachment = wpt_post_attachment($args['id']);
+		$attachment = wpt_post_attachment( $args['id'] );
 		// if install is at root, can query src path. Otherwise, need to take full image.
 		$at_root = ( wp_make_link_relative( home_url() ) == home_url() || wp_make_link_relative( home_url() ) == '/' ) ? true : false ;
 		if ( $at_root ) {	
@@ -208,6 +208,7 @@ class jd_TwitterOAuth {
              $url,
              array(
 				'media[]'  => "@{$image};type={$mime_type};filename={$image}",
+				//'media[]' => file_get_contents($image),
 				'status'   => $args['status'],
              ),
              true, // use auth

@@ -1,15 +1,19 @@
 <?php 
 // This file contains secondary functions supporting WP to Twitter
-// These functions don't perform any WP to Twitter actions, but add 
-// support for primary functions if lacking.
+
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if ( version_compare( $wp_version,"2.9.3",">" )) {
-if (!class_exists('WP_Http')) {
-	require_once( ABSPATH.WPINC.'/class-http.php' );
+function wpt_mail( $subject, $body ) {
+	$use_email = true;
+	if ( $use_email ) {
+		wp_mail( WPT_DEBUG_ADDRESS, $subject, $body, WPT_FROM );
+	} else {
+		$debug = get_option( 'wpt_debug' );
+		$debug[date( 'Y-m-d H:i:s' )] = array( $subject, $body );
+		update_option( 'wpt_debug', $debug );
 	}
 }
-	
+
 function jd_remote_json( $url, $array=true ) {
 	$input = jd_fetch_url( $url );
 	$obj = json_decode( $input, $array );
@@ -212,8 +216,9 @@ function wtt_option_selected($field,$value,$type='checkbox') {
 	return $output;
 }
 
-function wpt_date_compare($early,$late) {
-	$firstdate = strtotime($early);
+function wpt_date_compare( $early,$late ) {
+	$modifier = apply_filters( 'wpt_edit_sensitivity', 0 ); // alter time in seconds to modified date.
+	$firstdate = strtotime($early)+$modifier;
 	$lastdate = strtotime($late);
 	if ($firstdate <= $lastdate ) { // if post_modified is before or equal to post_date
 		return 1;
@@ -239,7 +244,7 @@ function wpt_post_attachment($post_ID) {
 			'post_status' => 'published', 
 			'post_parent' => $post_ID, 
 			'post_mime_type'=>'image' 
-			); 
+		);
 		$attachments = get_posts($args);
 		if ($attachments) {
 			return $attachments[0]->ID; //Return the first attachment.
@@ -337,7 +342,13 @@ $plugins_string
 		if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) { $pro = " PRO"; } else { $pro = ''; }
 		$subject = "WP to Twitter$pro support request. $has_donated";
 		$message = $request ."\n\n". $data;
-		$from = "From: \"$current_user->display_name\" <$current_user->user_email>\r\n";
+		// Get the site domain and get rid of www. from pluggable.php
+		$sitename = strtolower( $_SERVER['SERVER_NAME'] );
+		if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+				$sitename = substr( $sitename, 4 );
+		}
+		$from_email = 'wordpress@' . $sitename;		
+		$from = "From: \"$current_user->display_name\" <$from_email>\r\nReply-to: \"$current_user->display_name\" <$current_user->user_email>\r\n";
 
 		if ( !$has_read_faq ) {
 			echo "<div class='message error'><p>".__('Please read the FAQ and other Help documents before making a support request.','wp-to-twitter')."</p></div>";
@@ -352,8 +363,8 @@ $plugins_string
 					echo "<div class='message updated'><p>".sprintf(__("Thanks for using WP to Twitter. Please ensure that you can receive email at <code>%s</code>.",'wp-to-twitter'),$current_user->user_email)."</p></div>";				
 				}
 			} else {
-				echo "<div class='message error'><p>".__( "Sorry! I couldn't send that message. Here's the text of your message:", 'wp-to-twitter' )."</p><pre>$request</pre></div>";
-			}
+				echo "<div class='message error'><p>".__( "Sorry! I couldn't send that message. Here's the text of your request:", 'my-calendar' )."</p><p>".sprintf( __('<a href="%s">Contact me here</a>, instead</p>','wp-to-twitter'), 'https://www.joedolson.com/articles/contact/')."<pre>$request</pre></div>";
+			}	
 		}
 	}
 	if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) { $checked="checked='checked'"; } else { $checked=''; }
