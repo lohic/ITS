@@ -45,7 +45,8 @@ foreach($entries as $entry){
                 array(
                     'truncate' => (($col->field_options['post_field'] == 'post_category') ? true : false), 
                     'form_id' => $entry->form_id, 'field' => $col, 'type' => $col->type, 
-                    'exclude_cat' => (isset($col->field_options['exclude_cat']) ? $col->field_options['exclude_cat'] : 0)
+                    'exclude_cat' => (isset($col->field_options['exclude_cat']) ? $col->field_options['exclude_cat'] : 0),
+                    'sep' => $sep,
                 ));
             }
         }
@@ -54,9 +55,14 @@ foreach($entries as $entry){
             $field_value = FrmProFieldsHelper::get_export_val($field_value, $col);
         }else{
             if(isset($col->field_options['separate_value']) and $col->field_options['separate_value']){
-                $sep_value = FrmProEntryMetaHelper::display_value($field_value, $col, array('type' => $col->type, 'post_id' => $entry->post_id, 'show_icon' => false, 'entry_id' => $entry->id));
-                if(is_array($sep_value))
-                    $sep_value = implode(', ', $sep_value);
+                $sep_value = FrmProEntryMetaHelper::display_value($field_value, $col, array(
+                    'type' => $col->type, 'post_id' => $entry->post_id, 'show_icon' => false,
+                    'entry_id' => $entry->id, 'sep' => $sep,
+                ));
+                if ( is_array($sep_value) ) {
+                    $sep_value = implode($sep, $sep_value);
+                }
+                
                 $sep_value = FrmProEntriesHelper::encode_value($sep_value, $charset, $to_encoding);
                 $sep_value = str_replace('"', '""', $sep_value); //escape for CSV files.
                 if ( $line_break != 'return' ) {
@@ -70,7 +76,7 @@ foreach($entries as $entry){
             $checked_values = apply_filters('frm_csv_value', $checked_values, array('field' => $col));
             
             if (is_array($checked_values)){
-                $field_value = implode(', ', $checked_values);
+                $field_value = implode($sep, $checked_values);
             }else{
                 $field_value = $checked_values;
             }

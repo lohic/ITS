@@ -1,6 +1,6 @@
 <?php
 
-if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+if(!defined('ABSPATH')) die('You are not allowed to call this page directly.');
 
 if(class_exists('FrmEntriesHelper'))
     return;
@@ -142,27 +142,28 @@ class FrmEntriesHelper{
     }
 
     public static function entries_dropdown( $form_id, $field_name, $field_value='', $blank=true, $blank_label='', $onchange=false ){
-        global $wpdb, $frmdb;
-
-        $entries = $wpdb->get_results( $wpdb->prepare(
-            "SELECT id, item_key, name FROM {$wpdb->prefix}frm_items WHERE form_id=%d ORDER BY name ASC LIMIT 999",
-            $form_id
-        ) );
-        ?>
-        <select name="<?php echo $field_name; ?>" id="<?php echo $field_name; ?>" <?php if ($onchange) echo 'onchange="'. $onchange .'"'; ?>>
-            <?php if ($blank){ ?>
-            <option value=""><?php echo $blank_label; ?></option>
-            <?php } ?>
-            <?php foreach($entries as $entry){ ?>
-                <option value="<?php echo $entry->id; ?>" <?php selected($field_value, $entry->id); ?>><?php echo FrmAppHelper::truncate((!empty($entry->name)) ? stripslashes($entry->name) : $entry->item_key, 40); ?></option>
-            <?php 
-                unset($entry);
-            } ?>
-        </select>
-        <?php
+        _deprecated_function( __FUNCTION__, '1.07.09');
     }
     
     public static function enqueue_scripts($params){
         do_action('frm_enqueue_form_scripts', $params);
+    }
+    
+    // Add submitted values to a string for spam checking
+    public static function entry_array_to_string($values) {
+        $content = '';
+		foreach ( $values['item_meta'] as $val ) {
+			if ( $content != '' ) {
+				$content .= "\n\n";
+			}
+			
+			if ( is_array($val) ) {
+			    $val = implode(',', $val);
+			}
+			
+			$content .= $val;
+		}
+		
+		return $content;
     }
 }

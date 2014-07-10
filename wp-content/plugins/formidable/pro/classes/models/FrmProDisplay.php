@@ -61,8 +61,6 @@ class FrmProDisplay{
                 $new_values['frm_'. $field] = $values[$field];
         }
             
-        $new_values['frm_entry_id'] = isset($values['entry_id']) ? (int)$values['entry_id'] : 0;
-        
         if (isset($values['options'])){
             $new_values['frm_options'] = array();
             foreach ($values['options'] as $key => $value)

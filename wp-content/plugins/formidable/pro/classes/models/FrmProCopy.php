@@ -127,7 +127,7 @@ class FrmProCopy{
     }
     
     function uninstall(){
-        if(!is_super_admin()){
+        if ( !current_user_can('administrator') ) {
             global $frm_settings;
             wp_die($frm_settings->admin_permission);
         }

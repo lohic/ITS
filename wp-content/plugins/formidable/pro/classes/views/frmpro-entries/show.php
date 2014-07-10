@@ -119,7 +119,7 @@
                     <div class="inside">
                         <table class="form-table"><tbody> 
                         <?php foreach($comments as $comment){
-                            $meta = maybe_unserialize($comment->meta_value);
+                            $meta = $comment->meta_value;
                             if(!isset($meta['comment']))
                                 continue;
                         ?>

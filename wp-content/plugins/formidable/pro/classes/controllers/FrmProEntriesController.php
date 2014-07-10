@@ -88,7 +88,7 @@ class FrmProEntriesController{
     
     public static function menu(){
         global $frm_settings;
-        if(is_super_admin() and !current_user_can('frm_view_entries')){
+        if ( current_user_can('administrator') && !current_user_can('frm_view_entries') ) {
             global $wp_roles;
             $frm_roles = FrmAppHelper::frm_capabilities();
             foreach($frm_roles as $frm_role => $frm_role_description){
@@ -214,6 +214,10 @@ class FrmProEntriesController{
         
         if(isset($frm_vars['rte_loaded']) && !empty($frm_vars['rte_loaded']))
             $scripts[] = 'nicedit';
+        
+        if ( isset($frm_vars['tinymce_loaded']) && $frm_vars['tinymce_loaded'] ) {
+            _WP_Editors::enqueue_scripts();
+        }
 
         if(isset($frm_vars['datepicker_loaded']) and !empty($frm_vars['datepicker_loaded'])){
             if(is_array($frm_vars['datepicker_loaded'])){
@@ -290,7 +294,7 @@ class FrmProEntriesController{
     }
     
     public static function register_widgets() {
-        include(FrmAppHelper::plugin_path() .'/pro/classes/widgets/FrmListEntries.php');
+        include_once(FrmAppHelper::plugin_path() .'/pro/classes/widgets/FrmListEntries.php');
         register_widget('FrmListEntries');
     }
     
@@ -318,12 +322,14 @@ class FrmProEntriesController{
         
         $user_ID = get_current_user_id();
         if(isset($_POST) and isset($_POST['frm_comment']) and !empty($_POST['frm_comment'])){
-            $frm_entry_meta->add_entry_meta($_POST['item_id'], 0, '', serialize(array('comment' => $_POST['frm_comment'], 'user_id' => $user_ID)));
+            $frm_entry_meta->add_entry_meta($_POST['item_id'], 0, '', array(
+                'comment' => $_POST['frm_comment'], 'user_id' => $user_ID
+            ));
             //send email notifications
         }
         
         if($show_comments){
-            $comments = $frm_entry_meta->getAll("item_id=$id and field_id=0", ' ORDER BY it.created_at ASC');
+            $comments = $frm_entry_meta->getAll("item_id=$id and field_id=0", ' ORDER BY it.created_at ASC', '', true);
             $to_emails = apply_filters('frm_to_email', array(), $entry, $entry->form_id);
         }
             
@@ -476,9 +482,12 @@ class FrmProEntriesController{
             $form = $frm_form->getOne($params['form']);
             $entry_ids = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_items WHERE form_id=%d", $form->id));
             
-            foreach($entry_ids as $entry_id){
-                do_action('frm_before_destroy_entry', $entry_id);
-                unset($entry_id);
+            if ( isset($form->options['create_post']) && $form->options['create_post'] ) {
+                // this action takes a while, so only trigger it if there are posts to delete
+                foreach($entry_ids as $entry_id){
+                    do_action('frm_before_destroy_entry', $entry_id);
+                    unset($entry_id);
+                }
             }
             
             $wpdb->query($wpdb->prepare("DELETE em.* FROM {$wpdb->prefix}frm_item_metas as em INNER JOIN {$wpdb->prefix}frm_items as e on (em.item_id=e.id) and form_id=%d", $form->id));
@@ -1114,6 +1123,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         
         $to_encoding = isset($_POST['csv_format']) ? $_POST['csv_format'] : $frmpro_settings->csv_format;
         $line_break = apply_filters('frm_csv_line_break', 'return');
+        $sep = apply_filters('frm_csv_sep', ', ');
         
         require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/csv.php');
         die();
@@ -1347,94 +1357,107 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/list.php');
     }
     
-    public static function get_search_str($where_clause='', $search_str, $form_id=false, $fid=false){
+    public static function get_search_str($where_clause='', $search_str, $form_id=false, $fid=false) {
         global $frm_entry_meta, $wpdb;
         
         $where_item = '';
         $join = ' (';
-        if(!is_array($search_str))
+        if ( !is_array($search_str) ) {
             $search_str = explode(" ", $search_str);
+        }
         
-        foreach($search_str as $search_param){
+        foreach ( $search_str as $search_param ) {
             $unescaped_search_param = $search_param;
             $search_param = esc_sql( like_escape( $search_param ) );
 			
-            if(!is_numeric($fid)){
+            if ( !is_numeric($fid) ) {
                 $where_item .= (empty($where_item)) ? ' (' : ' OR';
                     
-                if(in_array($fid, array('created_at', 'user_id', 'updated_at', 'id'))){
-                    if($fid == 'user_id' and !is_numeric($search_param))
+                if ( in_array($fid, array('created_at', 'user_id', 'updated_at', 'id')) ) {
+                    if ( $fid == 'user_id' && !is_numeric($search_param) ) {
                         $search_param = FrmProAppHelper::get_user_id_param($unescaped_search_param);
+                    }
                     
                     $where_item .= $wpdb->prepare(" it.{$fid} like %s", '%'. $search_param .'%');
-                }else{
+                } else {
                     $where_item .= $wpdb->prepare(' it.name like %s OR it.item_key like %s OR it.description like %s OR it.created_at like %s', '%'. $search_param .'%', '%'. $search_param .'%', '%'. $search_param .'%', '%'. $search_param .'%');
                 }
             }
                 
-            if(empty($fid) or is_numeric($fid)){
+            if ( empty($fid) || is_numeric($fid) ) {
                 $where_entries = $wpdb->prepare('(meta_value LIKE %s', '%'. $search_param .'%');
-                if($data_fields = FrmProFormsHelper::has_field('data', $form_id, false)){
+                if ( $data_fields = FrmProFormsHelper::has_field('data', $form_id, false) ) {
                     $df_form_ids = array();
 
                     //search the joined entry too
-                    foreach((array)$data_fields as $df){
+                    foreach ( (array) $data_fields as $df ) {
                         //don't check if a different field is selected
-                        if(is_numeric($fid) and (int)$fid != $df->id)
+                        if ( is_numeric($fid) && (int) $fid != $df->id ) {
                             continue;
+                        }
                         
                         $df->field_options = maybe_unserialize($df->field_options);
-                        if (isset($df->field_options['form_select']) and is_numeric($df->field_options['form_select']))
+                        if ( isset($df->field_options['form_select']) && is_numeric($df->field_options['form_select']) ) {
                             $df_form_ids[] = $df->field_options['form_select'];
+                        }
 
                         unset($df);
                     }
                     unset($data_fields);
                     
-                    if(!empty($df_form_ids))
+                    if ( !empty($df_form_ids) ) {
                         $data_form_ids = $wpdb->get_col("SELECT form_id FROM {$wpdb->prefix}frm_fields WHERE id in (". implode(',', $df_form_ids).")");
+                    }
                     unset($df_form_ids);
                         
-                    if(isset($data_form_ids) and $data_form_ids){
+                    if ( isset($data_form_ids) && $data_form_ids ) {
                         $data_entry_ids = $frm_entry_meta->getEntryIds("fi.form_id in (". implode(',', $data_form_ids).") and meta_value LIKE '%". $search_param ."%'");
-                        if(!empty($data_entry_ids))
+                        if ( !empty($data_entry_ids) ) {
                             $where_entries .= " OR meta_value in (".implode(',', $data_entry_ids).")";
+                        }
                     }
                     unset($data_form_ids);
                 }
                 
                 $where_entries .= ")";
                 
-                if(is_numeric($fid))
+                if ( is_numeric($fid) ) {
                     $where_entries .= $wpdb->prepare(' AND field_id=%d', $fid);
+                }
                 
-                $meta_ids = $frm_entry_meta->getEntryIds($where_entries);
-                if (!empty($meta_ids)){
-                    if(!empty($where_clause)){
-                        $where_clause .= " AND" . $join;
-                        if(!empty($join)) $join = '';
+                if ( is_admin() && isset($_GET) && isset($_GET['page']) && $_GET['page'] == 'formidable-entries' ) {
+                    $include_drafts = true;
+                } else {
+                    $include_drafts = false;
+                }
+                
+                $meta_ids = $frm_entry_meta->getEntryIds($where_entries, '', '', true, $include_drafts);
+                
+                if ( !empty($where_clause) ) {
+                    $where_clause .= " AND" . $join;
+                    if ( !empty($join) ){
+                        $join = '';
                     }
+                }
+                
+                if ( !empty($meta_ids) ) {
                     $where_clause .= " it.id in (".implode(',', $meta_ids).")";
-                }else{
-                    if(!empty($where_clause)){
-                        $where_clause .= " AND" . $join;
-                        if(!empty($join)) $join = '';
-                    }
+                } else {
                     $where_clause .= " it.id=0";
                 }
             }
         }
         
-        if(!empty($where_item)){
+        if ( !empty($where_item) ) {
             $where_item .= ')';
-            if(!empty($where_clause))
+            if ( !empty($where_clause) ) {
                 $where_clause .= empty($fid) ? ' OR' : ' AND';
+            }
             $where_clause .= $where_item;
-            if(empty($join))
-                $where_clause .= ')';
-        }else{
-            if(empty($join))
-                $where_clause .= ')';
+        }
+        
+        if ( empty($join) ) {
+            $where_clause .= ')';
         }
         
         return $where_clause;
@@ -1495,8 +1518,17 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         if(isset($atts['striphtml']) and $atts['striphtml'])
             $value = wp_kses($value, array());
         
-        if(!isset($atts['keepjs']) or !$atts['keepjs'])
-            $value = wp_kses_post($value);
+        if ( !isset($atts['keepjs']) || !$atts['keepjs'] ) {
+            if ( is_array($value) ) {
+                foreach ( $value as $k => $v ) {
+                    $value[$k] = wp_kses_post($v);
+                    unset($k);
+                    unset($v);
+                }
+            } else {
+                $value = wp_kses_post($value);
+            }   
+        }
         
         if(isset($atts['show']) and $atts['show'] == 'value')
             return $value;
@@ -1557,6 +1589,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             'edit_link' => false, 'delete_link' => false, 'page_id' => false,
             'no_entries' => __('No Entries Found', 'formidable'),
             'confirm' =>  __('Are you sure you want to delete that entry?', 'formidable'),
+			'drafts' => '0',
         ), $atts) );
         if (!$id) return;
         
@@ -1586,13 +1619,14 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         $form_cols = $frm_field->getAll($where, 'field_order ASC', $cols);
         unset($where);
 		
-		//If delete_link is set, check if entry should be deleted when page is loaded
-		if ( $delete_link ) {
+		//If delete_link is set and frm_action is set to destroy, check if entry should be deleted when page is loaded
+		if ( $delete_link && isset($_GET['frm_action']) && $_GET['frm_action'] == 'destroy' ) {
 			$delete_message = FrmProEntriesController::ajax_destroy(false, false, false);
 		}	
         
-		//Set up WHERE for getting entries. Get entries for the specified form and do not get drafts.
-        $where = 'it.form_id='. (int)$form->id . ' AND it.is_draft=0';
+		//Set up WHERE for getting entries. Get entries for the specified form and only get drafts if user includes drafts=1
+		global $wpdb;
+		$where = $wpdb->prepare('it.form_id=%d AND it.is_draft=%d', $form->id, $drafts);
 
         if($user_id)
             $where .= ' AND user_id='. (int)FrmProAppHelper::get_user_id_param($user_id);
@@ -1922,7 +1956,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             $html_id = "frm_edit_{$entry_id}";
           
         $frm_vars['forms_loaded'][] = true;  
-        $link .= "<a href='javascript:frmEditEntry($entry_id,\"$prefix\",$page_id,$form_id,\"$cancel\",\"$class\")' class='frm_edit_link $class' id='$html_id'>$label</a>\n";
+        $link .= "<a href='javascript:frmEditEntry($entry_id,\"$prefix\",$page_id,$form_id,\"". htmlspecialchars($cancel) ."\",\"$class\")' class='frm_edit_link $class' id='$html_id'>$label</a>\n";
 
         return $link;
     }
@@ -2179,16 +2213,46 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             }
 
             if($ajax){
-                if((!isset($_POST['frm_page_order_'. $form->id]) and !FrmProFormsHelper::going_to_prev($form->id)) or FrmProFormsHelper::saving_draft($form->id))
+                global $frm_vars;
+                $frm_vars['ajax'] = true;
+                $frm_vars['css_loaded'] = true;
+                
+                if ( (!isset($_POST['frm_page_order_'. $form->id]) && !FrmProFormsHelper::going_to_prev($form->id)) || FrmProFormsHelper::saving_draft($form->id) ) {
+                    $processed = true;
                     FrmEntriesController::process_entry($errors, true);
+                }
                 
                 echo FrmFormsController::show_form($form->id);
                 
-                self::register_scripts();
-                wp_deregister_script('formidable');
-                
-                wp_footer();
-            }else{
+                // trigger the footer scripts if there is a form to show
+                if ( $errors || !isset($form->options['show_form']) || $form->options['show_form'] || !isset($processed) ) {
+                    self::register_scripts();
+                    
+                    FrmProEntriesController::enqueue_footer_js();
+                    
+                    wp_deregister_script('formidable');
+                    
+                    global $wp_scripts, $wp_styles;
+                    foreach ( array('jquery', 'jquery-ui-core', 'jquery-migrate', 'thickbox') as $s ) {
+                        if ( isset($wp_scripts->registered[$s]) ) {
+                            $wp_scripts->done[] = $s;
+                        }
+                        unset($s);
+                    }
+                    
+                    foreach ( $wp_styles->registered as $s => $info ) {
+                        if ( $s != 'jquery-theme' ) {
+                            $wp_styles->done[] = $s;
+                        }
+                        
+                        unset($s);
+                    }
+                    
+                    wp_print_footer_scripts();
+                    
+                    FrmProEntriesController::footer_js();
+                }
+            } else {
                 echo false;
             }
         }else{
@@ -2262,7 +2326,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         if ( $ajax && $echo ) {
             echo $message = 'success';
         } else if ( ! $ajax ) {
-            $message = __( 'Your entry was successfully deleted', 'formidable' );
+			$message = apply_filters('frm_delete_message', __( 'Your entry was successfully deleted', 'formidable' ), $entry);
                 
             if ( $echo ) {
                 echo '<div class="frm_message">'. $message .'</div>';
@@ -2342,7 +2406,7 @@ $('#frm_form_". $id ."_container .frm-show-form').submit(window.frmOnSubmit);
         }else{
             switch($field->field_options['post_field']){
                 case 'post_custom':
-                    $updated = update_post_meta($post_id, $field->field_options['post_custom'], maybe_serialize($value));
+                    $updated = update_post_meta($post_id, $field->field_options['custom_field'], maybe_serialize($value));
                 break;
                 case 'post_category':
                     $taxonomy = (isset($field->field_options['taxonomy']) and !empty($field->field_options['taxonomy'])) ? $field->field_options['taxonomy'] : 'category';

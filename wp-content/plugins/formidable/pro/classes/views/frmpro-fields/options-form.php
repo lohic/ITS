@@ -31,7 +31,11 @@ if ($field['type'] == 'data'){
         $current_field_id = $field['id'];
         if (isset($field['form_select']) && is_numeric($field['form_select'])){
             $selected_field = $frm_field->getOne($field['form_select']);
-            $fields = $frm_field->getAll(array('fi.form_id' => $selected_field->form_id));
+            if ( $selected_field ) {
+                $fields = $frm_field->getAll(array('fi.form_id' => $selected_field->form_id));
+            } else {
+                $selected_field = '';
+            }
         }else if(isset($field['form_select'])){
             $selected_field = $field['form_select'];
         }

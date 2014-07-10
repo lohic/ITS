@@ -46,17 +46,17 @@ class FrmProSettings{
             'field_pad'         => '2px',
             'field_margin'      => '20px',
             'text_color'        => '444444',
-            'border_color_hv'   => 'dddddd',
-            'border_color'      => 'dddddd',
+            'border_color_hv'   => 'cccccc',
+            'border_color'      => 'cccccc',
             'field_border_width' => '1px',
             'field_border_style' => 'solid',
             
-            'bg_color'          => 'f7f7f7',
-            'bg_color_hv'       => 'f7f7f7',
+            'bg_color'          => 'ffffff',
+            'bg_color_hv'       => 'ffffff',
             'bg_color_active'   => 'ffffff',
-            'border_color_active' => 'dddddd',
+            'border_color_active' => '66afe9',
             'text_color_error'  => '444444',
-            'bg_color_error'    => 'f7f7f7',
+            'bg_color_error'    => 'ffffff',
             'border_color_error' => 'B94A48',
             'border_width_error' => '1px',
             'border_style_error' => 'solid',
@@ -72,17 +72,17 @@ class FrmProSettings{
             'submit_font_size'  => '14px',
             'submit_width'      => 'auto',
             'submit_height'     => 'auto',
-            'submit_bg_color'   => 'eeeeee',
-            'submit_bg_color2'  => 'cccccc',
+            'submit_bg_color'   => 'ffffff',
+            'submit_bg_color2'  => 'efefef',
             'submit_border_color' => 'dddddd',
             'submit_border_width' => '1px',
             'submit_text_color' => '444444',
             'submit_weight'     => 'normal',
-            'submit_border_radius' => '11px',
+            'submit_border_radius' => '4px',
             'submit_bg_img'     => '',
             'submit_margin'     => '0px',
-            'submit_padding'    => '3px 8px',
-            'submit_shadow_color' => '999999',
+            'submit_padding'    => '6px 12px',
+            'submit_shadow_color' => 'eeeeee',
             
             'border_radius'     => '4px',
             'error_bg'          => 'F2DEDE',
@@ -94,6 +94,8 @@ class FrmProSettings{
             'success_border_color' => 'D6E9C6',
             'success_text_color' => '468847',
             'success_font_size' => '14px',
+            
+            'important_style'   => false,
             
             'custom_css'        => ''
         );
@@ -124,6 +126,7 @@ class FrmProSettings{
                     $this->{$setting} = $default;
             }
         }
+		$this->line_height = ($this->field_height == '' || $this->field_height == 'auto') ? 'normal' : $this->field_height;
     }
 
     function validate($errors, $params){
@@ -169,6 +172,7 @@ class FrmProSettings{
         }
         
         $this->submit_style = isset($params['frm_submit_style']) ? $params['frm_submit_style'] : 0;
+        $this->important_style = isset($params['frm_important_style']) ? $params['frm_important_style'] : 0;
         $this->auto_width = isset($params['frm_auto_width']) ? $params['frm_auto_width'] : 0;
     }
 

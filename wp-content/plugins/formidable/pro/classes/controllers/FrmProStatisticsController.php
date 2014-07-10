@@ -215,7 +215,11 @@ class FrmProStatisticsController{
 		}
         
         if($x_axis){
-            $x_field = $frm_field->getOne($x_axis);
+			if ( is_numeric($x_axis) ){
+				$x_field = $frm_field->getOne($x_axis);
+			} else {
+				$x_field = false;
+			}
             
             $query = $x_query = "SELECT em.meta_value, em.item_id FROM $frmdb->entry_metas em";
 
@@ -390,12 +394,6 @@ class FrmProStatisticsController{
 	                unset($f_id);
 	                unset($f);
 	            }
-			
-				//For checkbox fields, unserialize any arrays
-				if ($field->type == 'checkbox'){
-					foreach($inputs as $k => $input)
-						$inputs[$k] = maybe_unserialize($input);
-				}
 			}		
         }else{ 
 			if( $user_id ) { //If UserID is the only filtering parameter defined
@@ -406,16 +404,6 @@ class FrmProStatisticsController{
 				$inputs = $wpdb->get_col($wpdb->prepare("SELECT em.meta_value FROM {$wpdb->prefix}frm_item_metas em INNER JOIN {$wpdb->prefix}frm_items e ON (e.id=em.item_id) WHERE em.field_id=%d AND e.is_draft=%d" . ( $start_date ? " AND em.created_at >= $start_date" : ''), $field->id, 0));
 			}
 			
-			//Maybe unserialize arrays
-			foreach($inputs as $k => $i) {
-                $inputs[$k] = maybe_unserialize($i);
-                unset($k);
-                unset($i);
-            }
-			
-			//Strip slashes from inputs
-            $inputs = stripslashes_deep($inputs);
-            
             foreach ( $fields as $f_id => $f ) { //Get the meta_values for additional fields being graphed
                 if($f_id != $field->id){
                     $f_where = array(0, $f_id);
@@ -428,6 +416,30 @@ class FrmProStatisticsController{
                 unset($f);
             }
         }
+		
+		if ( isset($inputs) && !empty($inputs) ) {
+		    //Break out any inner arrays (for checkbox or multi-select fields) and add them to the end of the $inputs array
+		    if ( !$x_axis && ( ( $field->type == 'data' && $field->field_options['data_type'] == 'checkbox' ) || $field->type == 'checkbox' || ( $field->type == 'select' && $field->field_options['multiple'] == 1 ) ) ) {
+			    foreach ( $inputs as $k => $i ) {
+				    $i = maybe_unserialize($i);
+				    if ( !is_array($i) ) {
+					    unset($k, $i);
+					    continue;
+				    }
+				
+				    unset($inputs[$k]);
+				    foreach ( $i as $item ) {
+					    $inputs[] = $item;
+					    unset($item);
+				    }
+				    unset($k, $i);
+			    }
+			    $inputs = array_values($inputs);
+		    }
+		
+		    //Strip slashes from inputs
+			$inputs = stripslashes_deep($inputs);
+		}
 		
 		if(isset($form_posts))
 			unset($form_posts);
@@ -585,7 +597,7 @@ class FrmProStatisticsController{
             if($limit == '') $limit = 10;
             
             if (!in_array($field->type, array('checkbox', 'scale'))) //and count($field_options) == 2
-                $pie = true;
+                $pie = true;//Set default type to pie if field is radio or select
 			
 			$field_opt_count = count($field_options);
             if($field_options){
@@ -606,7 +618,7 @@ class FrmProStatisticsController{
                     }
                 }
                 
-                $new_val = FrmAppHelper::truncate($opt, ($pie ? 50 : $truncate_label), 2);
+                $new_val = FrmAppHelper::truncate($opt, (($pie && ( $type == 'default' || $type == 'pie' )) ? 50 : $truncate_label), 2);//Prevent label truncation if type is pie
                 
                 if($count > 0 or $field_opt_count < $limit or (!$count and $include_zero)){
                     $labels[$opt] = $new_val;
@@ -944,7 +956,7 @@ class FrmProStatisticsController{
             }
             
             $values = FrmProAppHelper::sort_by_array($values, array_keys($labels));
-
+			
             foreach($ids as $f_id){
                 $f_values[$f_id] = FrmProAppHelper::sort_by_array($f_values[$f_id], array_keys($labels));
                 $f_values[$f_id] = FrmProAppHelper::reset_keys($f_values[$f_id]);
@@ -971,14 +983,47 @@ class FrmProStatisticsController{
                 unset($f_id);
             }
             
-            ksort($labels);
-            ksort($values);
+			if ( $x_order == '1' ) {
+				ksort($labels);
+				ksort($values);
+			}
         }
         
         $labels = FrmProAppHelper::reset_keys($labels);
         $values = FrmProAppHelper::reset_keys($values);
-
-		$labels = apply_filters('frm_graph_labels', $labels, $args);
+		
+		//Graph by month or quarter
+		if ( isset($group_by) && in_array($group_by, array('month','quarter')) ) {
+			foreach ($labels as $key => $label) {
+				if ( $group_by == 'month' ) {
+					$labels[$key] = date('F Y', strtotime($label));
+				} else if ( $group_by == 'quarter' ) {
+					$label = date('Y-m-d', strtotime($label));//Convert date to Y-m-d format
+					if ( preg_match('/-(01|02|03)-/', $label) ) {			
+						$labels[$key] = 'Q1 ' . date('Y', strtotime($label));
+					} else if ( preg_match('/-(04|05|06)-/', $label) ) {			
+						$labels[$key] = 'Q2 ' . date('Y', strtotime($label));
+					} else if ( preg_match('/-(07|08|09)-/', $label) ) {			
+						$labels[$key] = 'Q3 ' . date('Y', strtotime($label));
+					} else if ( preg_match('/-(10|11|12)-/', $label) ) {			
+						$labels[$key] = 'Q4 ' . date('Y', strtotime($label));
+					}
+				}
+			}
+			$count = count($labels) - 1;
+			for ( $i=0; $i<$count; $i++ ) {
+				if ( $labels[$i] == $labels[$i+1] ) {
+					unset($labels[$i]);
+					$values[$i+1] = $values[$i] + $values[$i+1];
+					unset($values[$i]); 
+				}
+			}
+			$labels = FrmProAppHelper::reset_keys($labels);
+	        $values = FrmProAppHelper::reset_keys($values);
+		}
+		
+		$labels = apply_filters('frm_graph_labels', $labels, $args, $field);
+		$values = apply_filters('frm_final_graph_values', $values, $args, $field);
 
         $return = array('total_count' => count($inputs), 'f_values' => $f_values, 'labels' => $labels, 
             'values' => $values, 'pie' => $pie, 'combine_dates' => $combine_dates, 'ids' => $ids, 'cols' => $cols, 
@@ -1175,7 +1220,7 @@ class FrmProStatisticsController{
             'title'=> '', 'type' => 'default', 'x_axis' => false, 'data_type' => 'count', 'limit' => '',
             'x_start' => '', 'x_end' => '', 'show_key' => false, 'min' => '', 'max' => '', 'y_title' => '', 'x_title' => '',
             'include_zero' => false, 'field' => false, 'title_size' => '', 'title_font' => '', 'tooltip_label' => '',
-			'start_date' => ''
+			'start_date' => '', 'group_by' => '', 'x_order' => '1'
         );
         
         if($type == 'geo'){
@@ -1258,7 +1303,7 @@ class FrmProStatisticsController{
             $frm_gr_count = 0;
 
         foreach ($fields as $field){
-            $data = self::get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'entry', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'y_title', 'x_title', 'include_zero', 'width', 'height', 'title', 'title_size', 'title_font', 'tooltip_label', 'start_date', 'atts' /*other field ID*/));
+            $data = self::get_google_graph($field, compact('ids', 'colors', 'grid_color', 'bg_color', 'is3d', 'truncate', 'truncate_label', 'response_count', 'user_id', 'entry', 'type', 'x_axis', 'data_type', 'limit', 'x_start', 'x_end', 'show_key', 'min', 'max', 'y_title', 'x_title', 'include_zero', 'width', 'height', 'title', 'title_size', 'title_font', 'tooltip_label', 'start_date', 'group_by', 'x_order', 'atts' /*other field ID*/));
             
 			if ( empty($data) ) {
 				$html .= '<div class="frm_no_data_graph">No Data</div>';

@@ -249,11 +249,12 @@ class FrmProForm{
 
         }
         */
-          
-        if (isset($values['logged_in']) or isset($values['editable']) or (isset($values['single_entry']) and isset($values['options']['single_entry_type']) and $values['options']['single_entry_type'] == 'user') or (isset($values['save_draft']) and $values['save_draft'] == 1)){
+        
+        // add a user id field if the form requires one
+        if ( isset($values['logged_in']) || isset($values['editable']) || (isset($values['single_entry']) && isset($values['options']['single_entry_type']) && $values['options']['single_entry_type'] == 'user') || (isset($values['options']['save_draft']) && $values['options']['save_draft'] == 1) ) {
             $form_id = $values['id'];
             $user_field = $frm_field->getAll(array('fi.form_id' => $form_id, 'type' => 'user_id'));
-            if (!$user_field){
+            if ( !$user_field ) {
                 $new_values = FrmFieldsHelper::setup_new_vars('user_id',$form_id);
                 $new_values['name'] = __('User ID', 'formidable');
                 $frm_field->create($new_values);

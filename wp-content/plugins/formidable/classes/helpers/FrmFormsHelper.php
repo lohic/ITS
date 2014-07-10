@@ -1,5 +1,5 @@
 <?php
-if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+if(!defined('ABSPATH')) die('You are not allowed to call this page directly.');
 
 if(class_exists('FrmFormsHelper'))
     return;
@@ -95,7 +95,7 @@ class FrmFormsHelper{
             $post_values = $values;
         }else{
             $values = array();
-            $post_values = $_POST;
+            $post_values = isset($_POST) ? $_POST : array();
         }
         
         foreach (array('name' => '', 'description' => '') as $var => $default){
@@ -276,6 +276,17 @@ BEFORE_HTML;
             $html = preg_replace('/(\[if\s+save_draft\])(.*?)(\[\/if\s+save_draft\])/mis', '', $html);
         
         return $html;
+    }
+    
+    public static function form_loaded($form) {
+        global $frm_vars;
+        $small_form = new stdClass();
+        foreach ( array('id', 'form_key', 'name' ) as $var ) {
+            $small_form->{$var} = $form->{$var};
+            unset($var);
+        }
+        
+        $frm_vars['forms_loaded'][] = $small_form;
     }
 
 }

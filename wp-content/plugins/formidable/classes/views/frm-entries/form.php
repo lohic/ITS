@@ -1,6 +1,6 @@
 <?php 
 global $frm_vars, $frm_settings;
-$frm_vars['forms_loaded'][] = $form; 
+FrmFormsHelper::form_loaded($form);
 if($values['custom_style']) $frm_vars['load_css'] = true;
 
 if((!isset($frm_vars['css_loaded']) || !$frm_vars['css_loaded']) && $frm_vars['load_css']){
@@ -29,7 +29,7 @@ foreach($values['fields'] as $field){
     if (apply_filters('frm_show_normal_field_type', true, $field['type']))
         echo FrmFieldsHelper::replace_shortcodes($field['custom_html'], $field, $errors, $form);
     else
-        do_action('frm_show_other_field_type', $field, $form);
+        do_action('frm_show_other_field_type', $field, $form, array('action' => $form_action));
     
     do_action('frm_get_field_scripts', $field, $form);
 }    

@@ -33,9 +33,15 @@ class FrmProEntryMeta{
         
         $fields = $frm_field->getAll("fi.form_id='". (int)$entry->form_id ."' and (fi.type='file' or fi.type='tag')");
 
-        foreach ($fields as $field){
-            if( isset($_FILES['file'. $field->id]) and !empty($_FILES['file'. $field->id]['name']) and (int)$_FILES['file'. $field->id]['size'] > 0){
-                    
+        foreach ( $fields as $field ) {
+                        
+            if ( $field->type == 'file' ) {
+                // keep existing files attached to post
+                $frm_vars['media_id'][$field->id] = $_POST['item_meta'][$field->id];
+            }
+            
+            if ( isset($_FILES['file'. $field->id]) && !empty($_FILES['file'. $field->id]['name']) && (int) $_FILES['file'. $field->id]['size'] > 0 ) {
+                
                 if(!isset($frm_vars['loading']) or !$frm_vars['loading'])
                     $frm_vars['loading'] = true;
                 
@@ -86,7 +92,6 @@ class FrmProEntryMeta{
                         $_POST['frm_wp_post_custom'][$field->id .'='. $field->field_options['custom_field']] = $mids;
 
                 }
-                
             }
             
             if ( !isset($_POST['item_meta'] ) || !isset($_POST['item_meta'][$field->id]) ) {

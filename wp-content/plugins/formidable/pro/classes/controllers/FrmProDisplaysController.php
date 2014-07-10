@@ -27,7 +27,6 @@ class FrmProDisplaysController{
         
         add_filter('the_content', 'FrmProDisplaysController::get_content', 8);
         add_action('wp_ajax_frm_get_cd_tags_box', 'FrmProDisplaysController::get_tags_box');
-        add_action('wp_ajax_frm_get_entry_select', 'FrmProDisplaysController::get_entry_select' );
         add_action('wp_ajax_frm_get_date_field_select', 'FrmProDisplaysController::get_date_field_select' );
 		add_action('wp_ajax_frm_add_order_row', 'FrmProDisplaysController::get_order_row');
         add_action('wp_ajax_frm_add_where_row', 'FrmProDisplaysController::get_where_row');
@@ -210,16 +209,14 @@ HTML;
         return $columns;
     }
     
-    public static function sortable_columns(){
-        return array(
-            'id'            => 'ID',
-            'title'         => 'post_title',
-            'description'   => 'post_excerpt',
-            'name'          => 'post_name',
-            'content'       => 'post_content',
-            'date'          => 'post_date',
-            'shortcode'     => 'ID'
-        );
+    public static function sortable_columns($columns) {
+        $columns['name'] = 'name';
+        $columns['shortcode'] = 'ID';
+        
+        //$columns['description'] = 'excerpt';
+        //$columns['content'] = 'content';
+        
+        return $columns;
     }
     
     public static function hidden_columns($result){
@@ -689,7 +686,6 @@ HTML;
         if($current_year == $year and $current_month == $month)
             $today = date_i18n('j');
         
-        $show_entres = false;
         $daily_entries = array();
         
         if ( isset($display->frm_date_field_id) && is_numeric($display->frm_date_field_id) ) {
@@ -741,9 +737,9 @@ HTML;
                 if(is_numeric($display->frm_edate_field_id) and $efield){
                     $edate = FrmProEntryMetaHelper::get_post_or_meta_value($entry, $efield);
                     
-                    if($efield and $efield->type == 'number' and is_numeric($edate))
-                        $edate = date('Y-m-d', strtotime('+'. $edate .' days', strtotime($date)));
-                    
+                    if ( $efield && $efield->type == 'number' && is_numeric($edate) ) {
+                        $edate = date('Y-m-d', strtotime('+'. ($edate - 1) .' days', strtotime($date)));
+                    }
                 }else if($display->frm_edate_field_id == 'updated_at'){
                     $edate = get_date_from_gmt($entry->updated_at);
                     $edate = date_i18n('Y-m-d', strtotime($edate));
@@ -770,6 +766,59 @@ HTML;
                 $used_entries = array();
             }
             unset($date);
+			
+			//Recurring events
+			if ( isset($display->frm_repeat_event_field_id) && is_numeric($display->frm_repeat_event_field_id) ) {
+                if ( isset($entry->metas) ) {//When is $entry->metas not set? Is it when posts are created?
+                    $repeat_period = isset($entry->metas[$display->frm_repeat_event_field_id]) ? $entry->metas[$display->frm_repeat_event_field_id] : false;
+					$stop_repeat = isset($entry->metas[$display->frm_repeat_edate_field_id]) ? $entry->metas[$display->frm_repeat_edate_field_id] : false;
+                } else { //Test this else section
+					$repeat_period = $frm_entry_meta->get_entry_meta_by_field($entry->id, $display->frm_repeat_event_field_id);
+					$stop_repeat = $frm_entry_meta->get_entry_meta_by_field($entry->id, $display->frm_repeat_edate_field_id);
+                }
+				
+				//If site is not set to English, convert day(s), week(s), month(s), and year(s) (in repeat_period string) to English
+				//Check for a few common repeat periods like daily, weekly, monthly, and yearly as well
+				$t_strings = array(__('day', 'formidable'), __('days', 'formidable'), __('daily', 'formidable'),__('week', 'formidable'), __('weeks', 'formidable'), __('weekly', 'formidable'), __('month', 'formidable'), __('months', 'formidable'), __('monthly', 'formidable'), __('year', 'formidable'), __('years', 'formidable'), __('yearly', 'formidable'));
+				$t_strings = apply_filters('frm_recurring_strings', $t_strings, $display);
+				$e_strings = array('day', 'days', '1 day', 'week', 'weeks', '1 week', 'month', 'months', '1 month', 'year', 'years', '1 year');
+				if ( $t_strings != $e_strings ) {
+					$repeat_period = str_ireplace($t_strings, $e_strings, $repeat_period);
+				}
+				unset($t_strings,$e_strings);
+				
+				//Filter for repeat_period
+				$repeat_period = apply_filters('frm_repeat_period', $repeat_period, $display);
+				
+				//If repeat period is set and is valid
+				if ( !empty($repeat_period) && is_numeric(strtotime($repeat_period)) ){
+					
+					//Set up start date to minimize dates array - is this necessary? What is the best way to do this?
+					//Switch start date to same date of current year OR if repeat_period is weekly, start date should be same day of the week, current year. What is start date if +3 days (or something like that)
+					
+					//Set up end date to minimize dates array - allow for no end repeat field set, nothing selected for end, or any date
+					if ( isset($display->frm_repeat_edate_field_id) && !empty($stop_repeat) ) {//If field is selected for recurring end date and the date is not empty
+						$stop_repeat = ( !empty($stop_repeat)? strtotime($stop_repeat) : strtotime($repeat_forever));
+					} else {
+						if ( isset($_GET['frmcal-month']) && isset($_GET['frmcal-year']) ) {
+							$cal_date = strtotime($_GET['frmcal-year']. '-' . $_GET['frmcal-month'] . '-01');
+							$stop_repeat = strtotime('+1 month', $cal_date);//Repeat until next viewable month
+						} else {
+							$stop_repeat = strtotime('+1 month');//Repeat until next viewable month
+						}
+					}
+					$temp_dates = array();
+					
+					foreach ( $dates as $d ) {
+						for ($i = strtotime($d); $i <= $stop_repeat; $i = strtotime($repeat_period, $i)) {
+							$temp_dates[] = date('Y-m-d', $i);
+						}
+						unset($d);
+					}
+					$dates = $temp_dates;
+					unset($repeat_period, $to_date, $start_date, $stop_repeat, $temp_dates);
+				}
+			}
             
             $dates = apply_filters('frm_show_entry_dates', $dates, $entry);
             
@@ -777,7 +826,6 @@ HTML;
                 $day = $i - $startday + 1;
 
                 if(in_array(date('Y-m-d', strtotime("$year-$month-$day")), $dates)){
-                    $show_entres = true;
                     $daily_entres[$i][] = $entry;
                 }
                     
@@ -814,17 +862,14 @@ HTML;
         return $content;
     }
     
-    public static function get_entry_select(){
-        echo FrmEntriesHelper::entries_dropdown($_POST['form_id'], 'entry_id');
-        die();
-    }
-    
     public static function get_date_field_select(){
-        if(is_numeric($_POST['form_id'])){
-            echo '<option value="created_at">'. __('Entry creation date', 'formidable') .'</option>';
-            echo '<option value="updated_at">'. __('Entry update date', 'formidable') .'</option>';
-            FrmProFieldsHelper::get_field_options($_POST['form_id'], '', '', "'date'");
-        }
+		if ( is_numeric($_POST['form_id']) ) {
+		    $post = new stdClass();
+		    $post->frm_form_id = (int) $_POST['form_id'];
+		    $post->frm_edate_field_id = $post->frm_date_field_id = '';
+		    $post->frm_repeat_event_field_id = $post->frm_repeat_edate_field_id = '';
+		    include(FrmAppHelper::plugin_path() .'/pro/classes/views/displays/_calendar_options.php');
+		}
 
         die();
     }
@@ -918,7 +963,7 @@ HTML;
 
         $show = 'all';
         
-        global $wpdb;
+        global $wpdb, $frmpro_entry;
         
         $where = $wpdb->prepare('it.form_id=%d', $display->frm_form_id);
         
@@ -1176,134 +1221,7 @@ HTML;
                 $display->frm_order = explode(',', $order);
 			}
 			unset($order);
-
-			if (!empty($display->frm_order_by)){//If order is set
-
-				$numbers = 0;
-				foreach($display->frm_order_by as $o_field){//Get number of fields in $display->frm_order_by - this will not include created_at, updated_at, or random
-					if(is_numeric($o_field)){
-						$numbers++;
-					}
-				}
-
-			    if (in_array('rand', $display->frm_order_by)){//If random is set, set the order to random
-			    	$order_by = ' RAND()';
-			    }else if ($numbers > 0){//If ordering by at least one field (not just created_at or updated_at)
-			        global $frm_entry_meta, $frm_field;
-
-					$order_fields = array();
-					foreach($display->frm_order_by as $o_key => $order_by_field){
-						if(is_numeric($order_by_field)){
-							$order_fields[$o_key] = $frm_field->getOne($order_by_field);
-						}else{
-							$order_fields[$o_key] = $order_by_field;
-						}
-					}
-
-					//Get all post IDs for this form
-					$posts = $form_posts;
-		            $linked_posts = array();
-		           	foreach($posts as $post_meta)
-		            	$linked_posts[$post_meta->post_id] = $post_meta->id;
-
-
-					$query_1 = '';
-					foreach($order_fields as $o_key => $o_field){
-						if(empty($query_1)){
-							if(isset($o_field->field_options['post_field']) and $o_field->field_options['post_field']){//if field is some type of post field
-								if($o_field->field_options['post_field'] == 'post_custom'){//if field is custom field					
-									$query_1 = "SELECT m.id FROM {$wpdb->prefix}frm_items m INNER JOIN {$wpdb->postmeta} pm$o_key ON pm$o_key.post_id=m.post_id AND pm$o_key.meta_key='". $o_field->field_options['custom_field']."' ";
-									$query_2 = "WHERE pm$o_key.post_id in (". implode(',', array_keys($linked_posts)).") ";
-									$query_3 = "ORDER BY CASE when pm$o_key.meta_value IS NULL THEN 1 ELSE 0 END, pm$o_key.meta_value {$display->frm_order[$o_key]}, ";
-								}else if($o_field->field_options['post_field'] != 'post_category'){//if field is a non-category post field
-									$query_1 = "SELECT m.id FROM {$wpdb->prefix}frm_items m INNER JOIN {$wpdb->posts} p$o_key ON p$o_key.ID=m.post_id ";
-									$query_2 = "WHERE p$o_key.ID in (". implode(',', array_keys($linked_posts)).") ";
-									$query_3 = "ORDER BY CASE p$o_key.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p$o_key.".$o_field->field_options['post_field']." {$display->frm_order[$o_key]}, ";
-								}
-							}else{//if field is a normal, non-post field
-								//Meta value is only necessary for time field reordering and only if time field is first ordering field
-								$query_1 = "SELECT m.id, em$o_key.meta_value FROM {$wpdb->prefix}frm_items m INNER JOIN {$wpdb->prefix}frm_item_metas em$o_key ON em$o_key.item_id=m.id ";
-								$query_2 = "WHERE em$o_key.field_id=$o_field->id ";
-								$query_3 = "ORDER BY CASE when em$o_key.meta_value IS NULL THEN 1 ELSE 0 END, em$o_key.meta_value".($o_field->type == 'number' ? ' +0 ' : '')." {$display->frm_order[$o_key]}, ";
-							}								
-						}else{
-							if(isset($o_field->field_options['post_field']) and $o_field->field_options['post_field']){
-								if($o_field->field_options['post_field'] == 'post_custom'){//if ordering by a custom field									
-									$query_1 .= "LEFT JOIN {$wpdb->postmeta} pm$o_key ON pm$o_key.post_id=m.post_id AND pm$o_key.meta_key='". $o_field->field_options['custom_field']."' ";
-									$query_3 .= "CASE when pm$o_key.meta_value IS NULL THEN 1 ELSE 0 END, pm$o_key.meta_value {$display->frm_order[$o_key]}, ";
-								}else if($o_field->field_options['post_field'] != 'post_category'){//if ordering by a non-category post field
-									$query_1 .= "LEFT JOIN {$wpdb->posts} p$o_key ON p$o_key.ID=m.post_id ";
-									$query_3 .= "CASE p$o_key.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p$o_key.".$o_field->field_options['post_field']." {$display->frm_order[$o_key]}, ";
-								}
-							}else{
-								if(is_numeric($display->frm_order_by[$o_key])){//if ordering by a normal, non-post field
-									$query_1 .= "LEFT JOIN {$wpdb->prefix}frm_item_metas em$o_key ON em$o_key.item_id=m.id AND em$o_key.field_id={$o_field->id} ";
-									$query_3 .= "CASE when em$o_key.meta_value IS NULL THEN 1 ELSE 0 END, em$o_key.meta_value".($o_field->type == 'number' ? ' +0 ' : '')." {$display->frm_order[$o_key]}, ";
-								}else{//if ordering by created at or updated at
-									$query_3 .= "m.".$o_field." ".$display->frm_order[$o_key].", ";
-								}					
-							}								
-						}
-					}
-					$query_3 = rtrim($query_3, ', ');
-					$metas = $wpdb->get_results($query_1 . $query_2 . $query_3);
-
-
-					if (isset($metas) and is_array($metas) and !empty($metas)){
-						$count = 0;
-						foreach($order_fields as $o_key => $order_field){
-							if($count == 0 and is_numeric($display->frm_order_by[$o_key]) and $order_field->type == 'time' and (!isset($order_field->field_options['clock']) or
-                            ($order_field->field_options['clock'] == 12))){//Reorder fields if 12 hour clock is used and only if first field is time field
-								$count++;
-
-                            	$new_order = array();
-                            	foreach($metas as $key => $meta){
-                                	$parts = str_replace(array(' PM',' AM'), '', $meta->meta_value);
-                                	$parts = explode(':', $parts);
-                                	if(is_array($parts)){
-                                    	if((preg_match('/PM/', $meta->meta_value) and ((int)$parts[0] != 12)) or 
-                                        (((int)$parts[0] == 12) and preg_match('/AM/', $meta->meta_value)))
-                                        	$parts[0] = ((int)$parts[0] + 12);
-                                	}
-
-                                	$new_order[$key] = (int)$parts[0] . $parts[1];
-
-                                	unset($key);
-                                	unset($meta);
-                            	}
-
-                            	//array with sorted times
-                            	asort($new_order);
-
-                            	$final_order = array();
-                            	foreach($new_order as $key => $time){
-                                	$final_order[] = $metas[$key];
-                                	unset($key);
-                                	unset($time);
-                            	}
-
-                            	$metas = $final_order;
-                            	unset($final_order);
-							}
-						}
-
-						$rev_order = ' DESC';
-                        foreach ($metas as $meta){
-                            $meta = (array)$meta;
-                            $order_by .= 'it.id='.$meta['id'] . $rev_order.', ';
-                        }
-                        $order_by = rtrim($order_by, ', ');  
-                    }
-                }else{//If ordering by creation date, update date, or no order is set
-					$order_by = "";
-					foreach($display->frm_order_by as $o_key => $o_field){//If no order is set, order by creation date
-						$order_by .= " it.". (empty($o_field) ? 'created_at' : $o_field)." ".$display->frm_order[$o_key].", ";
-					}
-					$order_by = rtrim($order_by, ', ');  
-				}    
-                $order_by = ' ORDER BY '. $order_by;
-			}
-            
+			
 
             if ( !empty($page_size) && is_numeric($page_size) ) {
                 $display->frm_page_size = (int)$page_size;
@@ -1323,8 +1241,12 @@ HTML;
                     $record_count = (int)$num_limit;
                 
                 $page_count = $frm_entry->getPageCount($display->frm_page_size, $record_count);
+				
+				//Get a page of entries
+				$entries = $frmpro_entry->get_view_page($current_page, $display->frm_page_size, $where, array(
+					'order_by_array' => $display->frm_order_by, 'order_array' => $display->frm_order, 'posts' => $form_posts
+				));
                 
-                $entries = $frm_entry->getPage($current_page, $display->frm_page_size, $where, $order_by);
                 $page_last_record = FrmAppHelper::getLastRecordNum($record_count, $current_page, $display->frm_page_size);
                 $page_first_record = FrmAppHelper::getFirstRecordNum($record_count, $current_page, $display->frm_page_size);
                 if($page_count > 1){
@@ -1332,7 +1254,10 @@ HTML;
                     $pagination = FrmProDisplaysController::get_pagination_file(FrmAppHelper::plugin_path() .'/pro/classes/views/displays/pagination.php', compact('current_page', 'record_count', 'page_count', 'page_last_record', 'page_first_record', 'page_param'));
                 }
             }else{
-                $entries = $frm_entry->getAll($where, $order_by, $limit, true, false);
+				//Get all entries
+				$entries = $frmpro_entry->get_view_results($where, array(
+					'order_by_array' => $display->frm_order_by, 'order_array' => $display->frm_order, 'limit' => $limit, 'posts' => $form_posts
+				));
             }
             
             $total_count = count($entries);

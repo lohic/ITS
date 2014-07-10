@@ -247,6 +247,11 @@ class FrmProEntry{
             $post['post_content'] = apply_filters('frm_content', $dyn_content, $form_id, $entry_id);
         }
         
+        if ( isset($post['post_date']) && !empty($post['post_date']) && ( !isset($post['post_date_gmt']) || $post['post_date_gmt'] == '0000-00-00 00:00:00' ) ) {
+            // set post date gmt if post date is set
+            $post['post_date_gmt'] = get_gmt_from_date($post['post_date']);
+		}
+        
         $post_ID = wp_insert_post( $post );
     	
     	if ( is_wp_error( $post_ID ) or empty($post_ID))
@@ -337,7 +342,7 @@ class FrmProEntry{
         }
         
         // delete entry meta so it won't be duplicated
-        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}frm_item_metas WHERE item_id=%d AND field_id", $field_id, $entry_id) . " IN (". implode(',', $field_ids) .")");
+        $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}frm_item_metas WHERE item_id=%d AND field_id", $entry_id) . " IN (". implode(',', $field_ids) .")");
         
     	update_post_meta( $post_ID, '_edit_last', $user_ID );
     	return $post_ID;
@@ -394,9 +399,9 @@ class FrmProEntry{
             global $current_user;
         
         	$display_name = (!empty( $current_user->display_name )) ? $current_user->display_name : $current_user->user_login;
-        	$comment_author       = $wpdb->escape($display_name);
+        	$comment_author       = $display_name;
         	$comment_author_email = ''; //get email from field
-        	$comment_author_url   = $wpdb->escape($user->user_url);
+        	$comment_author_url   = $user->user_url;
         }else{
             $comment_author       = ( isset($_POST['author']) )  ? trim(strip_tags($_POST['author'])) : '';
             $comment_author_email = ( isset($_POST['email']) )   ? trim($_POST['email']) : '';
@@ -437,5 +442,254 @@ class FrmProEntry{
         global $wpdb, $frmdb;
         return $wpdb->get_var($wpdb->prepare("SELECT $field FROM $frmdb->entries WHERE id=%d", $id));
     }
+	
+	//If page size is set for views, only get the current page of entries
+	function get_view_page( $current_p, $p_size, $where, $args ){
+		//Make sure values are ints for use in DB call
+		$current_p = (int) $current_p;
+		$p_size = (int) $p_size;
+		
+		//Calculate end_index and start_index
+        $end_index = $current_p * $p_size;
+        $start_index = $end_index - $p_size;
+		
+		//Set limit and pass it to get_view_results
+		$args['limit'] = " LIMIT $start_index,$p_size";
+		$results = $this->get_view_results($where, $args);
+		
+        return $results;
+    }
+	
+	//Jamie's new function for returning ordered entries for Views
+    function get_view_results($where, $args){
+        global $wpdb;
+		
+		$defaults = array(
+			'order_by_array' => array(), 'order_array' => array(),
+			'limit' 	=> '', 'posts' => array(), 'meta' => 'get_meta',
+		);
+		
+		extract(wp_parse_args($args, $defaults));
+		
+		if ( !empty($order_by_array) ) {//If order is set
 
+			//Set number of fields to zero initially
+			$numbers = 0;
+			
+			//Remove other ordering fields if created_at or updated_at is selected for first ordering field
+			if ( reset($order_by_array) == 'created_at' || reset($order_by_array) == 'updated_at' ) {
+				foreach ( $order_by_array as $o_key => $order_by_field ) {
+					if ( is_numeric($order_by_field) ) {
+						unset($order_by_array[$o_key]);
+						unset($order_array[$o_key]);
+					}
+				}
+			} else {
+			//Get number of fields in $order_by_array - this will not include created_at, updated_at, or random
+				foreach ( $order_by_array as $order_by_field ) {
+					if ( is_numeric($order_by_field) ) {
+						$numbers++;
+					}
+				}
+			}
+			
+		    if ( in_array('rand', $order_by_array) ) { //If random is set, set the order to random
+				$query_1 = "SELECT it.id, it.item_key, it.name, it.ip, it.form_id, it.post_id, it.user_id, it.updated_by,
+	            it.created_at, it.updated_at, it.is_draft FROM {$wpdb->prefix}frm_items it";
+				$query_2 = " WHERE ";
+				$query_3 = " ORDER BY RAND()";
+				
+		    } else if ( $numbers > 0 ) { //If ordering by at least one field (not just created_at or updated_at)
+		        global $frm_entry_meta, $frm_field;
+
+				$order_fields = array();
+				foreach ( $order_by_array as $o_key => $order_by_field ) {
+					if ( is_numeric($order_by_field) ) {
+						$order_fields[$o_key] = $frm_field->getOne($order_by_field);
+					} else {
+						$order_fields[$o_key] = $order_by_field;
+					}
+				}
+
+				//Get all post IDs for this form
+	            $linked_posts = array();
+	           	foreach($posts as $post_meta)
+	            	$linked_posts[$post_meta->post_id] = $post_meta->id;
+
+
+				$query_1 = '';
+				foreach($order_fields as $o_key => $o_field){
+					if(empty($query_1)){
+						$query_1 = "SELECT it.id, it.item_key, it.name, it.ip, it.form_id, it.post_id, it.user_id, it.updated_by,
+                it.created_at, it.updated_at, it.is_draft FROM {$wpdb->prefix}frm_items it";
+						if(isset($o_field->field_options['post_field']) and $o_field->field_options['post_field']){//if field is some type of post field
+							if($o_field->field_options['post_field'] == 'post_custom'){//if field is custom field					
+								$query_1 .= " LEFT JOIN {$wpdb->postmeta} pm$o_key ON pm$o_key.post_id=it.post_id AND pm$o_key.meta_key='". $o_field->field_options['custom_field']."' ";
+								$query_2 = "WHERE ";//pm$o_key.post_id in (". implode(',', array_keys($linked_posts)).") AND ";
+								$query_3 = " ORDER BY CASE when pm$o_key.meta_value IS NULL THEN 1 ELSE 0 END, pm$o_key.meta_value {$order_array[$o_key]}, ";
+							}else if($o_field->field_options['post_field'] != 'post_category'){//if field is a non-category post field
+								$query_1 .= " INNER JOIN {$wpdb->posts} p$o_key ON p$o_key.ID=it.post_id ";
+								$query_2 = "WHERE p$o_key.ID in (". implode(',', array_keys($linked_posts)).") AND ";
+								$query_3 = " ORDER BY CASE p$o_key.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p$o_key.".$o_field->field_options['post_field']." {$order_array[$o_key]}, ";
+							} /*else { //First order field is a category field
+								$query_1 .= " INNER JOIN {$wpdb->prefix}term_relationships tr ON it.post_id=tr.object_id 
+											INNER JOIN {$wpdb->prefix}term_taxonomy tt ON tr.term_taxonomy_id=tt.term_taxonomy_id
+											INNER JOIN {$wpdb->prefix}terms t ON tt.term_id=t.term_id ";
+								$query_2 = "WHERE it.post_id in (". implode(',', array_keys($linked_posts)).") 
+											AND tt.taxonomy='{$o_field->field_options['taxonomy']}' 
+											AND t.term_id NOT in (" . implode(',', $o_field->field_options['exclude_cat']) . ") AND ";
+								$query_3 = " ORDER BY t.name {$order_array[$o_key]}, ";
+							}*/
+						}else{//if field is a normal, non-post field
+							//Meta value is only necessary for time field reordering and only if time field is first ordering field
+							$query_1 .= " LEFT JOIN {$wpdb->prefix}frm_item_metas em$o_key ON em$o_key.item_id=it.id AND em$o_key.field_id=$o_field->id ";
+							$query_2 = "WHERE ";
+							$query_3 = " ORDER BY CASE when em$o_key.meta_value IS NULL THEN 1 ELSE 0 END, em$o_key.meta_value".( in_array($o_field->type, array('number', 'scale')) ? ' +0 ' : '')." {$order_array[$o_key]}, ";
+							//Check if time field (for time field ordering)
+							if ( $o_field->type == 'time' ) { $time_field = $o_field; }
+						}								
+					}else{
+						if(isset($o_field->field_options['post_field']) and $o_field->field_options['post_field']){
+							if($o_field->field_options['post_field'] == 'post_custom'){//if ordering by a custom field									
+								$query_1 .= "LEFT JOIN {$wpdb->postmeta} pm$o_key ON pm$o_key.post_id=it.post_id AND pm$o_key.meta_key='". $o_field->field_options['custom_field']."' ";
+								$query_3 .= "CASE when pm$o_key.meta_value IS NULL THEN 1 ELSE 0 END, pm$o_key.meta_value {$order_array[$o_key]}, ";
+							}else if($o_field->field_options['post_field'] != 'post_category'){//if ordering by a non-category post field
+								$query_1 .= "LEFT JOIN {$wpdb->posts} p$o_key ON p$o_key.ID=it.post_id ";
+								$query_3 .= "CASE p$o_key.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p$o_key.".$o_field->field_options['post_field']." {$order_array[$o_key]}, ";
+							} /*else {//if ordering by a category field
+								$query_1 .= "LEFT JOIN (SELECT tr$o_key.object_id as object_id, t$o_key.name as name FROM {$wpdb->prefix}term_relationships tr$o_key
+											INNER JOIN {$wpdb->prefix}term_taxonomy tt$o_key ON tr$o_key.term_taxonomy_id=tt$o_key.term_taxonomy_id 
+											INNER JOIN {$wpdb->prefix}terms t$o_key ON tt$o_key.term_id=t$o_key.term_id 
+											WHERE tr$o_key.object_id in (". implode(',', array_keys($linked_posts)).") AND tt$o_key.taxonomy='{$o_field->field_options['taxonomy']}' AND t$o_key.term_id NOT in (" . implode(',', $o_field->field_options['exclude_cat']) . "))
+											 as temp$o_key ON it.post_id=temp$o_key.object_id ";
+								$query_3 .= "temp$o_key.name {$order_array[$o_key]}, ";
+							}*/
+						}else{
+							if(is_numeric($order_by_array[$o_key])){//if ordering by a normal, non-post field
+								$query_1 .= "LEFT JOIN {$wpdb->prefix}frm_item_metas em$o_key ON em$o_key.item_id=it.id AND em$o_key.field_id={$o_field->id} ";
+								$query_3 .= "CASE when em$o_key.meta_value IS NULL THEN 1 ELSE 0 END, em$o_key.meta_value".( in_array($o_field->type, array('number', 'scale')) ? ' +0 ' : '')." {$order_array[$o_key]}, ";
+							}else{//if ordering by created at or updated at
+								$query_3 .= "it.".$o_field." ".$order_array[$o_key].", ";
+							}					
+						}								
+					}
+					unset($o_field);
+				}
+			} else {//If ordering by creation date and/or update date without any fields
+				$query_1 = "SELECT it.id, it.item_key, it.name, it.ip, it.form_id, it.post_id, it.user_id, it.updated_by,
+                it.created_at, it.updated_at, it.is_draft FROM {$wpdb->prefix}frm_items it";
+				$query_2 = " WHERE ";
+				$query_3 = " ORDER BY";
+				
+				foreach ( $order_by_array as $o_key => $order_by ) {
+				    if ( empty($order_by) ) {
+				        continue;
+				    }
+					
+					$query_3 .= " it." . $order_by . " " . $order_array[$o_key] . ", ";
+					unset($order_by);
+				}
+			} 
+		} else { //If no order is set
+			$query_1 = "SELECT it.id, it.item_key, it.name, it.ip, it.form_id, it.post_id, it.user_id, it.updated_by,
+            it.created_at, it.updated_at, it.is_draft FROM {$wpdb->prefix}frm_items it";
+			$query_2 = " WHERE ";
+			$query_3 = " ORDER BY it.created_at ASC";
+		}
+		$query_3 = rtrim($query_3, ', ');
+		$query = $query_1 . $query_2 . $where . $query_3 . $limit;
+        $entries = $wpdb->get_results($query, OBJECT_K);
+		
+		unset($query, $query_1, $query_2, $query_3, $where, $limit);
+		
+		//If meta is not needed or if there aren't any entries, end function
+        if ( $meta != 'get_meta' || !$entries ) {
+			return stripslashes_deep($entries);
+		}
+		
+		//Get metas
+		$get_entry_ids = array_keys($entries);
+		foreach ( $get_entry_ids as $k => $e ) {
+			if ( wp_cache_get($e, 'frm_entry') ) {
+				unset($get_entry_ids[$k]);
+			}
+			unset($k, $e);
+		}
+		
+		if ( empty($get_entry_ids) ) {
+			return stripslashes_deep($entries);
+		}
+		
+        $meta_where = "item_id in (". implode(',', array_filter($get_entry_ids, 'is_numeric')) .")";
+        
+        $query = "SELECT item_id, meta_value, field_id, field_key FROM {$wpdb->prefix}frm_item_metas it 
+            LEFT OUTER JOIN {$wpdb->prefix}frm_fields fi ON it.field_id=fi.id 
+            WHERE $meta_where and field_id != 0";
+        
+        $metas = $wpdb->get_results($query);
+        unset($query);
+		
+        if ( $metas ) {
+            foreach ( $metas as $m_key => $meta_val ) {
+                if ( !isset($entries[$meta_val->item_id]) ) {
+                    continue;
+				}   
+                if ( !isset($entries[$meta_val->item_id]->metas) ) {
+                    $entries[$meta_val->item_id]->metas = array();
+				}
+                    
+				$entries[$meta_val->item_id]->metas[$meta_val->field_id] = maybe_unserialize($meta_val->meta_value);
+				unset($m_key, $meta_val);
+            }
+            
+			//Cache each entry
+            foreach ( $entries as $entry ) {
+                wp_cache_set( $entry->id, $entry, 'frm_entry');
+                unset($entry);
+            }
+        }
+		
+		//Reorder entries if 12 hour time field is selected for first ordering field. If the $time_field variable is set, this means the first ordering field is a time field.
+		if ( isset($time_field) && ( !isset($time_field->field_options['clock']) || ($time_field->field_options['clock'] == 12) ) && is_array($entries) && !empty($entries) ) {
+	
+			//Reorder entries
+        	$new_order = array();
+			$empty_times = array();
+			foreach ( $entries as $e_key => $entry ) {
+				if ( !isset($entry->metas[$time_field->id]) ) {
+					$empty_times[$e_key] = '';
+					continue;
+				}
+            	$parts = str_replace(array(' PM',' AM'), '', $entry->metas[$time_field->id]);
+            	$parts = explode(':', $parts);
+            	if ( is_array($parts) ) {
+                	if ( ( preg_match('/PM/', $entry->metas[$time_field->id]) && ((int)$parts[0] != 12) ) || 
+                    ( ((int)$parts[0] == 12) && preg_match('/AM/', $entry->metas[$time_field->id]) ) )
+                    	$parts[0] = ((int)$parts[0] + 12);
+            	}
+
+            	$new_order[$e_key] = (int)$parts[0] . $parts[1];
+
+            	unset($e_key);
+            	unset($entry);
+			}
+
+        	//array with sorted times
+        	asort($new_order);
+
+			$new_order = $new_order + $empty_times;
+
+        	$final_order = array();
+        	foreach ( $new_order as $key => $time ) {
+            	$final_order[] = $entries[$key];
+            	unset($key, $time);
+        	}
+
+        	$entries = $final_order;
+        	unset($final_order);
+		}
+		unset($order_by_array, $order_array, $first_order_field);
+        
+        return stripslashes_deep($entries);
+    }
 }

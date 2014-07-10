@@ -11,7 +11,7 @@
         if(!empty($selected))
             $sel = true;
     ?>
-    <option value="<?php echo $ff->id ?>"<?php echo $selected ?>><?php echo FrmAppHelper::truncate($ff->name, 30); ?></option>
+    <option value="<?php echo $ff->id ?>"<?php echo $selected ?>><?php echo FrmAppHelper::truncate($ff->name, 24); ?></option>
     <?php } ?>
 </select> 
 <?php 

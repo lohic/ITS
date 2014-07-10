@@ -472,7 +472,10 @@ class FrmProNotification{
                 $condition['hide_opt'] = reset($condition['hide_opt']);
                 
             $observed_value = (isset($entry->metas[$condition['hide_field']])) ? $entry->metas[$condition['hide_field']] : '';
-
+            if ( $condition['hide_opt'] == 'current_user' ) {
+                $condition['hide_opt'] = get_current_user_id();
+            }
+            
             $stop = FrmProFieldsHelper::value_meets_condition($observed_value, $condition['hide_field_cond'], $condition['hide_opt']);
 
             if($notification['conditions']['send_stop'] == 'send')
@@ -481,10 +484,11 @@ class FrmProNotification{
             $met[$stop] = $stop;
         }
         
-        if($notification['conditions']['any_all'] == 'all' and !empty($met) and isset($met[0]) and isset($met[1]))
+        if ( $notification['conditions']['any_all'] == 'all' && !empty($met) && isset($met[0]) && isset($met[1]) ) {
             $stop = ($notification['conditions']['send_stop'] == 'send') ? true : false;
-        else if($notification['conditions']['any_all'] == 'any' and $notification['conditions']['send_stop'] == 'send' and isset($met[0]))
+        } else if ( $notification['conditions']['any_all'] == 'any' && $notification['conditions']['send_stop'] == 'send' && isset($met[0]) ) {
             $stop = false;
+        }
 
         return $stop;
     }

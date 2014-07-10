@@ -177,7 +177,8 @@ class FrmProFormsController{
             'post_meta key=whatever' => __('Post Meta', 'formidable'),
             'ip' => __('IP Address', 'formidable'), 
             'auto_id start=1' => __('Increment', 'formidable'), 
-            'get param=whatever' => array('label' => __('GET/POST', 'formidable'), 'title' => __('A variable from the URL or value posted from previous page.', 'formidable') .' '. __('Replace \'whatever\' with the parameter name. In url.com?product=form, the variable is \'product\'. You would use [get param=product] in your field.', 'formidable'))
+            'get param=whatever' => array('label' => __('GET/POST', 'formidable'), 'title' => __('A variable from the URL or value posted from previous page.', 'formidable') .' '. __('Replace \'whatever\' with the parameter name. In url.com?product=form, the variable is \'product\'. You would use [get param=product] in your field.', 'formidable')),
+            'server param=whatever' => array('label' => __('SERVER', 'formidable'), 'title' => __('A variable from the PHP SERVER array.', 'formidable') .' '. __('Replace \'whatever\' with the parameter name. To get the url of the current page, use [server param="REQUEST_URI"] in your field.', 'formidable')),
         );
         include(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-forms/instructions.php');
     }
@@ -318,19 +319,21 @@ class FrmProFormsController{
                 case 'back_label':
                     $replace_with = __('Previous', 'formidable');
                 break;
-                case 'back_hook':
-                    $classes = apply_filters('frm_back_button_class', array(), $form);
-                    if(!empty($classes))
-                        $replace_with = ' class="'. implode(' ', $classes) .'" ';
-                    
-                    $replace_with .= apply_filters('frm_back_button_action', '', $form);
+                case 'back_hook':                    
+                    $replace_with = apply_filters('frm_back_button_action', '', $form);
                 break;
                 case 'back_button':
                     global $frm_vars;
-                    if(!$frm_vars['prev_page'] or !is_array($frm_vars['prev_page']) or !isset($frm_vars['prev_page'][$form->id]) or empty($frm_vars['prev_page'][$form->id]))
+                    if ( !$frm_vars['prev_page'] || !is_array($frm_vars['prev_page']) || !isset($frm_vars['prev_page'][$form->id]) || empty($frm_vars['prev_page'][$form->id]) ) {
                         unset($replace_with);
-                    else
+                    } else {
+                        $classes = apply_filters('frm_back_button_class', array(), $form);
+                        if ( !empty($classes) ) {
+                            $html = str_replace('class="frm_prev_page', 'class="frm_prev_page '. implode(' ', $classes), $html);
+                        }
+                        
                         $html = str_replace('[/if back_button]', '', $html);
+                    }
                 break;
                 case 'draft_label':
                     $replace_with = __('Save Draft', 'formidable');

@@ -87,13 +87,18 @@ data.setCell(<?php echo $i ?>,<?php echo $c ?>,"<?php echo ($val == strip_tags($
         unset($col);
         unset($type);
     }
-    if ( $edit_link && FrmProEntriesHelper::user_can_edit($entry, $form) ) { ?>
+    if ( $edit_link ) {
+		if ( FrmProEntriesHelper::user_can_edit($entry, $form) ) { ?>
 data.setCell(<?php echo $i ?>,<?php echo $c ?>,'<a href="<?php echo esc_url(add_query_arg(array('frm_action' => 'edit', 'entry' => $entry->id), $permalink) . $anchor)  ?>"><?php echo addslashes($edit_link) ?></a>');
-<?php }
-    $c++;
+<?php
+		}
+ 		$c++;
+	}
+    
 	 if ( $delete_link && FrmProEntriesHelper::user_can_delete($entry) ) { ?>
 data.setCell(<?php echo $i ?>,<?php echo $c ?>,'<a href="<?php echo esc_url(add_query_arg(array('frm_action' => 'destroy', 'entry' => $entry->id))) ?>" class="frm_delete_link" onclick="return confirm(\'<?php echo esc_attr($confirm)?>\')"><?php echo addslashes($delete_link) ?></a>');
-<?php }	
+<?php 
+	}	
 	$i++;
     unset($entry);
 } 

@@ -175,11 +175,17 @@ class FrmProEntriesHelper{
     }
     
     public static function before_table($footer, $form_id=false){
-        if($footer)
+        if ( $_GET['page'] != 'formidable-entries' ) {
             return;
-            
-        if ($_GET['page'] != 'formidable-entries')
+        }
+        
+        if ( $footer ) {
+            if ( apply_filters('frm_show_delete_all', current_user_can('frm_edit_entries'), $form_id) ) { 
+            ?><div class="frm_uninstall alignleft actions"><a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo $form_id ? '&amp;form='. $form_id : '' ?>" class="button" onclick="return confirm('<?php _e('Are you sure you want to permanently delete ALL the entries in this form?', 'formidable') ?>')"><?php _e('Delete ALL Entries', 'formidable') ?></a></div>
+<?php
+            }
             return;
+        }
         
         $page_params = array('frm_action' => 0, 'action' => 'frm_entries_csv', 'form' => $form_id);
         
@@ -194,11 +200,7 @@ class FrmProEntriesHelper{
     	
         ?>
         <div class="alignleft actions"><a href="<?php echo esc_url(add_query_arg($page_params, admin_url( 'admin-ajax.php' ))) ?>" class="button"><?php _e('Download CSV', 'formidable'); ?></a></div>
-        <?php 
-        if ( apply_filters('frm_show_delete_all', current_user_can('frm_edit_entries'), $form_id) ) { 
-        ?><div class="frm_uninstall alignleft actions"><a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo $form_id ? '&amp;form='. $form_id : '' ?>" class="button" onclick="return confirm('<?php _e('Are you sure you want to permanently delete ALL the entries in this form?', 'formidable') ?>')"><?php _e('Delete ALL Entries', 'formidable') ?></a></div>
         <?php
-        }
     }
     
     // check if entry being updated just switched draft status

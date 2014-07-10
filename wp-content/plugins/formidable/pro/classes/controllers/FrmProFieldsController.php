@@ -4,7 +4,7 @@ class FrmProFieldsController{
     public static function load_hooks() {
         add_filter('frm_show_normal_field_type', 'FrmProFieldsController::show_normal_field', 10, 2);
         add_filter('frm_normal_field_type_html', 'FrmProFieldsController::normal_field_html', 10, 2);
-        add_action('frm_show_other_field_type', 'FrmProFieldsController::show_other', 10, 2);
+        add_action('frm_show_other_field_type', 'FrmProFieldsController::show_other', 10, 3);
         add_filter('frm_field_type', 'FrmProFieldsController::change_type', 15, 2);
         add_filter('frm_field_value_saved', 'FrmProFieldsController::use_field_key_value', 10, 3);
         add_action('frm_get_field_scripts', 'FrmProFieldsController::show_field', 10, 2);
@@ -50,7 +50,7 @@ class FrmProFieldsController{
         return $show;
     }
     
-    public static function show_other($field, $form){
+    public static function show_other($field, $form, $args) {
         global $frm_vars;
         $field_name = "item_meta[$field[id]]";
         require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-fields/show-other.php');
@@ -76,7 +76,7 @@ class FrmProFieldsController{
     }
     
     public static function use_field_key_value($opt, $opt_key, $field){
-        //if(in_array($field['post_field'], array('post_category', 'post_status')) or ($field['type'] == 'user_id' and is_admin() and is_super_admin()))
+        //if(in_array($field['post_field'], array('post_category', 'post_status')) or ($field['type'] == 'user_id' and is_admin() and current_user_can('administrator')))
         if((isset($field['use_key']) and $field['use_key']) or 
             (isset($field['type']) and $field['type'] == 'data') or 
             (isset($field['post_field']) and $field['post_field'] == 'post_status')
@@ -233,10 +233,10 @@ class FrmProFieldsController{
         
         $add_html = '';
 
-        if(isset($field['read_only']) and $field['read_only']){
+        if ( isset($field['read_only']) && $field['read_only'] && $field['type'] != 'hidden' ) {
             global $frm_vars;
 
-            if((isset($frm_vars['readonly']) && $frm_vars['readonly'] == 'disabled') || (is_super_admin() && is_admin() && !defined('DOING_AJAX'))){
+            if ( (isset($frm_vars['readonly']) && $frm_vars['readonly'] == 'disabled') || (current_user_can('frm_edit_entries') && is_admin() && !defined('DOING_AJAX')) ) {
                 //not read only
             //}else if($field['type'] == 'select'){
                 //$add_html .= ' disabled="disabled" ';
@@ -378,6 +378,10 @@ class FrmProFieldsController{
         global $frm_field, $frm_entry_meta;
         $current_field_id = $_POST['current_field'];
         $new_field = $frm_field->getOne($_POST['field_id']);
+        
+        $is_settings_page = ( $_POST['form_action'] == 'update_settings' ) ? true : false;
+        $anything = $is_settings_page ? '' : __('Anything', 'formidable');
+        
         if(!empty($_POST['name']) and $_POST['name'] != 'undefined')
             $field_name = $_POST['name'];
         if(!empty($_POST['t']) and $_POST['t'] != 'undefined')
@@ -532,6 +536,11 @@ class FrmProFieldsController{
         
         global $frm_field;
         $data_field = $frm_field->getOne($selected_field_id);
+        
+        if ( $entry_id == '' ) {
+            die();
+        }
+        
         $entry_id = explode(',', $entry_id);
         
         $field_data = $frm_field->getOne($field_id);
@@ -559,6 +568,7 @@ class FrmProFieldsController{
             $field['options'] = array();
             
             $metas = FrmProEntryMetaHelper::meta_through_join($hide_field, $data_field, $entry_id);
+			$metas = stripslashes_deep($metas);
             if($metas and (!isset($field_data->field_options['data_type']) or !in_array($field_data->field_options['data_type'], array('radio', 'checkbox'))) and
                 (!isset($field_data->field_options['multiple']) or !$field_data->field_options['multiple'] or
                 (isset($field_data->field_options['autocom']) and $field_data->field_options['autocom'])))

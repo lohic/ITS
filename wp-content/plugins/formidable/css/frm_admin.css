@@ -258,7 +258,7 @@ textarea.inplace_field{width:98% !important;}
 .edit-slug-box{color:#777;}
 table td, .form-table tr td{vertical-align:top;}
 
-.frm_rte{background:url(../pro/images/rte.gif) no-repeat; }
+.frm_rte{background:url(../pro/images/rte.png) no-repeat; }
 .frm_rte .howto{margin:10px 0 45px 0;}
 .frm_38_trigger .frm_rte .howto{margin-bottom:39px;}
 .button-secondary.frm_html_field{
@@ -578,7 +578,7 @@ table td.frm_left_label{float:none;line-height:inherit;padding-right:0;}
 	font-weight:bold;
 	border:1px solid #DFDFDF;
 	background-color:#EEEEEE;
-	padding-top:3px;
+	padding:3px 5px 2px;
 	font-size:16px;
 	line-height:20px;
 }
@@ -637,6 +637,8 @@ ul .frm_col_two{float:right;}
 .frm_code_list a.button{display:block;text-align:center;}
 iframe#dyncontent_ifr{min-height:150px;}
 #frm-insert-fields-box ul.frm_code_list, #frm-conditionals ul.frm_code_list{padding-right:0.9em;}
+
+.frm_uninstall a.button{margin-top:1px;}
 
 #message.fade:not(.out){opacity:1;}
 
@@ -885,6 +887,9 @@ span.clear{display:block;}
 }
 
 .clearfix {display: inline-block;}
+
+/*Override styling from other plugins*/
+.frm_form_fields .clear{height:auto;}
 
 /* Hides from IE-mac \*/
 * html .clearfix {height: 1%;}

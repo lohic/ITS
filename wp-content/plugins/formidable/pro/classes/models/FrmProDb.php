@@ -6,12 +6,15 @@ class FrmProDb{
         $db_version = FrmAppHelper::$pro_db_version; // this is the version of the database we're moving to
         $old_db_version = get_option('frmpro_db_version');
 
-        if ($db_version != $old_db_version){
+        if ($db_version == $old_db_version) {
+            return;
+        }
             
-            // update rewrite rules for views
-            flush_rewrite_rules();
-          
-            if($db_version >= 3 and $old_db_version < 3){ //migrate hidden field data into the parent field
+        // update rewrite rules for views
+        flush_rewrite_rules();
+        
+        if ( $old_db_version ) {
+            if ( $db_version >= 3 && $old_db_version < 3 ) { //migrate hidden field data into the parent field
                 global $frm_field;
                 $wpdb->update( $frmdb->fields, array('type' => 'scale'), array('type' => '10radio') );
                 $fields = $frm_field->getAll();
@@ -57,8 +60,8 @@ class FrmProDb{
                     }
                 }
             }
-          
-            if($db_version >= 16 and $old_db_version < 16){ //migrate table into wp_posts
+            
+            if ( $db_version >= 16 and $old_db_version < 16 ) { //migrate table into wp_posts
                 $display_posts = array();
                 if ( $wpdb->get_var( "SHOW TABLES LIKE '{$wpdb->prefix}frm_display'" ) ) { //only migrate if table exists
                     $dis = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}frm_display");
@@ -128,8 +131,8 @@ class FrmProDb{
                 }
                 unset($display_posts);
             }
-            
-            if($db_version >= 17 and $old_db_version < 17){
+        
+            if ( $db_version >= 17 && $old_db_version < 17 ) {
                 $frm_form = new FrmForm();
                 //migrate "allow one per field" into "unique"
                 $form = $frm_form->getAll();
@@ -154,25 +157,25 @@ class FrmProDb{
                 }
             }
             
-            if ( $db_version >= 25 and $old_db_version < 25) {
+            if ( $db_version >= 25 && $old_db_version < 25) {
                 // let's remove the old displays now
                 $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}frm_display");
             }
-      
-            /**** ADD DEFAULT TEMPLATES ****/
-            if ( class_exists('FrmXMLController') ) {
-                FrmXMLController::add_default_templates();
-            }
-        
-            update_option('frmpro_db_version', $db_version);
-          
-            global $frmpro_settings;
-            $frmpro_settings->store(); //update the styling settings
         }
+        
+        /**** ADD DEFAULT TEMPLATES ****/
+        if ( class_exists('FrmXMLController') ) {
+            FrmXMLController::add_default_templates();
+        }
+        
+        update_option('frmpro_db_version', $db_version);
+          
+        global $frmpro_settings;
+        $frmpro_settings->store(); //update the styling settings
     }
     
     function uninstall(){
-        if(!is_super_admin()){
+        if ( !current_user_can('administrator') ) {
             global $frm_settings;
             wp_die($frm_settings->admin_permission);
         }

@@ -80,7 +80,12 @@ class FrmProAppHelper{
             $user_ID = get_current_user_id();
             $user_id = $user_ID;
         }else{
-            $user = get_user_by('login', $user_id);
+            if ( is_email($user_id) ) {
+                $user = get_user_by('email', $user_id);
+            } else {
+                $user = get_user_by('login', $user_id);
+            }
+            
             if ( $user ) {
                 $user_id = $user->ID;
             }
@@ -402,9 +407,9 @@ class FrmProAppHelper{
             unset($linked_id);
         }
     
-        $where_statement = "(meta_value ". ($where_field->type == 'number' ? ' +0 ' : '') . $temp_where_is ." ". $where_val ." ";
+        $where_statement = "(meta_value ". ( in_array($where_field->type, array('number', 'scale')) ? ' +0 ' : '') . $temp_where_is ." ". $where_val ." ";
         if(isset($where_val_esc) and $where_val_esc != $where_val)
-            $where_statement .= " OR meta_value ". ($where_field->type == 'number' ? ' +0 ' : '') . $temp_where_is ." ". $where_val_esc;
+            $where_statement .= " OR meta_value ". ( in_array($where_field->type, array('number', 'scale')) ? ' +0 ' : '') . $temp_where_is ." ". $where_val_esc;
         
         $where_statement .= ") and fi.id=". (int)$where_opt;
         $where_statement = apply_filters('frm_where_filter', $where_statement, $args);
@@ -449,9 +454,9 @@ class FrmProAppHelper{
                         }
                     }else if($field_options['post_field'] == 'post_custom' and $field_options['custom_field'] != ''){
                         //check custom fields
-                        $add_posts = $wpdb->get_col("SELECT post_id FROM $wpdb->postmeta WHERE post_id in (". implode(',', array_keys($post_ids)) .") AND meta_key='".$field_options['custom_field']."' AND meta_value ". ($where_field->type == 'number' ? ' +0 ' : ''). $where_is." ".$where_val);
+                        $add_posts = $wpdb->get_col("SELECT post_id FROM $wpdb->postmeta WHERE post_id in (". implode(',', array_keys($post_ids)) .") AND meta_key='".$field_options['custom_field']."' AND meta_value ". ( in_array($where_field->type, array('number', 'scale')) ? ' +0 ' : ''). $where_is." ".$where_val);
                     }else{ //if field is post field
-                        $add_posts = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE ID in (". implode(',', array_keys($post_ids)) .") AND ".$field_options['post_field'] .($where_field->type == 'number' ? ' +0 ' : ' '). $where_is." ".$where_val);
+                        $add_posts = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE ID in (". implode(',', array_keys($post_ids)) .") AND ".$field_options['post_field'] .( in_array($where_field->type, array('number', 'scale')) ? ' +0 ' : ' '). $where_is." ".$where_val);
                     }
                         
                     if($add_posts and !empty($add_posts)){
@@ -590,5 +595,11 @@ class FrmProAppHelper{
             if(is_array($v)) return true;
         }
         return false;
+    }
+    
+    public static function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=',', $max=250) {
+        _deprecated_function( __FUNCTION__, '1.07.05', 'FrmProXMLHelper::import_csv()' );
+        include_once(FrmAppHelper::plugin_path() .'/pro/classes/helpers/FrmProXMLHelper.php');
+        return FrmProXMLHelper::import_csv($path, $form_id, $field_ids, $entry_key, $start_row, $del, $max);
     }
 }

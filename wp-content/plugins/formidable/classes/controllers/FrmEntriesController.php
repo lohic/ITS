@@ -3,7 +3,7 @@
  * @package Formidable
  */
  
-if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+if(!defined('ABSPATH')) die('You are not allowed to call this page directly.');
 
 if(class_exists('FrmEntriesController'))
     return;
@@ -167,7 +167,7 @@ class FrmEntriesController{
             if ( in_array($f->type, array('divider', 'captcha', 'break', 'html')) )
                 continue;
             
-            if ( !isset($entry->metas[$f->id]) ) {
+            if ( $entry && !isset($entry->metas[$f->id]) ) {
                 if ( $entry->post_id  && ( $f->type == 'tag' || (isset($f->field_options['post_field']) && $f->field_options['post_field'])) ) {
                     $p_val = FrmProEntryMetaHelper::get_post_value($entry->post_id, $f->field_options['post_field'], $f->field_options['custom_field'], array(
                         'truncate' => (($f->field_options['post_field'] == 'post_category') ? true : false), 
@@ -186,13 +186,13 @@ class FrmEntriesController{
                 $entry->metas[$f->id] = $default_email ? '['. $f->id .']' : '';
             }
             
-            $prev_val = maybe_unserialize($entry->metas[$f->id]);
-            $meta = array('item_id' => $id, 'field_id' => $f->id, 'meta_value' => $prev_val, 'field_type' => $f->type);
-            
-            if ( $default_email ) {
-                $val = $prev_val;
-            } else {
-                $val = apply_filters('frm_email_value', $prev_val, (object)$meta, $entry);
+            if ( $entry ) { 
+                $prev_val = maybe_unserialize($entry->metas[$f->id]);
+                $meta = array('item_id' => $id, 'field_id' => $f->id, 'meta_value' => $prev_val, 'field_type' => $f->type);
+
+                $val = $default_email ? $prev_val : apply_filters('frm_email_value', $prev_val, (object) $meta, $entry);
+            } else if ( $default_email ) {
+                $val = '['. $f->id .']';
             }
 
             if ( $f->type == 'textarea' and !$plain_text ) {
@@ -245,9 +245,15 @@ class FrmEntriesController{
             } else {
                 $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>". __('IP Address', 'formidable') . "</th><td $row_style>". $entry->ip ."</td></tr>\r\n";
                 $odd = ($odd) ? false : true;
-                $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('User-Agent (Browser/OS)', 'formidable') . "</th><td $row_style>". $data['browser']."</td></tr>\r\n";
+                
+                if ( isset($data['browser']) ) {
+                    $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('User-Agent (Browser/OS)', 'formidable') . "</th><td $row_style>". $data['browser']."</td></tr>\r\n";
+                }
                 $odd = ($odd) ? false : true;
-                $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('Referrer', 'formidable') . "</th><td $row_style>". str_replace("\r\n", '<br/>', $data['referrer']) ."</td></tr>\r\n";
+                
+                if ( isset($data['referrer']) ) {
+                    $content .= "<tr".(($odd) ? $bg_color : $bg_color_alt)."><th $row_style>".__('Referrer', 'formidable') . "</th><td $row_style>". str_replace("\r\n", '<br/>', $data['referrer']) ."</td></tr>\r\n";
+                }
             }
         }
 

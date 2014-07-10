@@ -187,8 +187,9 @@ class FrmProEntryMetaHelper{
             }
         }
         
-        if(!$atts['keepjs'])
+        if ( !$atts['keepjs'] ) {
             $value = wp_kses_post($value);
+        }
 
         return apply_filters('frm_display_value', $value, $field, $atts);
     }

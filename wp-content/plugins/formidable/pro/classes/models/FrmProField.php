@@ -174,6 +174,18 @@ class FrmProField{
             !empty($values['field_options']['form_select']) && isset($frm_duplicate_ids[$values['field_options']['form_select']]) ) {
 	        $values['field_options']['form_select'] = $frm_duplicate_ids[$values['field_options']['form_select']];
 	    }
+	    
+	    // switch out ids for dependent fields
+	    if ( isset($values['field_options']['dependent_fields']) && !empty($values['field_options']['dependent_fields']) ) {
+	        foreach ( $values['field_options']['dependent_fields'] as $f => $v ) {
+	            if ( isset($frm_duplicate_ids[$f]) ) {
+	                $values['field_options']['dependent_fields'][$frm_duplicate_ids[$f]] = $v;
+	                unset($values['field_options']['dependent_fields'][$f]);
+	            }
+	            unset($v);
+	            unset($fid);
+	        }
+	    }
         
         return $values;
     }

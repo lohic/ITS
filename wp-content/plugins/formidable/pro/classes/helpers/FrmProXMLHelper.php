@@ -52,11 +52,15 @@ class FrmProXMLHelper{
         		            $m['value'] = FrmFieldsHelper::switch_field_ids($m['value']);
             		    } else if ( $m['key'] == 'frm_options' ) {
             		        
-            		        if ( isset($m['value']['date_field_id']) && is_numeric($m['value']['date_field_id']) && isset($frm_duplicate_ids[$m['value']['date_field_id']])){
+            		        if ( isset($m['value']['date_field_id']) && is_numeric($m['value']['date_field_id']) && isset($frm_duplicate_ids[$m['value']['date_field_id']]) ) {
             		            $m['value']['date_field_id'] = $frm_duplicate_ids[$m['value']['date_field_id']];
-            		        } else if ( isset($m['value']['edate_field_id']) && is_numeric($m['value']['edate_field_id']) && isset($frm_duplicate_ids[$m['value']['edate_field_id']]) ) {
+            		        }
+            		        
+            		        if ( isset($m['value']['edate_field_id']) && is_numeric($m['value']['edate_field_id']) && isset($frm_duplicate_ids[$m['value']['edate_field_id']]) ) {
             		            $m['value']['edate_field_id'] = $frm_duplicate_ids[$m['value']['edate_field_id']];
-            		        } else if ( isset($m['value']['order_by']) && !empty($m['value']['order_by']) ) {
+            		        }
+            		        
+            		        if ( isset($m['value']['order_by']) && !empty($m['value']['order_by']) ) {
             		            if ( is_numeric($m['value']['order_by']) && isset($frm_duplicate_ids[$m['value']['order_by']]) ) {
             		                $m['value']['order_by'] = $frm_duplicate_ids[$m['value']['order_by']];
             		            } else if ( is_array($m['value']['order_by']) ) {
@@ -70,7 +74,9 @@ class FrmProXMLHelper{
             		                }
             		                
             		            }
-            		        } else if ( isset($m['value']['where']) && !empty($m['value']['where']) ) {
+            		        }
+            		        
+            		        if ( isset($m['value']['where']) && !empty($m['value']['where']) ) {
             		            foreach ( (array) $m['value']['where'] as $mk => $mv ) {
         		                    if ( isset($frm_duplicate_ids[$mv]) ) {
         		                        $m['value']['where'][$mk] = $frm_duplicate_ids[$mv];

@@ -38,8 +38,8 @@ class FrmProDisplaysHelper{
         }
 	    
 	    $values->frm_form_id = (int) $values->frm_form_id;
-		$values->frm_order_by = (array)$values->frm_order_by;		
-		$values->frm_order = (array)$values->frm_order;
+		$values->frm_order_by = (empty($values->frm_order_by)) ? array() : (array) $values->frm_order_by;
+        $values->frm_order = (empty($values->frm_order)) ? array() : (array) $values->frm_order;
 
         return $values;
     }
@@ -48,7 +48,8 @@ class FrmProDisplaysHelper{
         
         return array(
             'name' => '', 'description' => '', 'display_key' => '', 
-            'form_id' => 0, 'date_field_id' => '', 'edate_field_id' => '', 'entry_id' => '', 
+            'form_id' => 0, 'date_field_id' => '', 'edate_field_id' => '',
+			'repeat_event_field_id' => '', 'repeat_edate_field_id' => '', 'entry_id' => '',
             'post_id' => '', 'before_content' => '', 'content' => '', 
             'after_content' => '', 'dyncontent' => '', 'param' => 'entry', 
             'type' => '', 'show_count' => 'all', 'insert_loc' => 'none', 

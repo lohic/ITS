@@ -3,7 +3,7 @@
  * @package Formidable
  */ 
 
-if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+if(!defined('ABSPATH')) die('You are not allowed to call this page directly.');
 
 if(class_exists('FrmFormsController'))
     return;
@@ -539,10 +539,11 @@ class FrmFormsController{
             include($templates[$i]);
             
             //get updated form
-            if($form)
+            if ( isset($form) && $form ) {
                 $form = $frm_form->getOne($form->id);
-            else
+            } else {
                 $form = $frm_form->getAll($template_query, '', 1);
+            }
             
             if($form)
                 do_action('frm_after_duplicate_form', $form->id, (array)$form);
@@ -553,7 +554,7 @@ class FrmFormsController{
         $action = isset($_REQUEST['frm_action']) ? 'frm_action' : 'action';
         $vars = false;
         if(isset($_POST['frm_compact_fields'])){
-            if(!current_user_can('frm_edit_forms') and !is_super_admin()){
+            if ( !current_user_can('frm_edit_forms') && !current_user_can('administrator') ) {
                 global $frm_settings;
                 wp_die($frm_settings->admin_permission);
             }

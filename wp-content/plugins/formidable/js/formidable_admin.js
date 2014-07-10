@@ -82,7 +82,7 @@ if($('#frm_adv_info').length || $('.frm_field_list').length){
 		}
 	}
 	
-	$('.hide_dyncontent,#entry_select_container,#date_select_container').hide();
+	$('.hide_dyncontent,#date_select_container').hide();
 	frm_show_count($("input[name='show_count']:checked").val());
 	frm_show_loc($('#insert_loc').val());
 }
@@ -180,6 +180,7 @@ $('.frm_reset_style').click(function(){
 			}
 			$('select[name="frm_theme_selector"]').val(errObj['theme_css']).change();
 			$('#frm_submit_style, #frm_auto_width').prop('checked', false); //checkboxes
+			$('input.hex').validHex();
 			$('#frm_fieldset').change();
 		}
 	});
@@ -572,7 +573,7 @@ function frmGetFieldValues(f,cur,r,t,n){
 if(f){
     jQuery.ajax({
         type:"POST",url:ajaxurl,
-        data:"action=frm_get_field_values&current_field="+cur+"&field_id="+f+'&name='+n+'&t='+t,
+        data:"action=frm_get_field_values&current_field="+cur+"&field_id="+f+'&name='+n+'&t='+t+'&form_action='+jQuery('input[name="frm_action"]').val(),
         success:function(msg){jQuery("#frm_show_selected_values_"+cur+'_'+r).html(msg);} 
     });
 }
@@ -722,7 +723,11 @@ function frm_delete_field_option(){
 	var fk=cont.replace('frm_delete_field_', '').replace('_container', '').split('-');
 	jQuery.ajax({type:'POST',url:ajaxurl,
         data:'action=frm_delete_field_option&field_id='+fk[0]+'&opt_key='+fk[1],
-        success:function(msg){ jQuery('#'+cont).fadeOut('slow');}
+        success:function(msg){
+			jQuery('#'+cont).fadeOut('slow', function(){
+				jQuery('#'+cont).remove();
+			});
+		}
     });
 };
 
@@ -812,12 +817,8 @@ function frmDisplayFormSelected(form_id){
         success:function(html){ jQuery('#frm_adv_info .categorydiv').html(html);}
     });
     jQuery.ajax({type:"POST",url:ajaxurl,
-        data:"action=frm_get_entry_select&form_id="+form_id,
-        success:function(html){ jQuery('#entry_select_container').html(html);}
-    });
-    jQuery.ajax({type:"POST",url:ajaxurl,
         data:"action=frm_get_date_field_select&form_id="+form_id,
-        success:function(html){ jQuery('#date_field_id').html(html);}
+        success:function(html){ jQuery('#date_select_container').html(html);}
     });
 }
 
@@ -1022,9 +1023,9 @@ function frm_show_loc(val){
 
 function frm_show_count(value){
 	if(value=='dynamic' || value=='calendar'){ jQuery('.hide_dyncontent').show();}
-	else jQuery('.hide_dyncontent').hide();       
-	if(value=='one'){jQuery('#entry_select_container').show();jQuery('.limit_container').hide();}
-	else{jQuery("#entry_select_container").hide();jQuery('.limit_container').show();}
+	else{jQuery('.hide_dyncontent').hide();}
+	if(value=='one'){jQuery('.limit_container').hide();}
+	else{jQuery('.limit_container').show();}
 	if(value=='calendar'){jQuery('#date_select_container').show();jQuery('.limit_container').hide();}
 	else{jQuery('#date_select_container').hide();}
 }
@@ -1162,7 +1163,7 @@ function frmValidateExport(e){
 		var s = 'stop';
 	}
 	
-	if (!jQuery('input[name="type[]"]:checked').val()){
+	if (!jQuery('input[name="type[]"]:checked').val() && jQuery('input[name="type[]"]').attr('type') == 'checkbox'){
 		jQuery('input[name="type[]"]').closest('.form-field').addClass('frm_blank_field');
 		var s = 'stop';
 	}
@@ -1210,7 +1211,7 @@ function frmAddRemoveExportError(){
 function frmCheckCSVExtension(){
 	var f=jQuery(this).val();
 	var re = /\..+$/;
-	if (f.match(re) == '.csv')
+	if (f.match(re) == '.csv' || f.match(re) == '.CSV')
 		jQuery('.show_csv').fadeIn();
 	else
 		jQuery('.show_csv').fadeOut();

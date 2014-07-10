@@ -1,5 +1,5 @@
 <?php
-if(!defined('ABSPATH')) die(__('You are not allowed to call this page directly.', 'formidable'));
+if(!defined('ABSPATH')) die('You are not allowed to call this page directly.');
 
 if(class_exists('FrmAppHelper'))
     return;
@@ -431,8 +431,9 @@ class FrmAppHelper{
         
         $class = '';
         
-        if(in_array($type, array('email', 'user_id', 'hidden', 'select', 'radio', 'checkbox', 'phone')))
+        if ( in_array( $type, array( 'email', 'user_id', 'hidden', 'select', 'radio', 'checkbox', 'phone', 'text' ) ) ) {
             $class .= 'show_frm_not_email_to';
+        }
     ?>
 <li>
     <a class="frmids frm_insert_code alignright <?php echo $class ?>" data-code="<?php echo esc_attr($id) ?>" href="javascript:void(0)">[<?php echo $id ?>]</a>
