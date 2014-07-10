@@ -49,7 +49,7 @@
 				<?php 
 					if($prev!=""){
 				?>
-						<a href="?lettre=<?php echo $prev;?>" class="precedent">Prev</a>
+						<a href="?lettre=<?php echo $prev;?>" class="precedent">Précédent</a>
 				<?php
 					}
 				?>
@@ -57,7 +57,7 @@
 				<?php 
 					if($next!=""){
 				?>
-						<a href="?lettre=<?php echo $next;?>" class="suivant">Next</a>
+						<a href="?lettre=<?php echo $next;?>" class="suivant">Suivant</a>
 				<?php
 					}
 				?>
@@ -114,7 +114,7 @@
 			<?php 
 				if($prev!=""){
 			?>
-					<a href="?lettre=<?php echo $prev;?>" class="precedent">Prev</a>
+					<a href="?lettre=<?php echo $prev;?>" class="precedent">Précédent</a>
 			<?php
 				}
 			?>
@@ -122,7 +122,7 @@
 			<?php 
 				if($next!=""){
 			?>
-					<a href="?lettre=<?php echo $next;?>" class="suivant">Next</a>
+					<a href="?lettre=<?php echo $next;?>" class="suivant">Suivant</a>
 			<?php
 				}
 			?>

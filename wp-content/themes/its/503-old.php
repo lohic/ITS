@@ -48,7 +48,7 @@
         </div>
         <div style="margin-left:170px;">
             <h1>Bonjour,<br>
-            <span style="font-weight:800;">le site de l'institut tribune sobialiste <br>
+            <span style="font-weight:800;">le site de l'institut tribune socialiste <br>
             est actuellement en construction.</span><br>
             à bientôt pour la mise ne ligne.</h1>
             <h2>Pour prendre contact<br>

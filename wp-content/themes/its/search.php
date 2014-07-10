@@ -54,8 +54,8 @@
 				endif; ?>
 			
 			<section class="pagination smaller mb2">
-				<?php previous_posts_link('« Previous') ?>
-				<?php next_posts_link('Next »','') ?>
+				<?php previous_posts_link('« Précédent') ?>
+				<?php next_posts_link('Suivant »','') ?>
 			</section>
 		</div>
 		
@@ -160,8 +160,8 @@
 		wp_reset_postdata();
 		?>
 		<section class="pagination smaller mb2">
-			<?php previous_posts_link('« Previous') ?>
-			<?php next_posts_link('Next »','') ?>
+			<?php previous_posts_link('« Précédent') ?>
+			<?php next_posts_link('Suivant »','') ?>
 		</section>
 		<?php else : ?>
 				
