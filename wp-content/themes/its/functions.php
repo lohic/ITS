@@ -82,13 +82,33 @@ if( ! function_exists (my_register_post_types)) {
 				'public' => true,
 				'show_ui' => true,
 				//'show_in_menu' => false,
-				//'menu_icon'=> get_bloginfo('template_directory') .'/images/favicon.png',
+				'menu_icon'=> 'dashicons-editor-textcolor',
 				'show_in_nav_menus'=> false,
 				'capability_type' => 'post',
 				'rewrite' => array("slug" => "newsletter"),
 				'hierarchical' => false,
 				'query_var' => false,
 				'supports' => array('title','custom-fields'),
+				//'taxonomies' => 
+			)
+		);
+
+
+		register_post_type(
+			'mail',
+			array(
+				'label' => __('Mails'),
+				'singular_label' => __('Mail'),
+				'public' => true,
+				'show_ui' => true,
+				//'show_in_menu' => false,
+				'menu_icon'=> 'dashicons-email-alt',
+				'show_in_nav_menus'=> false,
+				'capability_type' => 'post',
+				'rewrite' => array("slug" => "mail"),
+				'hierarchical' => false,
+				'query_var' => false,
+				'supports' => array('title','editor'),
 				//'taxonomies' => 
 			)
 		);	
@@ -581,6 +601,18 @@ function fondsvideo_shortcode( $atts ) {
 	return $retour;
 }
 
+
+add_action( 'admin_init', 'wpuxss_admin_scripts' );
+function wpuxss_admin_scripts() 
+{	
+	global $pagenow;
+	
+	if (( $pagenow == 'post.php' ) ||   ( ( $pagenow == 'admin.php' ) && ($_GET['page'] == 'acf-options') ) ) 
+	{		
+		wp_enqueue_script( 'wplink', home_url('/wp-includes/js/wplink.js') );
+		wp_enqueue_script( 'popup', home_url('/wp-includes/js/tinymce/plugins/wpdialogs/js/popup.js') );	
+	}
+}
 
 /*
 <div class="vimeoBadge horizontal">
