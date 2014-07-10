@@ -90,6 +90,17 @@
     .content > :first-child{
         margin-top:0;
     }
+
+    .content address:before{
+        content:"—";
+        display: block;
+    }
+    .content address:after{
+        content:"—";
+        display: block;
+    }
+        
+
 </style>
 <style type="text/css" media="print">
 	
