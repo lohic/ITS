@@ -59,14 +59,21 @@
 			                    <h4 class="small"><?php the_field('date_article');?></h4>
 			                    <div class="small" id="resume">
 			                    	<?php 
-			                    		$resume = strip_tags(get_field('resume_article'),'<p><ul><li><ol><div><span><h1><h2><h3><h4><h5><h6>');
-        								echo $resume;
+			                    		//$resume = strip_tags(get_field('resume_article'),'<p><ul><li><ol><div><span><h1><h2><h3><h4><h5><h6>');
+        								//echo $resume;
         							?>
     							</div>
 			                    <div class="small" id="complet">
 									<?php 
-			                    		$texte = strip_tags(get_the_content());
-        								echo '<p>'.$texte.'</p>';
+			                    		//$texte = strip_tags(get_the_content());
+        								//echo '<p>'.$texte.'</p>';
+        								//
+        								$resume = get_field('resume_article');
+        								if(!empty( $resume )){
+        									echo strip_tags($resume,'<p><ul><li><ol><div><span><h1><h2><h3><h4><h5><h6>');
+        								}else{
+        									the_excerpt();
+        								}
         							?>
 			                    </div>
 			                </article>

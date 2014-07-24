@@ -525,7 +525,6 @@ function timeline_date(){
 
 /* DISPLAY FUTURE POST */
 add_filter('the_posts', 'show_future_posts');
- 
 function show_future_posts($posts)
 {
    global $wp_query, $wpdb;
@@ -602,6 +601,7 @@ function fondsvideo_shortcode( $atts ) {
 }
 
 
+// pour désactiver le bug lié au plugin formidable
 add_action( 'admin_init', 'wpuxss_admin_scripts' );
 function wpuxss_admin_scripts() 
 {	
