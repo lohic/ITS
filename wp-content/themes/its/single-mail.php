@@ -99,6 +99,16 @@
         content:"—";
         display: block;
     }
+
+    .content .wp-caption{
+        max-width: 570px !important;
+    }
+
+    .content p.wp-caption-text{
+        text-align: right;
+        font-size: 0.8em;
+        margin-top: 4px;
+    }
         
 
 </style>
