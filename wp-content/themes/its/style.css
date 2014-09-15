@@ -1323,6 +1323,10 @@ h2.titre, h2.titre a{
 	font-family: "signikalight", "futura-pt", Arial, sans-serif;
 }
 
+#actualites article > div  p, #regards article > div > p, .post_content p{
+	margin-bottom: 0.5em;
+}
+
 .post_content p strong, .post_content li strong{
 	font-family: "signikasemibold", "futura-pt", Arial, sans-serif;
 	font-weight:normal;
