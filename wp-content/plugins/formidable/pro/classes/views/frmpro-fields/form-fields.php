@@ -96,6 +96,9 @@ wp_editor(str_replace('&quot;', '"', $field['value']), 'field_'. $field['field_k
         $e_args = array('media_buttons' => false, 'textarea_name' => $field_name);
         if($field['max'])
             $e_args['textarea_rows'] = $field['max'];
+        
+        $e_args = apply_filters('frm_rte_options', $e_args, $field);
+        
         if($field['size']){ ?>
 <style type="text/css">#wp-field_<?php echo $field['field_key'] ?>-wrap{width:<?php echo (int)((int)$field['size'] * 8.6) ?>px;}</style><?php
         }

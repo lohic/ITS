@@ -55,23 +55,37 @@ global $frmpro_settings; ?>
         }else if ($field['data_type'] == 'checkbox'){
         $checked_values = $field['default_value'];
             
-        if ($field['options']){
-            foreach ($field['options'] as $opt_key => $opt){
-                $checked = (FrmAppHelper::check_selected($checked_values, $opt_key)) ? ' checked="checked"' : '';
+            if ($field['options']){
+                foreach ($field['options'] as $opt_key => $opt){
+                    $checked = (FrmAppHelper::check_selected($checked_values, $opt_key)) ? ' checked="checked"' : '';
             ?>
                 <label for="<?php echo $field_name ?>"><input type="checkbox" name="<?php echo $field_name ?>[]" id="<?php echo $field_name ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?></label><br/>
             <?php }
-        }else _e('There are no options', 'formidable'); ?>
-    <?php }else if ($field['data_type'] == 'radio'){
-        if ($field['options']){
-            foreach ($field['options'] as $opt_key => $opt){ 
-                $checked = ($field['default_value'] == $opt_key ) ? ' checked="true"':''; ?>
+            } else { 
+                _e('There are no options', 'formidable');
+            }
+        } else if ($field['data_type'] == 'radio' ) {
+            if ( $field['options'] ) {
+                foreach ( $field['options'] as $opt_key => $opt ) { 
+                    $checked = ($field['default_value'] == $opt_key ) ? ' checked="true"':''; ?>
                 <input type="radio" name="<?php echo $field_name ?>" id="field_<?php echo $field['id'] ?>-<?php echo esc_attr($opt_key) ?>" value="<?php echo esc_attr($opt_key) ?>" <?php echo $checked ?>> <?php echo $opt ?><br/>
-            <?php }
-        }else _e('There are no options', 'formidable'); ?>
-    <?php }else{ 
-    _e('This data is dynamic on change', 'formidable');
-        } 
+            <?php   
+                }
+            } else {
+                _e('There are no options', 'formidable');
+            }
+        } else { 
+            _e('This data is dynamic on change', 'formidable');
+        }
+        
+        if ( isset($field['post_field']) && $field['post_field'] == 'post_category' ) { ?>
+            <div class="clear"></div>
+            <div class="frm-show-click" style="margin-top:5px;">
+                <p class="howto"><?php echo FrmFieldsHelper::get_term_link($field['taxonomy']) ?></p>
+            </div>
+        <?php
+        }
+        
     }else if ($field['type'] == 'file'){ ?>
     <input type="file"  disabled="disabled" <?php echo (isset($field['size']) and $field['size']) ? 'style="width:auto" size="'. $field['size'] .'"' : ''; ?> />
     <input type="hidden" name="<?php echo $field_name ?>" />

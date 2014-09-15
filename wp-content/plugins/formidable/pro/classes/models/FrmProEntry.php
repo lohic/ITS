@@ -61,12 +61,17 @@ class FrmProEntry{
         
         $can_submit = true;
         if (isset($form_options['single_entry']) and $form_options['single_entry']){
+            $admin_entry = ( is_admin() && !defined('DOING_AJAX') );
+            
             if ($form_options['single_entry_type'] == 'cookie' and isset($_COOKIE['frm_form'. $form->id . '_' . COOKIEHASH])){
-                $can_submit = false;
+                $can_submit = $admin_entry ? true : false;
             }else if ($form_options['single_entry_type'] == 'ip'){
-                $prev_entry = $frm_entry->getAll(array('it.ip' => $_SERVER['REMOTE_ADDR']), '', 1);
-                if ($prev_entry)
-                    $can_submit = false;
+                if ( !$admin_entry ) {
+                    $prev_entry = $frm_entry->getAll(array('it.ip' => $_SERVER['REMOTE_ADDR']), '', 1);
+                    if ( $prev_entry ) {
+                        $can_submit = false;
+                    }
+                }
             }else if (($form_options['single_entry_type'] == 'user' or (isset($form->options['save_draft']) and $form->options['save_draft'] == 1)) and !$form->editable){
                 if($user_ID){
                     $args = array('user_id' => $user_ID, 'form_id' => $form->id);
@@ -79,6 +84,7 @@ class FrmProEntry{
                 if (isset($meta) and $meta)
                     $can_submit = false;
             }
+            unset($admin_entry);
             
             if (!$can_submit){
                 $k = is_numeric($form_options['single_entry_type']) ? 'field'. $form_options['single_entry_type'] : 'single_entry';
@@ -460,7 +466,7 @@ class FrmProEntry{
         return $results;
     }
 	
-	//Jamie's new function for returning ordered entries for Views
+	//Get ordered and filtered entries for Views
     function get_view_results($where, $args){
         global $wpdb;
 		
@@ -522,14 +528,13 @@ class FrmProEntry{
 					if(empty($query_1)){
 						$query_1 = "SELECT it.id, it.item_key, it.name, it.ip, it.form_id, it.post_id, it.user_id, it.updated_by,
                 it.created_at, it.updated_at, it.is_draft FROM {$wpdb->prefix}frm_items it";
+                        $query_2 = "WHERE ";
 						if(isset($o_field->field_options['post_field']) and $o_field->field_options['post_field']){//if field is some type of post field
 							if($o_field->field_options['post_field'] == 'post_custom'){//if field is custom field					
 								$query_1 .= " LEFT JOIN {$wpdb->postmeta} pm$o_key ON pm$o_key.post_id=it.post_id AND pm$o_key.meta_key='". $o_field->field_options['custom_field']."' ";
-								$query_2 = "WHERE ";//pm$o_key.post_id in (". implode(',', array_keys($linked_posts)).") AND ";
 								$query_3 = " ORDER BY CASE when pm$o_key.meta_value IS NULL THEN 1 ELSE 0 END, pm$o_key.meta_value {$order_array[$o_key]}, ";
 							}else if($o_field->field_options['post_field'] != 'post_category'){//if field is a non-category post field
 								$query_1 .= " INNER JOIN {$wpdb->posts} p$o_key ON p$o_key.ID=it.post_id ";
-								$query_2 = "WHERE p$o_key.ID in (". implode(',', array_keys($linked_posts)).") AND ";
 								$query_3 = " ORDER BY CASE p$o_key.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p$o_key.".$o_field->field_options['post_field']." {$order_array[$o_key]}, ";
 							} /*else { //First order field is a category field
 								$query_1 .= " INNER JOIN {$wpdb->prefix}term_relationships tr ON it.post_id=tr.object_id 
@@ -543,7 +548,6 @@ class FrmProEntry{
 						}else{//if field is a normal, non-post field
 							//Meta value is only necessary for time field reordering and only if time field is first ordering field
 							$query_1 .= " LEFT JOIN {$wpdb->prefix}frm_item_metas em$o_key ON em$o_key.item_id=it.id AND em$o_key.field_id=$o_field->id ";
-							$query_2 = "WHERE ";
 							$query_3 = " ORDER BY CASE when em$o_key.meta_value IS NULL THEN 1 ELSE 0 END, em$o_key.meta_value".( in_array($o_field->type, array('number', 'scale')) ? ' +0 ' : '')." {$order_array[$o_key]}, ";
 							//Check if time field (for time field ordering)
 							if ( $o_field->type == 'time' ) { $time_field = $o_field; }
@@ -582,10 +586,6 @@ class FrmProEntry{
 				$query_3 = " ORDER BY";
 				
 				foreach ( $order_by_array as $o_key => $order_by ) {
-				    if ( empty($order_by) ) {
-				        continue;
-				    }
-					
 					$query_3 .= " it." . $order_by . " " . $order_array[$o_key] . ", ";
 					unset($order_by);
 				}

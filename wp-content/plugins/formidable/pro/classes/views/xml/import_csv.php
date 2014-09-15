@@ -21,7 +21,7 @@
 <script type="text/javascript">
 /*<![CDATA[*/
 __FRMURLVARS="<?php echo $url_vars ?>";
-frmImportCsv(<?php echo $form_id ?>);
+jQuery(document).ready(function(){frmImportCsv(<?php echo $form_id ?>);});
 /*]]>*/
 </script>
     </div>

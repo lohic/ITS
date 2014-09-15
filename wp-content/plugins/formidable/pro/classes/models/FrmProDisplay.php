@@ -139,7 +139,7 @@ class FrmProDisplay{
             return false;
             
         if($post and $get_meta){
-            $check_post = (isset($atts['check_post'])) ? $atts['check_post'] : true;
+            $check_post = (isset($atts['check_post'])) ? $atts['check_post'] : false;
             $post = FrmProDisplaysHelper::setup_edit_vars($post, $check_post);
         }
         

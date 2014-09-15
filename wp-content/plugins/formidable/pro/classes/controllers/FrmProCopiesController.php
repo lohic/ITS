@@ -3,7 +3,7 @@
 class FrmProCopiesController{
     public static function load_hooks(){
         add_action('init', 'FrmProCopiesController::install');
-        add_action('frm_after_install', 'FrmProCopiesController::install', 20);
+        add_action('frm_after_install', 'FrmProCopiesController::activation_install', 20);
         add_action('frm_after_uninstall', 'FrmProCopiesController::uninstall');
         add_action('frm_update_form', 'FrmProCopiesController::save_copied_form', 20, 2);
         add_action('frm_create_display', 'FrmProCopiesController::save_copied_display', 20, 2);
@@ -18,6 +18,12 @@ class FrmProCopiesController{
         $frmpro_copy->install();
     }
     
+    public static function activation_install() {
+        // make sure post type exists before creating any views
+        FrmProDisplaysController::register_post_types();
+        self::install();
+    }
+    
     public static function uninstall(){
         $frmpro_copy = new FrmProCopy();
         $frmpro_copy->uninstall();
@@ -26,15 +32,10 @@ class FrmProCopiesController{
     public static function save_copied_display($id, $values){
         global $wpdb, $blog_id;
         $frmpro_copy = new FrmProCopy();
-        if (isset($values['options']['copy'])){
-            $old_id = get_post_meta($id, 'frm_old_id', true);
-            if($old_id){
-                //remove old ID from copies
-                $wpdb->delete($frmpro_copy->table_name, array('form_id' => $id, 'type' => 'display', 'blog_id' => $blog_id));
-            }
+        $wpdb->delete($frmpro_copy->table_name, array('form_id' => $id, 'type' => 'display', 'blog_id' => $blog_id));
+        
+        if ( isset($values['options']['copy']) && $values['options']['copy'] ) {
             $created = $frmpro_copy->create(array('form_id' => $id, 'type' => 'display'));
-        }else{
-            $wpdb->delete($frmpro_copy->table_name, array('form_id' => $id, 'type' => 'display', 'blog_id' => $blog_id));
         }
     }
         

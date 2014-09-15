@@ -31,10 +31,11 @@ class FrmProCopy{
         }
         $new_values['created_at'] = current_time('mysql', 1);
         
-        $exists = $this->getAll("blog_id='$blog_id' and form_id='".$new_values['form_id']."' and type='".$new_values['type']."'", '', ' LIMIT 1');
-        $query_results = false;
-        if (!$exists)
-            $query_results = $wpdb->insert( $this->table_name, $new_values );
+        $exists = $this->getAll(array('blog_id' => $blog_id, 'form_id' => $new_values['form_id'], 'type' => $new_values['type']), '', ' LIMIT 1');
+        if ( $exists ) {
+            return false;
+        }
+        $query_results = $wpdb->insert( $this->table_name, $new_values );
 
         if($query_results)
             return $wpdb->insert_id;
@@ -105,17 +106,33 @@ class FrmProCopy{
         
         if($force){        
             //get all forms to be copied from global table
-            $templates = $this->getAll("blog_id !='$blog_id'", ' ORDER BY type DESC'); 
-
+            $templates = $wpdb->get_results($wpdb->prepare(
+                "SELECT c.*, p.post_name FROM $this->table_name c LEFT JOIN {$wpdb->prefix}frm_forms f ON (c.copy_key = f.form_key) LEFT JOIN $wpdb->posts p ON (c.copy_key = p.post_name) WHERE blog_id != %d AND ((type = %s AND f.form_key is NULL) OR (type = %s AND p.post_name is NULL)) ORDER BY type DESC",
+                $blog_id, 'form', 'display'
+            ));
+            
             foreach ($templates as $temp){
                 if ($temp->type == 'form'){
                     $frm_form = new FrmForm();
-                    if (!$frm_form->getOne($temp->copy_key))
-                        $frm_form->duplicate($temp->form_id, false, true, $temp->blog_id);
+                    $frm_form->duplicate($temp->form_id, false, true, $temp->blog_id);
                 }else{
                     global $frmpro_display;
-                    if (!$frmpro_display->getOne($temp->copy_key))
-                        $frmpro_display->duplicate($temp->form_id, true, $temp->blog_id);
+                    $values = $frmpro_display->getOne( $temp->form_id, $temp->blog_id, true );
+                    if ( !$values || 'trash' == $values->post_status ) {
+                        continue;
+                    }
+                    
+                    // check if post with slug already exists
+                    $post_name = wp_unique_post_slug( $values->post_name, 0, 'publish', 'frm_display', 0 );
+                    if ( $post_name != $values->post_name ) {
+                        continue;
+                    }
+                    
+                    if ( $values->post_name != $temp->copy_key ) {
+                        $wpdb->update($this->table_name, array('copy_key' => $values->post_name), array('id' => $temp->id) );
+                    }
+                    
+                    $frmpro_display->duplicate($temp->form_id, true, $temp->blog_id);
 
                     //TODO: replace any ids with field keys in the display before duplicated
                 }

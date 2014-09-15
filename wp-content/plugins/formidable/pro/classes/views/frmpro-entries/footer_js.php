@@ -147,10 +147,12 @@ var vals=new Array();
 <?php 
 
     foreach ( $calc_fields as $calc_field ) {
-        if ( $calc_field->type == 'checkbox' ) {
-?>$('<?php echo $field_keys[$calc_field->id] ?>:checked, <?php echo $field_keys[$calc_field->id] ?>[type=hidden]').each(function(){ 
+        if ( in_array($calc_field->type, array('checkbox', 'select') ) ) {
+            $checked = ( 'checkbox' == $calc_field->type ) ? ':checked' : ' option:selected';
+                
+?>$('<?php echo $field_keys[$calc_field->id] . $checked .','. $field_keys[$calc_field->id] ?>[type=hidden]').each(function(){
 if(isNaN(vals['<?php echo $calc_field->id ?>'])){vals['<?php echo $calc_field->id ?>']=0;}
-var n=parseFloat($(this).val().match(/-?\d*(\.\d*)?$/));if(isNaN(n))n=0;
+var n=parseFloat($(this).val().replace(/,/g,'').match(/-?[\d\.]+$/));if(isNaN(n))n=0;
 vals['<?php echo $calc_field->id ?>'] += n; });
 <?php
         } else if ( $calc_field->type == 'date' ) {
@@ -161,14 +163,14 @@ if(d!=null){vals['<?php echo $calc_field->id ?>']=Math.ceil(d/(1000*60*60*24));}
         } else {
 ?>vals['<?php echo $calc_field->id ?>']=$('<?php 
 echo $field_keys[$calc_field->id]; 
-if(in_array($calc_field->type, array("radio", "scale")))
+if ( in_array($calc_field->type, array('radio', 'scale')) ) {
     echo ":checked, ". $field_keys[$calc_field->id] ."[type=hidden]";
-else if($calc_field->type == "select")
-    echo " option:selected, ". $field_keys[$calc_field->id] .":hidden";
+}
 ?>').val();
-if(typeof(vals['<?php echo $calc_field->id ?>'])=='undefined'){vals['<?php echo $calc_field->id ?>']=0;}else{ vals['<?php echo $calc_field->id ?>']=parseFloat(vals['<?php echo $calc_field->id ?>'].match(/-?\d*(\.\d*)?$/)); }
+if(typeof(vals['<?php echo $calc_field->id ?>'])=='undefined'){vals['<?php echo $calc_field->id ?>']=0;}else{vals['<?php echo $calc_field->id ?>']=parseFloat(vals['<?php echo $calc_field->id ?>'].replace(/,/g,'').match(/-?[\d\.]+$/)); }
 <?php
-        } 
+        }
+
 ?>if(isNaN(vals['<?php echo $calc_field->id ?>'])){vals['<?php echo $calc_field->id ?>']=0;}<?php
 
     }

@@ -35,7 +35,7 @@ class FrmProEntryMeta{
 
         foreach ( $fields as $field ) {
                         
-            if ( $field->type == 'file' ) {
+            if ( $field->type == 'file' && isset($_POST['item_meta']) ) {
                 // keep existing files attached to post
                 $frm_vars['media_id'][$field->id] = $_POST['item_meta'][$field->id];
             }
@@ -276,6 +276,21 @@ class FrmProEntryMeta{
             }
             unset($entry_id);
         }
+        
+        // validate number settings
+		if ( 'number' == $field->type && $value != '' ) {
+		    global $frm_settings;
+		    // only check if options are available in settings
+		    if ( $frm_settings->use_html && isset($field->field_options['minnum']) && isset($field->field_options['maxnum']) ) {
+		        //minnum maxnum
+		        if ( (float) $value < $field->field_options['minnum'] ) {
+		            $errors['field'. $field->id] = __('Please select a higher number', 'formidable');
+		        } else if ( (float) $value > $field->field_options['maxnum'] ) {
+		            $errors['field'. $field->id] = __('Please select a lower number', 'formidable');
+		        }
+		    }
+		    
+		}
         
         if(!empty($value) and ($field->type == 'website' or $field->type == 'url' or $field->type == 'image')){
             if(trim($value) == 'http://'){

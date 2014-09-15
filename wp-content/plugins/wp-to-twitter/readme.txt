@@ -2,12 +2,13 @@
 Contributors: joedolson
 Donate link: http://www.joedolson.com/donate.php
 Tags: twitter, microblogging, su.pr, bitly, yourls, redirect, shortener, post, links
-Requires at least: 3.6.1
-Tested up to: 3.9.1
+Requires at least: 3.7.0
+Tested up to: 3.9.2
 License: GPLv2 or later
-Stable tag: 2.8.8
+Text Domain: wp-to-twitter
+Stable tag: 2.9.3
 
-Auto-posts a Twitter update when you update your WordPress blog or blogroll, with your chosen URL shortening service.
+Auto-posts a Twitter update when you update your WordPress blog or add a link, with your chosen URL shortening service.
 
 == Description ==
 
@@ -17,7 +18,7 @@ Shorten URLs using a variety of popular URL shorteners, or leave Twitter to do i
 
 Use WP to Twitter display a feed of recent Tweets. Display Tweets from any account by entering that account's Twitter ID! 
 
-[Upgrade to WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/) for Tweet scheduling, automatic re-tweeting, and more!
+[Upgrade to WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/) for Tweet scheduling, automatic re-tweeting, and more!
 
 WP to Twitter supports a customizable Tweet template for updating or editing posts and pages, supports custom post types, and allows you to write a custom Tweet for each post, using custom template tags to generate the Tweet copy. 
 
@@ -28,7 +29,7 @@ More features:
 * Support for Google Analytics
 * Support for XMLRPC remote clients
 
-Upgrade to [WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/) for extra features, including:
+Upgrade to [WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/) for extra features, including:
 
 * Each author can set up their own Twitter account
 * Time delayed Tweeting
@@ -36,7 +37,7 @@ Upgrade to [WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/) for
 * Co-Tweet to site and author Twitter accounts
 * Preview and Tweet comments
 * Filter Tweets by taxonomy (categories, tags, or custom taxonomies)
-* [...and more!](http://www.joedolson.com/articles/wp-tweets-pro/)
+* [...and more!](http://www.joedolson.com/wp-tweets-pro/)
 
 Want to stay up to date on WP to Twitter? [Follow me on Twitter!](https://twitter.com/joedolson)
 
@@ -44,16 +45,52 @@ Translations:
 
 Visit the [WP to Twitter translations page](http://translate.joedolson.com/projects/wp-to-twitter) to see how complete these are.
 
-Languages available (in order of completeness):
-Dutch, Russian, French, Italian, Danish, Catalan, Portuguese, Spanish, Chinese, Japanese, Romanian, Estonian, German, Swedish, Irish, Ukrainian, Lithuanian, Belarusian, Turkish, Persian
+Translations available (in order of completeness):
+Dutch, Italian, Russian, French, Danish, Catalan, Portuguese, Spanish, Chinese, Japanese, Romanian, German, Estonian, Swedish, Irish, Ukrainian, Lithuanian, Belarusian, Turkish
 
 Translating my plug-ins is always appreciated. Visit <a href="http://translate.joedolson.com">my translations site</a> to start getting your language into shape!
 
 == Changelog ==
 
-= 2.9.0 [Forthcoming] =
+= Future =
 
-* Will revamp roles & capabilities model for WP to Twitter
+* Add regex filter to detect URLs typed into Tweet fields for counting/shortening purposes. [todo]
+* Feature: support for YOURLS signature tokens
+* Feature: Twitter widget support for searches
+
+= 2.9.4 =
+
+* Security Fix: https://vexatioustendencies.com/wordpress-plugin-vulnerability-dump-part-2/; No thanks to reporter.
+
+= 2.9.3 =
+
+* Feature: Use display URL for URLs in Twitter Widget
+* Bug fix: user's Twitter account not assigned to #author# tag
+* Bug fix: reverted bug fix #4 from 2.9.1; didn't accomplish what it was supposed to and caused new issues.
+
+= 2.9.2 =
+
+* Bug fix: Accidentally enabled upload images in free edition; feature is problematic without the controls in WP Tweets PRO!
+
+= 2.9.1 =
+
+* Bug fix: too many fallbacks for #author#, display name never shows
+* Bug fix: stripslashes on AJAX tweet
+* Bug fix: prevent PHP warnings on invalid shortener return values
+* Bug fix: [WP Tweets PRO] if images are to be uploaded, but were added to post after publication, they were not tweeted.
+* Updated Dutch, German translations.
+
+= 2.9.0 =
+
+* Revamp roles and capabilities management
+* Add filter: wpt_max_tweet_length; returns array with max Tweet lengths. Default array( 'with_media'=>119, 'without_media' => 137 );
+* Bug fix: When a Tweet was truncated due to long raw text, truncation would be 5 chars too aggressive.
+* Changed base capability from 'update_core' to 'manage_options' for multi-site admins
+* Post to Twitter function returns false on all errors, rather than just Twitter errors.
+* Removed upgrade cycles for versions more than 2 1/2 years old.
+* Add "Tweet Now" button to send a Tweet without saving post.
+* Add Tweet Scheduler button for WP Tweets PRO users; set time and date and schedule from post without saving.
+* Language update: Italian
 
 = 2.8.9 =
 
@@ -446,7 +483,7 @@ Translating my plug-ins is always appreciated. Visit <a href="http://translate.j
 * Significant re-write of underlying code.
 * Redesign of settings pages.
 * Significant text revisions.
-* Release of [WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/), a pro upgrade to WP to Twitter.
+* Release of [WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/), a pro upgrade to WP to Twitter.
 
 = 2.3.18 =
 
@@ -985,19 +1022,21 @@ Translating my plug-ins is always appreciated. Visit <a href="http://translate.j
 
 = Where are your Frequently Asked Questions? Why aren't they here? =
 
-Right here: [WP to Twitter FAQ](http://www.joedolson.com/articles/wp-to-twitter/support-2/). I don't maintain them here because I would prefer to only maintain one copy. This is better for everybody, since the responses are much more likely to be up to date!
+Right here: [WP to Twitter FAQ](http://www.joedolson.com/wp-to-twitter/support-2/). I don't maintain them here because I would prefer to only maintain one copy. This is better for everybody, since the responses are much more likely to be up to date!
 
 = How can I help you make WP to Twitter a better plug-in? =
 
-Writing and maintaining a plug-in is a lot of work. You can help me by providing detailed support requests (which saves me time), or by providing financial support, either via my [plug-in donations page](http://www.joedolson.com/donate.php) or by [upgrading to WP Tweets Pro](http://www.joedolson.com/articles/wp-tweets-pro/). Believe me, any small donation really makes a difference!
+Writing and maintaining a plug-in is a lot of work. You can help me by providing detailed support requests (which saves me time), or by providing financial support, either via my [plug-in donations page](http://www.joedolson.com/donate.php) or by [upgrading to WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/). Believe me, any small donation really makes a difference!
 
 == Screenshots ==
 
 1. WP to Twitter OAuth settings.
-2. WP to Twitter custom Tweet settings.
-3. WP Tweets PRO settings.
-4. Twitter Feed
+2. WP to Twitter post meta box settings.
+3. WP to Twitter post meta box with WP Tweets PRO.
+4. WP Tweets PRO settings.
+5. Twitter Feed 
+6. Settings
 
 == Upgrade Notice ==
 
-* 2.8.6 - Miscellaneous bug fixes.
+* 2.9.4 - IMPORTANT SECURITY UPDATE - UPGRADE NOW.

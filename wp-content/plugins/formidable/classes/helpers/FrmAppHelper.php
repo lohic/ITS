@@ -6,8 +6,14 @@ if(class_exists('FrmAppHelper'))
 
 class FrmAppHelper{
     public static $db_version = 11; //version of the database we are moving to (skip 12)
-    public static $pro_db_version = 24;
+    public static $pro_db_version = 25;
     
+    /*
+    * @since 1.07.02
+    *
+    * @param none
+    * @return float The version of this plugin
+    */
     public static function plugin_version(){
         $plugin_data = get_file_data( WP_PLUGIN_DIR .'/formidable/formidable.php', array('Version' => 'Version'), 'plugin' );
         return $plugin_data['Version'];
@@ -63,6 +69,19 @@ class FrmAppHelper{
         return isset($_POST[$param]) ? stripslashes_deep(maybe_unserialize($_POST[$param])) : $default;
     }
     
+    /*
+    * Check a value from a shortcode to see if true or false.
+    * True when value is 1, true, 'true', 'yes'
+    *
+    * @since 1.07.10
+    *
+    * @param string $value The value to compare
+    * @return boolean True or False
+    */
+    public static function is_true($value) {
+        return ( true === $value || 1 == $value || 'true' == $value || 'yes' == $value );
+    }
+    
     public static function load_scripts($scripts){
         foreach ( (array) $scripts as $s ) {
             wp_enqueue_script($s);
@@ -110,7 +129,7 @@ class FrmAppHelper{
     <?php
     }
     
-    public static function frm_capabilities(){
+    public static function frm_capabilities($type = 'auto'){
         global $frm_vars;
         $cap = array(
             'frm_view_forms'        => __('View Forms and Templates', 'formidable'),
@@ -118,7 +137,7 @@ class FrmAppHelper{
             'frm_delete_forms'      => __('Delete Forms and Templates', 'formidable'),
             'frm_change_settings'   => __('Access this Settings Page', 'formidable')
         );
-        if($frm_vars['pro_is_installed']){
+        if ( $frm_vars['pro_is_installed'] || 'pro' == $type ) {
             $cap['frm_view_entries'] = __('View Entries from Admin Area', 'formidable');
             $cap['frm_create_entries'] = __('Add Entries from Admin Area', 'formidable');
             $cap['frm_edit_entries'] = __('Edit Entries from Admin Area', 'formidable');
@@ -270,13 +289,17 @@ class FrmAppHelper{
         
         $values = array('id' => $record->id, 'fields' => array());
 
-        foreach (array('name' => $record->name, 'description' => $record->description) as $var => $default_val)
-              $values[$var] = FrmAppHelper::get_param($var, $default_val);
+        foreach ( array('name', 'description') as $var ) {
+            $default_val = isset($record->{$var}) ? $record->{$var} : '';
+            $values[$var] = FrmAppHelper::get_param($var, $default_val);
+            unset($var, $default_val);
+        }
               
-        if(apply_filters('frm_use_wpautop', true))
+        if ( apply_filters('frm_use_wpautop', true) ) {
             $values['description'] = wpautop(str_replace( '<br>', '<br />', $values['description']));
+        }
         
-            foreach((array)$fields as $field){
+        foreach ( (array) $fields as $field ) {
 
                 if ($default){
                     $meta_value = $field->default_value;
@@ -355,14 +378,13 @@ class FrmAppHelper{
                 $values['fields'][$field->id] = $field_array;
                 
                 unset($field);   
-            }
+        }
       
         $frm_form = new FrmForm();
         $form = $frm_form->getOne( $table == 'entries' ? $record->form_id : $record->id );
         unset($frm_form);
 
         if ($form){
-            $form->options = maybe_unserialize($form->options);
             $values['form_name'] = (isset($record->form_id)) ? $form->name : '';
             if (is_array($form->options)){
                 foreach ($form->options as $opt => $value){
@@ -561,17 +583,41 @@ class FrmAppHelper{
             
         foreach ($words as $word){
             $part = (($sub != '') ? ' ' : '') . $word;
+            $total_len = (function_exists('mb_strlen')) ? mb_strlen($sub . $part) : strlen($sub. $part);
+            if ( $total_len > $length && str_word_count($sub) ) {
+                break;
+            }
+            
             $sub .= $part;
             $len += (function_exists('mb_strlen')) ? mb_strlen($part) : strlen($part);
-            $total_len = (function_exists('mb_strlen')) ? mb_strlen($sub) : strlen($sub);
             
-            if (str_word_count($sub) > $minword && $total_len >= $length)
+            if ( str_word_count($sub) > $minword && $total_len >= $length ) {
                 break;
+            }
             
-            unset($total_len);
+            unset($total_len, $word);
         }
         
         return $sub . (($len < $original_len) ? $continue : '');
+    }
+    
+    /*
+    * Added for < 4.0 compatability
+    *
+    * @since 1.07.10
+    *
+    * @param $term The value to escape
+    * @return string The escaped value
+    */
+    public static function esc_like($term) {
+        global $wpdb;
+        if ( method_exists($wpdb, 'esc_like') ) { // WP 4.0
+            $term = $wpdb->esc_like( $term );
+        } else {
+            $term = like_escape( $term );
+        }
+        
+        return $term;
     }
     
     public static function prepend_and_or_where( $starts_with = ' WHERE ', $where = '' ){
@@ -721,4 +767,57 @@ class FrmAppHelper{
         return $string;
     }
     
+    public static function check_mem_use($function='', $start_mem=0) {
+        $mem = memory_get_usage(true) - $start_mem;
+        
+        //error_log($mem .' '. $function);
+        return $start_mem + $mem;
+    }
+    
+    /*
+    * @since 1.07.10
+    *
+    * @param string $post_type The name of the post type that may need to be highlighted
+    * @return echo The javascript to open and highlight the Formidable menu
+    */
+    public static function maybe_highlight_menu($post_type) {
+        global $post, $pagenow;
+
+        if ( isset($_REQUEST['post_type']) && $_REQUEST['post_type'] != $post_type ) {
+            return;
+        }
+        
+        if ( is_object($post) && $post->post_type != $post_type ) {
+            return;
+        }
+        
+        echo <<<HTML
+<script type="text/javascript">
+jQuery(document).ready(function(){
+jQuery('#toplevel_page_formidable').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
+jQuery('#toplevel_page_formidable a.wp-has-submenu').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
+});
+</script>
+HTML;
+    }
+    
+    /*
+    * @since 1.07.10
+    *
+    * @param float $min_version The version the add-on requires
+    * @return echo The message on the plugins listing page
+    */
+    public static function min_version_notice($min_version) {
+        $frm_version = self::plugin_version();
+        
+        // check if Formidable meets minimum requirements
+        if ( version_compare($frm_version, $min_version, '>=') ) {
+            return;
+        }
+        
+        $wp_list_table = _get_list_table('WP_Plugins_List_Table');
+        echo '<tr class="plugin-update-tr active"><th colspan="' . $wp_list_table->get_column_count() . '" class="check-column plugin-update colspanchange"><div class="update-message">'.
+        __('You are running an outdated version of Formidable. This plugin may not work correctly if you do not update Formidable.', 'formidable') .
+        '</div></td></tr>';
+    }
 }

@@ -56,6 +56,10 @@ if(in_array($new_field->type, array('select', 'radio', 'checkbox', 'scale', 'dat
 <?php 
     if($new_field->options){
     foreach ($new_field->options as $opt_key => $opt){
+        if ( $opt == '' ) {
+            continue;
+        }
+        
         $field_val = apply_filters('frm_field_value_saved', $opt, $opt_key, $temp_field); //use VALUE instead of LABEL
         $opt = apply_filters('frm_field_label_seen', $opt, $opt_key, $temp_field);
         unset($field_array);

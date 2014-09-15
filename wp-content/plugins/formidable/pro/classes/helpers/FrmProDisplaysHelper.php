@@ -39,7 +39,7 @@ class FrmProDisplaysHelper{
 	    
 	    $values->frm_form_id = (int) $values->frm_form_id;
 		$values->frm_order_by = (empty($values->frm_order_by)) ? array() : (array) $values->frm_order_by;
-        $values->frm_order = (empty($values->frm_order)) ? array() : (array) $values->frm_order;
+		$values->frm_order = (empty($values->frm_order)) ? array() : (array) $values->frm_order;
 
         return $values;
     }
@@ -66,7 +66,9 @@ class FrmProDisplaysHelper{
         if(empty($form_id))
             return false;
         
-        $form_ids = array($form_id);
+        $form_id = (int) $form_id;
+        $form_ids = array( $form_id);
+        
         //get linked form ids
         /*$data_fields = $frm_field->getAll(array('fi.type' => 'data', 'fi.form_id' => $form_id));
         if($data_fields){

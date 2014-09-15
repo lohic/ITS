@@ -10,7 +10,7 @@
 <?php } 
 
 if(in_array($display['type'], array('radio', 'checkbox', 'select')) and (!isset($field['post_field']) or ($field['post_field'] != 'post_category' and $field['post_field'] != 'post_status'))){ ?>
-<tr><td><label><?php _e('Separate values', 'formidable'); ?></label> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php _e('Add a separate value to use for calculations, email routing, saving to the database, and many other uses. The option values are saved while the option labels are shown in the form.', 'formidable') ?>" ></span></td>
+<tr><td><label><?php _e('Separate values', 'formidable'); ?></label> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo sprintf(__('Add a separate value to use for calculations, email routing, saving to the database, and many other uses. The option values are saved while the option labels are shown in the form. Use [%s] to show the saved value in emails or views.', 'formidable'), $field['id'] .' show=value') ?>" ></span></td>
     <td><label for="separate_value_<?php echo $field['id'] ?>"><input type="checkbox" name="field_options[separate_value_<?php echo $field['id'] ?>]" id="separate_value_<?php echo $field['id'] ?>" value="1" <?php checked($field['separate_value'], 1) ?> onclick="frmSeparateValue(<?php echo $field['id'] ?>)" /> <?php _e('Use separate values', 'formidable'); ?></label></td>
 </tr>
 <?php 

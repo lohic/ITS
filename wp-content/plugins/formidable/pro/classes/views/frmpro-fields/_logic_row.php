@@ -17,7 +17,7 @@
 <?php 
 if($hide_field and !$sel){ 
 //remove conditional logic if the field doesn't exist ?>
-<script type="text/javascript">jQuery(document).ready(function($){ frm_remove_tag('#frm_logic_<?php echo $field['id'] ?>_<?php echo $meta_name ?>'); });</script>
+<script type="text/javascript">jQuery(document).ready(function($){ $('#frm_logic_<?php echo $field['id'] ?>_<?php echo $meta_name ?> .frm_remove_tag').click(); });</script>
 <?php    
 }
 _e('is', 'formidable'); 

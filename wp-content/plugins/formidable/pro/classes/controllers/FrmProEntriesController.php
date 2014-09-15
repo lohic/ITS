@@ -171,7 +171,7 @@ class FrmProEntriesController{
         wp_register_script('nicedit', FrmAppHelper::plugin_url() . '/pro/js/nicedit.js', array(), '1', true);
         if($frmpro_settings->theme_css != -1)
             wp_register_style('jquery-theme', FrmProAppHelper::jquery_css_url($frmpro_settings->theme_css), array(), FrmAppHelper::plugin_version());
-        wp_register_script('jquery-chosen', FrmAppHelper::plugin_url() .'/pro/js/chosen.jquery.min.js', array('jquery'), '0.9.12', true);
+        wp_register_script('jquery-chosen', FrmAppHelper::plugin_url() .'/pro/js/chosen.jquery.min.js', array('jquery'), '1.1.0', true);
 
         //jquery-ui-datepicker registered in WP 3.3
         if(!isset($wp_scripts->registered) or !isset( $wp_scripts->registered['jquery-ui-datepicker'])){
@@ -260,11 +260,13 @@ class FrmProEntriesController{
         if(!empty($frm_input_masks))
             $scripts[] = 'jquery-maskedinput';
         
-        if(!empty($scripts))
+        if ( !empty($scripts) ) {
             FrmAppHelper::load_scripts($scripts);
+        }
         
-        if(!empty($styles))
+        if ( !empty($styles) ) {
             FrmAppHelper::load_styles($styles);
+        }
         
         unset($scripts);
     }
@@ -351,6 +353,10 @@ class FrmProEntriesController{
     }
     
     public static function create(){
+        if ( ! current_user_can('frm_create_entries') ) {
+            return self::display_list();
+        }
+        
         global $frm_entry;
         
         $params = self::get_params();
@@ -363,44 +369,59 @@ class FrmProEntriesController{
         
         if( count($errors) > 0 ){
             self::get_new_vars($errors, $form);
-        }else{
-            if ((isset($_POST['frm_page_order_'. $form->id]) or FrmProFormsHelper::going_to_prev($form->id)) and !FrmProFormsHelper::saving_draft($form->id)){
-                self::get_new_vars('', $form);
-            }else{
-                $_SERVER['REQUEST_URI'] = str_replace('&frm_action=new', '', $_SERVER['REQUEST_URI']);
-                
-                global $frm_vars;
-                if(!isset($frm_vars['created_entries'][$form->id]) or !$frm_vars['created_entries'][$form->id])
-                    $frm_vars['created_entries'][$form->id] = array();
-                
-                if(!isset($frm_vars['created_entries'][$_POST['form_id']]['entry_id']))
-                    $record = $frm_vars['created_entries'][$form->id]['entry_id'] = $frm_entry->create( $_POST );
-                
-                if ($record){
-                    if(FrmProFormsHelper::saving_draft($form->id))
-                        $message = __('Draft was Successfully Created', 'formidable');
-                    else
-                        $message = __('Entry was Successfully Created', 'formidable');
-                    
-                    self::get_edit_vars($record, $errors, $message);
-                }else{
-                    self::get_new_vars($errors, $form);
-                }
+            return;
+        }
+        
+        if ((isset($_POST['frm_page_order_'. $form->id]) or FrmProFormsHelper::going_to_prev($form->id)) and !FrmProFormsHelper::saving_draft($form->id)){
+            self::get_new_vars('', $form);
+            return;
+        }
+        
+        $_SERVER['REQUEST_URI'] = str_replace('&frm_action=new', '', $_SERVER['REQUEST_URI']);
+        
+        global $frm_vars;
+        if ( !isset($frm_vars['created_entries'][$form->id]) || !$frm_vars['created_entries'][$form->id] ) {
+            $frm_vars['created_entries'][$form->id] = array();
+        }
+        
+        if ( !isset($frm_vars['created_entries'][$_POST['form_id']]['entry_id']) ) {
+            $record = $frm_vars['created_entries'][$form->id]['entry_id'] = $frm_entry->create( $_POST );
+        }
+        
+        if ( $record ) {
+            if ( FrmProFormsHelper::saving_draft($form->id) ) {
+                $message = __('Draft was Successfully Created', 'formidable');
+            } else {
+                $message = __('Entry was Successfully Created', 'formidable');
             }
+            
+            self::get_edit_vars($record, $errors, $message);
+        } else {
+            self::get_new_vars($errors, $form);
         }
     }
     
     public static function edit(){
         $id = FrmAppHelper::get_param('id');
+        
+        if ( ! current_user_can('frm_edit_entries') ) {
+            return self::show($id);
+        }
+        
         return self::get_edit_vars($id);
     }
     
     public static function update(){
+        $id = FrmAppHelper::get_param('id');
+        
+        if ( ! current_user_can('frm_edit_entries') ) {
+            return self::show($id);
+        }
+        
         global $frm_entry;
         $message = '';
         
         $errors = $frm_entry->validate($_POST);
-        $id = FrmAppHelper::get_param('id');
         
         if( empty($errors) ){
             if (isset($_POST['form_id']) and (isset($_POST['frm_page_order_'. $_POST['form_id']]) or FrmProFormsHelper::going_to_prev($_POST['form_id'])) and !FrmProFormsHelper::saving_draft($_POST['form_id'])){
@@ -419,10 +440,15 @@ class FrmProEntriesController{
         return self::get_edit_vars($id, $errors, $message);
     }
     
-    public static function duplicate(){
+    public static function duplicate(){        
         global $frm_entry;
         
         $params = self::get_params();
+        
+        if ( ! current_user_can('frm_create_entries') ) {
+            return self::show($params['id']);
+        }
+        
         if($params['form']){
             $frm_form = new FrmForm();
             $form = $frm_form->getOne($params['form']);
@@ -761,7 +787,7 @@ class FrmProEntriesController{
             if(is_numeric($frm_vars['editing_entry'])){
                 $entry_id = $frm_vars['editing_entry']; //get entry from shortcode
             }else{
-                $entry_ids = $wpdb->get_col("SELECT id FROM $frmdb->entries WHERE user_id='$user_ID' and form_id='$form->id'");
+                $entry_ids = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_items WHERE user_id=%d and form_id=%d", $user_ID, $form->id));
                 
                 if (isset($entry_ids) and !empty($entry_ids)){
                     $where_options = $frm_vars['editing_entry'];
@@ -848,6 +874,7 @@ class FrmProEntriesController{
             if(FrmProFormsHelper::saving_draft($form->id) or FrmProFormsHelper::going_to_prev($form->id)){
                 $show_form = true;
             }else{
+                $show_form = apply_filters('frm_show_form_after_edit', $show_form, $form);
                 $success_args = array('action' => 'update');
                 if ( FrmProEntriesHelper::is_new_entry($id) ) {
                     $success_args['action'] = 'create';
@@ -1092,10 +1119,12 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         
         $frm_form = new FrmForm();
         $form = $frm_form->getOne($form_id);
+        $form_id = $form->id;
         unset($frm_form);
         
         $form_name = sanitize_title_with_dashes($form->name);
-        $form_cols = $frm_field->getAll("fi.type not in ('divider', 'captcha', 'break', 'html') and fi.form_id=". $form->id, 'field_order ASC');
+        $csv_fields = apply_filters('frm_csv_field_ids', '', $form_id);
+        $form_cols = $frm_field->getAll("fi.type not in ('divider', 'captcha', 'break', 'html') " . ( $csv_fields ? 'and fi.id in (' . $csv_fields . ') ' : '' ) . "and fi.form_id=". $form->id, 'field_order ASC');
         $item_id = FrmAppHelper::get_param('item_id', false);
         $where_clause = $wpdb->prepare("form_id=%d", $form_id);
         
@@ -1124,6 +1153,8 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         $to_encoding = isset($_POST['csv_format']) ? $_POST['csv_format'] : $frmpro_settings->csv_format;
         $line_break = apply_filters('frm_csv_line_break', 'return');
         $sep = apply_filters('frm_csv_sep', ', ');
+        $col_sep = (isset($_POST['csv_col_sep']) && !empty($_POST['csv_col_sep'])) ? $_POST['csv_col_sep'] : ',';
+        $col_sep = apply_filters('frm_csv_column_sep', $col_sep);
         
         require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/csv.php');
         die();
@@ -1368,7 +1399,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         
         foreach ( $search_str as $search_param ) {
             $unescaped_search_param = $search_param;
-            $search_param = esc_sql( like_escape( $search_param ) );
+            $search_param = FrmAppHelper::esc_like( $search_param );
 			
             if ( !is_numeric($fid) ) {
                 $where_item .= (empty($where_item)) ? ' (' : ' OR';
@@ -1406,17 +1437,18 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
                     unset($data_fields);
                     
                     if ( !empty($df_form_ids) ) {
-                        $data_form_ids = $wpdb->get_col("SELECT form_id FROM {$wpdb->prefix}frm_fields WHERE id in (". implode(',', $df_form_ids).")");
+                        $data_form_ids = $wpdb->get_col("SELECT form_id FROM {$wpdb->prefix}frm_fields WHERE id in (". implode(',', array_filter($df_form_ids, 'is_numeric')) .")");
+                        
+                        if ( $data_form_ids ) {
+                            $data_entry_ids = $frm_entry_meta->getEntryIds("fi.form_id in (". implode(',', $data_form_ids).") " . $wpdb->prepare("and meta_value LIKE %s", '%'. $search_param .'%'));
+                            if ( !empty($data_entry_ids) ) {
+                                $where_entries .= " OR meta_value in (".implode(',', $data_entry_ids).")";
+                            }
+                        }
+                        unset($data_form_ids);
                     }
                     unset($df_form_ids);
-                        
-                    if ( isset($data_form_ids) && $data_form_ids ) {
-                        $data_entry_ids = $frm_entry_meta->getEntryIds("fi.form_id in (". implode(',', $data_form_ids).") and meta_value LIKE '%". $search_param ."%'");
-                        if ( !empty($data_entry_ids) ) {
-                            $where_entries .= " OR meta_value in (".implode(',', $data_entry_ids).")";
-                        }
-                    }
-                    unset($data_form_ids);
+                    
                 }
                 
                 $where_entries .= ")";
@@ -1477,9 +1509,6 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
     }
 
     private static function get_edit_vars($id, $errors = '', $message= ''){
-        if(!current_user_can('frm_edit_entries'))
-            return self::show($id);
-
         global $frm_entry, $frm_field, $frmpro_settings, $frm_vars;
         $description = true;
         $title = false;
@@ -1600,18 +1629,12 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         $where = "fi.type not in ('divider', 'captcha', 'break', 'html') and fi.form_id=". (int)$form->id;
         if($fields){
             $fields = explode(',', $fields);
-            $f_list = array();
-            foreach($fields as $k => $f){
-                $f = trim($f);
-                $fields[$k] = $f;
-                $f_list[] = esc_sql(like_escape($f)); 
-                unset($k);
-                unset($f);
+            $f_list = array_filter(array_filter($fields, 'trim'), 'esc_sql');
+            
+            if ( count($fields) != 1 || !in_array('id', $fields) ) {
+                //don't search fields if only field id
+                $where .= " and (fi.id in ('". implode("','", array_filter($f_list, 'is_numeric'))  ."') or fi.field_key in ('". implode("','", $f_list) ."'))";
             }
-            if(count($fields) == 1 and in_array('id', $fields))
-                $where .= ''; //don't search fields if only field id
-            else
-                $where .= " and (fi.id in ('". implode("','", $f_list)  ."') or fi.field_key in ('". implode("','", $f_list) ."'))";
             
         }
         $fields = (array)$fields;
@@ -1626,10 +1649,15 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         
 		//Set up WHERE for getting entries. Get entries for the specified form and only get drafts if user includes drafts=1
 		global $wpdb;
-		$where = $wpdb->prepare('it.form_id=%d AND it.is_draft=%d', $form->id, $drafts);
+		$where = $wpdb->prepare('it.form_id=%d', $form->id);
+		
+		if ( $drafts != 'both' ) {
+		    $where .= $wpdb->prepare(' AND it.is_draft=%d', $drafts);
+		}
 
-        if($user_id)
-            $where .= ' AND user_id='. (int)FrmProAppHelper::get_user_id_param($user_id);
+        if ( $user_id ) {
+            $where .= $wpdb->prepare(' AND user_id=%d', (int) FrmProAppHelper::get_user_id_param($user_id));
+        }
             
         $s = FrmAppHelper::get_param('frm_search', false);
         if ($s){
@@ -1717,7 +1745,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
     }
     
     public static function entry_link_shortcode($atts){
-        global $frm_entry, $frm_entry_meta, $post;
+        global $frm_entry, $frm_entry_meta, $post, $wpdb;
         extract(shortcode_atts(array(
             'id' => false, 'field_key' => 'created_at', 'type' => 'list', 'logged_in' => true, 
             'edit' => true, 'class' => '', 'link_type' => 'page', 'blank_label' => '', 
@@ -1756,7 +1784,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             
             $where = "it.id in ($id_list)";
             if ($logged_in)
-                $where .= " and it.form_id='". $id ."' and it.user_id='". (int)$user_ID ."'";
+                $where .= $wpdb->prepare(" and it.form_id=%d and it.user_id=%d", $id, $user_ID);
             
             $entries = $frm_entry->getAll($where, $order, '', true);
         }
@@ -1904,7 +1932,7 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             'id' => (isset($frm_vars['editing_entry']) ? $frm_vars['editing_entry'] : false), 
             'label' => __('Edit'), 'cancel' => __('Cancel', 'formidable'), 
             'class' => '', 'page_id' => (($post) ? $post->ID : 0), 'html_id' => false,
-            'prefix' => '', 'form_id' => false
+            'prefix' => '', 'form_id' => false, 'title' => '',
         ), $atts));
 
         $link = '';
@@ -1951,12 +1979,15 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             $link .= "<script type='text/javascript'>window.onload= function(){var frm_pos=jQuery('#". $prefix . $entry_id ."').offset();window.scrollTo(frm_pos.left,frm_pos.top);}</script>";
         }
 
+        if ( empty($title) ) {
+            $title = $label;
+        }
             
         if(!$html_id)
             $html_id = "frm_edit_{$entry_id}";
           
         $frm_vars['forms_loaded'][] = true;  
-        $link .= "<a href='javascript:frmEditEntry($entry_id,\"$prefix\",$page_id,$form_id,\"". htmlspecialchars($cancel) ."\",\"$class\")' class='frm_edit_link $class' id='$html_id'>$label</a>\n";
+        $link .= "<a href='javascript:frmEditEntry($entry_id,\"$prefix\",$page_id,$form_id,\"". htmlspecialchars(str_replace("'", '\"', $cancel)) ."\",\"$class\")' class='frm_edit_link $class' id='". esc_attr($html_id) ."' title='". esc_attr($title) ."'>$label</a>\n";
 
         return $link;
     }
@@ -1967,7 +1998,8 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         extract(shortcode_atts(array(
             'id' => (isset($frm_vars['editing_entry']) ? $frm_vars['editing_entry'] : false),
             'field_id' => false, 'form_id' => false, 
-            'label' => 'Update', 'class' => '', 'value' => '', 'message' => ''
+            'label' => 'Update', 'class' => '', 'value' => '', 'message' => '',
+            'title' => '',
         ), $atts));
         
         $link = '';
@@ -2002,7 +2034,11 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         $num = (int)$num + 1;
         $frm_update_link[$entry_id .'-'. $field_id] = $num;
         
-        $link = '<a href="#" onclick="frmUpdateField('. $entry_id .','. $field_id .',\''. $value .'\',\''. $message .'\','. $num .');return false;" id="frm_update_field_'. $entry_id .'_'. $field_id .'_'. $num .'" class="frm_update_field_link '. $class .'">'. $label .'</a>';
+        if ( empty($title) ) {
+            $title = $label;
+        }
+        
+        $link = '<a href="#" onclick="frmUpdateField('. $entry_id .','. $field_id .',\''. $value .'\',\''. htmlspecialchars(str_replace("'", '\"', $message)) .'\','. $num .');return false;" id="frm_update_field_'. $entry_id .'_'. $field_id .'_'. $num .'" class="frm_update_field_link '. $class .'" title="'. esc_attr($title) .'">'. $label .'</a>';
         
         return $link;
     }
@@ -2012,7 +2048,8 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         extract(shortcode_atts(array(
             'id' => (isset($frm_vars['editing_entry']) ? $frm_vars['editing_entry'] : false), 'label' => __('Delete'), 
             'confirm' => __('Are you sure you want to delete that entry?', 'formidable'), 
-            'class' => '', 'page_id' => (($post) ? $post->ID : 0), 'html_id' => false, 'prefix' => ''
+            'class' => '', 'page_id' => (($post) ? $post->ID : 0), 'html_id' => false, 'prefix' => '',
+            'title' => '',
         ), $atts));
         
         $entry_id = ($id and is_numeric($id)) ? $id : ((is_admin() and !defined('DOING_AJAX')) ? FrmAppHelper::get_param('id', false) : FrmAppHelper::get_param('entry', false));
@@ -2061,7 +2098,10 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
         if(empty($label)){
             $link .= add_query_arg(array('frm_action' => 'destroy', 'entry' => $entry_id), get_permalink($page_id));
         }else{
-            $link .= "<a href='". add_query_arg(array('frm_action' => 'destroy', 'entry' => $entry_id), get_permalink($page_id)) ."' class='$class' onclick='return confirm(\"". $confirm ."\")'>$label</a>\n";
+            if ( empty($title) ) {
+                $title = $label;
+            }
+            $link .= "<a href='". add_query_arg(array('frm_action' => 'destroy', 'entry' => $entry_id), get_permalink($page_id)) ."' class='$class' onclick='return confirm(\"". $confirm ."\")' title='". esc_attr($title) ."'>$label</a>\n";
         }
             
         return $link;
@@ -2169,6 +2209,10 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             return;
         }
         
+        if ( ! apply_filters('frm_create_cookies', true) ) {
+            return;
+        }
+        
         if(!$entry_id)
             $entry_id = FrmAppHelper::get_param('entry_id');
         
@@ -2177,7 +2221,6 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
             
         $frm_form = new FrmForm();
         $form = $frm_form->getOne($form_id);
-        $form->options = maybe_unserialize($form->options);
         $expiration = (isset($form->options['cookie_expiration'])) ? ((float)$form->options['cookie_expiration'] *60*60) : 30000000; 
         $expiration = apply_filters('frm_cookie_expiration', $expiration, $form_id, $entry_id);
         setcookie('frm_form'.$form_id.'_' . COOKIEHASH, current_time('mysql', 1), time() + $expiration, COOKIEPATH, COOKIE_DOMAIN);
@@ -2240,8 +2283,9 @@ success:function(msg){jQuery('#frm_create_entry').fadeOut('slow');}
                         unset($s);
                     }
                     
+                    $keep_styles = apply_filters('frm_ajax_load_styles', array('dashicons', 'jquery-theme'));
                     foreach ( $wp_styles->registered as $s => $info ) {
-                        if ( $s != 'jquery-theme' ) {
+                        if ( !is_array($keep_styles) || !in_array($s, $keep_styles) ) {
                             $wp_styles->done[] = $s;
                         }
                         

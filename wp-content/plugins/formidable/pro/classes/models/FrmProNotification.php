@@ -126,13 +126,8 @@ class FrmProNotification{
         
         $plain_text = (isset($notification['plain_text']) and $notification['plain_text']) ? true : false;
         $custom_message = false;
-        $get_default = true;
         $mail_body = '';
         if(isset($notification['email_message']) and trim($notification['email_message']) != ''){
-            $notification['email_message'] = str_replace('[default_message]', '[default-message]', $notification['email_message']);
-            if(!preg_match('/\[default-message\]/', $notification['email_message']))
-                $get_default = false;
-            
             if(isset($notification['ar']) and $notification['ar']){
                 //don't continue with blank autoresponder message for reverse compatability
                 if($notification['email_message'] == '') continue;
@@ -255,13 +250,21 @@ class FrmProNotification{
             $reply_to_name = apply_filters('frm_content', $reply_to_name, $form, $entry_id);
         }
         
-        if(isset($notification['inc_user_info']) and $notification['inc_user_info'] and !$get_default){
+        $prev_mail_body = $mail_body;
+        $mail_body = FrmEntriesHelper::replace_default_message($mail_body, array(
+            'id' => $entry->id, 'entry' => $entry, 'plain_text' => $plain_text, 'fields' => $fields, 
+            'user_info' => (isset($notification['inc_user_info']) ? $notification['inc_user_info'] : false),
+        ) );
+        
+        if ( isset($notification['inc_user_info']) && $notification['inc_user_info'] && $prev_mail_body == $mail_body ) {
             $data = maybe_unserialize($entry->description);
             $mail_body .= "\r\n\r\n" . __('User Information', 'formidable') ."\r\n";
             $mail_body .= __('IP Address', 'formidable') . ": ". $entry->ip ."\r\n";
             $mail_body .= __('User-Agent (Browser/OS)', 'formidable') . ": ". $data['browser']."\r\n";
             $mail_body .= __('Referrer', 'formidable') . ": ". $data['referrer']."\r\n";
         }
+        
+        unset($prev_mail_body);
         
         if(isset($notification['email_subject']) and $notification['email_subject'] != ''){
             $shortcodes = FrmProAppHelper::get_shortcodes($notification['email_subject'], $entry->form_id);
@@ -273,20 +276,6 @@ class FrmProNotification{
         }else{
             //set default subject
             $subject = sprintf(__('%1$s Form submitted on %2$s', 'formidable'), $form->name, $frm_blogname);
-        }
-        
-        if($get_default){
-            $default = FrmProEntriesController::show_entry_shortcode(array(
-                'id' => $entry->id, 'entry' => $entry, 'plain_text' => $plain_text, 'fields' => $fields, 
-                'user_info' => (isset($notification['inc_user_info']) ? $notification['inc_user_info'] : false)
-            ));
-            
-            if($custom_message)
-                $mail_body = str_replace('[default-message]', $default, $mail_body);
-            else
-                $mail_body = $default;
-                
-            unset($default);
         }
         
         $to_emails = apply_filters('frm_to_email', $to_emails, $values, $form_id, compact('email_key', 'entry'));
@@ -312,15 +301,8 @@ class FrmProNotification{
             unset($to_email);
         }
         
-        unset($sent);
-        unset($to_emails);
-        unset($notification);
-        unset($subject);
-        unset($mail_body);
-        unset($reply_to);
-        unset($reply_to_name);
-        unset($plain_text);
-        unset($attachments);
+            unset($sent, $to_emails, $notification, $subject, $mail_body);
+            unset($reply_to, $reply_to_name, $plain_text, $attachments);
         }
 
         return $sent_to;

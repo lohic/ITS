@@ -81,20 +81,7 @@ class FrmProDisplaysController{
     }
     
     public static function highlight_menu(){
-        global $post, $pagenow;
-
-        if(($pagenow == 'post-new.php' and isset($_REQUEST['post_type']) and $_REQUEST['post_type'] == 'frm_display') or 
-        (is_object($post) and $post->post_type == 'frm_display')){
-
-        echo <<<HTML
-<script type="text/javascript">
-jQuery(document).ready(function(){
-jQuery('#toplevel_page_formidable').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
-jQuery('#toplevel_page_formidable a.wp-has-submenu').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
-});
-</script>
-HTML;
-        }
+        FrmAppHelper::maybe_highlight_menu('frm_display');
     }
     
     public static function switch_form_box(){
@@ -170,7 +157,7 @@ HTML;
             unset($i);
         }
         
-        $ids = implode(',', $ids);
+        $ids = implode(',', array_filter($id, 'is_numeric'));
         export_wp( array('content' => 'frm_display') );
         
         $sitename = sanitize_key( get_bloginfo( 'name' ) );
@@ -311,12 +298,16 @@ HTML;
     }
     
     public static function default_content($content, $post){
-        if($post->post_type == 'frm_display' and isset($_GET) and isset($_GET['copy_id'])){
-            global $frmpro_display, $copy_display;
-            $copy_display = $frmpro_display->getOne($_GET['copy_id']);
-            if($copy_display)
-                $content = $copy_display->post_content;
+        if ( $post->post_type != 'frm_display' || !isset($_GET) || !isset($_GET['copy_id']) ) {
+            return $content;
         }
+        
+        global $frmpro_display, $copy_display;
+        $copy_display = $frmpro_display->getOne($_GET['copy_id'], false, false, array('check_post' => true));
+        if ( $copy_display ) {
+            $content = $copy_display->post_content;
+        }
+        
         return $content;
     }
     
@@ -372,6 +363,8 @@ HTML;
         
         global $wpdb, $frmpro_display;
         
+        do_action('frm_destroy_display', $post_id);
+        
         $used_by = $wpdb->get_col("SELECT post_ID FROM $wpdb->postmeta WHERE meta_key='frm_display_id' AND meta_value=$post_id");
         if(!$used_by)
             return;
@@ -419,9 +412,10 @@ HTML;
     }
     
     public static function mb_form_disp_type($post){
-        global $frmpro_settings, $copy_display;
-        if($copy_display and isset($_GET) and isset($_GET['copy_id']))
+        global $copy_display;
+        if ( $copy_display && isset($_GET) && isset($_GET['copy_id']) ) {
             $post = $copy_display;
+        }
             
         $post = FrmProDisplaysHelper::setup_edit_vars($post);
         
@@ -512,6 +506,8 @@ HTML;
         if(!$post) return $content;
         
         $display = $entry_id = false;
+        $filter = apply_filters('frm_filter_auto_content', true);
+        
         if($post->post_type == 'frm_display' and in_the_loop()){
             global $frm_displayed;
             if(!$frm_displayed)
@@ -523,7 +519,7 @@ HTML;
             $frm_displayed[] = $post->ID; 
             
             $display = FrmProDisplaysHelper::setup_edit_vars($post, false);
-            return self::get_display_data($post, $content, false, array('filter' => true)); 
+            return self::get_display_data($post, $content, false, compact('filter')); 
         }
         
         $display_id = get_post_meta($post->ID, 'frm_display_id', true);
@@ -574,7 +570,9 @@ HTML;
                     
                 
                 $frm_displayed[] = $display->ID; 
-                $content = self::get_display_data($display, $content, $entry_id, array('filter' => true)); 
+                $content = self::get_display_data($display, $content, $entry_id, array(
+                    'filter' => $filter, 'auto_id' => $entry_id,
+                ) ); 
             }   
         }
 
@@ -624,30 +622,16 @@ HTML;
         $frm_vars['load_css'] = true;
         
         $year = FrmAppHelper::get_param('frmcal-year', date_i18n('Y')); //4 digit year
-        $month = FrmAppHelper::get_param('frmcal-month', date_i18n('m')); //Numeric month without leading zeros
+        $month = FrmAppHelper::get_param('frmcal-month', date_i18n('m')); //Numeric month with leading zeros
         
         $month_names = $wp_locale->month;
         
-        $prev_year = $next_year = $year;
-
-        $prev_month = $month-1;
-        $next_month = $month+1;
-
-        if ($prev_month == 0 ) {
-            $prev_month = 12;
-            $prev_year = $year - 1;
-        }
+        $this_time = strtotime($year .'-'. $month .'-01');
+        $prev_month = date('m', strtotime('-1 month', $this_time));
+        $prev_year = date('Y', strtotime('-1 month', $this_time));
         
-        if ($next_month == 13 ) {
-            $next_month = 1;
-            $next_year = $year + 1;
-        }
-        
-        if($next_month < 10)
-            $next_month = '0'. $next_month;
-        
-        if($prev_month < 10)
-            $prev_month = '0'. $prev_month;
+        $next_month = date('m', strtotime('+1 month', $this_time));
+        $next_year = date('Y', strtotime('+1 month', $this_time));
         
         ob_start();
         include(FrmAppHelper::plugin_path() .'/pro/classes/views/displays/calendar-header.php');
@@ -664,10 +648,10 @@ HTML;
         global $frm_entry_meta, $wp_locale, $frm_field;
 
         $current_year = date_i18n('Y');
-        $current_month = date_i18n('n');
+        $current_month = date_i18n('m');
         
         $year = FrmAppHelper::get_param('frmcal-year', date('Y')); //4 digit year
-        $month = FrmAppHelper::get_param('frmcal-month', $current_month); //Numeric month without leading zeros
+        $month = FrmAppHelper::get_param('frmcal-month', $current_month); //Numeric month with leading zeros
         
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
         $maxday = date('t', $timestamp); //Number of days in the given month
@@ -706,13 +690,11 @@ HTML;
                     $date = $frm_entry_meta->get_entry_meta_by_field($entry->id, $display->frm_date_field_id);
                 }
                 
-                if($entry->post_id and !$date){
-                    if($field){
-                        $field->field_options = maybe_unserialize($field->field_options);
-                        if($field->field_options['post_field']){
-                            $date = FrmProEntryMetaHelper::get_post_value($entry->post_id, $field->field_options['post_field'], $field->field_options['custom_field'], array('form_id' => $display->frm_form_id, 'type' => $field->type, 'field' => $field));
-                        }
-                    }
+                if ( $entry->post_id && !$date && $field &&
+                    isset($field->field_options['post_field']) && $field->field_options['post_field'] ) {
+                    
+                    $date = FrmProEntryMetaHelper::get_post_value($entry->post_id, $field->field_options['post_field'], $field->field_options['custom_field'], array('form_id' => $display->frm_form_id, 'type' => $field->type, 'field' => $field));
+                    
                 }
             }else if($display->frm_date_field_id == 'updated_at'){
                 $date = $entry->updated_at;
@@ -785,7 +767,10 @@ HTML;
 				if ( $t_strings != $e_strings ) {
 					$repeat_period = str_ireplace($t_strings, $e_strings, $repeat_period);
 				}
-				unset($t_strings,$e_strings);
+				unset($t_strings, $e_strings);
+				
+				//Switch [frmcal-date] for current calendar date (for use in "Third Wednesday of [frmcal-date]")
+				$repeat_period = str_replace('[frmcal-date]', $year . '-' . $month . '-01', $repeat_period);
 				
 				//Filter for repeat_period
 				$repeat_period = apply_filters('frm_repeat_period', $repeat_period, $display);
@@ -793,26 +778,39 @@ HTML;
 				//If repeat period is set and is valid
 				if ( !empty($repeat_period) && is_numeric(strtotime($repeat_period)) ){
 					
-					//Set up start date to minimize dates array - is this necessary? What is the best way to do this?
-					//Switch start date to same date of current year OR if repeat_period is weekly, start date should be same day of the week, current year. What is start date if +3 days (or something like that)
-					
 					//Set up end date to minimize dates array - allow for no end repeat field set, nothing selected for end, or any date
-					if ( isset($display->frm_repeat_edate_field_id) && !empty($stop_repeat) ) {//If field is selected for recurring end date and the date is not empty
-						$stop_repeat = ( !empty($stop_repeat)? strtotime($stop_repeat) : strtotime($repeat_forever));
-					} else {
-						if ( isset($_GET['frmcal-month']) && isset($_GET['frmcal-year']) ) {
-							$cal_date = strtotime($_GET['frmcal-year']. '-' . $_GET['frmcal-month'] . '-01');
-							$stop_repeat = strtotime('+1 month', $cal_date);//Repeat until next viewable month
-						} else {
-							$stop_repeat = strtotime('+1 month');//Repeat until next viewable month
-						}
+					
+					if ( isset($display->frm_repeat_edate_field_id) && !empty($stop_repeat) ) {
+					    //If field is selected for recurring end date and the date is not empty
+						$maybe_stop_repeat = strtotime($stop_repeat);
 					}
+					
+					//Repeat until next viewable month
+					$cal_date = $year . '-' . $month . '-01';
+					$stop_repeat = strtotime('+1 month', strtotime($cal_date));
+					
+					//If the repeat should end before $stop_repeat (+1 month), use $maybe_stop_repeat
+					if ( isset($maybe_stop_repeat) && $maybe_stop_repeat < $stop_repeat ) {
+					    $stop_repeat = $maybe_stop_repeat;
+					    unset($maybe_stop_repeat);
+					}
+
 					$temp_dates = array();
 					
 					foreach ( $dates as $d ) {
+						$last_i = 0;
 						for ($i = strtotime($d); $i <= $stop_repeat; $i = strtotime($repeat_period, $i)) {
+							//Break endless loop
+							if ( $i == $last_i ) {
+								break;
+							}
+							$last_i = $i;
+							
+							//Add to dates array
 							$temp_dates[] = date('Y-m-d', $i);
 						}
+						unset($last_i);
+						
 						unset($d);
 					}
 					$dates = $temp_dates;
@@ -894,7 +892,7 @@ HTML;
         
         extract(shortcode_atts($defaults, $atts));
         
-        $display = $frmpro_display->getOne($id, false, true, array('check_post' => false));
+        $display = $frmpro_display->getOne($id, false, true);
         
         $user_id = FrmProAppHelper::get_user_id_param($user_id);
         
@@ -921,7 +919,7 @@ HTML;
     
     public static function custom_display($id){
         global $frmpro_display;
-        if ($display = $frmpro_display->getOne($id))    
+        if ($display = $frmpro_display->getOne($id, false, false, array('check_post' => true)))    
             return self::get_display_data($display);
     }
     
@@ -938,7 +936,10 @@ HTML;
         
         // check if entry needs to be deleted before loading entries
         if ( FrmAppHelper::get_param('frm_action') == 'destroy' && isset( $_GET['entry'] ) ) {
-            $message = '<div class="with_frm_style"><div class="frm_message">'. FrmProEntriesController::ajax_destroy( $display->frm_form_id, false, false ) .'</div></div>';
+            $deleted = FrmProEntriesController::ajax_destroy( $display->frm_form_id, false, false );
+            if ( !empty($deleted) ) {
+                $message = '<div class="with_frm_style"><div class="frm_message">'. $deleted .'</div></div>';
+            }
             unset( $_GET['entry'] );
         }
             
@@ -948,7 +949,8 @@ HTML;
         
         $defaults = array(
         	'filter' => false, 'user_id' => '', 'limit' => '',
-        	'page_size' => '', 'order_by' => '', 'order' => ''
+        	'page_size' => '', 'order_by' => '', 'order' => '',
+        	'drafts' => false, 'auto_id' => '',
         );
 
         extract(wp_parse_args( $extra_atts, $defaults ));
@@ -968,9 +970,9 @@ HTML;
         $where = $wpdb->prepare('it.form_id=%d', $display->frm_form_id);
         
         if (in_array($display->frm_show_count, array('dynamic', 'calendar', 'one'))){
-            $one_param = (isset($_GET['entry'])) ? $_GET['entry'] : $entry_id;
-            $get_param = (isset($_GET[$display->frm_param])) ? $_GET[$display->frm_param] : (($display->frm_show_count == 'one') ? $one_param : $entry_id);
-            unset($one_param);
+			$one_param = (isset($_GET['entry'])) ? $_GET['entry'] : $auto_id;
+			$get_param = (isset($_GET[$display->frm_param])) ? $_GET[$display->frm_param] : (($display->frm_show_count == 'one') ? $one_param : $auto_id);
+			unset($one_param);
             
             if ($get_param){
                 if(($display->frm_type == 'id' or $display->frm_show_count == 'one') and is_numeric($get_param))
@@ -993,7 +995,7 @@ HTML;
             }
             unset($get_param);
         }
-
+        
         if($entry and in_array($display->frm_show_count, array('dynamic', 'calendar'))){    
             $new_content = $display->frm_dyncontent;
             $show = 'one';
@@ -1001,7 +1003,7 @@ HTML;
             $new_content = $display->post_content;
         }
     	
-        $show = ($display->frm_show_count == 'one' or ($entry_id and is_numeric($entry_id))) ? 'one' : $show;
+        $show = ($display->frm_show_count == 'one') ? 'one' : $show;
         $shortcodes = FrmProDisplaysHelper::get_shortcodes($new_content, $display->frm_form_id); 
 
         //don't let page size and limit override single entry displays
@@ -1013,15 +1015,32 @@ HTML;
             $display->frm_insert_loc = '';
         
         $pagination = '';
-        $is_draft = ( isset($drafts) && !empty($drafts) ) ? 1 : 0;
+        $is_draft = ( !empty($drafts) ) ? 1 : 0;
         
+        $form_query = $wpdb->prepare("SELECT id, post_id FROM {$wpdb->prefix}frm_items WHERE form_id=%d and post_id>%d", $display->frm_form_id, 1);
+        
+        if ( $drafts != 'both' ) {
+		    $form_query .= $wpdb->prepare(' AND is_draft=%d', $is_draft);
+		}
+		
         if ($entry and $entry->form_id == $display->frm_form_id){
-            $form_posts = $wpdb->get_results($wpdb->prepare("SELECT id, post_id FROM {$wpdb->prefix}frm_items WHERE form_id=%d and post_id>%d AND is_draft=%d AND id=%d", $display->frm_form_id, 1, $is_draft, $entry->id));
+            $form_query .= $wpdb->prepare(' AND id=%d', $entry->id);
+            $form_posts = $wpdb->get_results($form_query);
             $entry_ids = array($entry->id);
         }else{
-            $form_posts = $wpdb->get_results($wpdb->prepare("SELECT id, post_id FROM {$wpdb->prefix}frm_items WHERE form_id=%d and post_id>%d AND is_draft=%d", $display->frm_form_id, 1, $is_draft));
-            $entry_ids = $wpdb->get_col($wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_items WHERE form_id=%d and is_draft=%d", $display->frm_form_id, $is_draft));
+            $form_posts = $wpdb->get_results($form_query);
+            
+            //Only get $entry_ids if filters are set or if frm_search parameter is set
+            if ( ( isset( $display->frm_where ) && !empty( $display->frm_where ) && ( !$entry || !$post || empty( $auto_id ) ) ) || isset($_GET['frm_search']) ) {
+                $entry_query = $wpdb->prepare("SELECT id FROM {$wpdb->prefix}frm_items WHERE form_id=%d", $display->frm_form_id);
+                if ( $drafts != 'both' ) {
+                    $entry_query .= $wpdb->prepare(" AND is_draft=%d", $is_draft);
+                }
+                $entry_ids = $wpdb->get_col($entry_query);
+                unset($entry_query);
+            }
         }
+        unset($form_query);
         
 		$empty_msg = (isset($display->frm_empty_msg) and !empty($display->frm_empty_msg)) ? '<div class="frm_no_entries">' . FrmProFieldsHelper::get_default_value($display->frm_empty_msg, false, true, true) . '</div>' : '';
         
@@ -1037,7 +1056,7 @@ HTML;
             $uid_used = false;
         }
 		
-		if ( isset( $display->frm_where ) && !empty( $display->frm_where ) && (!$entry || !$post || $post->ID != $entry->post_id ) ) { 
+		if ( isset( $display->frm_where ) && !empty( $display->frm_where ) && ( !$entry || !$post || empty( $auto_id ) ) ) { 
                 $display->frm_where = apply_filters('frm_custom_where_opt', $display->frm_where, array('display' => $display, 'entry' => $entry));
                 $continue = false;
                 foreach($display->frm_where as $where_key => $where_opt){
@@ -1069,20 +1088,25 @@ HTML;
                     
                     $where_val = do_shortcode($where_val);
                     
+                    if ( in_array($where_opt, array('id', 'item_key', 'post_id')) && !is_array($where_val) && strpos($where_val, ',') ) {
+                        $where_val = explode(',', $where_val);
+                    }
+                    
                     if(is_array($where_val) and !empty($where_val)){
                         $new_where = '(';
                         if(strpos($display->frm_where_is[$where_key], 'LIKE') !== false){
                             foreach($where_val as $w){
                                 if($new_where != '(')
                                     $new_where .= ',';
-                                $new_where .= "'%". esc_sql(like_escape($w)). "%'";
+                                $new_where .= $wpdb->prepare('%s', '%'. FrmAppHelper::esc_like($w) . '%');
                                 unset($w);
                             }
                         }else{
                             foreach($where_val as $w){
-                                if($new_where != '(')
+                                if ( $new_where != '(' ) {
                                     $new_where .= ',';
-                                $new_where .= "'". esc_sql($w) ."'";
+                                }
+                                $new_where .= $wpdb->prepare('%s', $w);
                                 unset($w);
                             }
                         }
@@ -1090,10 +1114,11 @@ HTML;
                         $where_val = $new_where;
                         unset($new_where);
                         
-                        if(strpos($display->frm_where_is[$where_key], '!') === false and strpos($display->frm_where_is[$where_key], 'not') === false)
+                        if ( strpos($display->frm_where_is[$where_key], '!') === false && strpos($display->frm_where_is[$where_key], 'not') === false ) {
                             $display->frm_where_is[$where_key] = ' in ';
-                        else
+                        } else {
                             $display->frm_where_is[$where_key] = ' not in ';
+                        }
                     }
                     
                     if(is_numeric($where_opt)){
@@ -1117,21 +1142,22 @@ HTML;
                         if(strpos($display->frm_where_is[$where_key], 'LIKE') === false)
                             $where_val = date('Y-m-d H:i:s', strtotime($where_val));
                         
-                        $where .= " and it.{$where_opt} ". $display->frm_where_is[$where_key];
+                        $where .= $wpdb->prepare(" and it.{$where_opt} ". $display->frm_where_is[$where_key] ."%s", '');
                         if(strpos($display->frm_where_is[$where_key], 'in'))
                             $where .= " $where_val";
                         else if(strpos($display->frm_where_is[$where_key], 'LIKE') !== false)
-                            $where .= " '%". esc_sql(like_escape($where_val)) ."%'";
+                            $where .= $wpdb->prepare(" %s", '%'. FrmAppHelper::esc_like($where_val) .'%');
                         else
-                            $where .= " '". esc_sql($where_val) ."'";
+                            $where .= $wpdb->prepare(" %s", $where_val);
                         
                         $continue = true;
-                    }else if($where_opt == 'id' or $where_opt == 'item_key'){
+                    } else if ( in_array($where_opt, array('id', 'item_key', 'post_id')) ) {
                         $where .= " and it.{$where_opt} ". $display->frm_where_is[$where_key];
-                        if(strpos($display->frm_where_is[$where_key], 'in'))
+                        if ( strpos($display->frm_where_is[$where_key], 'in') ) {
                             $where .= " $where_val";
-                        else
-                            $where .= " '". esc_sql($where_val) ."'";
+                        } else {
+                            $where .= $wpdb->prepare(" %s", $where_val);
+                        }
                         
                         $continue = true;
                     }
@@ -1157,8 +1183,9 @@ HTML;
                 }
             }
             
-            if($user_id and is_numeric($user_id) and !$uid_used)
-                $where .= " AND it.user_id=". (int)$user_id;
+            if ( $user_id && is_numeric($user_id) && !$uid_used ) {
+                $where .= $wpdb->prepare(" AND it.user_id=%d", $user_id);
+            }
 
             $s = FrmAppHelper::get_param('frm_search', false);
             if ($s){
@@ -1177,14 +1204,28 @@ HTML;
                 }
             }
             
-            if(isset($entry_ids) and !empty($entry_ids))
-                $where .= ' and it.id in ('.implode(',', $entry_ids).')';
-            
-            if ( $entry_id ) {
-                $where .= $wpdb->prepare( is_numeric($entry_id) ? " and it.id=%d" : " and it.item_key=%s", $entry_id);
+            if (isset($entry_ids) && !empty($entry_ids) ) {
+                $where .= ' and it.id in ('. implode(',', array_filter($entry_ids, 'is_numeric')) .')';
             }
+			
+			if ( $entry_id ) {
+				$entry_id_array = explode(',', $entry_id);
+				
+				//Get IDs (if there are any)
+				$numeric_entry_ids = array_filter($entry_id_array, 'is_numeric');
+				
+				//If there are entry keys, use esc_sql
+				if ( empty($numeric_entry_ids) ) {
+					$entry_id_array = array_filter($entry_id_array, 'esc_sql');
+				}
+				
+				$where .= ( !empty($numeric_entry_ids) ? " and it.id in ('". implode ("','", $numeric_entry_ids) ."')" : " and it.item_key in ('". implode ("','", $entry_id_array) ."')" );
+			}
 
-            $where .= $wpdb->prepare(" and is_draft=%d", $is_draft);
+            if ( $drafts != 'both' ) {
+    		    $where .= $wpdb->prepare(' AND is_draft=%d', $is_draft);
+    		}
+    		unset($is_draft);
             
             if($show == 'one'){
                 $limit = ' LIMIT 1';    
@@ -1333,7 +1374,7 @@ HTML;
                 $display_content = apply_filters('the_content', $display_content);
             $content = $display_content;
         }
-            
+        
         return $content;
     }
     

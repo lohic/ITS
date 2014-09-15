@@ -1,7 +1,9 @@
 <div id="form_entries_page" class="wrap">
     <div class="frmicon icon32"><br/></div>
     <h2><?php _e('View Entry', 'formidable') ?>
+        <?php if ( current_user_can('frm_create_entries') ) { ?>
         <a href="?page=formidable-entries&amp;frm_action=new" class="add-new-h2"><?php _e('Add New', 'formidable'); ?></a>
+        <?php } ?>
     </h2>
     
     <div>
@@ -109,6 +111,20 @@
                                 <td><?php echo str_replace("\r\n", '<br/>', $data['referrer']); ?></td>
                             </tr>
                             <?php } ?>
+                            <?php
+                            foreach ( $data as $k => $d ) {
+                                if ( in_array($k, array('browser', 'referrer')) ) {
+                                    continue;
+                                }
+                                ?>
+                                <tr>
+                                    <th scope="row"><?php echo ucfirst(str_replace('-', ' ', $k)) ?>:</th>
+                                    <td><?php echo implode(', ', (array) $d); ?></td>
+                                </tr>
+                                <?php
+                                unset($k, $d);
+                            }
+                            ?>
                         </tbody></table> 
                     </div>
                 </div>

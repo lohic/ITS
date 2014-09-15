@@ -133,6 +133,8 @@ class FrmEntry{
             $frm_vars['saved_entries'][] = (int)$entry_id;
             
             $frm_entry_meta->duplicate_entry_metas($id, $entry_id);
+            
+            do_action('frm_after_duplicate_entry', $entry_id, $new_values['form_id']);
             return $entry_id;
         }else
             return false;
@@ -341,13 +343,13 @@ class FrmEntry{
         
         $errors = array();
         
-        if ( !isset($values['frm_submit_entry']) || !wp_verify_nonce($values['frm_submit_entry'], 'frm_submit_entry_nonce') ) {
-            $errors['form'] = __('You do not have permission to do that', 'formidable');
-        }
-        
-        if ( !isset($values['form_id']) || !isset($values['item_meta']) ) {
+        if ( ! isset($values['form_id']) || ! isset($values['item_meta']) ) {
             $errors['form'] = __('There was a problem with your submission. Please try again.', 'formidable');
             return $errors;
+        }
+        
+        if ( is_admin() && is_user_logged_in() && ( ! isset($values['frm_submit_entry_'. $values['form_id']]) || ! wp_verify_nonce($values['frm_submit_entry_'. $values['form_id']], 'frm_submit_entry_nonce') ) ) {
+            $errors['form'] = __('You do not have permission to do that', 'formidable');
         }
         
         if( !isset($values['item_key']) or $values['item_key'] == '' ){
@@ -356,10 +358,10 @@ class FrmEntry{
         
         $where = apply_filters('frm_posted_field_ids', 'fi.form_id='. (int)$values['form_id']);
         if($exclude)
-            $where .= " and fi.type not in ('". implode("','", $exclude) ."')";
+            $where .= " and fi.type not in ('". implode("','", array_filter($exclude, 'esc_sql')) ."')";
             
         $posted_fields = $frm_field->getAll($where, 'field_order');
-
+        
         foreach($posted_fields as $posted_field){ 
             $posted_field->field_options = maybe_unserialize($posted_field->field_options);
             $value = '';
@@ -431,6 +433,10 @@ class FrmEntry{
     
     // check the blacklisted words
     function blacklist_check( $values ) {
+        if ( ! apply_filters('frm_check_blacklist', true, $values) ) {
+            return false;
+        }
+        
     	$mod_keys = trim( get_option( 'blacklist_keys' ) );
 
     	if ( empty( $mod_keys ) ) {
@@ -462,9 +468,7 @@ class FrmEntry{
     
     //Check entries for spam -- returns true if is spam
     function akismet($values) {
-	    global $akismet_api_host, $akismet_api_port;
-        
-		$content = FrmEntriesHelper::entry_array_to_string($values);
+	    $content = FrmEntriesHelper::entry_array_to_string($values);
 		
 		if ( empty($content) ) {
 		    return false;
@@ -481,17 +485,26 @@ class FrmEntry{
 
 		$datas['comment_content'] = $content;
 
-		foreach ( $_SERVER as $key => $value )
-			if ( !in_array($key, array('HTTP_COOKIE', 'argv')) )
+		foreach ( $_SERVER as $key => $value ) {
+			if ( !in_array($key, array('HTTP_COOKIE', 'HTTP_COOKIE2', 'PHP_AUTH_PW')) && is_string($value) ) {
 				$datas["$key"] = $value;
+			} else {
+			    $datas["$key"] = '';
+			}
+			
+			unset($key, $value);
+		}
 
 		$query_string = '';
-		foreach ( $datas as $key => $data )
+		foreach ( $datas as $key => $data ) {
 			$query_string .= $key . '=' . urlencode( stripslashes( $data ) ) . '&';
+			unset($key, $data);
+		}
 
         if ( is_callable('Akismet::http_post') ) {
-            $response = Akismet::http_post($query_string, 'comment-check', $akismet_api_port);
+            $response = Akismet::http_post($query_string, 'comment-check');
         } else {
+            global $akismet_api_host, $akismet_api_port;
             $response = akismet_http_post( $query_string, $akismet_api_host, '/1.1/comment-check', $akismet_api_port );
         }
 		

@@ -3,7 +3,15 @@
 class FrmProEntriesHelper{
     
     // check if form should automatically be in edit mode (limited to one, has draft)
-    public static function allow_form_edit($action, $form){
+    public static function &allow_form_edit($action, $form) {
+        if ( $action != 'new' ) {
+            // make sure there is an entry id in the url if the action is being set in the url
+            $entry_id = isset($_GET['entry']) ? $_GET['entry'] : 0;
+            if ( empty($entry_id) && ( ! $_POST || !isset($_POST['frm_action']) ) ) {
+                $action = 'new';
+            }
+        }
+        
         $user_ID = get_current_user_id();
         if (!$form or !$user_ID)
             return $action;
@@ -21,22 +29,31 @@ class FrmProEntriesHelper{
             }else{
                 global $frmdb;
                 $args = array('user_id' => $user_ID, 'form_id' => $form->id);
-                if(isset($form->options['save_draft']) and $form->options['save_draft'] and (!$form->editable or !isset($form->options['single_entry']) or !$form->options['single_entry'] or $form->options['single_entry_type'] != 'user'))
-                    $args['is_draft'] = $is_draft = 1;
+                if(isset($form->options['save_draft']) and $form->options['save_draft'] and (!$form->editable or !isset($form->options['single_entry']) or !$form->options['single_entry'] or $form->options['single_entry_type'] != 'user')){
+                    $args['is_draft'] = 1;
+                }
                 
                 $meta = $frmdb->get_var($frmdb->entries, $args);
                 
-                if($meta)
+                if ( $meta ) {
+                    if ( isset($args['is_draft']) ) {
+                        $is_draft = 1;
+                    }
+                    
                     $action = 'edit';
+                }
             }
         }
        
         //do not allow editing if user does not have permission
-        if ($action == 'edit' and !$is_draft){
-            $entry = FrmAppHelper::get_param('entry', 0);
-            if ( !FrmProEntriesHelper::user_can_edit($entry, $form) ) {
-                $action = 'new';
-            }
+        if ( $action != 'edit' || $is_draft ) {
+            return $action;
+        }
+        
+        $entry = FrmAppHelper::get_param('entry', 0);
+        
+        if ( ! self::user_can_edit($entry, $form) ) {
+            $action = 'new';
         }
         
         return $action;
@@ -68,17 +85,17 @@ class FrmProEntriesHelper{
         
         $user_ID = get_current_user_id();
         
-        if ( !$user_ID || empty($form) ) {
+        if ( !$user_ID || empty($form) || ( is_object($entry) && $entry->form_id != $form->id ) ) {
             return false;
         }
         
-        if ( is_object($entry) && $entry->is_draft && $entry->user_id == $user_ID ) {
-            return true;
-        }
-        
-        //if editable and user can edit someone elses entry
-        if ( $entry && $form->editable && ((isset($form->options['open_editable']) && $form->options['open_editable']) || !isset($form->options['open_editable'])) && isset($form->options['open_editable_role']) && FrmAppHelper::user_has_permission($form->options['open_editable_role']) ) {
-            return true;
+        if ( is_object($entry) ) {
+            if ( $entry->is_draft && $entry->user_id == $user_ID ) {
+                return true;
+            } else if ( $form->editable && ((isset($form->options['open_editable']) && $form->options['open_editable']) || !isset($form->options['open_editable'])) && isset($form->options['open_editable_role']) && FrmAppHelper::user_has_permission($form->options['open_editable_role']) ) {
+                //if editable and user can edit someone elses entry
+                return true;
+            }
         }
         
         $where = $wpdb->prepare('fr.id=%d', $form->id);
@@ -229,7 +246,7 @@ class FrmProEntriesHelper{
     }
     
     public static function get_search_ids($s, $form_id){
-        global $wpdb, $frmdb, $frm_entry_meta;
+        global $wpdb, $frm_entry_meta;
         
         if(empty($s)) return false;
         
@@ -244,10 +261,10 @@ class FrmProEntriesHelper{
         $data_field = FrmProFormsHelper::has_field('data', $form_id, false);
         
 		foreach( (array) $search_terms as $term ) {
-			$term = esc_sql( like_escape( $term ) );
-			$p_search .= " AND (($wpdb->posts.post_title LIKE '{$n}{$term}{$n}') OR ($wpdb->posts.post_content LIKE '{$n}{$term}{$n}'))";
+			$term = FrmAppHelper::esc_like( $term );
+			$p_search .= $wpdb->prepare(" AND (($wpdb->posts.post_title LIKE %s) OR ($wpdb->posts.post_content LIKE %s))", $n . $term . $n, $n . $term . $n);
 			
-			$search .= "{$search_or}meta_value LIKE '{$n}{$term}{$n}'";
+			$search .= $wpdb->prepare($search_or .'meta_value LIKE %s', $n . $term . $n);
             $search_or = ' OR ';
             if(is_numeric($term))
                 $e_ids[] = (int)$term;
@@ -257,19 +274,17 @@ class FrmProEntriesHelper{
                 
                 //search the joined entry too
                 foreach((array)$data_field as $df){
-                    $df->field_options = maybe_unserialize($df->field_options);
                     if (is_numeric($df->field_options['form_select']))
-                        $df_form_ids[] = $df->field_options['form_select'];
+                        $df_form_ids[] = (int) $df->field_options['form_select'];
                     
                     unset($df);
                 }
                 
-                global $wpdb, $frmdb;
-                $data_form_ids = $wpdb->get_col("SELECT form_id FROM $frmdb->fields WHERE id in (". implode(',', $df_form_ids).")");
+                $data_form_ids = $wpdb->get_col("SELECT form_id FROM {$wpdb->prefix}frm_fields WHERE id in (". implode(',', $df_form_ids).")");
                 unset($df_form_ids);
                 
                 if($data_form_ids){
-                    $data_entry_ids = $frm_entry_meta->getEntryIds("fi.form_id in (". implode(',', $data_form_ids).") and meta_value LIKE '%". $term ."%'");
+                    $data_entry_ids = $frm_entry_meta->getEntryIds("fi.form_id in (". implode(',', $data_form_ids).")". $wpdb->prepare(' AND meta_value LIKE %s', '%'. $term .'%'));
                     if($data_entry_ids)
                         $search .= "{$search_or}meta_value in (".implode(',', $data_entry_ids).")";
                 }
@@ -281,7 +296,7 @@ class FrmProEntriesHelper{
 		$p_ids = '';
 		$matching_posts = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE 1=1 $p_search");
 		if($matching_posts){
-		    $p_ids = $wpdb->get_col("SELECT id from $frmdb->entries WHERE post_id in (". implode(',', $matching_posts) .") AND form_id=". (int)$form_id);
+		    $p_ids = $wpdb->get_col("SELECT id FROM {$wpdb->prefix}frm_items WHERE post_id in (". implode(',', $matching_posts) .") AND form_id=". (int) $form_id);
 		    $p_ids = ($p_ids) ? " OR item_id in (". implode(',', $p_ids) .")" : '';
 		}
 		
@@ -289,7 +304,7 @@ class FrmProEntriesHelper{
 		    $p_ids .= " OR item_id in (". implode(',', $e_ids) .")";
 		    
 		
-        return $frm_entry_meta->getEntryIds("(($search)$p_ids) and fi.form_id='$form_id'");
+        return $frm_entry_meta->getEntryIds("(($search)$p_ids) and fi.form_id=". (int) $form_id);
     }
     
     public static function encode_value($line, $from_encoding, $to_encoding){

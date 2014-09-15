@@ -236,7 +236,7 @@ class FrmProXMLHelper{
 		                $metas[$field_id] = self::get_date($metas[$field_id]);
 		            break;
 		            case 'data':
-		                $metas[$field_id] = self::get_dfe_id($metas[$field_id], $field, $saved_entries);
+		                $metas[$field_id] = self::get_dfe_id($metas[$field_id], $field, $saved_entries, $metas);
 		            break;
 		            case 'select':
 		            case 'checkbox':
@@ -278,7 +278,7 @@ class FrmProXMLHelper{
     }
 	
 	public static function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=',', $max=250){
-        global $importing_fields, $wpdb;
+        global $importing_fields, $wpdb, $frmpro_settings;
         if(!defined('WP_IMPORTING'))
             define('WP_IMPORTING', true);
 
@@ -327,7 +327,7 @@ class FrmProXMLHelper{
                                 $values['item_meta'][$field_id] = self::get_multi_opts($values['item_meta'][$field_id], $field);
                             break;
                             case 'data':
-                                $values['item_meta'][$field_id] = self::get_dfe_id($values['item_meta'][$field_id], $field);
+                                $values['item_meta'][$field_id] = self::get_dfe_id($values['item_meta'][$field_id], $field, array(), $values);
                             break;
                             case 'file':
                                 $values['item_meta'][$field_id] = self::get_file_id($values['item_meta'][$field_id]);
@@ -376,15 +376,32 @@ class FrmProXMLHelper{
                 if(!isset($values['item_key']) or empty($values['item_key']))
                     $values['item_key'] = $data[$entry_key];
                    
-                if(isset($values['created_at']) or isset($values['updated_at'])){
-                    $offset = get_option('gmt_offset') *60*60;
-                    if(isset($values['created_at']))
-                        $values['created_at'] = date('Y-m-d H:i:s', (strtotime($values['created_at']) - $offset));
+                $offset = get_option('gmt_offset') *60*60;
                     
-                    if(isset($values['updated_at']))
-                        $values['updated_at'] = date('Y-m-d H:i:s', (strtotime($values['updated_at']) - $offset));
+                foreach ( array('created_at', 'updated_at') as $stamp ) {
+                    if ( !isset($values[$stamp]) ) {
+                        continue;
+                    }
+                    
+                    // adjust the date format if it starts with the day
+                    if ( !preg_match('/^\d{4}-\d{2}-\d{2}/', trim($values[$stamp])) && substr($frmpro_settings->date_format, 0, 1) == 'd' ) {
+                        $reg_ex = str_replace(
+                            array('/', '.', '-', 'd', 'j', 'm', 'y', 'Y'),
+                            array('\/', '\.', '\-', '\d{2}', '\d', '\d{2}', '\d{2}', '\d{4}'),
+                            $frmpro_settings->date_format
+                        );
+                        
+                        if ( preg_match('/^'. $reg_ex .'/', trim($values[$stamp])) ) {
+                            $values[$stamp] = FrmProAppHelper::convert_date($values[$stamp], $frmpro_settings->date_format, 'Y-m-d H:i:s');
+                        }
+                    }
+                    $values[$stamp] = date('Y-m-d H:i:s', (strtotime($values[$stamp]) - $offset));
+                    
+                    unset($stamp);
                 }
-               
+                
+                unset($offset);
+                
                 if ( isset($values['user_id']) ) {
                     $values['user_id'] = FrmProAppHelper::get_user_id_param($values['user_id']);
                 }
@@ -493,7 +510,7 @@ class FrmProXMLHelper{
         return $value;
     }
     
-    public static function get_dfe_id($value, $field, $ids = array() ) {
+    public static function get_dfe_id($value, $field, $ids = array(), $entry_values = array() ) {
         global $wpdb;
         
         if ( !$field || !isset($field->field_options['data_type']) || $field->field_options['data_type'] == 'data' ) {
@@ -505,11 +522,20 @@ class FrmProXMLHelper{
             return $ids[$value];
         }
         
-        if ( !is_array($value) ){
-            $new_id = $wpdb->get_var($wpdb->prepare(
-                "SELECT item_id FROM {$wpdb->prefix}frm_item_metas WHERE field_id=%d and meta_value=%s", 
-                $field->field_options['form_select'], $value
-            ));
+        $parent = self::get_dfe_parent($field, $entry_values);
+        
+        if ( ! is_array($value) ) {
+            if ( isset($parent['value']) && is_numeric($parent['value']) ) {
+                $new_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT m1.item_id FROM {$wpdb->prefix}frm_item_metas m1 INNER JOIN {$wpdb->prefix}frm_item_metas m2 ON m1.item_id=m2.item_id WHERE m1.field_id=%d AND m1.meta_value=%s AND m2.field_id=%d AND m2.meta_value=%d",
+                    $field->field_options['form_select'], $value, $parent['field_id'], $parent['value']
+                ));
+            } else {
+                $new_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT item_id FROM {$wpdb->prefix}frm_item_metas WHERE field_id=%d and meta_value=%s", 
+                    $field->field_options['form_select'], $value
+                ));
+            }
 
             if ( $new_id && is_numeric($new_id) ) {
                 return $new_id;
@@ -518,27 +544,34 @@ class FrmProXMLHelper{
             unset($new_id);
         }
         
-        if ( !is_array($value) && strpos($value, ',') ) {
+        if ( ! is_array($value) && strpos($value, ',') ) {
             $checked = maybe_unserialize($value);
             
-            if ( !is_array($checked) ) {
+            if ( ! is_array($checked) ) {
                 $checked = explode(',', $checked);
             }
         } else {
             $checked = $value;
         }
         
-        if ( !$checked || !is_array($checked) ) {
+        if ( ! $checked || ! is_array($checked) ) {
             return $value;
         }
         
         $value = array_map('trim', $checked);
                 
         foreach ( $value as $dfe_k => $dfe_id ) {
-            $new_id = $wpdb->get_var($wpdb->prepare(
-                "SELECT item_id FROM {$wpdb->prefix}frm_item_metas WHERE field_id=%d and meta_value=%s", 
-                $field->field_options['form_select'], $dfe_id
-            ));
+            if ( isset($parent['value']) && is_numeric($parent['value']) ) {
+                $new_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT m1.item_id FROM {$wpdb->prefix}frm_item_metas m1 INNER JOIN {$wpdb->prefix}frm_item_metas m2 ON m1.item_id=m2.item_id WHERE m1.field_id=%d AND m1.meta_value=%s AND m2.field_id=%d AND m2.meta_value=%d",
+                    $field->field_options['form_select'], $dfe_id, $parent['field_id'], $parent['value']
+                ));
+            } else {
+                $new_id = $wpdb->get_var($wpdb->prepare(
+                    "SELECT item_id FROM {$wpdb->prefix}frm_item_metas WHERE field_id=%d and meta_value=%s", 
+                    $field->field_options['form_select'], $dfe_id
+                ));
+            }
             
             if ( $new_id ) {
                 $value[$dfe_k] = $new_id;
@@ -549,5 +582,52 @@ class FrmProXMLHelper{
         unset($checked);
         
         return $value;
+    }
+    
+    public static function get_dfe_parent($field, $entry_values, $parent = array()) {
+        if ( ! isset($field->field_options['hide_field']) || empty($field->field_options['hide_field']) ) {
+            return $parent;
+        }
+        
+        global $importing_fields;
+        
+        foreach ( $field->field_options['hide_field'] as $k => $hide_field ) {
+            if ( ! is_numeric($hide_field) || ! isset($importing_fields[$hide_field]) || 'data' != $importing_fields[$hide_field]->type ) {
+                continue;
+            }
+            
+            $parent['field_id'] = $hide_field;
+            $parent['value'] = empty($field->field_options['hide_opt'][$k]) ? false : $field->field_options['hide_opt'][$k];
+            if ( isset($entry_values['item_meta'][$hide_field]) && is_numeric($entry_values['item_meta'][$hide_field]) ) {
+                $parent['value'] = $entry_values['item_meta'][$hide_field];
+            }
+            
+            $frm_field = new FrmField();
+            $parent_field = $importing_fields[$hide_field];
+            
+            if ( isset($importing_fields[$field->field_options['form_select']]) ) {
+                $join_field = $importing_fields[$field->field_options['form_select']];
+            } else {
+                $join_field = $frm_field->getOne($field->field_options['form_select']);
+                $importing_fields[$field->field_options['form_select']] = $join_field;
+            }
+            
+            if ( $parent_field->form_id != $join_field->form_id ) {
+                if ( 'data' == $parent_field->type ) {
+                    $dependent_parent = $frm_field->getAll(array('fi.form_id' => $join_field->form_id, 'type' => 'data'));
+                    foreach ( $dependent_parent as $dp ) {
+                        if ( $parent_field->field_options['form_select'] == $dp->field_options['form_select'] ) {
+                            $parent['field_id'] = $dp->id;
+                        }
+                        unset($dp);
+                    }
+                }
+            }
+            
+            unset($k, $hide_field);
+            break;
+        }
+        
+        return $parent;
     }
 }

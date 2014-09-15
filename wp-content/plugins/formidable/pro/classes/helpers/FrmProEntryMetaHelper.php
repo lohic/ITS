@@ -63,7 +63,7 @@ class FrmProEntryMetaHelper{
         );
         
         $atts = wp_parse_args( $atts, $defaults );
-        $field->field_options = maybe_unserialize($field->field_options);
+        $atts = apply_filters('frm_display_value_atts', $atts, $field, $value);
         
         if(!isset($field->field_options['post_field']))
             $field->field_options['post_field'] = '';
@@ -382,6 +382,23 @@ class FrmProEntryMetaHelper{
             }
         } else if ( $field->type != 'tag' && $field->field_options['post_field'] == 'post_category' ) {
             $value = (array) $value;
+            
+            // change text to numeric ids
+            if ( defined('WP_IMPORTING') ){
+                foreach ( $value as $k => $val ) {
+                    if ( empty($val) ) {
+                        continue;
+                    }
+                    
+                    $term = term_exists($val, $field->field_options['taxonomy']);
+                    if ( $term ) {
+                        $value[$k] = is_array($term) ? $term['term_id'] : $term;
+                    }
+                    
+                    unset($k, $val, $term);
+                }
+            }
+            
             if ( isset($field->field_options['taxonomy']) && $field->field_options['taxonomy'] != 'category' ) {
                 $new_value = array();
                 foreach ( $value as $val ) {
@@ -395,7 +412,9 @@ class FrmProEntryMetaHelper{
                         $new_value[$val] = $term->name;
                     } else {
                         $new_value[$val] = $val;
-                    } 
+                    }
+                    
+                    unset($term); 
                 }
                 
                 if ( !isset($_POST['frm_tax_input']) ) {

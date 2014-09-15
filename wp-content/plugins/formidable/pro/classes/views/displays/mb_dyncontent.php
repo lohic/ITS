@@ -23,7 +23,7 @@
 </p>
 
     
-<div class="hide_dyncontent">
+<div class="hide_dyncontent <?php echo in_array($post->frm_show_count, array('dynamic', 'calendar')) ? '' : 'frm_hidden'; ?>">
     <label><?php _e('Dynamic Content', 'formidable'); ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php printf(__('The HTML for the entry on the dynamic page. This content will NOT be repeated, and will only show when the %1$s is clicked.', 'formidable'), '[detaillink]') ?>" ></span></label>
     <?php wp_editor( $post->frm_dyncontent, 'dyncontent', $editor_args ); ?>
 </div>

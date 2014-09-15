@@ -14,6 +14,7 @@
         <br/>
         <form enctype="multipart/form-data" method="post">
             <input type="hidden" name="frm_action" value="import_xml" />
+            <?php wp_nonce_field('import-xml-nonce', 'import-xml'); ?>
             <p><label><?php echo apply_filters('frm_upload_instructions2', __('Choose a Formidable XML file', 'formidable')) ?> (<?php printf(__('Maximum size: %s', 'formidable'), ini_get('upload_max_filesize')) ?>)</label>
             <input type="file" name="frm_import_file" size="25" />
             </p>
@@ -33,14 +34,15 @@
     <div class="inside with_frm_style">
         <form method="post" action="<?php echo admin_url('admin-ajax.php'); ?>" id="frm_export_xml">
             <input type="hidden" name="action" value="frm_export_xml" />
-            <?php //wp_nonce_field('export-xml'); ?>
+            <?php wp_nonce_field('export-xml-nonce', 'export-xml'); ?>
+            
             <table class="form-table">
                 <?php if (count($export_format) == 1) { 
                     reset($export_format); ?>
                 <tr><td colspan="2"><input type="hidden" name="format" value="<?php echo key($export_format) ?>" /></td></tr>
                 <?php } else { ?>
                 <tr class="form-field">
-                    <th scope="row"><label><?php _e('Export Format', 'formidable'); ?></label></th>
+                    <th scope="row"><label for="format"><?php _e('Export Format', 'formidable'); ?></label></th>
                     <td>
                         <select name="format">
                         <?php foreach ( $export_format as $t => $type ){ ?>
@@ -48,14 +50,22 @@
                         <?php } ?>
                         </select>
                         
-                        <select name="csv_format" class="frm_hidden">
+                        <ul class="frm_hidden csv_opts export-filters">
+                            <li>
+                            <label for="csv_format"><?php _e('Format', 'formidable') ?>:</label>
+                            <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php _e('If your CSV special characters are not working correctly, try a different formatting option.', 'formidable') ?>"></span>
+                            <select name="csv_format">
                             <option value="UTF-8" <?php selected($csv_format, 'UTF-8') ?>>UTF-8</option>
                             <option value="ISO-8859-1" <?php selected($csv_format, 'ISO-8859-1'); ?>>ISO-8859-1</option>
                             <option value="windows-1256" <?php selected($csv_format, 'windows-1256'); ?>>windows-1256</option>
                             <option value="windows-1251" <?php selected($csv_format, 'windows-1251'); ?>>windows-1251</option>
                             <option value="macintosh" <?php selected($csv_format, 'macintosh'); ?>><?php _e('Macintosh', 'formidable') ?></option>
-                        </select>
-                        <span class="frm_help frm_icon_font frm_tooltip_icon frm_hidden" title="<?php _e('If your CSV special characters are not working correctly, try a different formatting option.', 'formidable') ?>"></span>
+                            </select>
+                            </li>
+                        
+                            <li><label for="csv_col_sep"><?php _e('Column separation', 'formidable') ?>:</label>
+                            <input name="csv_col_sep" value="," type="text" style="width:45px;" /></li>
+                        </ul>
                     </td>
                 </tr>
                 <?php } ?>

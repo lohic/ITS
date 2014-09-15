@@ -32,8 +32,19 @@ if (is_array($field['value'])){
         echo FrmFieldsHelper::replace_shortcodes($field['custom_html'], $field, array(), $form); ?>
 <input type="hidden" name="frm_next_page" class="frm_next_page" id="frm_next_p_<?php echo isset($frm_vars['prev_page'][$field['form_id']]) ? $frm_vars['prev_page'][$field['form_id']] : 0; ?>" value="" />
 <?php
+        if ( $_POST && isset($_POST['form_id']) && $field['form_id'] == $_POST['form_id'] && !defined('DOING_AJAX') ) {
+            $frm_vars['scrolled'] = true;
+            //scroll to the form when we move to the next page ?>
+<script type="text/javascript">jQuery(document).ready(function(){frmScrollMsg(<?php echo $field['form_id'] ?>);})</script>
+<?php   }
+
     }else{ ?>
 <input type="hidden" name="frm_page_order_<?php echo $field['form_id'] ?>" value="<?php echo esc_attr($field['field_order']); ?>" />
-<?php    
+<?php
+        if ( $_POST && isset($_POST['form_id']) && $field['form_id'] == $_POST['form_id'] && !defined('DOING_AJAX') && !isset($frm_vars['scrolled']) ) {
+            $frm_vars['scrolled'] = true;
+            //scroll to the form when we move to the next page ?>
+<script type="text/javascript">jQuery(document).ready(function(){frmScrollMsg(<?php echo $field['form_id'] ?>);})</script>
+<?php   }
     } 
 }

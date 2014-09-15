@@ -162,8 +162,8 @@ class jd_TwitterOAuth {
   function handleMediaRequest($url, $args = array()) {
 		/* Load tmhOAuth for Media uploads only when needed: https://github.com/themattharris/tmhOAuth */
 		if ( !class_exists( 'tmhOAuth' ) ) {
-			require_once('tmhOAuth/tmhOAuth.php');
-			require_once('tmhOAuth/tmhUtilities.php');
+			require_once( plugin_dir_path(__FILE__).'tmhOAuth/tmhOAuth.php' );
+			require_once( plugin_dir_path(__FILE__).'tmhOAuth/tmhUtilities.php' );
 		}  
 		$auth = $args['auth'];
 		if ( !$auth ) {
@@ -237,11 +237,11 @@ class jd_TwitterOAuth {
   function WPOAuthRequest($url, $args = array(), $method = NULL) {
   
     //Handle media requests using tmhOAuth library.
-    if ($method == 'MEDIA') {
-		return $this->handleMediaRequest($url,$args);		
+    if ( $method == 'MEDIA' ) {
+		return $this->handleMediaRequest( $url,$args );		
     }    
   
-    if (empty($method)) $method = empty($args) ? "GET" : "POST";
+    if ( empty( $method ) ) $method = empty($args) ? "GET" : "POST";
     $req = WPOAuthRequest::from_consumer_and_token($this->consumer, $this->token, $method, $url, $args);
     $req->sign_request($this->sha1_method, $this->consumer, $this->token);
     

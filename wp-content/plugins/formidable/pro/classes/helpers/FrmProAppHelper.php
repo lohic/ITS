@@ -350,9 +350,7 @@ class FrmProAppHelper{
             $where_val = date('Y-m-d', strtotime($where_val));
         else if($where_is == '=' and $where_val != '' and ($where_field->type == 'checkbox' or ($where_field->type == 'select' and isset($where_field->field_options['multiple']) and $where_field->field_options['multiple']) or ($where_field->type == 'data' and $where_field->field_options['data_type'] == 'checkbox' and is_numeric($where_val))))
             $where_is =  'LIKE';
-  
-        $field_options = maybe_unserialize($where_field->field_options);
-
+        
         if($where_field->form_id != $form_id){
             //TODO: get linked entry IDs and get entries where data field value(s) in linked entry IDs
         }
@@ -363,17 +361,19 @@ class FrmProAppHelper{
         if($where_val == '' and $temp_where_is == '=')
             $temp_where_is = '!=';
 
-        
 		$orig_where_val = $where_val;
 		if($where_is == 'LIKE' or $where_is == 'not LIKE'){
              //add extra slashes to match values that are escaped in the database
-            $where_val_esc = "'%". str_replace('\\', '\\\\\\\\\\', esc_sql(like_escape($where_val))) ."%'";
-            $where_val = "'%". esc_sql(like_escape($where_val)) ."%'";
+            $where_val_esc = "'%". esc_sql(FrmAppHelper::esc_like(addslashes($where_val))) ."%'";
+            $where_val = "'%". esc_sql(FrmAppHelper::esc_like($where_val)) ."%'";
         }else if(!strpos($where_is, 'in')){
             $where_val_esc = "'". str_replace('\\', '\\\\\\', esc_sql($where_val)) ."'";
             $where_val = "'". esc_sql($where_val) ."'";
         }
-
+        $where_val = apply_filters('frm_filter_where_val', $where_val, $args);
+        
+        $field_options = maybe_unserialize($where_field->field_options);
+        
         //Filter by DFE text 
 		if ( $where_field->type == 'data' && !is_numeric($where_val) && $orig_where_val != '' && (!isset($field_options['post_field']) || $field_options['post_field'] != 'post_category')){			
 			//Get entry IDs by DFE text
@@ -392,7 +392,7 @@ class FrmProAppHelper{
 			//Change $where_val to linked entry IDs
             if($linked_id){
 				$linked_id = (array)$linked_id;
-                if($where_field->field_options['data_type'] == 'checkbox'){
+                if ( $where_field->field_options['data_type'] == 'checkbox' || ( $where_field->field_options['data_type'] == 'select' && isset($where_field->field_options['multiple']) && $where_field->field_options['multiple'] == 1 ) ) {
 					$where_val = "'%". implode("%' OR meta_value LIKE '%", $linked_id) ."%'";
 					if ($where_is == '!=' or $where_is == 'not LIKE')
 						$temp_where_is = 'LIKE';
@@ -403,6 +403,8 @@ class FrmProAppHelper{
                     $where_val = '('. implode(',', $linked_id) .')';	
                 }
 				unset($where_val_esc);
+				
+				$where_val = apply_filters('frm_filter_dfe_where_val', $where_val, $args);
             }
             unset($linked_id);
         }
@@ -551,12 +553,12 @@ class FrmProAppHelper{
                 $errors[] = $media_id;
         }
         
+        remove_filter('upload_dir', array('FrmProAppHelper', 'upload_dir'));
+        
         unset($media_id);
         
         if(empty($media_ids))
             return $errors;
-        
-        remove_filter('upload_dir', array('FrmProAppHelper', 'upload_dir'));
         
         if(count($media_ids) == 1)
             $media_ids = reset($media_ids);
@@ -587,14 +589,6 @@ class FrmProAppHelper{
             $pass .= $all_g[ rand(0, strlen($all_g) - 1) ];
         }
         return $pass;
-    }
-    
-    //check if an array is multidimensional
-    public static function is_multi($a){
-        foreach($a as $v){
-            if(is_array($v)) return true;
-        }
-        return false;
     }
     
     public static function import_csv($path, $form_id, $field_ids, $entry_key=0, $start_row=2, $del=',', $max=250) {

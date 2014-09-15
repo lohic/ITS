@@ -124,6 +124,12 @@ class FrmProXMLController{
             $filename = get_attached_file($media_id);
         }
         
+        if ( empty($filename) ) {
+            $errors = array(__('That CSV was not uploaded. Are CSV files allowed on your site?', 'formidable'));
+            FrmXMLController::form($errors);
+            return;
+        }
+        
         $row = 1;
         $headers = $example = '';
         $csv_del = FrmAppHelper::get_param('csv_del', ',');

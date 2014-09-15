@@ -24,12 +24,14 @@
         </div>
         
         <div id="major-publishing-actions">
+            <?php if ( current_user_can('frm_delete_entries') ) { ?>
     	    <div id="delete-action">
     	    <a class="submitdelete deletion" href="?page=formidable-entries&amp;frm_action=destroy&amp;id=<?php echo $record->id; ?>&amp;form=<?php echo $form->id ?>" onclick="return confirm('<?php _e('Are you sure you want to delete this entry?', 'formidable') ?>');" title="<?php _e('Delete') ?>"><?php _e('Delete') ?></a>
     	    <?php if(!empty($record->post_id)){ ?>
     	    <a class="submitdelete deletion" style="margin-left:10px;" href="?page=formidable-entries&amp;frm_action=destroy&amp;id=<?php echo $record->id; ?>&amp;form=<?php echo $form->id ?>&amp;keep_post=1" onclick="return confirm('<?php _e('Are you sure you want to delete this entry?', 'formidable') ?>');" title="<?php _e('Delete entry but leave the post', 'formidable') ?>"><?php _e('Delete without Post', 'formidable') ?></a>
     	    <?php } ?>
     	    </div>
+    	    <?php } ?>
     	    <div id="publishing-action">
     	    <?php submit_button($submit, 'primary', 'submit', false); ?>
             </div>

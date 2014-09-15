@@ -14,7 +14,7 @@ class FrmListEntries extends WP_Widget {
         $display = $frmpro_display->getOne($instance['display_id'], false, true);
 
 		$title = apply_filters('widget_title', (empty($instance['title']) and $display) ? $display->post_title : $instance['title']);
-        $limit = empty($instance['limit']) ? '' : " LIMIT {$instance['limit']}";
+        $limit = empty($instance['limit']) ? ' LIMIT 100' : " LIMIT {$instance['limit']}";
         $post_id = (!$display or empty($display->frm_post_id)) ? $instance['post_id'] : $display->frm_post_id;
         $page_url = get_permalink($post_id);
         
@@ -35,18 +35,19 @@ class FrmListEntries extends WP_Widget {
 						//Get all post IDs for this form
 						$posts = $wpdb->get_results($wpdb->prepare("SELECT id, post_id FROM {$wpdb->prefix}frm_items WHERE form_id=%d and post_id>%d AND is_draft=%d", $display->frm_form_id, 1, 0));					
 			            $linked_posts = array();
-			           	foreach($posts as $post_meta)
+			           	foreach ( $posts as $post_meta ) {
 			            	$linked_posts[$post_meta->post_id] = $post_meta->id;
-					
+			            }
+					    
 						//Get all field information
-						global $frm_field;
+						$frm_field = new FrmField();
 						$o_field = $frm_field->getOne($order_field);
 					
 						//create query with ordered values
 						if ( isset($o_field->field_options['post_field']) and $o_field->field_options['post_field'] ) { //if field is some type of post field
-							if ( $o_field->field_options['post_field'] == 'post_custom' ) { //if field is custom field					
+							if ( $o_field->field_options['post_field'] == 'post_custom' && ! empty($linked_posts) ) { //if field is custom field					
 								$query = "SELECT m.id FROM {$wpdb->prefix}frm_items m INNER JOIN {$wpdb->postmeta} pm ON pm.post_id=m.post_id AND pm.meta_key='". $o_field->field_options['custom_field']."' WHERE pm.post_id in (". implode(',', array_keys($linked_posts)).") ORDER BY CASE when pm.meta_value IS NULL THEN 1 ELSE 0 END, pm.meta_value {$order}";
-							} else if ( $o_field->field_options['post_field'] != 'post_category' ) {//if field is a non-category post field
+							} else if ( $o_field->field_options['post_field'] != 'post_category' && ! empty($linked_posts) ) {//if field is a non-category post field
 								$query = "SELECT m.id FROM {$wpdb->prefix}frm_items m INNER JOIN {$wpdb->posts} p ON p.ID=m.post_id WHERE p.ID in (". implode(',', array_keys($linked_posts)).") ORDER BY CASE p.".$o_field->field_options['post_field']." WHEN '' THEN 1 ELSE 0 END, p.".$o_field->field_options['post_field']." {$order}";
 							}
 						} else { //if field is a normal, non-post field

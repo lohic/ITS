@@ -160,45 +160,6 @@ class FrmProForm{
                 }
             }
         }
-
-        //update dependent fields
-        if (isset($values['field_options'])){
-            $all_fields = $frm_field->getAll(array('fi.form_id' => $id), 'field_order');
-            if ($all_fields){
-                $changed = array();
-                foreach($all_fields as $field){
-                    $option_array[$field->id] = maybe_unserialize($field->field_options);
-                    $changed[$field->id] = isset($option_array[$field->id]['dependent_fields']) ? $option_array[$field->id]['dependent_fields'] : false;
-                    $option_array[$field->id]['dependent_fields'] = false;
-                    unset($field);
-                }
-
-                foreach($all_fields as $field){
-                    if(isset($option_array[$field->id]['hide_field']) and 
-                        !empty($option_array[$field->id]['hide_field']) and
-                        (!empty($option_array[$field->id]['hide_opt']) or !empty($option_array[$field->id]['form_select']))){
-                        //save hidden fields to parent field
-
-                        foreach((array)$option_array[$field->id]['hide_field'] as $i => $f){
-                            if(!empty($f) and isset($option_array[$f]) and $option_array[$f])
-                                $option_array[$f]['dependent_fields'][$field->id] = true;
-                        }
-
-                    }
-                    unset($field);
-                }
-                unset($all_fields);
-                
-                foreach($option_array as $field_id => $field_options){
-                    if($changed[$field_id] != $field_options['dependent_fields'])
-                        $frm_field->update($field_id, array('field_options' => $field_options));
-                    unset($field_id);
-                    unset($field_options);
-                }
-                unset($changed);
-                unset($option_array);
-            }
-        }
     }
     
     function after_duplicate($new_opts, $id) {

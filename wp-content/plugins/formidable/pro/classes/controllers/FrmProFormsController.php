@@ -113,7 +113,7 @@ class FrmProFormsController{
         $values = array();
         
         if(isset($_POST['form_id']))
-            $values['fields'] = $frm_field->getAll("fi.form_id='$_POST[form_id]' and fi.type not in ('divider', 'html', 'break', 'captcha')", ' ORDER BY field_order');
+            $values['fields'] = $frm_field->getAll("fi.form_id='". (int) $_POST['form_id'] ."' and fi.type not in ('divider', 'html', 'break', 'captcha')", ' ORDER BY field_order');
         $echo = false;
         
         $limit = (int) apply_filters( 'postmeta_form_limit', 40 );
@@ -213,7 +213,7 @@ class FrmProFormsController{
     }
     
     public static function formidable_shortcode_atts($atts, $all_atts){
-        global $frm_vars, $frmdb;
+        global $frm_vars;
         $frm_vars['readonly'] = $atts['readonly'];
         $frm_vars['editing_entry'] = false;
         
@@ -227,13 +227,13 @@ class FrmProFormsController{
             if(!is_array($atts['exclude_fields']))
                 $atts['exclude_fields'] = explode(',', $atts['exclude_fields']);
             
-            $atts['exclude_fields'] = array_filter( $atts['exclude_fields'], 'sanitize_key' );
+            $atts['exclude_fields'] = implode("','", array_filter( $atts['exclude_fields'], 'esc_sql' ));
             
-            $frm_vars['show_fields'] = $wpdb->get_col("SELECT id FROM $frmdb->fields WHERE form_id=". (int)$atts['id'] ." AND id NOT in ('". implode("','", $atts['exclude_fields']) ."') AND field_key NOT in ('". implode("','", $atts['exclude_fields']) ."')");
+            $frm_vars['show_fields'] = $wpdb->get_col("SELECT id FROM {$wpdb->prefix}frm_fields WHERE form_id=". (int) $atts['id'] ." AND id NOT in ('". $atts['exclude_fields'] ."') AND field_key NOT in ('". $atts['exclude_fields'] ."')");
         }
             
         if($atts['entry_id'] == 'last'){
-            global $frm_entry_meta;
+            global $frm_entry_meta, $frmdb;
             $user_ID = get_current_user_id();
             if($user_ID){
                 $where_meta = array('form_id' => $atts['id'], 'user_id' => $user_ID);

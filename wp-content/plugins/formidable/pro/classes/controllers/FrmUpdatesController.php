@@ -138,11 +138,12 @@ class FrmUpdatesController{
 <div class="frm_pro_installed">
 <div><strong class="alignleft" style="margin-right:10px;"><?php _e('Formidable Pro is Installed', 'formidable') ?></strong>
     <a href="javascript:frm_show_auth_form()" class="button-secondary alignleft"><?php _e('Enter new license', 'formidable') ?></a>
-    <a href="javascript:frm_deauthorize()" id="frm_deauthorize_link" class="button-secondary alignright"><?php _e('Deauthorize this site', 'formidable') ?></a>
+    <a href="#" id="frm_deauthorize_link" class="button-secondary alignright"><?php _e('Deauthorize this site', 'formidable') ?></a>
+    <div class="spinner"></div>
 </div>
 <div class="clear"></div>
 </div>
-<p class="frm_aff_link"><a href="http://formidablepro.com/account/" target="_blank"><?php _e('Account', 'formidable') ?></a></p>
+<p class="frm_aff_link"><a href="https://formidablepro.com/account/?action=licenses" target="_blank"><?php _e('Account', 'formidable') ?></a></p>
 <?php } ?>
 
 <div class="clear"></div>

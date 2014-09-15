@@ -223,7 +223,7 @@ class FrmProFieldsController{
         $entry_id = isset($frm_vars['editing_entry']) ? $frm_vars['editing_entry'] : false;
         
         if($field['type'] == 'form' and $field['form_select'])
-            $dup_fields = $frm_field->getAll("fi.form_id='$field[form_select]' and fi.type not in ('break', 'captcha')");
+            $dup_fields = $frm_field->getAll("fi.form_id='". (int) $field['form_select'] ."' and fi.type not in ('break', 'captcha')");
         
         require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-fields/form-fields.php');
     }
@@ -275,12 +275,6 @@ class FrmProFieldsController{
                 if((!isset($frm_vars['novalidate']) or !$frm_vars['novalidate']) and ($field['type'] != 'email' or (isset($field['value']) and $field['default_value'] == $field['value'])))
                     $frm_vars['novalidate'] = true;
             }
-        }
-
-        if(isset($field['dependent_fields']) and $field['dependent_fields']){
-            $trigger = ($field['type'] == 'checkbox' or $field['type'] == 'radio') ? 'onclick' : 'onchange';            
-            
-            $add_html .= ' '. $trigger .'="frmCheckDependent('. (($field['type'] == 'select' or ($field['type'] == 'data' and isset($field['data_type']) and $field['data_type'] == 'select')) ? 'jQuery(this).val()' : 'this.value') .',\''.$field['id'].'\')"';
         }
         
         if($echo)
@@ -477,7 +471,7 @@ class FrmProFieldsController{
     }
     
     public static function ajax_get_data(){
-        $entry_id = FrmAppHelper::get_param('entry_id'); 
+        $entry_id = trim(FrmAppHelper::get_param('entry_id'), ','); 
         $field_id = FrmAppHelper::get_param('field_id');
         $current_field = (int)FrmAppHelper::get_param('current_field');
         
@@ -514,8 +508,9 @@ class FrmProFieldsController{
         if(is_array($meta_value))
             $meta_value = implode(', ', $meta_value);
         
-        if($value and !empty($value))
-            echo "<p class='frm_show_it'>". $value ."</p>\n";
+        if ( $value && ! empty($value) ) {
+            echo apply_filters('frm_show_it', "<p class='frm_show_it'>". $value ."</p>\n", $value, array('field' => $data_field, 'value' => $meta_value, 'entry_id' => $entry_id));
+        }
             
         $current_field = (array)$current;
         foreach($current->field_options as $o => $v){
@@ -684,7 +679,7 @@ class FrmProFieldsController{
 	    if($date_entries and !empty($date_entries)){
 	        $query = $wpdb->prepare("SELECT meta_value FROM $frmdb->entry_metas it LEFT JOIN $frmdb->fields fi ON (it.field_id = fi.id) WHERE fi.field_key=%s", $time_key);
 	        if(is_numeric($entry_id))
-	            $query = " and it.item_id != ". (int)$entry_id;
+	            $query = $wpdb->prepare(' and it.item_id != %d', $entry_id);
 	        $used_times = $wpdb->get_col("$query and it.item_id in (". implode(',', $date_entries).")");
 	        
 	        if($used_times and !empty($used_times)){
