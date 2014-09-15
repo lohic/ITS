@@ -469,7 +469,23 @@ if( ! function_exists ( 'get_the_content_by_id' ) ) {
 
 if( ! function_exists ( 'the_excerpt_max_charlength_by_param') ) {
 	function the_excerpt_max_charlength_by_param($charlength, $pageID) {
+		/*			
+			// pour corriger un probleme avec shopplugin ?
+			$content = get_the_content();
+			$content = do_shortcode( $content );
+			$content = wpautop($content);
+			//$content = apply_filters('the_content', $content);
+			//the_content();
+			$content = str_replace(']]>', ']]&gt;', $content);
+
+			echo $content;*/
 		$contenu_resume = get_the_content_by_id($pageID);
+		//$contenu_resume = do_shortcode($contenu_resume );
+		//$contenu_resume = wpautop($contenu_resume);
+		//$contenu_resume = apply_filters('the_content', $contenu_resume);
+		//$contenu_resume = str_replace(']]>', ']]&gt;', $contenu_resume);
+		$contenu_resume = wptexturize($contenu_resume);
+		//$contenu_resume = cleanApostrophes($contenu_resume );
 		$contenu_resume = strip_tags($contenu_resume);
 		$charlength++;
 
@@ -488,6 +504,12 @@ if( ! function_exists ( 'the_excerpt_max_charlength_by_param') ) {
 		}
 	}
 }
+
+function cleanApostrophes($content){
+	$content = str_replace(array("'","`","’", "&146;", "&#2019;", "&#8217;", "&apos;", "&amp;apos;","&#039;"), "'", $content);
+	return $content;
+}
+
 
 if( ! function_exists ( 'the_excerpt_max_charlength') ) {
 	function the_excerpt_max_charlength($charlength) {
