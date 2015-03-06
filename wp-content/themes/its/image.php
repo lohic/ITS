@@ -209,7 +209,7 @@
 				</div>
 			</div>
 			<div class="small texte_article_image">
-				<p><?php the_field('texte_fixe_page_image', 'option'); ?></p>
+				<?php the_field('texte_fixe_page_image', 'option'); ?>
 				<a href="<?php bloginfo('url'); ?>/contact/" class="suite mt1"><span>Contact ITS</span></a>
 			</div>
 		</article>
