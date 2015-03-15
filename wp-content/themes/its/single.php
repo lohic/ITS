@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<!-- GABARIT SINGLE.PHP -->
+<!-- single.php -->
 
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
@@ -109,5 +109,7 @@
 			<p>Désolé, aucun article ne correspond à vos critères.</p>
 <?php endif; ?>
 	</div>
+
+<!-- fin single.php -->
 
 <?php get_footer(); ?>

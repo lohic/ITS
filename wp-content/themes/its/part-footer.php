@@ -1,4 +1,4 @@
-<!-- FOOTER -->
+<!-- part-footer.php -->
 
 </div>
         <footer class="row pt2 pb2">

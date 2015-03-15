@@ -1,4 +1,6 @@
-﻿<?php // Ne pas supprimer ces lignes
+﻿<!-- comments.php -->
+
+<?php // Ne pas supprimer ces lignes
 if ('comments.php' == basename($_SERVER['SCRIPT_FILENAME'])) die ('Ne pas t&eacute;l&eacute;charger cette page directement, merci !');
 if (!empty($post->post_password)) { // s'il y a un mot de passe
 	if ($_COOKIE['wp-postpass_' . COOKIEHASH] != $post->post_password) {  // et ça ne fonctionne pas avec le cookie
@@ -95,4 +97,4 @@ $oddcomment = 'alt';
 </div>
 
 
-
+<!-- fin comments.php -->

@@ -1,3 +1,5 @@
+<!-- entete.php -->
+
 <div id="entete">
 	<h1 class="very_biggest"><a href="<?php echo get_category_link(get_cat_ID(single_cat_title('',false)));?>"><?php single_cat_title();?></a></h1>
 	<section id="frise" class="normal mt2 mb1 pl3 row">
@@ -36,3 +38,5 @@
 		<a href="#" class="suivant">Next</a>
 	</section>
 </div>
+
+<!-- fin entete.php -->

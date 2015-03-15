@@ -1,3 +1,4 @@
+<!-- sidebar.php -->
 <aside class="pl2 pr3 col">
 	<?php wp_nav_menu( array('menu'=>'Menu Sidebar', 'container' => 'false', 'menu_id' => 'menu_sidebar', 'menu_class' => 'small mb2'));?>
 
@@ -74,3 +75,5 @@
     
     
 </aside>
+
+<!-- fin sidebar.php -->

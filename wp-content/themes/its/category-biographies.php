@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- category-biographies.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -128,5 +130,7 @@
 			?>
 		</section>
 	</div>
+
+<!-- fin category-biographies.php -->
 
 <?php get_footer(); ?>

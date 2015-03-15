@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- tag.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -58,5 +60,7 @@
 			?>
 		</section>
 	</div>
+
+<!-- fin tag.php -->
 
 <?php get_footer(); ?>

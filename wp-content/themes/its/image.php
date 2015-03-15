@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<!-- GABARIT image.php -->
+<!-- image.php -->
 
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
@@ -295,5 +295,7 @@
 			<p>Désolé, aucun article ne correspond à vos critères.</p>
 <?php endif; ?>
 	</div>
+
+<!-- fin image.php -->
 
 <?php get_footer(); ?>

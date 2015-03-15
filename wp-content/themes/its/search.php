@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- search.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -168,4 +170,7 @@
 				<?php include (TEMPLATEPATH . '/searchform.php'); ?>
 		<?php endif; ?>
 	</div>
+
+<!-- fin search.php -->
+
 <?php get_footer(); ?>

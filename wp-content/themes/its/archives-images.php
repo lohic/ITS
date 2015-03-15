@@ -5,6 +5,8 @@ Template Name: Page archive d'images
 ?>
 <?php get_header(); ?>
 
+<!-- archives-images.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -398,5 +400,7 @@ Template Name: Page archive d'images
 			?>
 		</div>
 	</div>
+
+<!-- fin archives-images.php -->
 
 <?php get_footer(); ?>

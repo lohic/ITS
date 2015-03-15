@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- page.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -68,4 +70,6 @@
 		<?php edit_post_link('Modifier cette page', '<p>', '</p>'); ?>
 		<?php endif; ?>
 	</div>
+
+<!-- fin page.php -->	
 <?php get_footer(); ?>

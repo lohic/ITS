@@ -1,5 +1,7 @@
 <?php get_header();?>
 
+<!-- home.php -->
+
 <div class="row mb3">
     <div id="centre" class="col">
         <section id="agenda" class="pl3">
@@ -251,4 +253,6 @@
             </div>
         </section>
     </div>
+
+<!-- fin home.php -->
 <?php get_footer(); ?>

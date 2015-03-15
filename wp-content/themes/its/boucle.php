@@ -1,3 +1,5 @@
+<!-- boucle.php -->
+
 <?php 
 	$categorie = get_the_category();
 	$resume = get_field("resume_article");
@@ -140,3 +142,5 @@
 <?php	
 	}
 ?>
+
+<!-- fin boucle.php -->

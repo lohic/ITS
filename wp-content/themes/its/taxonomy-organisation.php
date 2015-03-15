@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- taxonomy-organisation.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -160,5 +162,7 @@
 			}
 		?>
 	</div>
+
+<!-- fin taxonomy-organisation.php -->
 
 <?php get_footer(); ?>

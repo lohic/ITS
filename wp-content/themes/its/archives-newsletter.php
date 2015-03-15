@@ -5,6 +5,8 @@ Template Name: Page newsletter
 ?>
 <?php get_header(); ?>
 
+<!-- archives-newsletter.php -->
+
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
     	<?php 
@@ -41,4 +43,7 @@ Template Name: Page newsletter
 		<?php edit_post_link('Modifier cette page', '<p>', '</p>'); ?>
 		<?php endif; ?>
 	</div>
+
+<!-- fin archives-newsletter.php -->
+
 <?php get_footer(); ?>
