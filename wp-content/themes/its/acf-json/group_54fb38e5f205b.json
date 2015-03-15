@@ -1,0 +1,59 @@
+{
+  "key":"group_54fb38e5f205b",
+  "title":"Organisations",
+  "fields":[
+    {
+      "key":"field_519479a188f34",
+      "label":"Texte de l'organisation",
+      "name":"texte_organisation",
+      "prefix":"",
+      "type":"wysiwyg",
+      "instructions":"Description de l'organisation.",
+      "required":0,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "default_value":"",
+      "toolbar":"full",
+      "media_upload":1,
+      "tabs":"all"
+    },
+    {
+      "key":"field_5416a90e3a5ae",
+      "label":"Menu li\u00e9",
+      "name":"menu_lie",
+      "prefix":"",
+      "type":"nav_menu",
+      "instructions":"",
+      "required":0,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "save_format":"object",
+      "container":"div",
+      "allow_null":1
+    }
+  ],
+  "location":[
+    [
+      {
+        "param":"post_taxonomy",
+        "operator":"==",
+        "value":"category:action-syndicale"
+      }
+    ]
+  ],
+  "menu_order":0,
+  "position":"side",
+  "style":"default",
+  "label_placement":"top",
+  "instruction_placement":"label",
+  "hide_on_screen":"",
+  "modified":1425750374
+}

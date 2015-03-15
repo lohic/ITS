@@ -1,0 +1,41 @@
+{
+  "key":"group_54fb38e4bd94d",
+  "title":"Article : informations",
+  "fields":[
+    {
+      "key":"field_517e78b802984",
+      "label":"R\u00e9sum\u00e9 de l'article",
+      "name":"resume_article",
+      "prefix":"",
+      "type":"wysiwyg",
+      "instructions":"",
+      "required":0,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "default_value":"",
+      "toolbar":"basic",
+      "media_upload":0,
+      "tabs":"all"
+    }
+  ],
+  "location":[
+    [
+      {
+        "param":"post_type",
+        "operator":"==",
+        "value":"post"
+      }
+    ]
+  ],
+  "menu_order":0,
+  "position":"normal",
+  "style":"seamless",
+  "label_placement":"top",
+  "instruction_placement":"label",
+  "hide_on_screen":"",
+  "modified":1425750331
+}

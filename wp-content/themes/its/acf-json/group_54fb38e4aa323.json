@@ -1,0 +1,69 @@
+{
+  "key":"group_54fb38e4aa323",
+  "title":"Article : Chronologie",
+  "fields":[
+    {
+      "key":"field_527293c1d3eb0",
+      "label":"Type d'\u00e9l\u00e9ment",
+      "name":"type",
+      "prefix":"",
+      "type":"select",
+      "instructions":"",
+      "required":1,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "choices":{
+        "dot":"\u00e9v\u00e9nement",
+        "box":"rep\u00e8re historique"
+      },
+      "default_value":{
+        "dot":"dot"
+      },
+      "allow_null":0,
+      "multiple":0,
+      "ui":0,
+      "ajax":0,
+      "placeholder":"",
+      "disabled":0,
+      "readonly":0
+    },
+    {
+      "key":"field_5272940ad3eb1",
+      "label":"Date de fin",
+      "name":"date_de_fin",
+      "prefix":"",
+      "type":"date_picker",
+      "instructions":"Si l'\u00e9v\u00e9nement a une date de fin. Obligatoirement post\u00e9rieure \u00e0 la date de publication de l'article !",
+      "required":0,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "first_day":1,
+      "return_format":"Y,m,d",
+      "display_format":"d\/m\/Y"
+    }
+  ],
+  "location":[
+    [
+      {
+        "param":"post_category",
+        "operator":"==",
+        "value":"category:chronologie"
+      }
+    ]
+  ],
+  "menu_order":0,
+  "position":"side",
+  "style":"default",
+  "label_placement":"top",
+  "instruction_placement":"label",
+  "hide_on_screen":"",
+  "modified":1425750321
+}

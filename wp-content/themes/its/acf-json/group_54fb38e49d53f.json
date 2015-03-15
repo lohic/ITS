@@ -1,0 +1,45 @@
+{
+  "key":"group_54fb38e49d53f",
+  "title":"Article : Biographie",
+  "fields":[
+    {
+      "key":"field_3",
+      "label":"Pr\u00e9nom",
+      "name":"prenom",
+      "prefix":"",
+      "type":"text",
+      "instructions":"Pr\u00e9nom de la personne",
+      "required":0,
+      "conditional_logic":0,
+      "wrapper":{
+        "width":"",
+        "class":"",
+        "id":""
+      },
+      "default_value":"",
+      "formatting":"html",
+      "maxlength":"",
+      "placeholder":"",
+      "prepend":"",
+      "append":"",
+      "readonly":0,
+      "disabled":0
+    }
+  ],
+  "location":[
+    [
+      {
+        "param":"post_taxonomy",
+        "operator":"==",
+        "value":"category:biographies"
+      }
+    ]
+  ],
+  "menu_order":0,
+  "position":"side",
+  "style":"default",
+  "label_placement":"top",
+  "instruction_placement":"label",
+  "hide_on_screen":"",
+  "modified":1425750317
+}
