@@ -31,12 +31,29 @@
 	<!--[if IE]>
 	  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
+
+	<!--
+	┌─────────────────────────────┐
+	│█████████████████████████████│
+	│ 		                      │
+	│ INSTITUT TRIBUNE SOCIALISTE │
+	│ 		                      │
+	│▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓│
+	└─────────────────────────────┘
+
+	-->
+
 </head>
 <body>
 	<div id="page">
 		<header>
 			<h1><a href="<?php bloginfo('url'); ?>"><span class="invisible">ITS</span></a></h1>
-			<?php wp_nav_menu( array('menu'=>'Menu Header', 'container' => 'false', 'menu_id' => 'sur_menu', 'menu_class' => 'very_smaller'));?>
+			<?php
+				if ( has_nav_menu( 'top_menu' ) ) {
+					wp_nav_menu( array('theme_location'=>'top_menu', 'container' => 'false', 'menu_id' => 'sur_menu', 'menu_class' => 'very_smaller'));
+				}
+				?>
+			<?php //wp_nav_menu( array('menu'=>'Menu Header', 'container' => 'false', 'menu_id' => 'sur_menu', 'menu_class' => 'very_smaller'));?>
 			<div id="recherche">
 		        <?php get_search_form(); ?>
 		    </div>
@@ -48,11 +65,16 @@
 		    <nav id="menus" class="small pr3">
 				<?php
 				if ( has_nav_menu( 'main_menu' ) ) {
-					wp_nav_menu( array('theme_location'=>'main_menu'));
+					wp_nav_menu( array('theme_location'=>'main_menu', 'container' => 'false', 'menu_id' => 'menu', 'menu_class' => ''));
 				}
 				?>
-				<?php wp_nav_menu( array('menu'=>'Menu Principal', 'container' => 'false', 'menu_id' => 'menu', 'menu_class' => ''));?>
-				<?php wp_nav_menu( array('menu'=>'Menu Secondaire', 'container' => 'false', 'menu_id' => 'menu_secondaire', 'menu_class' => ''));?>
+				<?php
+				if ( has_nav_menu( 'main_menu' ) ) {
+					wp_nav_menu( array('theme_location'=>'second_menu', 'container' => 'false', 'menu_id' => 'menu_secondaire', 'menu_class' => ''));
+				}
+				?>
+				<?php //wp_nav_menu( array('menu'=>'Menu Principal', 'container' => 'false', 'menu_id' => 'menu', 'menu_class' => ''));?>
+				<?php //wp_nav_menu( array('menu'=>'Menu Secondaire', 'container' => 'false', 'menu_id' => 'menu_secondaire', 'menu_class' => ''));?>
 			</nav>
 		</header> 
-<!-- FIN HEADER -->
+<!-- fin header.php -->

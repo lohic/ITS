@@ -27,7 +27,9 @@ if ( ! function_exists( 'its_setup' ) ){
 		if ( function_exists('register_nav_menus') )
 		register_nav_menus(
 			array(
-				'main_menu'	=> __('Menu principal')
+				'main_menu'	=> __('Menu principal'),
+				'second_menu'	=> __('Menu secondaire'),
+				'top_menu'	=> __('Menu du haut'),
 			)
 		);
 		
@@ -643,5 +645,9 @@ function wpuxss_admin_scripts()
 </div>
  */
 
-
+if( function_exists('acf_add_options_page') ) {
+	
+	acf_add_options_page();
+	
+}
 

@@ -47,7 +47,8 @@ div.timeline-event.timeline-event-dot {
     -webkit-border-radius:8px;
     -moz-border-radius:8px;
     border-radius:8px;
-    background: #FF3333;
+    background: #188e7c;
+    /*background: #FF3333;*/
 }
 
 div.timeline-event.timeline-event-range {
@@ -56,7 +57,8 @@ div.timeline-event.timeline-event-range {
     border-radius:0;
     border: none;
     background: none;
-    border-bottom:solid 8px #F33;
+    /*border-bottom:solid 8px #F33;*/
+    border-bottom:solid 8px #188e7c;
     /*border-left:solid 2px #F33;
     border-right:dotted 1px #F33;*/
 }
@@ -191,3 +193,43 @@ div#event_detail img{
     height: auto;
 }
 
+div#mytimeline .post{
+    width: auto;
+}
+
+div#mytimeline .timeline-event-dot-container.post,
+div#mytimeline .timeline-event-dot.post{
+    border-bottom:0;
+}
+
+div.timeline-event.timeline-event-range.tag-psu{
+    border-bottom:solid 8px #F33;
+}
+
+div.timeline-event.timeline-event-dot.tag-psu{
+    background: #F33;
+}
+
+h4.underline{
+    text-decoration: underline;
+}
+
+.legende span:before{
+    content:" ";
+    display: inline-block;
+    background: #188e7c;
+    padding: 4px;
+    -webkit-border-radius:8px;
+    -moz-border-radius:8px;
+    border-radius:8px;
+    margin-right: 5px;
+    margin-left: 10px;
+}
+
+.legende span.psu:before{
+     background: #F33;
+}
+
+#mytimeline{
+     margin-top:0px;
+}

@@ -109,9 +109,7 @@
                     		<!-- TITRE RUBRIQUE -->
                 			<table width="100%" border="0" cellpadding="0" cellspacing="0"> 
                                 <tr>
-                                    <td><h2 style="color:#F03;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:3px 0;"><?php $field = get_sub_field_object('titre_de_la_sous_rubrique');
-$value = get_sub_field('titre_de_la_sous_rubrique');
-$label = $field['choices'][ $value ]; echo $label;//the_sub_field('titre_de_la_sous_rubrique');?></h2></td>
+                                    <td><h2 style="color:#F03;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:3px 0;"><?php $field = the_sub_field('sousrubrique_texte');?></h2></td>
                                 </tr>
                             </table>
                 	<?php elseif(get_row_layout() == "galerie"):?>

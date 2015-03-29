@@ -1,5 +1,7 @@
 <?php get_header(); ?>
 
+<!-- page-chronologie.php -->
+
 <style>
 #centre.chronologie{
 	margin: 0;
@@ -85,10 +87,15 @@ article.chronologie{
 
 					<?php the_content(); ?>
 
-				<div id="event_detail"></div>
-				<div id="mytimeline"></div>
+					<h4 class="underline">Légende :</h4>
+					<p class="legende"><span class="psu">PSU</span> <span class="autre">autre</span><p>
 
-				<div style="clear:both"></div>
+					<div style="clear:both"></div>
+
+					<div id="event_detail"></div>
+					<div id="mytimeline"></div>
+
+					<div style="clear:both"></div>
 
 				</div>
 				
@@ -109,5 +116,7 @@ article.chronologie{
 	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-locales.js" ></script>
 	<!--<script type="text/javascript" language="javascript" src="<?php bloginfo( 'template_url' ); ?>/timeline/timeline-values.js"  ></script>-->
 	<script type="text/javascript" language="javascript" src="<?php bloginfo( 'wpurl' ); ?>/category/chronologie/"></script>
+
+<!-- fin page-chronologie.php -->
 
 <?php get_template_part('part','footer');?>

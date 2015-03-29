@@ -24,8 +24,9 @@ function drawVisualization() {
 	$actu = new stdClass();
 	$actu->content	= get_the_title();
 	$actu->start	= '%%new Date('. timeline_date('Y,m,d ') .')%%';
-	$actu->type		= get_field('type');
+	$actu->type		= get_field('type') == null ? "dot" : get_field('type') ;
 	$actu->url		= get_permalink();
+    $actu->className= implode(' ',get_post_class());
 
 	$end = get_field('date_de_fin');
 	if( !empty( $end ) ) {
