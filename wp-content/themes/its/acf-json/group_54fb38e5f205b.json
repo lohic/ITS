@@ -6,7 +6,6 @@
       "key":"field_519479a188f34",
       "label":"Texte de l'organisation",
       "name":"texte_organisation",
-      "prefix":"",
       "type":"wysiwyg",
       "instructions":"Description de l'organisation.",
       "required":0,
@@ -25,7 +24,6 @@
       "key":"field_5416a90e3a5ae",
       "label":"Menu li\u00e9",
       "name":"menu_lie",
-      "prefix":"",
       "type":"nav_menu",
       "instructions":"",
       "required":0,
@@ -43,9 +41,9 @@
   "location":[
     [
       {
-        "param":"post_taxonomy",
+        "param":"taxonomy",
         "operator":"==",
-        "value":"category:action-syndicale"
+        "value":"organisation"
       }
     ]
   ],
@@ -55,5 +53,5 @@
   "label_placement":"top",
   "instruction_placement":"label",
   "hide_on_screen":"",
-  "modified":1425750374
+  "modified":1436736818
 }

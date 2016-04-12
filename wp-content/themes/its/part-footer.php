@@ -16,6 +16,7 @@
                     <img src="<?php bloginfo( 'template_url' ); ?>/img/icn_twitter.png" alt="twitter"/>
                 </a>
 	        	<?php wp_nav_menu( array('menu'=>'Quatrième colonne footer', 'container' => 'false', 'menu_id' => 'menu_footer_4', 'menu_class' => 'little_small col'));?>
+                <p class="little_small">40 rue de Malte, 75011 Paris</p>
 	        </div>    
 	        <section id="nuage" class="pr3 smallest col">
                 <?php 

@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<!-- category.php -->
+<!-- cathegory.php -->
 
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
@@ -170,6 +170,6 @@
 		?>
 	</div>
 
-<!-- fin category.php -->
+<!-- fin cathegory.php -->
 
 <?php get_footer(); ?>

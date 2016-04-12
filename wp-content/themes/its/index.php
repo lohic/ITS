@@ -25,7 +25,6 @@
 		<?php edit_post_link('Modifier cette page', '<p>', '</p>'); ?>
 		<?php endif; ?>
 	</div>
+<?php get_footer(); ?>
 
 <!-- fin index.php -->
-
-<?php get_footer(); ?>

@@ -232,17 +232,35 @@ Template Name: Page archive d'images
 					<div class="bordure">
 					</div>
 				</section>
-				<?php
-					$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-					$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
-				?>
+				<p><?php
+					//$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+					if ( get_query_var('paged') ) {
+						$paged = get_query_var('paged');
+					} else if ( get_query_var('page') ) {
+						$paged = get_query_var('page'); 
+					} else {
+						$paged = 1;
+					}
+
+					$my_query = new WP_Query(
+						array( 	'post_type' => 'attachment',
+								'meta_query'=> $params,	
+								'tax_query' => $paramsQuery,
+								'meta_key'=>'is_archive',
+								'meta_value'=>true,
+								'post_status'=>'any',
+								'posts_per_page' => 25,
+								'paged' => $paged
+						)
+					);
+				?></p>
 						<section class="pagination smaller mb2 mt4 affiches">
 						<?php
 							$big = 99999999; // need an unlikely integer
 
 							echo paginate_links( array(
 								'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-								'format' => '?paged=%#%',
+								//'format' => '/page/%#%',
 								'current' => max( 1, get_query_var('paged') ),
 								'total' => $my_query->max_num_pages,
 								'prev_text'    => '« Précédent',
@@ -387,7 +405,7 @@ Template Name: Page archive d'images
 						<?php
 							echo paginate_links( array(
 								'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-								'format' => '?paged=%#%',
+								//'format' => '/page/%#%',
 								'current' => max( 1, get_query_var('paged') ),
 								'total' => $my_query->max_num_pages,
 								'prev_text'    => '« Précédent',

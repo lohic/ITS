@@ -1,13 +1,24 @@
+<!-- ajax-images_listing.php -->
+
+<?php 
+
+ $page_url = $_SERVER['HTTP_REFERER'];
+ $ajax_url = $_SERVER['HTTP_ORIGIN'].$_SERVER['REQUEST_URI'];
+
+?>
+
 <div id="entete">
 	<h1 class="little_very_biggest sans mb4"><?php echo $_POST['titre'];?></h1>
 	<section id="filtres" class="affiches">
+
 		<div class="">
 			<p class="filtre mr2 pl3 normal">Filtrer les images par critères</p>
 			<ul id="filtres_actifs" class="small">
 				<?php
 					$params = array();
 					$paramsQuery = array();
-					$complement = "images-darchives/?";
+					//$complement = "images-darchives/?";
+					$complement = array();
 					if(isset($_POST['annees'])){
 						$params_annees=array();
 						foreach($_POST['annees'] as $annee){
@@ -17,12 +28,14 @@
 							$new_url = str_replace ( '?annees[]='.$annee , '' , $new_url);*/
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$anneeTxt.'</a></li>';
 							$params_annees[]=$annee;
-							if($complement=="images-darchives/?"){
-								$complement .="annees[]=".$annee;
-							}
-							else{
-								$complement .="&amp;annees[]=".$annee;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="annees[]=".$annee;
+							// }
+							// else{
+							//	$complement="&amp;annees[]=".$annee;
+							// }
+							// 
+							$complement[] = "annees[]=".$annee;
 						}
 						$params[]=array('key' => 'date_document', 'value'=>$params_annees,'compare'=>'IN');
 					}
@@ -32,12 +45,14 @@
 						foreach($_POST['types'] as $type){
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$type.'</a></li>';
 							$params_types[]=$type;
-							if($complement=="images-darchives/?"){
-								$complement .="types[]=".$type;
-							}
-							else{
-								$complement .="&amp;types[]=".$type;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="types[]=".$type;
+							// }
+							// else{
+							// 	$complement .="&amp;types[]=".$type;
+							// }
+							// 
+							$complement[] = "types[]=".$type;
 						}
 						$params[]=array('key' => 'type_de_document', 'value'=>$params_types,'compare'=>'IN');
 					}
@@ -47,12 +62,13 @@
 						foreach($_POST['auteurs'] as $auteur){									
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$auteur.'</a></li>';
 							$params_auteurs[]=$auteur;
-							if($complement=="images-darchives/?"){
-								$complement .="auteurs[]=".$auteur;
-							}
-							else{
-								$complement .="&amp;auteurs[]=".$auteur;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="auteurs[]=".$auteur;
+							// }
+							// else{
+							// 	$complement .="&amp;auteurs[]=".$auteur;
+							// }
+							$complement[] ="auteurs[]=".$auteur;
 						}
 						$params[]=array('key' => 'auteur', 'value'=>$params_auteurs,'compare'=>'IN');
 					}
@@ -61,12 +77,13 @@
 						$params_couleurs=array();
 						foreach($_POST['couleurs_identifiants'] as $couleur){																
 							$params_couleurs[]=$couleur;
-							if($complement=="images-darchives/?"){
-								$complement .="couleurs[]=".$couleur;
-							}
-							else{
-								$complement .="&amp;couleurs[]=".$couleur;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="couleurs[]=".$couleur;
+							// }
+							// else{
+							// 	$complement .="&amp;couleurs[]=".$couleur;
+							// }
+							$complement[] = "couleurs[]=".$couleur;
 						}
 						$paramsQuery[]=array('taxonomy'=>'couleur', 'field' => 'slug', 'terms' => $params_couleurs,'operator' => 'IN');
 					}
@@ -74,12 +91,13 @@
 					if(isset($_POST['couleurs_noms'])){
 						foreach($_POST['couleurs_noms'] as $couleur){																
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$couleur.'</a></li>';
-							if($complement=="images-darchives/?"){
-								$complement .="couleurs_nom[]=".$couleur;
-							}
-							else{
-								$complement .="&amp;couleurs_nom[]=".$couleur;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="couleurs_nom[]=".$couleur;
+							// }
+							// else{
+							// 	$complement .="&amp;couleurs_nom[]=".$couleur;
+							// }
+							$complement[] = "couleurs_nom[]=".$couleur;
 						}
 					}
 
@@ -87,12 +105,14 @@
 						$params_mots=array();
 						foreach($_POST['mots_identifiants'] as $mot_cle){																	
 							$params_mots[]=$mot_cle;
-							if($complement=="images-darchives/?"){
-								$complement .="mots[]=".$mot_cle;
-							}
-							else{
-								$complement .="&amp;mots[]=".$mot_cle;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="mots[]=".$mot_cle;
+							// }
+							// else{
+							// 	$complement .="&amp;mots[]=".$mot_cle;
+							// }
+
+							$complement[] ="mots[]=".$mot_cle;
 						}
 						$paramsQuery[]=array('taxonomy'=>'mot_cle_image', 'field' => 'slug', 'terms' => $params_mots,'operator' => 'IN');
 					}
@@ -100,16 +120,18 @@
 					if(isset($_POST['mots_noms'])){
 						foreach($_POST['mots_noms'] as $mot_cle){																	
 							echo '<li class="mr1"><a href="#" class="lien_filtre_actif">'.$mot_cle.'</a></li>';
-							if($complement=="images-darchives/?"){
-								$complement .="mots_nom[]=".$mot_cle;
-							}
-							else{
-								$complement .="&amp;mots_nom[]=".$mot_cle;
-							}
+							// if($complement=="images-darchives/?"){
+							// 	$complement .="mots_nom[]=".$mot_cle;
+							// }
+							// else{
+							// 	$complement .="&amp;mots_nom[]=".$mot_cle;
+							// }
+
+							$complement[] = "mots_nom[]=".$mot_cle;
 						}
 					}
 
-					$complement .= "&amp;";
+					// $complement .= "&amp;";
 				?>
 			</ul>
 		</div>
@@ -275,31 +297,62 @@
 
 	<section class="pagination smaller mb2 mt4 affiches">
 		<?php
-			$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-			$my_query = new WP_Query( array( 'post_type' => 'attachment', 'meta_query'=> $params, 'tax_query' => $paramsQuery, 'meta_key'=>'is_archive', 'meta_value'=>true, 'post_status'=>'any', 'posts_per_page' => 25,'paged' => $paged));
+			// loic
+			// wp_reset_query();
+			//$paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+			if ( get_query_var('paged') ) {
+				$paged = get_query_var('paged');
+			} else if ( get_query_var('page') ) {
+				$paged = get_query_var('page'); 
+			} else {
+				$paged = 1;
+			}
+			
+			$my_query = new WP_Query(
+				array( 	'post_type' => 'attachment',
+						'meta_query'=> $params,
+						'tax_query' => $paramsQuery,
+						'meta_key'=>'is_archive',
+						'meta_value'=>true,
+						'post_status'=>'any',
+						'posts_per_page' => 25,
+						'paged' => $paged
+				)
+			);
+
+
+			/*
+			$page_url = $_SERVER['HTTP_REFERER'];
+ 			$ajax_url = $_SERVER['HTTP_ORIGIN'].$_SERVER['REQUEST_URI'];
+			 */
 
 			$big = 99999999; // need an unlikely integer
 			$listeLiens = paginate_links( array(
 				'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-				'format' => '?paged=%#%',
+				//'format' => '/page/%#%',
 				'current' => max( 1, get_query_var('paged') ),
 				'total' => $my_query->max_num_pages,
-				'prev_text'    => '« Previous',
-				'next_text'    => 'Next »',
+				'prev_text'    => '« Précédent',
+				'next_text'    => 'Suivant »',
 				'type' => 'array',
 			) );
+
 
 			if($listeLiens){
 				foreach($listeLiens as $lien){
 					if(preg_match('/wp-admin\/admin-ajax.php/',$lien)){
-						$lien = str_replace('wp-admin/admin-ajax.php','images-darchives/',$lien);
-						$lien = str_replace('images-darchives/?',$complement,$lien);
+						$lien  = str_replace($ajax_url, $page_url, $lien);
+						$param = '/?'.implode('&amp;',$complement).'&amp;';
+						$lien  = str_replace('/?',$param, $lien);
+
+						// $lien = str_replace('wp-admin/admin-ajax.php','images-darchives/',$lien);
+						// $lien = str_replace('images-darchives/?',$complement,$lien);
 					}
 					echo $lien;
 				}
 			}
 		?>
-	</section>
+	</section>	
 </div>
 
 
@@ -418,11 +471,11 @@
 	<?php
 		$listeLiens = paginate_links( array(
 			'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
-			'format' => '?paged=%#%',
+			//'format' => '/page/%#%',
 			'current' => max( 1, get_query_var('paged') ),
 			'total' => $my_query->max_num_pages,
-			'prev_text'    => '« Previous',
-			'next_text'    => 'Next »',
+			'prev_text'    => '« Précédent',
+			'next_text'    => 'Suivant »',
 			'type' => 'array',
 		) );
 
@@ -437,3 +490,6 @@
 		}
 	?>
 </section>
+
+
+<!-- fin ajax-images_listing.php -->

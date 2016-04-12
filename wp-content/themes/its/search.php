@@ -172,5 +172,4 @@
 	</div>
 
 <!-- fin search.php -->
-
 <?php get_footer(); ?>

@@ -253,6 +253,6 @@
             </div>
         </section>
     </div>
+<?php get_footer(); ?>
 
 <!-- fin home.php -->
-<?php get_footer(); ?>

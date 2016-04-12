@@ -71,5 +71,6 @@
 		<?php endif; ?>
 	</div>
 
-<!-- fin page.php -->	
+<!-- fin page.php -->
+
 <?php get_footer(); ?>
