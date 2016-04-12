@@ -65,14 +65,17 @@
     </tr>
 
     <tr class="form-field">
-        <td><?php _e( 'No Entries Messsage', 'formidable' ); ?></td>
+        <td><?php _e( 'No Entries Message', 'formidable' ); ?></td>
         <td>
             <textarea id="empty_msg" name="options[empty_msg]" style="width:98%"><?php echo FrmAppHelper::esc_textarea($post->frm_empty_msg) ?></textarea>
         </td>
     </tr>
 </table>
 
+<?php if ( is_multisite() && is_super_admin() ) { ?>
 <h3><?php _e( 'Advanced', 'formidable' ) ?></h3>
+<?php } ?>
+
 <table class="form-table frm-no-margin">
     <tr class="hide_dyncontent <?php echo in_array($post->frm_show_count, array( 'dynamic', 'calendar')) ? '' : 'frm_hidden'; ?>">
         <td><?php _e( 'Detail Page Slug', 'formidable' ); ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php printf(__( 'Example: If parameter name is \'contact\', the url would be like %1$s/selected-page?contact=2. If this entry is linked to a post, the post permalink will be used instead.', 'formidable' ), FrmAppHelper::site_url()) ?>" ></span></td>
@@ -98,33 +101,6 @@
         </td>
     </tr>
 
-    <tr>
-        <td class="frm_left_label"><?php _e( 'Insert View', 'formidable' ); ?></td>
-        <td>
-        <p>
-            <select id="insert_loc" name="insert_loc">
-                <option value="none" <?php selected($post->frm_insert_loc, 'none') ?>><?php _e( 'Do not insert automatically', 'formidable' ) ?></option>
-                <option value="after" <?php selected($post->frm_insert_loc, 'after') ?>><?php _e( 'After page content', 'formidable' ) ?></option>
-                <option value="before" <?php selected($post->frm_insert_loc, 'before') ?>><?php _e( 'Before page content', 'formidable' ) ?></option>
-                <option value="replace" <?php selected($post->frm_insert_loc, 'replace') ?>><?php _e( 'Replace page content', 'formidable' ) ?></option>
-            </select>
-
-
-			<label for="insert_pos"><?php _e( 'Insert priority', 'formidable' ); ?>
-				<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'If the view doesn\'t show automatically when it should, insert a higher number here.', 'formidable' ) ?>"></span>
-			</label>
-            <input type="number" id="insert_pos" name="options[insert_pos]" min="1" max="15" step="1" size="4" value="<?php echo esc_attr( $post->frm_insert_pos ); ?>" style="float:none;"/>
-        </p>
-        <span id="post_select_container" <?php echo ($post->frm_insert_loc == 'none') ? ' class="frm_hidden"' : ''; ?>>
-            <?php _e( 'on page', 'formidable' ); ?>
-            <?php FrmAppHelper::wp_pages_dropdown( 'post_id', $post->frm_post_id, 35 ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'If you would like the content to be inserted automatically, you must then select the page in which to insert it.', 'formidable' ) ?>"></span>
-        </span>
-        <?php if ( $post->frm_insert_loc != 'none' && is_numeric( $post->frm_post_id ) ) { ?>
-        <a href="<?php echo esc_url( get_permalink( $post->frm_post_id ) ) ?>" target="_blank" class="button-secondary"><?php _e( 'View Post', 'formidable' ) ?></a>
-        <?php } ?>
-        </td>
-    </tr>
     <?php
 	if ( is_multisite() ) {
 		if ( is_super_admin() ) { ?>

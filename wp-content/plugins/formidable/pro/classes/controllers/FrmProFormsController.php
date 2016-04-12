@@ -131,6 +131,12 @@ class FrmProFormsController{
         }
     }
 
+	public static function add_form_classes( $form ) {
+		if ( isset( $form->options['js_validate'] ) && $form->options['js_validate'] ) {
+			echo ' frm_js_validate ';
+		}
+	}
+
     public static function form_fields_class($class){
         global $frm_page_num;
         if ( $frm_page_num ) {
@@ -404,14 +410,6 @@ class FrmProFormsController{
 <?php
         $opts = array(
             'filter' => array( 'val' => 1, 'label' => __( 'Filter shortcodes within the view content', 'formidable' )),
-            'drafts'    => array(
-                'val'   => 0, 'label' => __( 'Entry type(s)', 'formidable' ), 'type'  => 'select',
-                'opts' => array(
-                   '0'  => __( 'Published', 'formidable' ),
-                   '1'  => __( 'Drafts', 'formidable' ),
-                   'both' => __( 'Published and drafts', 'formidable' ),
-                )
-            ),
             'limit' => array( 'val' => '', 'label' => __( 'Limit', 'formidable' ), 'type' => 'text'),
             'page_size' => array( 'val' => '', 'label' => __( 'Page size', 'formidable' ), 'type' => 'text'),
 			'order'  => array(
@@ -589,6 +587,22 @@ class FrmProFormsController{
 			'blank_label' => array( 'val' => '', 'label' => __( 'Label on first option in the dropdown', 'formidable' ), 'type' => 'text' ),
 			'drafts'      => array( 'val' => 1, 'label' => __( 'Include draft entries', 'formidable' ) ),
 		);
+	}
+
+	/**
+	 * Add Pro field helpers to Customization Panel
+	 *
+	 * @since 2.0.22
+	 * @param array $entry_shortcodes
+	 * @param bool $settings_tab
+	 * @return array
+	 */
+	public static function add_pro_field_helpers( $entry_shortcodes, $settings_tab ){
+		if ( ! $settings_tab ) {
+			$entry_shortcodes['is_draft'] = __( 'Draft status', 'formidable' );
+		}
+
+		return $entry_shortcodes;
 	}
 
 	/* Trigger model actions */

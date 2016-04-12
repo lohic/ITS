@@ -3,8 +3,8 @@ Contributors: tepelstreel
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D8AVGNDYYUNA2
 Tags: sidebar, widget, post, newspaper, feature, featured, image
 Requires at least: 2.9
-Tested up to: 4.1
-Stable tag: 4.0
+Tested up to: 4.5
+Stable tag: 4.2.1
 
 With the Featured Post Widget you can put a certain post in the focus and style it differently.
 
@@ -63,6 +63,29 @@ to the widget style to get a nice shadow down right of the container. This is no
 2. The widget's settings section
 
 == Changelog ==
+
+= 4.2.1 =
+
+* Automatic hyphation deletable
+
+= 4.2 =
+
+* WP 4.5 ready
+* New framework
+
+= 4.1.2 =
+
+* bugfix
+
+= 4.1.1 =
+
+* more accurate style sheet
+* infinite loop in some special cases fixed
+
+= 4.1 =
+
+* WP 4.3 ready
+* New framework
 
 = 4.0 =
 
@@ -275,3 +298,23 @@ Mistake in image class fixed
 = 4.0 =
 
 WP 4.1 ready; new framework
+
+= 4.1 =
+
+WP 4.3 ready; new framework
+
+= 4.1.1 =
+
+More accurate style sheet; infinite loop in some special cases fixed
+
+= 4.1.2 =
+
+Bugfix
+
+= 4.2 =
+
+WP 4.5 ready; new framework
+
+= 4.2.1 =
+
+Automatic hyphation deletable

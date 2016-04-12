@@ -5,7 +5,7 @@
  * Class A5 Option Page
  *
  * @ A5 Plugin Framework
- * Version: 1.0 beta 20141124
+ * Version: 1.0 beta 20160127
  *
  * Gets all sort of containers for the flexible A5 settings pages
  *
@@ -20,7 +20,7 @@ class A5_OptionPage {
 	 */
 	static function open_page($plugin_name, $url = false, $plugin_slug = false, $title = false) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -34,7 +34,7 @@ class A5_OptionPage {
 	 
 	static function open_form($action) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		echo $eol.'<form action="'.$action.'" method="post">'.$eol;
 		
@@ -42,7 +42,7 @@ class A5_OptionPage {
 	 
 	static function close_page() {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -57,7 +57,7 @@ class A5_OptionPage {
 	 */
 	static function nav_menu($args) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -84,7 +84,7 @@ class A5_OptionPage {
 	 */
 	static function open_tab($columns = false) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$n = ($columns) ? '-'.$columns : '';
 		
@@ -96,7 +96,7 @@ class A5_OptionPage {
 	
 	static function close_tab() {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		echo $eol.'</div>'.$eol.'</div>'.$eol.'</div>'.$eol;
 		
@@ -134,7 +134,7 @@ class A5_OptionPage {
 	 */
 	static function open_postbox($label, $id, $closed = false) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -152,7 +152,7 @@ class A5_OptionPage {
 	
 	static function close_postbox() {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		return $eol.'</div>'.$eol.'</div>';
 		
@@ -188,7 +188,7 @@ class A5_OptionPage {
 	 */
 	static function open_sortable($id) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 	
@@ -200,7 +200,7 @@ class A5_OptionPage {
 	
 	static function close_sortable() {
 		
-		return "\r\n</div>";
+		return "\n</div>";
 		
 	}
 	
@@ -211,7 +211,7 @@ class A5_OptionPage {
 	 */
 	 static function column($n) {
 		 
-		 $eol = "\r\n";
+		 $eol = "\n";
 		 
 		 echo $eol.'</div>'.$eol.'<div id="postbox-container-'.$n.'" class="postbox-container">';
 		 
@@ -247,7 +247,7 @@ class A5_OptionPage {
 	 */
 	static function wrap_section($section_id, $attributes = false) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -270,7 +270,7 @@ class A5_OptionPage {
 	 */
 	static function tag_it($element, $tag, $indent = false, $atts = false, $echo = false) {
 	
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -307,7 +307,7 @@ class A5_OptionPage {
 	 */
 	static function list_it($fields, $header = false, $atts = false, $list_atts = false, $echo = true) {
 	
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$list = '';
 		
@@ -353,15 +353,49 @@ class A5_OptionPage {
 		
 		$postbox .= self::tag_it(a5_get_version(), 'p');
 		
-		ob_start();
+		if (!is_array($options)) $options = array ($options);
 		
-		var_dump($options);
+		$opt_str = '';
 		
-		$options = ob_get_contents();
+		foreach ($options as $key => $value) :
 		
-		ob_end_clean();
+			$key = str_replace('_', '&nbsp;', $key);
+			
+			if (is_array($value)) :
+			
+				ob_start();
 		
-		$postbox .= self::tag_it($options, 'pre', 1);
+				var_dump($value);
+				
+				$value = ob_get_contents();
+				
+				$value = self::tag_it($value, 'pre', 3);
+				
+				ob_end_clean();
+				
+			else:
+			
+				if (true === $value) $value = 'true';
+			
+				if (false === $value) $value = 'false';
+				
+				if (NULL === $value) $value = 'NULL';
+				
+				if (empty($value)) $value = __('Not set', 'postfeature');
+			
+				$value = str_replace(array("\r\n", "\n", "\r"), '<br />', $value);
+			
+			endif;
+			
+			$key = self::tag_it(ucwords($key).':', 'td', 2, array('style' => 'width: 25%; border: solid 1px'));
+			
+			$value = self::tag_it($value, 'td', 2, array('style' => 'border: solid 1px'));
+			
+			$opt_str .= self::tag_it($key.$value, 'tr', 1);
+		
+		endforeach;
+		
+		$postbox .= self::tag_it($opt_str, 'table', 0, array('style' => 'border-collapse: collapse'));
 		
 		$postbox .= self::close_postbox();
 		
@@ -376,7 +410,7 @@ class A5_OptionPage {
 	 */
 	static function help_box($text, $label) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		
@@ -397,7 +431,7 @@ class A5_OptionPage {
 	 */
 	static function donation_box($text, $label, $paypal = false, $flattr = false) {
 		
-		$eol = "\r\n";
+		$eol = "\n";
 		
 		$tab = "\t";
 		

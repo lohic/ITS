@@ -1,3 +1,6 @@
+<!-- fil-ariane.php -->
+
+
 <?php
 
 // cf http://www.seomix.fr/fil-dariane-chemin-navigation/
@@ -146,3 +149,5 @@ function mybread() {
   // POUR L'UTILISER :
 //if (function_exists('mybread')) mybread();
 
+?>
+<!-- fin fil-ariane.php -->

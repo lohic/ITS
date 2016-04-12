@@ -5,7 +5,7 @@ if ( ! defined('ABSPATH') ) {
 
 class FrmFieldsHelper {
 
-    public static function setup_new_vars($type = '', $form_id = '') {
+	public static function setup_new_vars( $type = '', $form_id = '' ) {
 
         if ( strpos($type, '|') ) {
             list($type, $setting) = explode('|', $type);
@@ -67,8 +67,8 @@ class FrmFieldsHelper {
         return $values;
     }
 
-    public static function get_html_id($field, $plus = '') {
-        return apply_filters('frm_field_html_id', 'field_'. $field['field_key'] . $plus, $field);
+	public static function get_html_id( $field, $plus = '' ) {
+		return apply_filters( 'frm_field_html_id', 'field_' . $field['field_key'] . $plus, $field );
     }
 
     public static function setup_edit_vars( $record, $doing_ajax = false ) {
@@ -122,7 +122,7 @@ class FrmFieldsHelper {
             'size' => '', 'max' => '', 'label' => '', 'blank' => '',
             'required_indicator' => '*', 'invalid' => '', 'separate_value' => 0,
             'clear_on_focus' => 0, 'default_blank' => 0, 'classes' => '',
-			'custom_html' => '',
+			'custom_html' => '', 'captcha_size' => 'default', 'captcha_theme' => 'light',
         );
 
 		if ( $limit ) {
@@ -133,7 +133,7 @@ class FrmFieldsHelper {
 
         $form_id = (is_numeric($field)) ? $field : $field->form_id;
 
-        $key = is_numeric($field) ? FrmAppHelper::get_unique_key('', $wpdb->prefix .'frm_fields', 'field_key') : $field->field_key;
+		$key = is_numeric( $field ) ? FrmAppHelper::get_unique_key( '', $wpdb->prefix . 'frm_fields', 'field_key' ) : $field->field_key;
 
         $field_count = FrmDb::get_var( 'frm_fields', array( 'form_id' => $form_id ), 'field_order', array( 'order_by' => 'field_order DESC' ) );
 
@@ -151,7 +151,7 @@ class FrmFieldsHelper {
     public static function fill_field( &$values, $field, $form_id, $new_key = '' ) {
         global $wpdb;
 
-        $values['field_key'] = FrmAppHelper::get_unique_key($new_key, $wpdb->prefix .'frm_fields', 'field_key');
+		$values['field_key'] = FrmAppHelper::get_unique_key( $new_key, $wpdb->prefix . 'frm_fields', 'field_key' );
         $values['form_id'] = $form_id;
         $values['options'] = maybe_serialize($field->options);
         $values['default_value'] = maybe_serialize($field->default_value);
@@ -164,18 +164,22 @@ class FrmFieldsHelper {
     /**
      * @since 2.0
      */
-    public static function get_error_msg($field, $error) {
-        $frm_settings = FrmAppHelper::get_settings();
-        $default_settings = $frm_settings->default_options();
+	public static function get_error_msg( $field, $error ) {
+		$frm_settings = FrmAppHelper::get_settings();
+		$default_settings = $frm_settings->default_options();
+		$field_name = is_array( $field ) ? $field['name'] : $field->name;
 
-        $defaults = array(
-			'unique_msg' => array( 'full' => $default_settings['unique_msg'], 'part' => $field->name . ' ' . __( 'must be unique', 'formidable' ) ),
-			'invalid'   => array( 'full' => __( 'This field is invalid', 'formidable' ), 'part' => $field->name . ' ' . __( 'is invalid', 'formidable' ) ),
-        );
+		$defaults = array(
+			'unique_msg' => array( 'full' => $default_settings['unique_msg'], 'part' => sprintf( __('%s must be unique', 'formidable' ), $field_name ) ),
+			'invalid'   => array( 'full' => __( 'This field is invalid', 'formidable' ), 'part' => sprintf( __('%s is invalid', 'formidable' ), $field_name ) ),
+			'blank'     => array( 'full' => $frm_settings->blank_msg, 'part' => $frm_settings->blank_msg ),
+		);
 
-        $msg = ( $field->field_options[ $error ] == $defaults[ $error ]['full'] || empty( $field->field_options[ $error ] ) ) ? $defaults[ $error ]['part'] : $field->field_options[ $error ];
-        return $msg;
-    }
+		$msg = FrmField::get_option( $field, $error );
+		$msg = ( $msg == $defaults[ $error ]['full'] || empty( $msg ) ) ? $defaults[ $error ]['part'] : $msg;
+		$msg = do_shortcode( $msg );
+		return $msg;
+	}
 
     public static function get_form_fields( $form_id, $error = false ) {
         $fields = FrmField::get_all_for_form($form_id);
@@ -208,12 +212,12 @@ DEFAULT_HTML;
         return apply_filters('frm_custom_html', $default_html, $type);
     }
 
-    public static function replace_shortcodes($html, $field, $errors = array(), $form = false, $args = array()) {
+	public static function replace_shortcodes( $html, $field, $errors = array(), $form = false, $args = array() ) {
         $html = apply_filters('frm_before_replace_shortcodes', $html, $field, $errors, $form);
 
         $defaults = array(
-            'field_name'  => 'item_meta['. $field['id'] .']',
-            'field_id'    => $field['id'],
+			'field_name'    => 'item_meta[' . $field['id'] . ']',
+			'field_id'      => $field['id'],
             'field_plus_id' => '',
             'section_id'    => '',
         );
@@ -308,7 +312,7 @@ DEFAULT_HTML;
 
                 $field['shortcodes'] = $atts;
                 ob_start();
-                include(FrmAppHelper::plugin_path() .'/classes/views/frm-fields/input.php');
+				include( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/input.php' );
                 $replace_with = ob_get_contents();
                 ob_end_clean();
             } else if ( $tag == 'deletelink' && FrmAppHelper::pro_is_installed() ) {
@@ -360,15 +364,25 @@ DEFAULT_HTML;
 	* @param $html string
 	*/
 	private static function get_more_field_classes( &$error_class, $field, $field_id, $html ) {
-		$error_class .= ' frm_'. $field['label'] .'_container';
+		$error_class .= ' frm_' . $field['label'] . '_container';
 		if ( $field['id'] != $field_id ) {
 			// add a class for repeating/embedded fields
-			$error_class .= ' frm_field_'. $field['id'] .'_container';
+			$error_class .= ' frm_field_' . $field['id'] . '_container';
+		}
+
+		// Add class to embedded form field
+		if ( $field['type'] == 'form' ) {
+			$error_class .= ' frm_embed_form_container';
+		}
+
+		// Add class to HTML field
+		if ( $field['type'] == 'html' ) {
+			$error_class .= ' frm_html_container';
 		}
 
 		//Add classes to inline confirmation field (if it doesn't already have classes set)
 		if ( isset( $field['conf_field'] ) && $field['conf_field'] == 'inline' && ! $field['classes'] ) {
-			$error_class .= ' frm_first_half';
+			$error_class .= ' frm_first frm_half';
 		}
 
 		//Add class if field includes other option
@@ -408,22 +422,22 @@ DEFAULT_HTML;
 			if ( ! strpos( $html, 'frm_form_field ') ) {
 				$error_class .= ' frm_form_field';
 			}
-			$error_class .= ' '. $field['classes'];
+			$error_class .= ' ' . $field['classes'];
 		}
 	}
 
     public static function remove_inline_conditions( $no_vars, $code, $replace_with, &$html ) {
         if ( $no_vars ) {
-            $html = str_replace( '[if '. $code.']', '', $html );
-    	    $html = str_replace( '[/if '. $code.']', '', $html );
+			$html = str_replace( '[if ' . $code . ']', '', $html );
+			$html = str_replace( '[/if ' . $code . ']', '', $html );
         } else {
-            $html = preg_replace( '/(\[if\s+'. $code .'\])(.*?)(\[\/if\s+'. $code .'\])/mis', '', $html );
+			$html = preg_replace( '/(\[if\s+' . $code . '\])(.*?)(\[\/if\s+' . $code . '\])/mis', '', $html );
         }
 
-        $html = str_replace( '['. $code .']', $replace_with, $html );
+		$html = str_replace( '[' . $code . ']', $replace_with, $html );
     }
 
-    public static function get_shortcode_tag($shortcodes, $short_key, $args) {
+	public static function get_shortcode_tag( $shortcodes, $short_key, $args ) {
 		$args = wp_parse_args( $args, array( 'conditional' => false, 'conditional_check' => false, 'foreach' => false ) );
         if ( ( $args['conditional'] || $args['foreach'] ) && ! $args['conditional_check'] ) {
             $args['conditional_check'] = true;
@@ -463,25 +477,33 @@ DEFAULT_HTML;
 		}
 	}
 
-    public static function display_recaptcha($field) {
-        $frm_settings = FrmAppHelper::get_settings();
-        $lang = apply_filters('frm_recaptcha_lang', $frm_settings->re_lang, $field);
+	public static function display_recaptcha( $field ) {
+		$frm_settings = FrmAppHelper::get_settings();
+		$lang = apply_filters( 'frm_recaptcha_lang', $frm_settings->re_lang, $field );
 
-        $api_js_url = 'https://www.google.com/recaptcha/api.js';
+		$class_prefix = '';
+		$api_js_url = 'https://www.google.com/recaptcha/api.js?';
+
+		$allow_mutiple = $frm_settings->re_multi;
+		if ( $allow_mutiple ) {
+			$api_js_url .= '&onload=frmRecaptcha&render=explicit';
+			$class_prefix = 'frm-';
+		}
+
         if ( $lang != 'en' ) {
-            $api_js_url .= '?hl='. $lang;
+			$api_js_url .= '&hl=' . $lang;
         }
-        $api_js_url = apply_filters('frm_recpatcha_js_url', $api_js_url);
+		$api_js_url = apply_filters( 'frm_recaptcha_js_url', $api_js_url );
 
-        wp_register_script('recaptcha-api', $api_js_url, '', true);
-        wp_enqueue_script('recaptcha-api');
+        wp_register_script( 'recaptcha-api', $api_js_url, '', true );
+        wp_enqueue_script( 'recaptcha-api' );
 
 ?>
-<div id="field_<?php echo esc_attr( $field['field_key'] ) ?>" class="g-recaptcha" data-sitekey="<?php echo esc_attr( $frm_settings->pubkey ) ?>"></div>
+<div id="field_<?php echo esc_attr( $field['field_key'] ) ?>" class="<?php echo esc_attr( $class_prefix ) ?>g-recaptcha" data-sitekey="<?php echo esc_attr( $frm_settings->pubkey ) ?>" data-size="<?php echo esc_attr( $field['captcha_size'] ) ?>" data-theme="<?php echo esc_attr( $field['captcha_theme'] ) ?>"></div>
 <?php
     }
 
-    public static function show_single_option($field) {
+	public static function show_single_option( $field ) {
         $field_name = $field['name'];
         $html_id = self::get_html_id($field);
         foreach ( $field['options'] as $opt_key => $opt ) {
@@ -492,14 +514,14 @@ DEFAULT_HTML;
 			if ( self::is_other_opt( $opt_key ) ) {
                 // Get string for Other text field, if needed
 				$other_val = self::get_other_val( compact( 'opt_key', 'field' ) );
-                require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-fields/other-option.php');
+				require( FrmAppHelper::plugin_path() . '/pro/classes/views/frmpro-fields/other-option.php' );
             } else {
-                require(FrmAppHelper::plugin_path() .'/classes/views/frm-fields/single-option.php');
+				require( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/single-option.php' );
             }
         }
     }
 
-    public static function dropdown_categories($args) {
+	public static function dropdown_categories( $args ) {
 		$defaults = array( 'field' => false, 'name' => false, 'show_option_all' => ' ' );
         $args = wp_parse_args($args, $defaults);
 
@@ -508,7 +530,7 @@ DEFAULT_HTML;
         }
 
         if ( ! $args['name'] ) {
-            $args['name'] = 'item_meta['. $args['field']['id'] .']';
+			$args['name'] = 'item_meta[' . $args['field']['id'] . ']';
         }
 
         $id = self::get_html_id($args['field']);
@@ -555,7 +577,7 @@ DEFAULT_HTML;
             $add_html .= FrmProFieldsController::input_html($args['field'], false);
         }
 
-		$dropdown = str_replace( "<select name='" . esc_attr( $args['name'] ) ."' id='" . esc_attr( $id ) . "' class='" . esc_attr( $class ) . "'", "<select name='" . esc_attr( $args['name'] ) . "' id='" . esc_attr( $id ) . "' " . $add_html, $dropdown );
+		$dropdown = str_replace( "<select name='" . esc_attr( $args['name'] ) . "' id='" . esc_attr( $id ) . "' class='" . esc_attr( $class ) . "'", "<select name='" . esc_attr( $args['name'] ) . "' id='" . esc_attr( $id ) . "' " . $add_html, $dropdown );
 
         if ( is_array($args['field']['value']) ) {
             $skip = true;
@@ -572,7 +594,7 @@ DEFAULT_HTML;
         return $dropdown;
     }
 
-    public static function get_term_link($tax_id) {
+	public static function get_term_link( $tax_id ) {
         $tax = get_taxonomy($tax_id);
         if ( ! $tax ) {
             return;
@@ -580,14 +602,14 @@ DEFAULT_HTML;
 
         $link = sprintf(
             __( 'Please add options from the WordPress "%1$s" page', 'formidable' ),
-            '<a href="'. esc_url( admin_url( 'edit-tags.php?taxonomy='. $tax->name ) ) .'" target="_blank">'. ( empty($tax->labels->name) ? __( 'Categories' ) : $tax->labels->name ) .'</a>'
+			'<a href="' . esc_url( admin_url( 'edit-tags.php?taxonomy=' . $tax->name ) ) . '" target="_blank">' . ( empty( $tax->labels->name ) ? __( 'Categories' ) : $tax->labels->name ) . '</a>'
         );
         unset($tax);
 
         return $link;
     }
 
-    public static function value_meets_condition($observed_value, $cond, $hide_opt) {
+	public static function value_meets_condition( $observed_value, $cond, $hide_opt ) {
 		// Remove white space from hide_opt
 		if ( ! is_array( $hide_opt ) ) {
 			$hide_opt = rtrim( $hide_opt );
@@ -607,7 +629,7 @@ DEFAULT_HTML;
         } else if ( $cond == '<' ) {
             $m = $observed_value < $hide_opt;
         } else if ( $cond == 'LIKE' || $cond == 'not LIKE' ) {
-            $m = strpos($observed_value, $hide_opt);
+            $m = stripos($observed_value, $hide_opt);
             if ( $cond == 'not LIKE' ) {
                 $m = ( $m === false ) ? true : false;
             } else {
@@ -617,7 +639,7 @@ DEFAULT_HTML;
         return $m;
     }
 
-    public static function array_value_condition($observed_value, $cond, $hide_opt) {
+	public static function array_value_condition( $observed_value, $cond, $hide_opt ) {
         $m = false;
         if ( $cond == '==' ) {
             if ( is_array($hide_opt) ) {
@@ -656,7 +678,7 @@ DEFAULT_HTML;
      * @since 2.0
      * @return string
      */
-    public static function basic_replace_shortcodes($value, $form, $entry) {
+	public static function basic_replace_shortcodes( $value, $form, $entry ) {
         if ( strpos($value, '[sitename]') !== false ) {
             $new_value = wp_specialchars_decode( FrmAppHelper::site_name(), ENT_QUOTES );
             $value = str_replace('[sitename]', $new_value, $value);
@@ -668,7 +690,7 @@ DEFAULT_HTML;
         return $value;
     }
 
-    public static function get_shortcodes($content, $form_id) {
+	public static function get_shortcodes( $content, $form_id ) {
         if ( FrmAppHelper::pro_is_installed() ) {
             return FrmProDisplaysHelper::get_shortcodes($content, $form_id);
         }
@@ -682,11 +704,12 @@ DEFAULT_HTML;
         return $matches;
     }
 
-    public static function allowed_shortcodes($fields = array()) {
+	public static function allowed_shortcodes( $fields = array() ) {
         $tagregexp = array(
             'editlink', 'id', 'key', 'ip',
             'siteurl', 'sitename', 'admin_email',
             'post[-|_]id', 'created[-|_]at', 'updated[-|_]at', 'updated[-|_]by',
+			'parent[-|_]id',
         );
 
         foreach ( $fields as $field ) {
@@ -698,7 +721,7 @@ DEFAULT_HTML;
         return $tagregexp;
     }
 
-    public static function replace_content_shortcodes($content, $entry, $shortcodes) {
+	public static function replace_content_shortcodes( $content, $entry, $shortcodes ) {
         $shortcode_values = array(
            'id'     => $entry->id,
            'key'    => $entry->item_key,
@@ -776,21 +799,23 @@ DEFAULT_HTML;
 
                     $atts['entry_id'] = $entry->id;
                     $atts['entry_key'] = $entry->item_key;
-                    //$replace_with = apply_filters('frmpro_fields_replace_shortcodes', $replace_with, $tag, $atts, $field);
-
-                    if ( is_array($replace_with) ) {
-                        $replace_with = implode($sep, $replace_with);
-                    }
 
                     if ( isset($atts['show']) && $atts['show'] == 'field_label' ) {
                         $replace_with = $field->name;
                     } else if ( isset($atts['show']) && $atts['show'] == 'description' ) {
                         $replace_with = $field->description;
-                    } else if ( empty($replace_with) && $replace_with != '0' ) {
-                        $replace_with = '';
-                    } else {
-                        $replace_with = self::get_display_value($replace_with, $field, $atts);
-                    }
+					} else {
+						$string_value = $replace_with;
+						if ( is_array( $replace_with ) ) {
+							$string_value = implode( $sep, $replace_with );
+						}
+
+						if ( empty( $string_value ) && $string_value != '0' ) {
+							$replace_with = '';
+						} else {
+							$replace_with = self::get_display_value( $replace_with, $field, $atts );
+						}
+					}
 
                     unset($field);
                 break;
@@ -869,9 +894,10 @@ DEFAULT_HTML;
         return $new_value;
     }
 
-    public static function get_display_value($replace_with, $field, $atts = array()) {
-		$sep = isset( $atts['sep'] ) ? $atts['sep'] : ', ';
+	public static function get_display_value( $replace_with, $field, $atts = array() ) {
+		$atts['sep'] = isset( $atts['sep'] ) ? $atts['sep'] : ', ';
 
+		$replace_with = apply_filters( 'frm_get_' . $field->type . '_display_value', $replace_with, $field, $atts );
 		$replace_with = apply_filters( 'frm_get_display_value', $replace_with, $field, $atts );
 
         if ( $field->type == 'textarea' || $field->type == 'rte' ) {
@@ -884,13 +910,13 @@ DEFAULT_HTML;
             }
 			unset( $autop );
 		} else if ( is_array( $replace_with ) ) {
-			$replace_with = implode( $sep, $replace_with );
+			$replace_with = implode( $atts['sep'], $replace_with );
 		}
 
 		return $replace_with;
 	}
 
-    public static function get_field_types($type) {
+	public static function get_field_types( $type ) {
         $single_input = array(
             'text', 'textarea', 'rte', 'number', 'email', 'url',
             'image', 'file', 'date', 'phone', 'hidden', 'time',
@@ -1144,6 +1170,22 @@ DEFAULT_HTML;
 		return $other_id;
 	}
 
+	public static function clear_on_focus_html( $field, $display, $id = '' ) {
+		if ( $display['clear_on_focus'] ) {
+			echo '<span id="frm_clear_on_focus_' . esc_attr( $field['id'] . $id ) . '" class="frm-show-click">';
+
+			if ( $display['default_blank'] ) {
+				self::show_default_blank_js( $field['default_blank'] );
+				echo '<input type="hidden" name="field_options[default_blank_' . esc_attr( $field['id'] ) . ']" value="' . esc_attr( $field['default_blank'] ) . '" />';
+			}
+
+			self::show_onfocus_js( $field['clear_on_focus'] );
+			echo '<input type="hidden" name="field_options[clear_on_focus_' . esc_attr( $field['id'] ) . ']" value="' . esc_attr( $field['clear_on_focus'] ) . '" />';
+
+			echo '</span>';
+		}
+	}
+
 	public static function show_onfocus_js( $is_selected ) {
 		$atts = array(
 			'icon'        => 'frm_reload_icon',
@@ -1167,21 +1209,25 @@ DEFAULT_HTML;
 		?><a href="javascript:void(0)" class="frm_bstooltip <?php echo esc_attr( $atts['icon'] ); ?>frm_default_val_icons frm_action_icon frm_icon_font" title="<?php echo esc_attr( $atts['message'] ); ?>"></a><?php
 	}
 
-    public static function switch_field_ids($val) {
+	public static function switch_field_ids( $val ) {
         global $frm_duplicate_ids;
         $replace = array();
         $replace_with = array();
         foreach ( (array) $frm_duplicate_ids as $old => $new ) {
-            $replace[] = '[if '. $old .']';
-            $replace_with[] = '[if '. $new .']';
-            $replace[] = '[if '. $old .' ';
-            $replace_with[] = '[if '. $new .' ';
-            $replace[] = '[/if '. $old .']';
-            $replace_with[] = '[/if '. $new .']';
-            $replace[] = '['. $old .']';
-            $replace_with[] = '['. $new .']';
-            $replace[] = '['. $old .' ';
-            $replace_with[] = '['. $new .' ';
+			$replace[] = '[if ' . $old . ']';
+			$replace_with[] = '[if ' . $new . ']';
+			$replace[] = '[if ' . $old . ' ';
+			$replace_with[] = '[if ' . $new . ' ';
+			$replace[] = '[/if ' . $old . ']';
+			$replace_with[] = '[/if ' . $new . ']';
+			$replace[] = '[foreach ' . $old . ']';
+			$replace_with[] = '[foreach ' . $new . ']';
+			$replace[] = '[/foreach ' . $old . ']';
+			$replace_with[] = '[/foreach ' . $new . ']';
+			$replace[] = '[' . $old . ']';
+			$replace_with[] = '[' . $new . ']';
+			$replace[] = '[' . $old . ' ';
+			$replace_with[] = '[' . $new . ' ';
             unset($old, $new);
         }
 		if ( is_array( $val ) ) {
@@ -1293,7 +1339,7 @@ DEFAULT_HTML;
         ) );
     }
 
-    public static function get_bulk_prefilled_opts(array &$prepop) {
+	public static function get_bulk_prefilled_opts( array &$prepop ) {
 		$prepop[ __( 'Countries', 'formidable' ) ] = FrmFieldsHelper::get_countries();
 
         $states = FrmFieldsHelper::get_us_states();

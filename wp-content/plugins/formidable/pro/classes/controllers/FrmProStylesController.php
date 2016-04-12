@@ -17,6 +17,8 @@ class FrmProStylesController extends FrmStylesController{
 		$action = FrmAppHelper::get_param( 'frm_action', '', 'get', 'sanitize_title' );
     	if ( 'new_style' == $action ) {
             $style = self::new_style('style');
+    	} else if ( 'duplicate' == $action ) {
+    		$style = self::duplicate('style');
     	}
         return $style;
     }
@@ -32,6 +34,25 @@ class FrmProStylesController extends FrmStylesController{
 
         self::load_styler($style);
     }
+
+	public static function duplicate( $return = '' ) {
+		$style_id = FrmAppHelper::get_param( 'style_id', 0, 'get', 'absint' );
+
+		if ( ! $style_id ) {
+			self::new_style( $return );
+			return;
+		}
+
+		$frm_style = new FrmProStyle();
+		$style = $frm_style->duplicate( $style_id );
+
+		if ( 'style' == $return ) {
+			// return style object for header css link
+			return $style;
+		}
+
+		self::load_styler( $style );
+	}
 
     public static function destroy() {
 		$id = FrmAppHelper::simple_get( 'id', 'absint' );

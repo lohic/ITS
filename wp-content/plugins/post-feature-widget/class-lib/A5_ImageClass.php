@@ -5,7 +5,7 @@
  * Class A5 Images
  *
  * @ A5 Plugin Framework
- * Version: 1.0 beta 20141124
+ * Version: 1.0 beta 20160127
  *
  * Gets the alt and title tag for attachments
  *
@@ -15,7 +15,7 @@
 
 class A5_Image {
 	
-	public static function tags($language_file) {
+	public static function tags() {
 		
 		$id = get_the_ID();
 		
@@ -31,7 +31,8 @@ class A5_Image {
 				'post_type' => 'attachment',
 				'posts_per_page' => 1,
 				'post_status' => null,
-				'post_parent' => $id
+				'post_parent' => $id,
+				'order' => 'ASC'
 			);
 			
 			$attachments = get_posts( $args );
@@ -44,7 +45,7 @@ class A5_Image {
 		
 		$title = get_the_title($id);
 		
-		$title_tag = __('Permalink to', $language_file).' '.esc_attr($title);
+		$title_tag = __('Permalink to', 'postfeature').' '.esc_attr($title);
 				  
 		$image_alt = trim(strip_tags( get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true) ));
 		
@@ -70,9 +71,9 @@ class A5_Image {
 	 * if there's no attachment, the first image of the post is taken as featured image
 	 * if the variable number is specified all of the above is skipped and we look for that specific image in the post
 	 *
-	 * @param: $id, $option (for caching, so that we don't touch the file over and over again)
+	 * @param: $id
 	 *
-	 * @optional param: [$image_size (i.e 'medium')], [$width], [$height], [$number], [$multisite]
+	 * @optional param: [$image_size (i.e 'medium')], [$width], [$height], [$number]
 	 * 
 	 */
 	 
@@ -80,37 +81,7 @@ class A5_Image {
 		
 		extract($args);
 		
-		$multisite = (isset($multisite)) ? $multisite : false;
-		
 		if (!isset($image_size) && !isset($height) && (!isset($width) || empty($width))) $image_size = 'thumbnail';
-		
-		$default_sizes = array('large', 'medium', 'thumbnail');
-		
-		$defaults = self::get_defaults();
-		
-		if (!isset($width) || empty($width)) :
-		
-			if (in_array($image_size, $default_sizes)) :
-			
-				$width = $defaults[$image_size]['w'];
-			
-				$height = $defaults[$image_size]['h'];
-			
-			else :
-			
-				global $_wp_additional_image_sizes;
-				
-				$width = $_wp_additional_image_sizes[$image_size]['width'];
-				
-				$height = ($_wp_additional_image_sizes[$image_size]['crop'] === false) ? $_wp_additional_image_sizes[$image_size]['height'] : 9999;
-			
-			endif;
-			
-		endif;
-		
-		if ($width <= $defaults['large']['w']) $size = 'large';
-		if ($width <= $defaults['medium']['w']) $size = 'medium';
-		if ($width <= $defaults['thumbnail']['w']) $size = 'thumbnail';
 		
 		if (!isset($height)) $height = 9999;
 		
@@ -126,7 +97,8 @@ class A5_Image {
 				'post_type' => 'attachment',
 				'posts_per_page' => 1,
 				'post_status' => null,
-				'post_parent' => $id
+				'post_parent' => $id,
+				'order' => 'ASC'
 				);
 				
 				$attachments = get_posts( $args );
@@ -140,6 +112,8 @@ class A5_Image {
 				$thumb = self::get_image($attachment_id, $image_size);
 			
 				if (false === $thumb) unset($thumb, $attachment_id);
+					
+				else return $thumb;
 				
 			endif;
 
@@ -211,12 +185,6 @@ class A5_Image {
 		
 		if (!isset($img_src)) return false;
 		
-		$options = ($multisite) ? get_site_option($option) : get_option($option);
-		
-		$cache = $options['cache'];
-		
-		if (array_key_exists($img_src, $cache)) return array($img_src, $cache[$img_src][0], $cache[$img_src][1]);
-		
 		$img_tag = $matches['img_tag'][$number];
 		
 		$size = self::get_size($img_tag, $img_src);
@@ -254,14 +222,6 @@ class A5_Image {
 		endif;
 			
 		$thumb = array ($img_src, $thumb_width, $thumb_height);
-		
-		$cache[$img_src] = array($thumb_width, $thumb_height);
-		
-		$options['cache'] = $cache;
-		
-		if ($multisite) update_site_option($option, $options);
-		
-		else update_option($option, $options);
 		
 		return $thumb;
 	
@@ -304,7 +264,7 @@ class A5_Image {
 			
 				$tmp_image = download_url($img);
 				
-				if (!is_wp_error($tmp_image)) $imgsize = @getimagesize($img);
+				if (!is_wp_error($tmp_image)) $imgsize = @getimagesize($tmp_img);
 				
 				@unlink($tmp_image);
 				
@@ -354,20 +314,50 @@ class A5_Image {
 	
 	}
 	
-	// getting the default sizes
+	/**
+	 * Get size information for all currently-registered image sizes.
+	 *
+	 * @global $_wp_additional_image_sizes
+	 * @uses   get_intermediate_image_sizes()
+	 * @return array $sizes Data for all currently-registered image sizes.
+	 */
+	private static function get_image_sizes() {
+		
+		global $_wp_additional_image_sizes;
 	
-	private static function get_defaults() {
+		$sizes = array();
 	
-		$defaults['large']['w'] = (get_option('large_size_w')) ? $width = get_option('large_size_w') : 1024;
-		$defaults['large']['h'] = (get_option('large_size_h')) ? $width = get_option('large_size_h') : 1024;
+		foreach ( get_intermediate_image_sizes() as $_size ) {
+			if ( in_array( $_size, array('thumbnail', 'medium', 'medium_large', 'large') ) ) {
+				$sizes[ $_size ]['width']  = get_option( "{$_size}_size_w" );
+				$sizes[ $_size ]['height'] = get_option( "{$_size}_size_h" );
+				$sizes[ $_size ]['crop']   = (bool) get_option( "{$_size}_crop" );
+			} elseif ( isset( $_wp_additional_image_sizes[ $_size ] ) ) {
+				$sizes[ $_size ] = array(
+					'width'  => $_wp_additional_image_sizes[ $_size ]['width'],
+					'height' => $_wp_additional_image_sizes[ $_size ]['height'],
+					'crop'   => $_wp_additional_image_sizes[ $_size ]['crop'],
+				);
+			}
+		}
+	
+		return $sizes;
+	}
+	
+	/**
+	 * Get size information for a specific image size.
+	 *
+	 * @uses   get_image_sizes()
+	 * @param  string $size The image size for which to retrieve data.
+	 * @return bool|array $size Size data about an image size or false if the size doesn't exist.
+	 */
+	private static function get_image_size( $size ) {
 		
-		$defaults['medium']['w'] = (get_option('medium_size_w')) ? $width = get_option('medium_size_w') : 300;
-		$defaults['medium']['h'] = (get_option('medium_size_h')) ? $width = get_option('medium_size_h') : 300;
-		
-		$defaults['thumbnail']['w'] = (get_option('thumbnail_size_w')) ? $width = get_option('thumbnail_size_w') : 150;
-		$defaults['thumbnail']['h'] = (get_option('thumbnail_size_h')) ? $width = get_option('thumbnail_size_h') : 150;
-		
-		return $defaults;
+		$sizes = self::get_image_sizes();
+	
+		if ( isset( $sizes[ $size ] ) ) return $sizes[ $size ];
+	
+		return false;
 		
 	}
 	
@@ -391,20 +381,64 @@ class A5_Image {
 
 	}
 	
-	// getting the image source for the thumbnail
+	// getting the image source for the thumbnail according to the desired size.
 	
 	private static function get_image($attachment_id, $image_size) {
 		
-		$thumb = wp_get_attachment_image_src($attachment_id, $image_size);
-			
-		if ($thumb) : 
+		if (!is_array($image_size) && is_numeric($image_size)) :
 		
-			if ($thumb[3] === false) $smaller_thumb = wp_get_attachment_image_src($attachment_id, $image_size);
+			$size[0] = $image_size;
+			 
+			$size[1] = '9999';
 			
-			if (isset($smaller_thumb)) $thumb[0] = $smaller_thumb[0];
+		else :
+		
+			$size = $image_size;
+			 
+		endif;
+		
+		$thumb = wp_get_attachment_image_src($attachment_id, $size);
+		
+		if (!$thumb) return false;
+		
+		if ($thumb[3] == false) :
+		
+			if (!is_array($size)) :
+			
+				$image_size = self::get_image_size($size);
+				
+				if (false == $image_size) return $thumb;
+				
+				$size = array($image_size['width'], (true == $image_size['crop']) ? $image_size['height'] : '9999');
+			
+			endif;
+		
+			$src = explode(',', wp_get_attachment_image_srcset($attachment_id, $size));
+			
+			foreach ($src as $img) :
+			
+				$img_src = explode(' ', trim($img));
+				
+				$width = str_replace('w', '', $img_src[1]);
+				
+				if ($size[0] <= $width) :
+				
+					$image[$width] = $img_src[0];
+					
+				endif;
+			
+			endforeach;
+			
+			if (isset($image)) :
+			
+				ksort($image);
+			
+				$thumb[0] = current($image);
+				
+			endif;
 		
 		endif;
-			
+		
 		return $thumb;
 		
 	}

@@ -7,6 +7,8 @@ class FrmProField {
             $field_data['field_options']['label'] = '';
         }
 
+		self::switch_in_section_field_option( $field_data );
+
         $defaults = array(
             'number' => array( 'maxnum'    => 9999999 ),
             'date'  => array( 'max'   => '10' ),
@@ -37,9 +39,7 @@ class FrmProField {
                 $field_data['field_options']['label'] = 'top';
                 if ( isset($field_data['field_options']['repeat']) && $field_data['field_options']['repeat'] ) {
                     // create the repeatable form
-                    $form_values = array( 'parent_form_id' => $field_data['form_id'] );
-                    $form_values = FrmFormsHelper::setup_new_vars( $form_values );
-                    $field_data['field_options']['form_select'] = FrmForm::create( $form_values );
+                    $field_data['field_options']['form_select'] = self::create_repeat_form( 0, array( 'parent_form_id' => $field_data['form_id'], 'field_name' => $field_data['name'] ) );
                 }
                 break;
             case 'break':
@@ -48,6 +48,24 @@ class FrmProField {
         }
         return $field_data;
     }
+
+	/**
+	 * Change the default in_section value to the ID of the section where a new field was dragged and dropped
+	 *
+	 * @since 2.0.24
+	 * @param array $field_data
+	 */
+	private static function switch_in_section_field_option( &$field_data ){
+		if ( in_array( $field_data['type'], array( 'divider', 'end_divider', 'form' ) ) ) {
+			return;
+		}
+
+		$ajax_action = FrmAppHelper::get_post_param( 'action', '', 'sanitize_title' );
+		if ( 'frm_insert_field' == $ajax_action ) {
+			$section_id = FrmAppHelper::get_post_param( 'section_id', 0, 'absint' );
+			$field_data['field_options']['in_section'] = $section_id;
+		}
+	}
 
 	public static function update( $field_options, $field, $values ) {
 		$defaults = FrmProFieldsHelper::get_default_field_opts( false, $field );
@@ -142,14 +160,49 @@ class FrmProField {
             }
         }
 
-        // switch out field ids if selected in a data from entries field
-        if ( 'data' == $values['type'] && isset($values['field_options']['form_select']) &&
-            !empty($values['field_options']['form_select']) && isset($frm_duplicate_ids[$values['field_options']['form_select']]) ) {
-	        $values['field_options']['form_select'] = $frm_duplicate_ids[$values['field_options']['form_select']];
-	    }
+		self::switch_out_form_select( $frm_duplicate_ids, $values );
+
+		self::switch_id_for_section_tracking_field_option( $frm_duplicate_ids, $values );
 
         return $values;
     }
+
+	/**
+	 * Switch out field ids if selected in a Dynamic Field
+	 *
+	 * @since 2.0.25
+	 * @param array $frm_duplicate_ids
+	 * @param array $values
+	 */
+	private static function switch_out_form_select( $frm_duplicate_ids, &$values ){
+		if ( 'data' == $values['type'] && FrmField::is_option_true_in_array( $values['field_options'], 'form_select' ) ) {
+
+			$form_select = $values['field_options']['form_select'];
+
+			if ( isset( $frm_duplicate_ids[ $form_select ] ) ) {
+				$values['field_options']['form_select'] = $frm_duplicate_ids[ $form_select ];
+			}
+		}
+	}
+
+	/**
+	 * Switch the in_section ID when a field is duplicated
+	 *
+	 * @since 2.0.25
+	 * @param array $frm_duplicate_ids
+	 * @param array $values
+	 */
+	private static function switch_id_for_section_tracking_field_option( $frm_duplicate_ids, &$values ) {
+		if ( isset( $values['field_options']['in_section'] ) ) {
+			$old_id = $values['field_options']['in_section'];
+
+			if ( $old_id && isset( $frm_duplicate_ids[ $old_id ] ) ) {
+				$values[ 'field_options' ][ 'in_section' ] = $frm_duplicate_ids[ $old_id ];
+			}
+		} else {
+			$values[ 'field_options' ][ 'in_section' ] = 0;
+		}
+	}
 
 	public static function delete( $id ) {
         $field = FrmField::getOne($id);
@@ -175,5 +228,104 @@ class FrmProField {
 
 	public static function is_list_field( $field ) {
 		return $field->type == 'data' && ( ! isset( $field->field_options['data_type'] ) || $field->field_options['data_type'] == 'data' || $field->field_options['data_type'] == '' );
+	}
+
+	/**
+	* Create the form for a repeating section
+	*
+	* @since 2.0.12
+	*
+	* @param int $form_id
+	* @param array $atts
+	* @return int $form_id
+	*/
+	public static function create_repeat_form( $form_id, $atts ) {
+		$form_values = array(
+			'parent_form_id' => $atts['parent_form_id'],
+			'name' => $atts['field_name'],
+			'status' => 'published',
+		);
+        $form_values = FrmFormsHelper::setup_new_vars( $form_values );
+
+        $form_id = (int) FrmForm::create( $form_values );
+
+		return $form_id;
+	}
+
+	/**
+	* Return all the field IDs for the fields inside of a section (not necessarily repeating) or an embedded form
+	*
+	* @since 2.0.13
+	* @param array $field
+	* @return array $children
+	*/
+	public static function get_children( $field ) {
+		if ( FrmField::is_repeating_field( $field ) || $field['type'] == 'form' ) {
+			// If repeating field or embedded form
+
+			$repeat_id = isset( $field['form_select'] ) ? $field['form_select'] : $field['field_options']['form_select'];
+			$children = FrmDb::get_col( 'frm_fields', array( 'form_id' => $repeat_id ) );
+
+		} else {
+			// If regular section
+
+			$children = self::get_children_from_standard_section( $field );
+		}
+
+		return $children;
+	}
+
+	/**
+	 * Get the field IDs within a regular section
+	 *
+	 * @since 2.0.25
+	 * @param array $field
+	 * @return array|null
+	 */
+	private static function get_children_from_standard_section( $field ) {
+		$child_where = array( 'form_id' => $field['form_id'] );
+
+		// Get minimum field order for children
+		$min_field_order = $field['field_order'] + 1;
+		$child_where['field_order>'] = $min_field_order;
+
+		// Get maximum field order for children
+		$where = array( 'form_id' => $field['form_id'], 'type' => array( 'end_divider', 'divider', 'break' ), 'field_order>' => $min_field_order );
+		$end_divider_order = FrmDb::get_var( 'frm_fields', $where, 'field_order', array( 'order_by' => 'field_order ASC' ), 1 );
+		if ( $end_divider_order ) {
+			$max_field_order = $end_divider_order - 1;
+			$child_where['field_order<'] = $max_field_order;
+		}
+
+		return FrmDb::get_col( 'frm_fields', $child_where );
+	}
+
+	/**
+	* Get the entry ID from a linked field
+	*
+	* @since 2.0.15
+	* @param int $linked_field_id
+	* @param string $where_val
+	* @param string $where_is
+	* @return int $linked_id
+	*/
+	public static function get_dynamic_field_entry_id( $linked_field_id, $where_val, $where_is ){
+		$query = array(
+			'field_id' => $linked_field_id,
+			'meta_value' . FrmDb::append_where_is( $where_is ) => $where_val,
+		);
+		$linked_id = FrmDb::get_col( 'frm_item_metas', $query, 'item_id' );
+		return $linked_id;
+	}
+
+	/**
+	* Get the category ID from the category name
+	*
+	* @since 2.0.15
+	* @param string $cat_name
+	* @return int
+	*/
+	public static function get_cat_id_from_text( $cat_name ) {
+		return get_cat_ID( $cat_name );
 	}
 }

@@ -5,11 +5,11 @@
  * Class A5 Excerpt
  *
  * @ A5 Plugin Framework
- * Version: 1.0 beta 20141124
+ * Version: 1.0 beta 20160127
  *
  * Gets the excerpt of a post according to some parameters
  *
- * standard parameters: offset(=0), usertext, excerpt, count
+ * standard parameters: offset(=0), usertext, excerpt, count, style
  * additional parameters: class(classname), filter(boolean), shortcode(boolean), format(boolean), links(boolean),
  * readmore_link(boolean), readmore_text(string)
  *
@@ -33,6 +33,8 @@ class A5_Excerpt {
 		
 		$links = (isset($links)) ? $links : false;
 		
+		$videos = (isset($videos)) ? $videos : false;
+		
 		if (!empty($usertext)) :
 		
 			$output = $usertext;
@@ -53,7 +55,7 @@ class A5_Excerpt {
 				
 				//erase videos
 				
-				$text = preg_replace('/[^"](https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|$!:,.;]*[A-Z0-9+&@#\/%=~_|$][^"]/i', '', $text);
+				if (!$videos) $text = preg_replace('/(?<!")(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?(?!")/', '', $text);
 				
 				$length = (isset($count)) ? $count : 3;
 				
@@ -77,7 +79,7 @@ class A5_Excerpt {
 							
 						break;
 						
-					case 'letters' :
+					case 'characters' :
 							
 						$output = substr($text, $offset, $length);
 							

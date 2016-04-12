@@ -31,19 +31,6 @@
 
 <h3><?php _e( 'Miscellaneous', 'formidable' ) ?></h3>
 
-<p><label class="frm_left_label"><?php _e( 'Keys', 'formidable' ); ?> </label>
-        <label for="frm_lock_keys"><input type="checkbox" value="1" id="frm_lock_keys" name="frm_lock_keys" <?php checked($frm_settings->lock_keys, 1) ?> />
-        <?php _e( 'Hide field and entry keys to prevent them from being edited. Uncheck this box to edit the saved keys for use in your template.', 'formidable' ); ?></label>
-</p>
-
-<!--
-    <?php _e( 'Visual Text Editor', 'formidable' ); ?>
-    <p>
-        <label for="frm_rte_off"><input type="checkbox" value="1" id="frm_rte_off" name="frm_rte_off" <?php checked($frmpro_settings->rte_off, 1) ?> />
-        <?php _e( 'Turn off the visual editor when building views.', 'formidable' ); ?></label>
-    </p>
--->
-
 <p>
 	<label class="frm_left_label"><?php _e( 'Date Format', 'formidable' ); ?>
 		<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Change the format of the date used in the date field.', 'formidable' ) ?>"></span>
@@ -55,19 +42,6 @@
                 <?php echo $f .' &nbsp; &nbsp; '. date($f); ?>
             </option>
             <?php } ?>
-        </select>
-</p>
-
-<p>
-	<label class="frm_left_label"><?php _e( 'CSV Export Format', 'formidable' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'If your CSV special characters are not working correctly, try a different formatting option.', 'formidable' ) ?>"></span>
-	</label>
-        <select name="frm_csv_format">
-            <option value="UTF-8" <?php selected($frmpro_settings->csv_format, 'UTF-8') ?>>UTF-8</option>
-            <option value="ISO-8859-1" <?php selected($frmpro_settings->csv_format, 'ISO-8859-1'); ?>>ISO-8859-1</option>
-            <option value="windows-1256" <?php selected($frmpro_settings->csv_format, 'windows-1256'); ?>>windows-1256</option>
-            <option value="windows-1251" <?php selected($frmpro_settings->csv_format, 'windows-1251'); ?>>windows-1251</option>
-            <option value="macintosh" <?php selected($frmpro_settings->csv_format, 'macintosh'); ?>><?php _e( 'Macintosh', 'formidable' ) ?></option>
         </select>
 </p>
 

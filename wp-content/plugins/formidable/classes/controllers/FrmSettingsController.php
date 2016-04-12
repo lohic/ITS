@@ -22,7 +22,15 @@ class FrmSettingsController {
 
         $uploads = wp_upload_dir();
         $target_path = $uploads['basedir'] . '/formidable/css';
-        $sections = apply_filters( 'frm_add_settings_section', array() );
+
+		$sections = array();
+		if ( apply_filters( 'frm_include_addon_page', false ) ) {
+			$sections['licenses'] = array(
+				'class' => 'FrmAddonsController', 'function' => 'license_settings',
+				'name' => __( 'Plugin Licenses', 'formidable' ),
+			);
+		}
+        $sections = apply_filters( 'frm_add_settings_section', $sections );
 
         $captcha_lang = FrmAppHelper::locales( 'captcha' );
 

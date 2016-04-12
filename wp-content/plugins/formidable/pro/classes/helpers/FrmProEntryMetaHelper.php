@@ -313,7 +313,6 @@ class FrmProEntryMetaHelper{
         }
         $query[] = $sub_query;
 
-        $user_id = '';
         if ( $this_field && isset($this_field->field_options['restrict']) && $this_field->field_options['restrict'] ) {
             $query['e.user_id'] = get_current_user_id();
         }
@@ -335,7 +334,6 @@ class FrmProEntryMetaHelper{
     }
 
     public static function &value_exists($field_id, $value, $entry_id = false) {
-        global $wpdb;
         if ( is_object($field_id) ) {
             $field_id = $field_id->id;
         }
@@ -375,27 +373,66 @@ class FrmProEntryMetaHelper{
         return FrmDb::get_var( $table, $query, $db_field );
     }
 
-    public static function &get_max($field) {
-        global $wpdb;
+	public static function &get_max( $field ) {
+		if ( ! is_object( $field ) ) {
+			$field = FrmField::getOne( $field );
+		}
 
-        if ( ! is_object($field) ) {
-            $field = FrmField::getOne($field);
-        }
+		if ( ! $field ) {
+			return;
+		}
 
-        if ( ! $field ) {
-            return;
-        }
+		$max = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $field->id ), 'meta_value', array( 'order_by' => 'item_id DESC' ) );
+		$max = self::get_increment_from_value( $max, $field );
 
-        $max = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $field->id), 'meta_value +0 as odr', array( 'order_by' => 'odr DESC') );
+		if ( isset( $field->field_options['post_field'] ) && $field->field_options['post_field'] == 'post_custom' ) {
+			global $wpdb;
+			$post_max = FrmDb::get_var( $wpdb->postmeta, array( 'meta_key' => $field->field_options['custom_field'] ), 'meta_value', array( 'order_by' => 'post_ID DESC' ) );
 
-        if ( isset($field->field_options['post_field']) && $field->field_options['post_field'] == 'post_custom' ) {
-            $post_max = FrmDb::get_var( $wpdb->postmeta, array( 'meta_key' => $field->field_options['custom_field']), 'meta_value +0 as odr', array( 'order_by' => 'odr DESC') );
-            if ( $post_max && (float) $post_max > (float) $max ) {
-                $max = $post_max;
-            }
-        }
+			if ( $post_max ) {
+				$post_max = self::get_increment_from_value( $post_max, $field );
+				if ( (float) $post_max > (float) $max ) {
+					$max = $post_max;
+				}
+			}
+		}
 
-        return $max;
-    }
+		return $max;
+	}
 
+	/**
+	 * If an auto_id field includes a prefix or suffix, strip them from the last value
+	 */
+	private static function get_increment_from_value( $max, $field ) {
+		$default_value = $field->default_value;
+		if ( strpos( $default_value, '[auto_id') !== false ) {
+			list( $prefix, $shortcode ) = explode( '[auto_id', $default_value );
+			list( $shortcode, $suffix ) = explode( ']', $shortcode );
+		}
+
+		$max = str_replace( $prefix, '', $max );
+		$max = str_replace( $suffix, '', $max );
+		$max = filter_var( $max, FILTER_SANITIZE_NUMBER_INT );
+
+		return $max;
+	}
+
+	/**
+	 * Set the Dynamic List field shortcodes for the default HTML email
+	 *
+	 * @since 2.0.23
+	 * @param array $field_shortcodes
+	 * @param object $f
+	 * @return array
+	 */
+	public static function get_pro_field_shortcodes_for_default_email( $field_shortcodes, $f ) {
+		if ( $f->type == 'data' && $f->field_options['data_type'] == 'data' ) {
+			if ( ! empty( $f->field_options['hide_field'] ) && ! empty( $f->field_options['form_select'] ) ) {
+				$field_id_string = reset( $f->field_options[ 'hide_field' ] ) . ' show=' . $f->field_options[ 'form_select' ];
+				$field_shortcodes['val'] = '[' . $field_id_string . ']';
+			}
+		}
+
+		return $field_shortcodes;
+	}
 }

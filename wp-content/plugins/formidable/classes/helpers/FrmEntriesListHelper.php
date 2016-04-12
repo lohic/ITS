@@ -44,7 +44,7 @@ class FrmEntriesListHelper extends FrmListHelper {
         $page = $this->get_pagenum();
 		$start = (int) isset( $_REQUEST['start'] ) ? absint( $_REQUEST['start'] ) : ( ( $page - 1 ) * $per_page );
 
-        $this->items = FrmEntry::getAll($s_query, $order, ' LIMIT '. $start .','. $per_page, true, false);
+		$this->items = FrmEntry::getAll( $s_query, $order, ' LIMIT ' . $start . ',' . $per_page, true, false );
         $total_items = FrmEntry::getRecordCount($s_query);
 
 		$this->set_pagination_args( array(
@@ -66,17 +66,40 @@ class FrmEntriesListHelper extends FrmListHelper {
         }
         $colspan = $this->get_column_count();
 
-        include(FrmAppHelper::plugin_path() .'/classes/views/frm-entries/no_entries.php');
+		include( FrmAppHelper::plugin_path() . '/classes/views/frm-entries/no_entries.php' );
 	}
 
 	public function search_box( $text, $input_id ) {
 		// Searching is a pro feature
 	}
 
+	/**
+	* Gets the name of the primary column in the Entries screen
+	*
+	* @since 2.0.14
+	*
+	* @return string $primary_column
+	*/
+	protected function get_primary_column_name() {
+		$columns = get_column_headers( $this->screen );
+		$hidden = get_hidden_columns( $this->screen );
+
+		$primary_column = '';
+
+		foreach ( $columns as $column_key => $column_display_name ) {
+			if ( 'cb' != $column_key && ! in_array( $column_key, $hidden ) ) {
+				$primary_column = $column_key;
+				break;
+			}
+		}
+
+		return $primary_column;
+	}
+
 	public function single_row( $item, $style = '' ) {
 		// Set up the hover actions for this user
 		$actions = array();
-		$view_link = '?page=formidable-entries&frm_action=show&id='. $item->id;
+		$view_link = '?page=formidable-entries&frm_action=show&id=' . $item->id;
 
 		$this->get_actions( $actions, $item, $view_link );
 
@@ -87,11 +110,15 @@ class FrmEntriesListHelper extends FrmListHelper {
 
 		$r = "<tr id='item-action-{$item->id}'$style>";
 
-		list( $columns, $hidden ) = $this->get_column_info();
+		list( $columns, $hidden, , $primary ) = $this->get_column_info();
         $action_col = false;
 
 		foreach ( $columns as $column_name => $column_display_name ) {
-			$class = $column_name .' column-'. $column_name;
+			$class = $column_name . ' column-' . $column_name;
+
+			if ( $column_name === $primary ) {
+				$class .= ' column-primary';
+			}
 
 			if ( in_array( $column_name, $hidden ) ) {
 				$class .= ' frm_hidden';
@@ -100,9 +127,10 @@ class FrmEntriesListHelper extends FrmListHelper {
             }
 
 			$attributes = 'class="' . esc_attr( $class ) . '"';
-            unset($class);
+			unset($class);
+			$attributes .= ' data-colname="' . $column_display_name . '"';
 
-            $col_name = preg_replace('/^('. $this->params['form'] .'_)/', '', $column_name);
+			$col_name = preg_replace( '/^(' . $this->params['form'] . '_)/', '', $column_name );
 			$this->column_name = $col_name;
 
 			switch ( $col_name ) {
@@ -147,7 +175,7 @@ class FrmEntriesListHelper extends FrmListHelper {
 			if ( isset( $val ) ) {
 			    $r .= "<td $attributes>";
 				if ( $column_name == $action_col ) {
-					$edit_link = '?page=formidable-entries&frm_action=edit&id='. $item->id;
+					$edit_link = '?page=formidable-entries&frm_action=edit&id=' . $item->id;
 					$r .= '<a href="' . esc_url( isset( $actions['edit'] ) ? $edit_link : $view_link ) . '" class="row-title" >' . $val . '</a> ';
 			        $r .= $action_links;
 				} else {
@@ -166,10 +194,10 @@ class FrmEntriesListHelper extends FrmListHelper {
      * @param string $view_link
      */
     private function get_actions( &$actions, $item, $view_link ) {
-		$actions['view'] = '<a href="' . esc_url( $view_link ) . '">'. __( 'View', 'formidable' ) .'</a>';
+		$actions['view'] = '<a href="' . esc_url( $view_link ) . '">' . __( 'View', 'formidable' ) . '</a>';
 
         if ( current_user_can('frm_delete_entries') ) {
-            $delete_link = '?page=formidable-entries&frm_action=destroy&id='. $item->id .'&form='. $this->params['form'];
+			$delete_link = '?page=formidable-entries&frm_action=destroy&id=' . $item->id . '&form=' . $this->params['form'];
 			$actions['delete'] = '<a href="' . esc_url( wp_nonce_url( $delete_link ) ) . '" class="submitdelete" onclick="return confirm(\'' . esc_attr( __( 'Are you sure you want to delete that?', 'formidable' ) ) . '\')">' . __( 'Delete' ) . '</a>';
 	    }
 
@@ -191,6 +219,9 @@ class FrmEntriesListHelper extends FrmListHelper {
 		}
 
 		$field = FrmField::getOne( $col_name );
+		if ( ! $field ) {
+			return;
+		}
 
 		$atts = array(
 			'type' => $field->type, 'truncate' => true,

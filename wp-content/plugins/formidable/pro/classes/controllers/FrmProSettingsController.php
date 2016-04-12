@@ -3,9 +3,10 @@
 class FrmProSettingsController{
 
     public static function license_box(){
-        global $frm_update;
+		$edd_update = new FrmProEddController();
 		$a = FrmAppHelper::simple_get( 't', 'sanitize_title', 'general_settings' );
         remove_action('frm_before_settings', 'FrmSettingsController::license_box');
+		$show_creds_form = ( ! is_multisite() || is_super_admin() || ! get_site_option( $edd_update->pro_wpmu_store ) );
         include(FrmAppHelper::plugin_path() .'/pro/classes/views/settings/license_box.php');
     }
 

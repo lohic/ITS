@@ -49,7 +49,28 @@ class FrmProAppHelper{
 			$round_numerator = 60 * (float) $atts['round'];
 			$current_time = round( $current_time / $round_numerator ) * $round_numerator;
 		}
-		return date( $atts['format'], $current_time );
+		return date_i18n( $atts['format'], $current_time );
+	}
+
+	/**
+	 * Format the time field values
+	 * @since 2.0.14
+	 */
+	public static function format_time( $time, $format = 'Hi' ) {
+		$parts = str_replace( array( ' PM',' AM'), '', $time );
+		$parts = explode( ':', $parts );
+		if ( is_array( $parts ) && count( $parts ) > 1 ) {
+			if ( self::is_later_than_noon( $time, $parts ) ) {
+				$parts[0] = (int) $parts[0] + 12;
+			}
+			$time = $parts[0] . ':' . $parts[1] . ':00';
+		}
+
+		return date( $format, strtotime( $time ) );
+	}
+
+	private static function is_later_than_noon( $time, $parts ) {
+		return ( ( preg_match( '/PM/', $time ) && ( (int) $parts[0] != 12 ) ) || ( ( (int) $parts[0] == 12 ) && preg_match( '/AM/', $time ) ) );
 	}
 
     /**
@@ -186,7 +207,7 @@ class FrmProAppHelper{
 	public static function get_edit_link( $id ) {
         $output = '';
     	if ( current_user_can('administrator') ) {
-			$output = '<a href="' . esc_url( admin_url() .'?page=formidable-entries&frm_action=edit&id=' . $id ) . '">' . __( 'Edit', 'formidable' ) . '</a>';
+			$output = '<a href="' . esc_url( admin_url( 'admin.php?page=formidable-entries&frm_action=edit&id=' . $id ) ) . '">' . __( 'Edit', 'formidable' ) . '</a>';
         }
 
     	return $output;
@@ -278,8 +299,6 @@ class FrmProAppHelper{
     }
 
 	public static function filter_where( $entry_ids, $args ) {
-        global $wpdb;
-
         $defaults = array(
             'where_opt' => false, 'where_is' => '=', 'where_val' => '',
             'form_id' => false, 'form_posts' => array(), 'after_where' => false,
@@ -321,7 +340,13 @@ class FrmProAppHelper{
      */
     private static function prepare_where_args( &$args, $where_field, $entry_ids ) {
         if ( $args['where_val'] == 'NOW' ) {
-            $args['where_val'] = self::get_date('Y-m-d');
+			$date_format = 'Y-m-d';
+			if ( $where_field->type == 'time' ) {
+				$time_format = isset( $where_field->field_options['clock'] ) ? $where_field->field_options['clock'] : 12;
+				$date_format = ( $time_format == 12 ) ? 'h:i A' : 'H:i';
+			}
+			$args['where_val'] = self::get_date( $date_format );
+			unset( $date_format );
         }
 
         if ( $where_field->type == 'date' && ! empty($args['where_val']) ) {
@@ -340,11 +365,6 @@ class FrmProAppHelper{
             $args['temp_where_is'] = '!=';
         }
 
-        /*if($where_field->form_id != $args['form_id']){
-            //TODO: get linked entry IDs and get entries where data field value(s) in linked entry IDs
-        }*/
-
-		$args['orig_where_val'] = $args['where_val'];
 		if ( in_array( $args['where_is'], array( 'LIKE', 'not LIKE') ) ) {
              //add extra slashes to match values that are escaped in the database
 			$args['where_val_esc'] = addslashes( $args['where_val'] );
@@ -358,30 +378,31 @@ class FrmProAppHelper{
         self::prepare_dfe_text($args, $where_field);
     }
 
-    /**
-     * Filter by DFE text
-     */
-    private static function prepare_dfe_text( &$args, $where_field ) {
-        if ( $where_field->type != 'data' || is_numeric($args['where_val']) || is_array( $args['where_val'] ) || $args['orig_where_val'] == '' || ( isset($where_field->field_options['post_field']) && $where_field->field_options['post_field'] == 'post_category' ) ) {
-            return;
-        }
-
-        global $wpdb;
-
-		//Get entry IDs by DFE text
-		if ( $args['where_is'] == 'LIKE' || $args['where_is'] == 'not LIKE' ) {
-			$linked_id = FrmEntryMeta::search_entry_metas($args['orig_where_val'], $where_field->field_options['form_select'], $args['temp_where_is']);
-		} else {
-			$query = array(
-				'field_id' => $where_field->field_options['form_select'],
-				'meta_value' . FrmDb::append_where_is( $args['temp_where_is'] ) => $args['orig_where_val'],
-			);
-
-			$linked_id = FrmDb::get_col( 'frm_item_metas', $query, 'item_id' );
-			unset( $query );
+	/**
+	* Replace a text value where_val with the matching entry IDs for Dynamic Field filters
+	*
+	* @param array $args
+	* @param object $where_field
+	*/
+	private static function prepare_dfe_text( &$args, $where_field ) {
+		if ( $where_field->type != 'data' ) {
+			return;
 		}
 
-		//If text doesn't return any entry IDs, get entry IDs from entry key
+		// Only proceed if we have a non-category dynamic field with a non-numeric/non-array where_val
+		$is_a_string_value = ( $args['where_val'] && ! is_numeric( $args['where_val'] ) && ! is_array( $args['where_val'] ) );
+		$is_a_post_field = ( isset( $where_field->field_options['post_field'] ) && $where_field->field_options['post_field'] == 'post_category' );
+		$continue = ( $is_a_string_value && ! $is_a_post_field );
+		$continue = apply_filters( 'frm_search_for_dynamic_text', $continue, $where_field, $args );
+
+		if ( ! $continue ) {
+			return;
+		}
+
+		$linked_id = FrmProField::get_dynamic_field_entry_id( $where_field->field_options['form_select'], $args['where_val'], $args['temp_where_is'] );
+
+		// If text doesn't return any entry IDs, get entry IDs from entry key
+		// Note: Keep for reverse compatibility
 		if ( ! $linked_id ) {
 			$linked_field = FrmField::getOne($where_field->field_options['form_select']);
 			if ( ! $linked_field ) {
@@ -389,30 +410,21 @@ class FrmProAppHelper{
 			}
 
 			$filter_args = array();
-			self::add_group_by( $filter_args, $args, 'item_key' );
 
 			$linked_id = FrmDb::get_col( 'frm_items', array(
 				'form_id' => $linked_field->form_id,
 				'item_key ' . FrmDb::append_where_is( $args['temp_where_is'] ) => $args['where_val'],
-			) );
+				) );
 		}
 
-        if ( ! $linked_id ) {
-            return;
-        }
+		if ( ! $linked_id ) {
+			return;
+		}
 
-        //Change $args['where_val'] to linked entry IDs
-		$linked_id = (array) $linked_id;
-		$args['where_val'] = $linked_id;
-		if ( FrmField::is_field_with_multiple_values( $where_field ) ) {
-			if ( in_array($args['where_is'], array( '!=', 'not LIKE') ) ) {
-				$args['temp_where_is'] = 'LIKE';
-			} else if ( in_array($args['where_is'], array( '=', 'LIKE') ) ) {
-				$args['where_is'] = $args['temp_where_is'] = 'LIKE';
-            }
-		}else{
-            $args['where_is'] = $args['temp_where_is'] = ( strpos($args['where_is'], '!') === false && strpos($args['where_is'], 'not') === false ) ? ' in ' : ' not in ';
-        }
+		//Change $args['where_val'] to linked entry IDs
+		$args['where_val'] = (array) $linked_id;
+
+		// Don't use old where_val_esc value for filtering
 		unset($args['where_val_esc']);
 
 		$args['where_val'] = apply_filters('frm_filter_dfe_where_val', $args['where_val'], $args);
@@ -433,12 +445,18 @@ class FrmProAppHelper{
         $where_statement = apply_filters('frm_where_filter', $where_statement, $args);
 
 		$filter_args = array( 'is_draft' => $args['drafts'] );
-		self::add_group_by( $filter_args, $args );
 
-		// Add entry IDs to $where_statement. Meant for use when showing one entry.
+		// If the field is from a repeating section (or embedded form?) get the parent ID
+		$filter_args['return_parent_id'] = ( $where_field->form_id != $args['form_id'] );
+
+		// Add entry IDs to $where_statement
 		if ( $args['use_ids'] ) {
 			if ( is_array( $where_statement ) ) {
-				$where_statement['item_id'] = $entry_ids;
+				if ( $filter_args['return_parent_id'] ) {
+					$where_statement['parent_item_id'] = $entry_ids;
+				} else {
+					$where_statement['item_id'] = $entry_ids;
+				}
 			} else {
 				// if the filter changed the query to a string, allow it
 				$where_statement .= FrmAppHelper::prepend_and_or_where( ' AND ', array( 'item_id' => $entry_ids ) );
@@ -497,8 +515,6 @@ class FrmProAppHelper{
 			$query = array( 'tt.taxonomy' => $where_field->field_options['taxonomy'] );
 			$query[] = $t_where;
 
-			self::add_group_by( $filter_args, $args, 'tr.object_id' );
-
 			$add_posts = FrmDb::get_col(
 				$wpdb->terms .' AS t INNER JOIN '. $wpdb->term_taxonomy .' AS tt ON tt.term_id = t.term_id INNER JOIN '. $wpdb->term_relationships .' AS tr ON tr.term_taxonomy_id = tt.term_taxonomy_id',
 				$query,
@@ -528,8 +544,6 @@ class FrmProAppHelper{
 				$get_table = $wpdb->posts;
 				$query_key = sanitize_title( $where_field->field_options['post_field'] );
             }
-
-			self::add_group_by( $filter_args, $args, $query_key );
 
 			$query_key .= ( in_array( $where_field->type, array( 'number', 'scale' ) ) ? ' +0 ' : ' ' ) . FrmDb::append_where_is( $args['where_is'] );
 			$query[ $query_key ] = $args['where_val'];
@@ -562,12 +576,6 @@ class FrmProAppHelper{
             $new_ids = array();
         }
     }
-
-	private static function add_group_by( &$filter_args, $args, $group_by = 'meta_value' ) {
-		if ( $args['display'] && in_array( $args['where_opt'], $args['display']->frm_group_by ) ) {
-			$filter_args['group_by'] = $group_by;
-		}
-	}
 
     /**
      * Let WordPress process the uploads

@@ -3,9 +3,13 @@
 class FrmProXMLHelper{
 
     public static function import_xml_entries($entries, $imported) {
-        global $frm_duplicate_ids, $wpdb;
+        global $frm_duplicate_ids;
 
         $saved_entries = array();
+		$track_child_ids = array();
+
+		// Import all child entries first
+		self::put_child_entries_first( $entries );
 
 	    foreach ( $entries as $item ) {
 	        $entry = array(
@@ -57,21 +61,88 @@ class FrmProXMLHelper{
             $editing = FrmDb::get_var( 'frm_items', array( 'item_key' => $entry['item_key'], 'created_at' => date('Y-m-d H:i:s', strtotime($entry['created_at'])) ) );
 
             if ( $editing ) {
-                FrmEntry::update($entry['id'], $entry);
+				FrmEntry::update_entry_from_xml( $entry['id'], $entry );
                 $imported['updated']['items']++;
                 $saved_entries[$entry['id']] = $entry['id'];
-            } else if ( $e = FrmEntry::create($entry) ) {
+            } else if ( $e = FrmEntry::create_entry_from_xml($entry) ) {
                 $saved_entries[$entry['id']] = $e;
                 $imported['imported']['items']++;
             }
 
+			self::track_imported_child_entries( $saved_entries[ $entry['id'] ], $entry['parent_item_id'], $track_child_ids );
+
 		    unset($entry);
 	    }
+
+		self::update_parent_item_ids( $track_child_ids, $saved_entries );
 
 	    unset($entries);
 
 	    return $imported;
     }
+
+	private static function put_child_entries_first( &$entries ) {
+		$child_entries = array();
+		$regular_entries = array();
+
+		foreach ( $entries as $item ) {
+			$parent_item_id = (int) $item->parent_item_id;
+
+			if ( $parent_item_id ) {
+				$child_entries[] = $item;
+			} else {
+				$regular_entries[] = $item;
+			}
+		}
+
+		$entries = array_merge( $child_entries, $regular_entries );
+	}
+
+	/**
+	*
+	* Track imported entries if they have a parent_item_id
+	* Use the old parent_item_id as the array key and set the array value to an array of child IDs
+	*
+	* @param int|boolean $child_id
+	* @param int $parent_id
+	* @param array $track_child_ids - pass by reference
+	*/
+	private static function track_imported_child_entries( $child_id, $parent_id, &$track_child_ids ) {
+		if ( ! $parent_id ) {
+			return;
+		}
+
+		if ( ! isset( $track_child_ids[ $parent_id ] ) ) {
+			$track_child_ids[ $parent_id ] = array();
+		}
+
+		$track_child_ids[ $parent_id ][] = $child_id;
+	}
+
+	/**
+	*
+	* Update imported child entries so their parent_item_ids match any imported parent entries
+	*
+	* @since 2.0.12
+	*
+	* @param array $track_child_ids
+	* @param array $saved_entries
+	*/
+	private static function update_parent_item_ids( $track_child_ids, $saved_entries ) {
+		global $wpdb;
+
+		foreach ( $track_child_ids as $old_parent_id => $new_child_ids ) {
+			if ( isset( $saved_entries[ $old_parent_id ] ) ) {
+				$new_parent_id = $saved_entries[ $old_parent_id ];
+
+				$new_child_ids = '(' . implode( ',', $new_child_ids ) . ')';
+
+				// This parent entry was imported and the parent_item_id column needs to be updated on all children
+				$wpdb->query( $wpdb->prepare( 'UPDATE ' . $wpdb->prefix . 'frm_items SET parent_item_id = %d WHERE id IN 
+				' . $new_child_ids, $new_parent_id ) );
+			}
+		}
+	}
 
 	public static function import_csv( $path, $form_id, $field_ids, $entry_key = 0, $start_row = 2, $del = ',', $max = 250 ) {
         if ( ! defined('WP_IMPORTING') ) {
@@ -108,7 +179,7 @@ class FrmProXMLHelper{
                     unset($key, $field_id);
                 }
 
-                self::convert_db_cols($values, $data, $entry_key);
+                self::convert_db_cols( $values );
                 self::convert_timestamps($values);
                 self::save_or_edit_entry($values);
 
@@ -185,7 +256,6 @@ class FrmProXMLHelper{
         $linked = isset($field_id['linked']) ? $field_id['linked'] : false;
         $field_id = $field_id['field_id'];
 
-        global $wpdb;
         if ( $linked ) {
             $entry_id = FrmDb::get_var( 'frm_item_metas', array( 'meta_value' => $data[$key], 'field_id' => $linked), 'item_id' );
         } else {
@@ -220,6 +290,10 @@ class FrmProXMLHelper{
             case 'checkbox':
                 $metas[$field_id] = self::get_multi_opts($metas[$field_id], $field);
             break;
+			case 'divider':
+			case 'form':
+				$metas[ $field_id ] = self::get_new_child_ids( $metas[ $field_id ], $field, $saved_entries );
+			break;
 	    }
     }
 
@@ -257,9 +331,10 @@ class FrmProXMLHelper{
     /**
      * Make sure values are in the format they should be saved in
      */
-    private static function convert_db_cols( &$values, $data, $entry_key ) {
+    private static function convert_db_cols( &$values ) {
         if ( ! isset($values['item_key']) || empty($values['item_key']) ) {
-            $values['item_key'] = $data[$entry_key];
+            global $wpdb;
+            $values['item_key'] = FrmAppHelper::get_unique_key('', $wpdb->prefix .'frm_items', 'item_key');
         }
 
         if ( isset($values['user_id']) ) {
@@ -281,7 +356,6 @@ class FrmProXMLHelper{
     private static function save_or_edit_entry($values) {
         $editing = false;
         if ( isset($values['id']) && $values['item_key'] ) {
-            global $wpdb;
 
             //check for updating by entry ID
             $editing = FrmDb::get_var( 'frm_items', array( 'form_id' => $values['form_id'], 'id' => $values['id']) );
@@ -363,7 +437,6 @@ class FrmProXMLHelper{
     }
 
     public static function get_dfe_id($value, $field, $ids = array() ) {
-        global $wpdb;
 
 		if ( ! $field || FrmProField::is_list_field( $field ) ) {
             return $value;
@@ -414,4 +487,82 @@ class FrmProXMLHelper{
 
         return $value;
     }
+
+	/**
+	* Get the new child IDs for a repeating field's or embedded form's meta_value
+	*
+	* @since 2.0.16
+	* @param array $meta_value
+	* @param object $field
+	* @param array $saved_entries
+	* @return array $meta_value
+	*/
+	private static function get_new_child_ids( $meta_value, $field, $saved_entries ) {
+		if ( $field->type == 'form' || FrmField::is_repeating_field( $field ) ) {
+
+			$new_meta_value = array();
+			foreach ( (array) $meta_value as $old_child_id ) {
+				if ( isset( $saved_entries[ $old_child_id ] ) ) {
+					$new_meta_value[] = $saved_entries[ $old_child_id ];
+				}
+			}
+
+			$meta_value = $new_meta_value;
+		}
+
+		return $meta_value;
+	}
+
+	/**
+	 * Perform an action after a field is imported
+	 *
+	 * @since 2.0.25
+	 * @param array $f
+	 * @param int $field_id
+	 */
+	public static function after_field_is_imported( $f, $field_id ) {
+		self::add_in_section_value_to_repeating_fields( $f, $field_id );
+	}
+
+	/**
+	 * Add the in_section value to fields in a repeating section
+	 *
+	 * @since 2.0.25
+	 * @param array $f
+	 * @param int $section_id
+	 */
+	private static function add_in_section_value_to_repeating_fields( $f, $section_id ) {
+		if ( $f['type'] == 'divider'
+			&& FrmField::is_option_true( $f['field_options'], 'repeat' )
+			&& FrmField::is_option_true( $f['field_options'], 'form_select' )
+		) {
+			$new_form_id = $f['field_options']['form_select'];
+			$child_fields = FrmDb::get_col( 'frm_fields', array( 'form_id' => $new_form_id ), 'id' );
+
+			if ( ! $child_fields ) {
+				return;
+			}
+
+			self::add_in_section_value_to_field_ids( $child_fields, $section_id );
+		}
+	}
+
+	/**
+	 * Add specific in_section value to an array of field IDs
+	 *
+	 * @since 2.0.25
+	 * @param array $field_ids
+	 * @param int $section_id
+	 */
+	public static function add_in_section_value_to_field_ids( $field_ids, $section_id ) {
+		foreach ( $field_ids as $child_id ) {
+			$child_field_options = FrmDb::get_var( 'frm_fields', array( 'id' => $child_id ), 'field_options' );
+			$child_field_options = maybe_unserialize( $child_field_options );
+			$child_field_options['in_section'] = $section_id;
+
+			// Update now
+			$update_values = array( 'field_options' => $child_field_options );
+			FrmField::update( $child_id, $update_values );
+		}
+	}
 }

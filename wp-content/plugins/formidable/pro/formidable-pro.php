@@ -2,7 +2,8 @@
 
 global $frm_update;
 $frm_update  = new FrmUpdatesController();
-$frm_vars['pro_is_authorized'] = $frm_update->pro_is_authorized();
+
+$frmedd_update  = new FrmProEddController();
 
 // load the license form
 if ( FrmAppHelper::is_admin_page('formidable-settings') ) {
@@ -18,7 +19,7 @@ $frm_vars['pro_is_installed'] = 'deprecated';
 add_filter('frm_pro_installed', '__return_true');
 
 add_filter('frm_load_controllers', 'frmpro_load_controllers');
-function frmpro_load_controllers($controllers) {
+function frmpro_load_controllers( $controllers ) {
     $controllers[] = 'FrmProHooksController';
     return $controllers;
 }

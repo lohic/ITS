@@ -44,15 +44,21 @@ class FrmProXMLController{
         return __( 'Choose a Formidable XML or any CSV file', 'formidable' );
     }
 
+	/**
+	 * @param array|object $forms
+	 */
     public static function csv_opts($forms) {
 		$csv_del = FrmAppHelper::get_param( 'csv_del', ',', 'get', 'sanitize_text_field' );
 		$form_id = FrmAppHelper::get_param( 'form_id', '', 'get', 'absint' );
+		if ( 'object' == gettype( $forms ) ) {
+			// do_action resets an array with a single object in it
+			$forms = array( $forms );
+		}
 
         include(FrmAppHelper::plugin_path() .'/pro/classes/views/xml/csv_opts.php');
     }
 
     public static function xml_export_types($types) {
-        $types['items'] = __( 'Entries', 'formidable' );
         $types['posts'] = __( 'Views', 'formidable' );
         $types['styles'] = __( 'Styles', 'formidable' );
 
@@ -60,19 +66,87 @@ class FrmProXMLController{
     }
 
     public static function export_formats($formats) {
-        $formats['csv'] = array( 'name' => 'CSV', 'support' => 'items', 'count' => 'single');
-        $formats['xml']['support'] = 'forms|items|posts|styles';
+		$formats['csv'] = array( 'name' => 'CSV', 'support' => 'items', 'count' => 'single' );
+		$formats['xml']['support'] = 'forms|items|posts|styles';
 
         return $formats;
     }
 
-    public static function export_csv($atts) {
-        $form_ids = $atts['ids'];
-        if ( empty($form_ids) ) {
-            wp_die(__( 'Please select a form', 'formidable' ));
-        }
-        FrmProEntriesController::csv(reset($form_ids));
-    }
+	public static function csv_filter( $query, $atts ) {
+		if ( ! empty( $atts['search'] ) && ! $atts['item_id'] ) {
+			$query = FrmProEntriesHelper::get_search_str( $query, $atts['search'], $atts['form_id'], $atts['fid'] );
+		}
+		return $query;
+	}
+
+	public static function csv_row( $row, $atts ) {
+		$row['user_id'] = FrmProFieldsHelper::get_display_name( $atts['entry']->user_id, 'user_login' );
+		$row['updated_by'] = FrmProFieldsHelper::get_display_name( $atts['entry']->updated_by, 'user_login' );
+		self::add_comments_to_csv( $row, $atts );
+		return $row;
+	}
+
+	private static function add_comments_to_csv( &$row, $atts ) {
+		if ( ! $atts['comment_count'] ) {
+			// don't continue if we already know there are no comments
+			return;
+		}
+
+	    $comments = FrmEntryMeta::getAll( array( 'item_id' => (int) $atts['entry']->id, 'field_id' => 0 ), ' ORDER BY it.created_at ASC' );
+
+		$i = 0;
+		if ( $comments ) {
+			foreach ( $comments as $comment ) {
+				$c = maybe_unserialize( $comment->meta_value );
+				if ( ! isset( $c['comment'] ) ) {
+					continue;
+				}
+
+				$row[ 'comment' . $i ] = $c['comment'];
+				unset( $co );
+
+				$row[ 'comment_user_id' . $i ] = FrmProFieldsHelper::get_display_name( $c['user_id'], 'user_login' );
+				unset( $c );
+
+				$row[ 'comment_created_at' . $i ] = FrmAppHelper::get_formatted_time( $comment->created_at, $atts['date_format'], ' ');
+				unset( $v, $comment );
+				$i++;
+	        }
+		}
+
+		for ( $i; $i <= $atts['comment_count']; $i++ ) {
+			$row[ 'comment' . $i ] = '';
+			$row[ 'comment_user_id' . $i ] = '';
+			$row[ 'comment_created_at' . $i ] = '';
+		}
+	}
+
+	public static function csv_field_value( $field_value, $atts ) {
+		// Post values need to be retrieved differently
+		if ( $atts['entry']->post_id && ( $atts['field']->type == 'tag' || ( isset( $atts['field']->field_options['post_field'] ) && $atts['field']->field_options['post_field'] ) ) ) {
+			$field_value = FrmProEntryMetaHelper::get_post_value(
+				$atts['entry']->post_id, $atts['field']->field_options['post_field'],
+				$atts['field']->field_options['custom_field'],
+				array(
+					'truncate' => ( ( $atts['field']->field_options['post_field'] == 'post_category' ) ? true : false ),
+					'form_id' => $atts['entry']->form_id, 'field' => $atts['field'], 'type' => $atts['field']->type,
+					'exclude_cat' => ( isset( $atts['field']->field_options['exclude_cat'] ) ? $atts['field']->field_options['exclude_cat'] : 0 ),
+					'sep' => $atts['separator'],
+				)
+			);
+		}
+
+		if ( in_array( $atts['field']->type, array( 'user_id', 'file', 'date', 'data' ) ) ) {
+			$field_value = FrmProFieldsHelper::get_export_val( $field_value, $atts['field'], $atts['entry'] );
+		}
+
+		return $field_value;
+	}
+
+	public static function export_csv( $atts ) {
+		_deprecated_function( __METHOD__, '2.0.19', 'FrmXMLController::' . __FUNCTION__ );
+		FrmXMLController::generate_csv( $atts );
+	}
 
     // map fields from csv
     public static function map_csv_fields() {

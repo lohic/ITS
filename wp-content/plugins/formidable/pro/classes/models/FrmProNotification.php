@@ -80,7 +80,7 @@ class FrmProNotification{
 	*/
 	private static function add_to_attachments( &$attachments, $file_id ) {
 		if ( empty( $file_id ) ) {
-			continue;
+			return;
 		}
 		// Get the file
 		$file = get_post_meta( $file_id, '_wp_attached_file', true);

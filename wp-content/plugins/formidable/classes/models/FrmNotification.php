@@ -8,7 +8,7 @@ class FrmNotification {
         add_action('frm_trigger_email_action', 'FrmNotification::trigger_email', 10, 3);
     }
 
-    public static function trigger_email($action, $entry, $form) {
+	public static function trigger_email( $action, $entry, $form ) {
 		if ( defined( 'WP_IMPORTING' ) && WP_IMPORTING  ) {
             return;
         }
@@ -91,10 +91,10 @@ class FrmNotification {
         // Add the user info if it isn't already included
         if ( $notification['inc_user_info'] && $prev_mail_body == $mail_body ) {
             $data = maybe_unserialize($entry->description);
-            $mail_body .= "\r\n\r\n" . __( 'User Information', 'formidable' ) ."\r\n";
-            $mail_body .= __( 'IP Address', 'formidable' ) . ': '. $entry->ip ."\r\n";
+			$mail_body .= "\r\n\r\n" . __( 'User Information', 'formidable' ) . "\r\n";
+			$mail_body .= __( 'IP Address', 'formidable' ) . ': ' . $entry->ip . "\r\n";
 			$mail_body .= __( 'User-Agent (Browser/OS)', 'formidable' ) . ': ' . FrmEntryFormat::get_browser( $data['browser'] ) . "\r\n";
-            $mail_body .= __( 'Referrer', 'formidable' ) . ': '. $data['referrer']."\r\n";
+			$mail_body .= __( 'Referrer', 'formidable' ) . ': ' . $data['referrer'] . "\r\n";
         }
         unset($prev_mail_body);
 
@@ -147,12 +147,13 @@ class FrmNotification {
         return $sent_to;
     }
 
-    public function entry_created($entry_id, $form_id) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmFormActionsController::trigger_actions("create", '. $form_id .', '. $entry_id .', "email")');
+	public function entry_created( $entry_id, $form_id ) {
+		$new_function = 'FrmFormActionsController::trigger_actions("create", ' . $form_id . ', ' . $entry_id . ', "email")';
+		_deprecated_function( __FUNCTION__, '2.0', $new_function );
         FrmFormActionsController::trigger_actions('create', $form_id, $entry_id, 'email');
     }
 
-    public function send_notification_email($to_email, $subject, $message, $from = '', $from_name = '', $plain_text = true, $attachments = array(), $reply_to = '') {
+	public function send_notification_email( $to_email, $subject, $message, $from = '', $from_name = '', $plain_text = true, $attachments = array(), $reply_to = '' ) {
         _deprecated_function( __FUNCTION__, '2.0', 'FrmNotification::send_email' );
 
         return self::send_email(compact(
@@ -289,7 +290,7 @@ class FrmNotification {
 		}
 
         // Set up formatted value
-        $final_val = '"'. str_replace( '"', '', $part_1 ) . '" <'. $part_2 .'>';
+		$final_val = str_replace( '"', '', $part_1 ) . ' <' . $part_2 . '>';
 
         // If value is an array
         if ( false !== $key ) {
@@ -299,7 +300,7 @@ class FrmNotification {
 		$atts[ $f ] = $final_val;
     }
 
-    public static function send_email($atts) {
+	public static function send_email( $atts ) {
         $admin_email = get_option('admin_email');
         $defaults = array(
             'to_email'      => $admin_email,
@@ -338,13 +339,13 @@ class FrmNotification {
 		$cc = array_filter( $cc ); // remove cc and bcc if they are empty
 
 		foreach ( $cc as $k => $v ) {
-			$header[] = $k . ': '. implode( ',', $v );
+			$header[] = $k . ': ' . implode( ',', $v );
 		}
 
         $content_type   = $atts['plain_text'] ? 'text/plain' : 'text/html';
         $charset        = get_option('blog_charset');
 
-        $header[]       = 'Reply-To: '. $atts['reply_to'];
+		$header[]       = 'Reply-To: ' . $atts['reply_to'];
 		$header[]       = 'Content-Type: ' . $content_type . '; charset="' . esc_attr( $charset ) . '"';
         $atts['subject'] = wp_specialchars_decode(strip_tags(stripslashes($atts['subject'])), ENT_QUOTES );
 
@@ -364,7 +365,7 @@ class FrmNotification {
 		) );
 
         if ( apply_filters('frm_encode_subject', 1, $atts['subject'] ) ) {
-            $atts['subject'] = '=?'. $charset .'?B?'. base64_encode($atts['subject']) .'?=';
+			$atts['subject'] = '=?' . $charset . '?B?' . base64_encode( $atts['subject'] ) . '?=';
         }
 
         remove_filter('wp_mail_from', 'bp_core_email_from_address_filter' );
@@ -372,7 +373,7 @@ class FrmNotification {
 
         $sent = wp_mail($recipient, $atts['subject'], $message, $header, $atts['attachments']);
         if ( ! $sent ) {
-            $header = 'From: '. $atts['from'] ."\r\n";
+			$header = 'From: ' . $atts['from'] . "\r\n";
             $recipient = implode(',', (array) $recipient);
             $sent = mail($recipient, $atts['subject'], $message, $header);
         }

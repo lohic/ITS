@@ -14,7 +14,7 @@ class FrmListEntries extends WP_Widget {
 
 		$title = apply_filters( 'widget_title', ( empty( $instance['title'] ) && $display ) ? $display->post_title : $instance['title'] );
         $limit = empty($instance['limit']) ? ' LIMIT 100' : " LIMIT {$instance['limit']}";
-        $post_id = ( ! $display || empty($display->frm_post_id)) ? $instance['post_id'] : $display->frm_post_id;
+        $post_id = $instance['post_id'];
         $page_url = get_permalink($post_id);
 
         $order_by = '';
@@ -220,7 +220,7 @@ class FrmListEntries extends WP_Widget {
 	</p>
 	<p class="description"><?php _e( 'Views with a "Both (Dynamic)" format will show here.', 'formidable' ) ?></p>
 
-	<p><label for="<?php echo $this->get_field_id('post_id'); ?>"><?php _e( 'Page if not specified in View settings', 'formidable' ) ?>:</label>
+	<p><label for="<?php echo $this->get_field_id('post_id'); ?>"><?php _e( 'Page', 'formidable' ) ?>:</label>
         <select name="<?php echo $this->get_field_name('post_id'); ?>" id="<?php echo $this->get_field_id('post_id'); ?>" class="widefat">
 	        <option value=""> </option>
             <?php

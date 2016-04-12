@@ -26,22 +26,22 @@ class FrmStylesController {
 				'read_private_posts' => 'read_private_posts',
 			),
             'supports' => array(
-                'title',
+				'title',
             ),
             'has_archive' => false,
             'labels' => array(
-                'name' => __( 'Styles', 'formidable' ),
-                'singular_name' => __( 'Style', 'formidable' ),
-                'menu_name' => __( 'Style', 'formidable' ),
-                'edit' => __( 'Edit' ),
-                'add_new_item' => __( 'Create a New Style', 'formidable' ),
+				'name' => __( 'Styles', 'formidable' ),
+				'singular_name' => __( 'Style', 'formidable' ),
+				'menu_name' => __( 'Style', 'formidable' ),
+				'edit' => __( 'Edit' ),
+				'add_new_item' => __( 'Create a New Style', 'formidable' ),
 				'edit_item'    => __( 'Edit Style', 'formidable' ),
 			),
         ) );
     }
 
     public static function menu() {
-        add_submenu_page('formidable', 'Formidable | '. __( 'Styles', 'formidable' ), __( 'Styles', 'formidable' ), 'frm_change_settings', 'formidable-styles', 'FrmStylesController::route');
+		add_submenu_page('formidable', 'Formidable | ' . __( 'Styles', 'formidable' ), __( 'Styles', 'formidable' ), 'frm_change_settings', 'formidable-styles', 'FrmStylesController::route' );
     }
 
     public static function admin_init() {
@@ -55,17 +55,19 @@ class FrmStylesController {
         $version = FrmAppHelper::plugin_version();
 		wp_enqueue_script( 'jquery-frm-themepicker', FrmAppHelper::plugin_url() . '/js/jquery/jquery-ui-themepicker.js', array( 'jquery' ), $version );
 
-        wp_enqueue_style('frm-custom-theme', admin_url('admin-ajax.php') .'?action=frmpro_css');
+		wp_enqueue_style( 'frm-custom-theme', admin_url('admin-ajax.php?action=frmpro_css' ) );
 
         $style = apply_filters('frm_style_head', false);
         if ( $style ) {
-            wp_enqueue_style('frm-single-custom-theme', admin_url('admin-ajax.php') .'?action=frmpro_load_css&flat=1&'. http_build_query($style->post_content));
+			wp_enqueue_style( 'frm-single-custom-theme', admin_url( 'admin-ajax.php?action=frmpro_load_css&flat=1' ) . '&' . http_build_query( $style->post_content ) );
         }
     }
 
 	public static function enqueue_css( $register = 'enqueue' ) {
 		global $frm_vars;
+
 		$register_css = ( $register == 'register' );
+
 		if ( ( $frm_vars['load_css'] || $register_css ) && ! FrmAppHelper::is_admin() ) {
 			$frm_settings = FrmAppHelper::get_settings();
 			if ( $frm_settings->load_style == 'none' ) {
@@ -78,8 +80,9 @@ class FrmStylesController {
 				$version = FrmAppHelper::plugin_version();
 
 				foreach ( (array) $css as $css_key => $file ) {
-					if ( $register == 'register' ) {
-						wp_register_style( $css_key, $file, array(), $version );
+					if ( $register_css ) {
+						$this_version = self::get_css_version( $css_key, $version );
+						wp_register_style( $css_key, $file, array(), $this_version );
 					}
 
 					if ( 'all' == $frm_settings->load_style || $register != 'register' ) {
@@ -93,6 +96,8 @@ class FrmStylesController {
 				}
 			}
 			unset( $css );
+
+			add_filter( 'style_loader_tag', 'FrmStylesController::add_tags_to_css', 10, 2 );
 		}
 	}
 
@@ -115,9 +120,21 @@ class FrmStylesController {
 		if ( is_readable( $uploads['basedir'] . $saved_css_path ) ) {
 			$url = $uploads['baseurl'] . $saved_css_path;
 		} else {
-			$url = admin_url( 'admin-ajax.php' ) . '?action=frmpro_css';
+			$url = admin_url( 'admin-ajax.php?action=frmpro_css' );
 		}
 		$stylesheet_urls['formidable'] = $url;
+	}
+
+	private static function get_css_version( $css_key, $version ) {
+		if ( 'formidable' == $css_key ) {
+			$this_version = get_option( 'frm_last_style_update' );
+			if ( ! $this_version ) {
+				$this_version = $version;
+			}
+		} else {
+			$this_version = $version;
+		}
+		return $this_version;
 	}
 
 	private static function maybe_enqueue_jquery_css() {
@@ -127,12 +144,25 @@ class FrmStylesController {
 		}
 	}
 
-    public static function new_style($return = '') {
-        FrmAppHelper::update_message( __( 'create multiple styling templates', 'formidable' ), 'wrap' );
+	public static function add_tags_to_css( $tag, $handle ) {
+		if ( ( 'formidable' == $handle || 'jquery-theme' == $handle ) && strpos( $tag, ' property=' ) === false ) {
+			$frm_settings = FrmAppHelper::get_settings();
+			if ( $frm_settings->use_html ) {
+				$tag = str_replace( ' type=', ' property="stylesheet" type=', $tag );
+			}
+		}
+		return $tag;
+	}
+
+	public static function new_style( $return = '' ) {
         self::load_styler('default');
     }
 
-    public static function edit($style_id = false, $message = '') {
+	public static function duplicate() {
+		self::load_styler('default');
+	}
+
+	public static function edit( $style_id = false, $message = '' ) {
         if ( ! $style_id ) {
 			$style_id = FrmAppHelper::get_param( 'id', '', 'get', 'absint' );
             if ( empty($style_id) ) {
@@ -164,14 +194,14 @@ class FrmStylesController {
                 $post_id = reset($id);
             }
             // include the CSS that includes this style
-			echo '<link href="' . esc_url( admin_url( 'admin-ajax.php' ) . '?action=frmpro_css' ) . '" type="text/css" rel="Stylesheet" class="frm-custom-theme" />';
+			echo '<link href="' . esc_url( admin_url( 'admin-ajax.php?action=frmpro_css' ) ) . '" type="text/css" rel="Stylesheet" class="frm-custom-theme" />';
             $message = __( 'Your styling settings have been saved.', 'formidable' );
         }
 
         return self::edit($post_id, $message);
     }
 
-    public static function load_styler($style, $message = '') {
+	public static function load_styler( $style, $message = '' ) {
         global $frm_settings;
 
         $frm_style = new FrmStyle();
@@ -185,14 +215,14 @@ class FrmStylesController {
 
         self::add_meta_boxes();
 
-        include(FrmAppHelper::plugin_path() .'/classes/views/styles/show.php');
+		include( FrmAppHelper::plugin_path() . '/classes/views/styles/show.php' );
     }
 
 	/**
 	 * @param string $message
-	 * @param array $forms
+	 * @param array|object $forms
 	 */
-    private static function manage($message = '', $forms = array()) {
+	private static function manage( $message = '', $forms = array() ) {
         $frm_style = new FrmStyle();
         $styles = $frm_style->get_all();
         $default_style = $frm_style->get_default_style($styles);
@@ -201,7 +231,7 @@ class FrmStylesController {
             $forms = FrmForm::get_published_forms();
         }
 
-        include(FrmAppHelper::plugin_path() .'/classes/views/styles/manage.php');
+		include( FrmAppHelper::plugin_path() . '/classes/views/styles/manage.php' );
     }
 
     private static function manage_styles() {
@@ -238,7 +268,7 @@ class FrmStylesController {
             $style = $frm_style->get_default_style();
         }
 
-        include(FrmAppHelper::plugin_path() .'/classes/views/styles/custom_css.php');
+		include( FrmAppHelper::plugin_path() . '/classes/views/styles/custom_css.php' );
     }
 
     public static function save_css() {
@@ -272,7 +302,7 @@ class FrmStylesController {
                 	return;
             	}
 
-                if ( 'new_style' == $action ) {
+                if ( 'new_style' == $action || 'duplicate' == $action ) {
                     return self::$action();
                 }
 
@@ -281,6 +311,7 @@ class FrmStylesController {
     }
 
     public static function reset_styling() {
+		FrmAppHelper::permission_check('frm_change_settings');
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         $frm_style = new FrmStyle();
@@ -304,7 +335,7 @@ class FrmStylesController {
         }
 
         echo '<style type="text/css">';
-        include(FrmAppHelper::plugin_path() .'/css/_single_theme.css.php');
+		include( FrmAppHelper::plugin_path() . '/css/_single_theme.css.php' );
         echo '</style>';
         wp_die();
     }
@@ -314,6 +345,8 @@ class FrmStylesController {
         // setup meta boxes
         $meta_boxes = array(
             'general'           => __( 'General', 'formidable' ),
+            'form-title'        => __( 'Form Title', 'formidable' ),
+            'form-description'  => __( 'Form Description', 'formidable' ),
             'field-labels'      => __( 'Field Labels', 'formidable' ),
             'field-description' => __( 'Field Description', 'formidable' ),
             'field-colors'      => __( 'Field Colors', 'formidable' ),
@@ -326,15 +359,15 @@ class FrmStylesController {
         );
 
         foreach ( $meta_boxes as $nicename => $name ) {
-            add_meta_box( $nicename .'-style', $name, 'FrmStylesController::include_style_section', self::$screen, 'side', 'default', $nicename );
+			add_meta_box( $nicename . '-style', $name, 'FrmStylesController::include_style_section', self::$screen, 'side', 'default', $nicename );
             unset($nicename, $name);
         }
     }
 
-    public static function include_style_section($atts, $sec) {
+	public static function include_style_section( $atts, $sec ) {
         extract($atts);
 		$current_tab = FrmAppHelper::simple_get( 'page-tab', 'sanitize_title', 'default' );
-        include(FrmAppHelper::plugin_path() .'/classes/views/styles/_'. $sec['args'] .'.php');
+		include( FrmAppHelper::plugin_path() . '/classes/views/styles/_' . $sec['args'] . '.php' );
     }
 
     public static function load_css() {
@@ -343,7 +376,7 @@ class FrmStylesController {
         $frm_style = new FrmStyle();
         $defaults = $frm_style->get_defaults();
 
-        include(FrmAppHelper::plugin_path() .'/css/_single_theme.css.php');
+		include( FrmAppHelper::plugin_path() . '/css/_single_theme.css.php' );
         wp_die();
     }
 
@@ -397,7 +430,7 @@ class FrmStylesController {
      * @param string $class
      * @param string $style
      */
-    public static function get_form_style_class($class, $style) {
+	public static function get_form_style_class( $class, $style ) {
         if ( 1 == $style ) {
             $style = 'default';
         }
@@ -406,7 +439,7 @@ class FrmStylesController {
         $style = $frm_style->get_one();
 
         if ( $style ) {
-            $class .= ' frm_style_'. $style->post_name;
+			$class .= ' frm_style_' . $style->post_name;
         }
 
         return $class;
@@ -415,14 +448,14 @@ class FrmStylesController {
     /**
      * @param string $val
      */
-    public static function get_style_val($val, $form = 'default') {
+	public static function get_style_val( $val, $form = 'default' ) {
         $style = self::get_form_style($form);
         if ( $style && isset( $style->post_content[ $val ] ) ) {
             return $style->post_content[ $val ];
         }
     }
 
-    public static function show_entry_styles($default_styles) {
+	public static function show_entry_styles( $default_styles ) {
         $frm_style = new FrmStyle('default');
         $style = $frm_style->get_one();
 
@@ -444,7 +477,7 @@ class FrmStylesController {
         return $default_styles;
     }
 
-    public static function &important_style($important, $field) {
+	public static function &important_style( $important, $field ) {
         $important = self::get_style_val('important_style', $field['form_id']);
         return $important;
     }

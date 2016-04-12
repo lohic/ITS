@@ -20,7 +20,7 @@ class FrmProDisplaysHelper{
         $values = (object) $post;
         $defaults = self::get_default_opts();
 
-        foreach ( array( 'form_id', 'entry_id', 'post_id', 'dyncontent', 'param', 'type', 'show_count', 'insert_loc') as $var ) {
+		foreach ( array( 'form_id', 'entry_id', 'dyncontent', 'param', 'type', 'show_count' ) as $var ) {
             $values->{'frm_'. $var} = get_post_meta($post->ID, 'frm_'. $var, true);
             if ( $check_post ) {
                 $values->{'frm_'. $var} = FrmAppHelper::get_param($var, $values->{'frm_'. $var});
@@ -52,10 +52,9 @@ class FrmProDisplaysHelper{
             'name' => '', 'description' => '', 'display_key' => '',
             'form_id' => 0, 'date_field_id' => '', 'edate_field_id' => '',
 			'repeat_event_field_id' => '', 'repeat_edate_field_id' => '', 'entry_id' => '',
-            'post_id' => '', 'before_content' => '', 'content' => '',
+			'before_content' => '', 'content' => '',
             'after_content' => '', 'dyncontent' => '', 'param' => 'entry',
-            'type' => '', 'show_count' => 'all', 'insert_loc' => 'none',
-            'insert_pos' => 1, 'no_rt' => 0,
+			'type' => '', 'show_count' => 'all', 'no_rt' => 0,
             'order_by' => array(), 'order' => array(), 'limit' => '', 'page_size' => '',
             'empty_msg' => __( 'No Entries Found', 'formidable' ), 'copy' => 0,
 			'where' => array(), 'where_is' => array(), 'where_val' => array(),
@@ -78,7 +77,7 @@ class FrmProDisplaysHelper{
     * Check if a View has been duplicated. If it has, get the View object to be duplicated. If it has not been duplicated, just get the new post object.
     *
     * @param object $post
-    * @return the View to be copied or the View that is being created (if it is not being duplicated)
+    * @return object - the View to be copied or the View that is being created (if it is not being duplicated)
     */
     public static function get_current_view( $post ) {
         if ( $post->post_type == FrmProDisplaysController::$post_type && isset($_GET['copy_id']) ) {
@@ -89,13 +88,15 @@ class FrmProDisplaysHelper{
     }
 
     public static function get_shortcodes($content, $form_id) {
-        if ( empty($form_id) ) {
-            return false;
+		if ( empty( $form_id ) || strpos( $content, '[' ) === false ) {
+			// don't continue if there are no shortcodes to check
+			return array( array() );
         }
 
         $tagregexp = array(
             'deletelink', 'detaillink',
             'evenodd', 'get', 'entry_count', 'event_date',
+			'is[-|_]draft',
         );
 
         $form_id = (int) $form_id;

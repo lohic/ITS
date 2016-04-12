@@ -81,9 +81,31 @@ class FrmProEntriesHelper{
 
 		FrmForm::maybe_get_form( $form );
 
+		self::maybe_get_parent_form_and_entry( $form, $entry );
+
         $allowed = self::user_can_edit_check($entry, $form);
         return apply_filters('frm_user_can_edit', $allowed, compact('entry', 'form'));
     }
+
+	/**
+	* If a form is a child form, get the parent form. Then if the entry is a child entry, get the parent entry.
+	*
+	* @since 2.0.13
+	* @param int|object $form - pass by reference
+	* @param int|object $entry - pass by reference
+	*/
+	private static function maybe_get_parent_form_and_entry( &$form, &$entry ) {
+		// If form is a child form, refer to parent form's settings
+		if ( $form->parent_form_id ) {
+			$form = FrmForm::getOne( $form->parent_form_id );
+
+			// Make sure we're also checking the parent entry's permissions
+			FrmEntry::maybe_get_entry( $entry );
+			if ( $entry->parent_item_id ) {
+				$entry = FrmEntry::getOne( $entry->parent_item_id );
+			}
+		}
+	}
 
     public static function user_can_edit_check($entry, $form) {
         $user_ID = get_current_user_id();
@@ -496,8 +518,11 @@ class FrmProEntriesHelper{
 		$search_terms = array_map('trim', $matches[0]);
 
         $spaces = '';
-        $e_ids = $p_search = array();
-		$search = array( 'or' => 1 );
+		$e_ids = $p_search = $search = array();
+		$and_or = apply_filters( 'frm_search_any_terms', true, $s );
+		if ( $and_or ) {
+			$search['or'] = 1;
+		}
 
         $data_field = FrmProFormsHelper::has_field('data', $form_id, false);
 
@@ -562,8 +587,8 @@ class FrmProEntriesHelper{
     }
 
 	public static function generate_csv( $form, $entry_ids, $form_cols ) {
-		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmProCSVHelper::generate_csv');
-		FrmProCSVHelper::generate_csv( compact( 'form', 'entry_ids', 'form_cols' ) );
+		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmCSVExportHelper::generate_csv');
+		FrmCSVExportHelper::generate_csv( compact( 'form', 'entry_ids', 'form_cols' ) );
 	}
 
 	public static function csv_headings() {
@@ -591,12 +616,12 @@ class FrmProEntriesHelper{
 	}
 
 	public static function encode_value( $line ) {
-		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmProCSVHelper::encode_value');
-		return FrmProCSVHelper::encode_value( $line );
+		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmCSVExportHelper::encode_value');
+		return FrmCSVExportHelper::encode_value( $line );
 	}
 
 	public static function escape_csv( $value ) {
-		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmProCSVHelper::escape_csv');
-		return FrmProCSVHelper::escape_csv( $value );
+		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmCSVExportHelper::escape_csv');
+		return FrmCSVExportHelper::escape_csv( $value );
 	}
 }

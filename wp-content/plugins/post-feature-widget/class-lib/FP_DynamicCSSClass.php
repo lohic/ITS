@@ -18,26 +18,42 @@ class FP_DynamicCSS extends A5_DynamicFiles {
 		
 		self::$options =  get_option('pf_options');
 		
-		if (!isset(self::$options['inline'])) self::$options['inline'] = false;
+		if (isset(self::$options['inline'])) self::$options['inline'] = false;
 		
-		if (!isset(self::$options['compress'])) self::$options['compress'] = false;
+		if (!array_key_exists('priority', self::$options)) self::$options['priority'] = false;
 		
-		parent::A5_DynamicFiles('wp', 'css', 'all', false, self::$options['inline']);
+		if (!array_key_exists('compress', self::$options)) self::$options['compress'] = true;
 		
-		$eol = (self::$options['compress']) ? '' : "\r\n";
-		$tab = (self::$options['compress']) ? '' : "\t";
+		$this->a5_styles('wp', 'all', self::$options['inline'], self::$options['priority']);
 		
-		$css_selector = 'widget_featured_post_widget[id^="featured_post_widget"]';
+		$fpw_styles = self::$options['css_cache'];
 		
-		parent::$wp_styles .= (!self::$options['compress']) ? $eol.'/* CSS portion of the Featured Post Widget */'.$eol.$eol : '';
+		if (!$fpw_styles) :
 		
-		$style = '-moz-hyphens: auto;'.$eol.$tab.'-o-hyphens: auto;'.$eol.$tab.'-webkit-hyphens: auto;'.$eol.$tab.'-ms-hyphens: auto;'.$eol.$tab.'hyphens: auto;';
+			$eol = (self::$options['compress']) ? '' : "\n";
+			$tab = (self::$options['compress']) ? '' : "\t";
+			
+			$css_selector = 'widget_featured_post_widget[id^="featured_post_widget"]';
+			
+			$fpw_styles = (!self::$options['compress']) ? $eol.'/* CSS portion of the Featured Post Widget */'.$eol.$eol : '';
+			
+			if (!empty(self::$options['css'])) :
+			
+				$style.=$eol.$tab.str_replace('; ', ';'.$eol.$tab, str_replace(array("\r\n", "\n", "\r"), ' ', self::$options['css']));
+				
+				$fpw_styles .= parent::build_widget_css($css_selector, '').'{'.$eol.$tab.$style.$eol.'}'.$eol;
+				
+			endif;
+			
+			$fpw_styles .= parent::build_widget_css($css_selector, 'img').'{'.$eol.$tab.'height: auto;'.$eol.$tab.'max-width: 100%;'.$eol.'}'.$eol;
+			
+			self::$options['css_cache'] = $fpw_styles;
+			
+			update_option('pf_options', self::$options);
+			
+		endif;
 		
-		if (!empty(self::$options['css'])) $style.=$eol.$tab.str_replace('; ', ';'.$eol.$tab, str_replace(array("\r\n", "\n", "\r"), ' ', self::$options['css']));
-		
-		parent::$wp_styles .= parent::build_widget_css($css_selector, '').'{'.$eol.$tab.$style.$eol.'}'.$eol;
-		
-		parent::$wp_styles .= parent::build_widget_css($css_selector, 'img').'{'.$eol.$tab.'height: auto;'.$eol.$tab.'max-width: 100%;'.$eol.'}'.$eol;
+		parent::$wp_styles .= $fpw_styles;
 
 	}
 	

@@ -17,7 +17,7 @@ class FrmProDisplay{
         }
 
         $meta = array();
-		foreach ( array( 'form_id', 'entry_id', 'post_id', 'dyncontent', 'param', 'type', 'show_count', 'insert_loc' ) as $k ) {
+		foreach ( array( 'form_id', 'entry_id', 'dyncontent', 'param', 'type', 'show_count' ) as $k ) {
 			$meta[ $k ] = $values->{'frm_' . $k};
 			unset( $k );
         }
@@ -55,7 +55,7 @@ class FrmProDisplay{
         $new_values = array();
         $new_values['frm_param'] = isset($values['param']) ? sanitize_title_with_dashes($values['param']) : '';
 
-        $fields = array( 'dyncontent', 'insert_loc', 'type', 'show_count', 'form_id', 'entry_id', 'post_id');
+		$fields = array( 'dyncontent', 'type', 'show_count', 'form_id', 'entry_id' );
 		foreach ( $fields as $field ) {
             if ( isset( $values[ $field ] ) ) {
 				$new_values[ 'frm_'. $field ] = $values[ $field ];
@@ -73,41 +73,6 @@ class FrmProDisplay{
             update_post_meta($id, $key, $val);
             unset($key, $val);
         }
-
-        if ( ! isset($new_values['frm_form_id']) || empty($new_values['frm_form_id']) ) {
-            return;
-        }
-
-        global $wpdb;
-
-        //update 'frm_display_id' post metas for automatically used views
-        $posts = FrmDb::get_col( $wpdb->prefix .'frm_items', array( 'post_id >' => 0, 'form_id' => $new_values['frm_form_id']), 'post_id' );
-        $first_post = $posts ? reset($posts) : false;
-        $qualified = self::get_auto_custom_display( array( 'form_id' => $new_values['frm_form_id'], 'post_id' => $first_post));
-
-        if ( ! $qualified ) {
-            //delete any post meta for this display if no qualified displays
-            $wpdb->delete($wpdb->postmeta, array( 'meta_key' => 'frm_display_id', 'meta_value' => $id));
-		} else if ( $qualified->ID == $id ) {
-            //this display is qualified
-			if ( $posts ) {
-				foreach ( $posts as $p ) {
-					update_post_meta( $p, 'frm_display_id', $id );
-					unset( $p );
-                }
-            }else{
-                $wpdb->delete($wpdb->postmeta, array( 'meta_key' => 'frm_display_id', 'meta_value' => $id));
-            }
-        }else{
-            //this view is not qualified, so set any posts to the next qualified view
-            $wpdb->query($wpdb->prepare('UPDATE '. $wpdb->postmeta .' SET meta_value=%d WHERE meta_key=%s AND meta_value=%d', $qualified->ID, 'frm_display_id', $id));
-        }
-
-        //update post meta of post selected for auto insertion
-        if ( isset($new_values['frm_insert_loc']) && $new_values['frm_insert_loc'] != 'none' && isset($new_values['frm_post_id']) && (int) $new_values['frm_post_id'] ) {
-            update_post_meta($new_values['frm_post_id'], 'frm_display_id', $id);
-        }
-
     }
 
     public static function getOne( $id, $blog_id = false, $get_meta = false, $atts = array() ) {
@@ -165,7 +130,8 @@ class FrmProDisplay{
         $query = array(
             'numberposts'   => $limit,
             'orber_by'      => $order_by,
-            'post_type'     => 'frm_display'
+			'post_type'     => 'frm_display',
+			'post_status'	=> array('publish','private'),
         );
 		$query = array_merge( (array) $where, $query );
 
@@ -200,20 +166,7 @@ class FrmProDisplay{
 
         if ( $args['post_id'] && ! $args['entry_id'] ) {
             //is post linked to an entry?
-            $args['entry_id'] = FrmDb::get_var( $wpdb->prefix .'frm_items', array( 'post_id' => $args['post_id']) );
-
-            //is post selected for auto-insertion?
-            if ( ! $args['entry_id'] ) {
-                $query = array( 'meta_key' => 'frm_post_id', 'meta_value' => $args['post_id']);
-                if ( isset($display_ids) ) {
-                    $query['post_ID'] = $display_ids;
-                }
-                $display_ids = FrmDb::get_col( $wpdb->postmeta, $query, 'post_ID' );
-
-                if ( ! $display_ids ) {
-                    return false;
-                }
-            }
+			$args['entry_id'] = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'post_id' => $args['post_id'] ) );
         }
 
         //this post does not have an auto display
@@ -276,10 +229,6 @@ class FrmProDisplay{
 			$errors[] = __( 'Content cannot be blank', 'formidable' );
 		}
 
-		if ( $values['insert_loc'] != 'none' && $values['post_id'] == '' ) {
-			$errors[] = __( 'Page cannot be blank if you want the content inserted automatically', 'formidable' );
-		}
-
         if ( ! empty($values['options']['limit']) && ! is_numeric($values['options']['limit']) ) {
             $errors[] = __( 'Limit must be a number', 'formidable' );
         }
@@ -312,5 +261,17 @@ class FrmProDisplay{
 
         return $errors;
     }
+
+	/**
+	 * Get the ID of a View using the key
+	 *
+	 * @since 2.0.21
+	 * @param $key
+	 * @return int
+	 */
+	public static function get_id_by_key( $key ){
+        $id = FrmDb::get_var( 'posts', array( 'post_name' => sanitize_title( $key ) ) );
+        return $id;
+	}
 
 }

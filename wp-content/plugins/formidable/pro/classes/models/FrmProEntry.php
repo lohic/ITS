@@ -50,7 +50,10 @@ class FrmProEntry{
             $saved_message = '';
             FrmProFormsHelper::save_draft_msg( $saved_message, $form, $record );
 
-            $message = '<div class="frm_message" id="message">'. $saved_message .'</div>';
+			$message = FrmFormsHelper::get_success_message( array(
+				'message' => $saved_message, 'form' => $form,
+				'entry_id' => $record, 'class' => 'frm_message',
+			) );
 
             FrmProEntriesController::show_responses($record, $fields, $form, $title, $description, $message);
             add_filter('frm_continue_to_create', '__return_false');
@@ -107,7 +110,7 @@ class FrmProEntry{
             foreach ( $field_values as $k => $v ) {
                 $entry_values = $new_values;
                 $entry_values['form_id'] = $sub_form_id;
-                $entry_values['item_meta'] = $v;
+                $entry_values['item_meta'] = (array) $v;
                 $entry_values['parent_item_id'] = isset($values['id']) ? $values['id'] : 0;
 				$entry_values['parent_form_id'] = $form_id;
 				// include a nonce just to be sure the parent_form_id is legit
@@ -523,15 +526,7 @@ class FrmProEntry{
 			}
 
 			$time = $times[ $e_key ]->meta_value;
-			$parts = str_replace( array( ' PM',' AM'), '', $time );
-			$parts = explode( ':', $parts );
-			if ( is_array( $parts ) ) {
-				if ( self::is_later_than_noon( $time, $parts ) ) {
-					$parts[0] = (int) $parts[0] + 12;
-				}
-			}
-
-			$new_order[ $e_key ] = (int) $parts[0] . $parts[1];
+			$new_order[ $e_key ] = FrmProAppHelper::format_time( $time, 'Hi' );
 
         	unset($e_key, $entry);
 		}
@@ -544,10 +539,6 @@ class FrmProEntry{
 
         $entry_ids = $final_order;
     }
-
-	private static function is_later_than_noon( $time, $parts ) {
-		return ( ( preg_match( '/PM/', $time ) && ( (int) $parts[0] != 12 ) ) || ( ( (int) $parts[0] == 12 ) && preg_match( '/AM/', $time ) ) );
-	}
 
 	public static function pre_validate( $errors, $values ) {
 		_deprecated_function( __FUNCTION__, '2.0.8', 'FrmProFormsHelper::can_submit_form_now' );

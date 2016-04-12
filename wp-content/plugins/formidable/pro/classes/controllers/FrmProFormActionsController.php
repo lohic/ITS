@@ -11,7 +11,7 @@ class FrmProFormActionsController{
     }
 
     public static function email_action_control($settings) {
-	    $settings['event'] = array_unique( array_merge( $settings['event'], array( 'create', 'update', 'delete') ) );
+		$settings['event'] = array_unique( array_merge( $settings['event'], array( 'draft', 'create', 'update', 'delete' ) ) );
 	    $settings['priority'] = 41;
 
 	    return $settings;
@@ -48,6 +48,7 @@ class FrmProFormActionsController{
     }
 
     public static function _logic_row(){
+		FrmAppHelper::permission_check('frm_edit_forms');
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$meta_name = FrmAppHelper::get_param( 'meta_name', '', 'get', 'sanitize_title' );
@@ -91,9 +92,27 @@ class FrmProFormActionsController{
         return $action;
     }
 
-    public static function trigger_update_actions($entry_id, $form_id) {
-        FrmFormActionsController::trigger_actions('update', $form_id, $entry_id);
-    }
+	/**
+	 * @since 2.0.23
+	 */
+	public static function maybe_trigger_draft_actions( $event, $args ) {
+		if ( isset( $args['entry_id'] ) ){
+			$entry = FrmEntry::getOne( $args['entry_id'] );
+			if ( $entry && $entry->is_draft ) {
+				$event = 'draft';
+			}
+		}
+		return $event;
+	}
+
+	public static function trigger_draft_actions( $entry_id, $form_id ) {
+		FrmFormActionsController::trigger_actions( 'draft', $form_id, $entry_id );
+	}
+
+	public static function trigger_update_actions( $entry_id, $form_id ) {
+		$event = apply_filters( 'frm_trigger_update_action', 'update', array( 'entry_id' => $entry_id ) );
+		FrmFormActionsController::trigger_actions( $event, $form_id, $entry_id );
+	}
 
     public static function trigger_delete_actions($entry_id, $entry = false) {
 		if ( empty( $entry ) ) {
@@ -103,6 +122,7 @@ class FrmProFormActionsController{
     }
 
     public static function _postmeta_row(){
+		FrmAppHelper::permission_check('frm_edit_forms');
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         global $wpdb;
@@ -135,6 +155,7 @@ class FrmProFormActionsController{
     }
 
     public static function _posttax_row(){
+		FrmAppHelper::permission_check('frm_edit_forms');
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         if ( isset($_POST['field_id']) ) {
@@ -171,6 +192,7 @@ class FrmProFormActionsController{
     }
 
     public static function _replace_posttax_options(){
+		FrmAppHelper::permission_check('frm_edit_forms');
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         // Get the post type, and all taxonomies for that post type

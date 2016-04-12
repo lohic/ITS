@@ -3,10 +3,8 @@
 class FrmProStatisticsController{
 
     public static function show() {
+		add_filter( 'frm_form_stop_action_reports', '__return_true' );
 		FrmAppHelper::permission_check( 'frm_view_reports' );
-
-        remove_action('frm_form_action_reports', 'FrmStatisticsController::list_reports');
-        add_filter('frm_form_stop_action_reports', '__return_true');
 
         global $wpdb;
 
@@ -171,8 +169,6 @@ class FrmProStatisticsController{
         $values = $labels = $tooltips = $f_values = $rows = $cols = $options = $x_inputs = array();
         $pie = $combine_dates = false;
 
-        $args['user_id'] = (int) $args['user_id'];
-
         // Get fields and ids array
         $fields_and_ids = self::get_fields( $field, $args['ids'] );
         $args['ids'] = $fields_and_ids['ids'];
@@ -216,6 +212,10 @@ class FrmProStatisticsController{
         } else {
             // TODO: Make sure this works with truncate_label
             self::get_count_values( $values, $labels, $tooltips, $pie, $field, $args );
+
+			if ( empty( $values ) ) {
+				return;
+			}
         }
 
         // Reset keys for labels, values, and tooltips
@@ -358,13 +358,14 @@ class FrmProStatisticsController{
     * @return array $inputs all values for field
     */
     public static function get_generic_inputs( $field, $args ) {
-        $meta_args = array( 'entry_ids', 'user_id', 'start_date', 'end_date');
-        foreach ( $meta_args as $key => $arg ) {
-            if ( $args[$arg] ) {
-                $meta_args[$arg] = $args[$arg];
-            }
-            unset( $meta_args[$key], $key, $arg );
-        }
+		$pass_args = array( 'entry_ids', 'user_id', 'start_date', 'end_date' );
+		$meta_args = array();
+		foreach ( $pass_args as $arg_key ) {
+			if ( $args[ $arg_key ] !== false && $args[ $arg_key ] !== '' ) {
+				$meta_args[ $arg_key ] = $args[ $arg_key ];
+			}
+		}
+		unset( $arg_key, $pass_args );
 
         // Get the metas
         $inputs = FrmProEntryMeta::get_all_metas_for_field( $field, $meta_args );
@@ -588,8 +589,8 @@ class FrmProStatisticsController{
                     $fields[$add_field->id] = $add_field;
                     $ids[$id_key] = $add_field->id;
                 }
-                unset($f, $id_key);
             }
+			unset( $f, $id_key );
         }
         $return = compact( 'fields', 'ids' );
         return $return;
@@ -611,7 +612,7 @@ class FrmProStatisticsController{
         }
 
         $query = array( 'form_id' => $field->form_id, 'post_id >' => 1);
-        if ( $args['user_id'] ) {
+        if ( $args['user_id'] !== false ) {
             $query['user_id'] = $args['user_id'];
         }
         if ( $args['entry_ids'] ) {
@@ -725,7 +726,10 @@ class FrmProStatisticsController{
         $q = array();
         foreach ( $args['fields'] as $f_id => $f ) {
             if ( $f_id != $field->id ) {
-                $q[$f_id] = $select_query . " WHERE em.field_id=". (int) $f_id . ( ( $args['user_id'] ) ? " AND user_id={$args['user_id']}" : '');
+				$q[$f_id] = $select_query . " WHERE em.field_id=". (int) $f_id;
+				if ( $args['user_id'] !== false ) {
+					$select_query .= ' AND user_id=' . $args['user_id'];
+				}
                 $q[$f_id] .= $and_query;
             }
             unset($f, $f_id);
@@ -784,32 +788,22 @@ class FrmProStatisticsController{
 	private static function add_to_x_axis_queries( &$query, &$x_query, &$and_query, $args ) {
 		global $wpdb;
 
-        /// If start date is set
-        if ( $args['start_date'] ) {
-            $start_date = $wpdb->prepare('%s', date('Y-m-d', strtotime( $args['start_date'] ) ) );
-            if ( $args['x_field'] ) {
-                $x_query .= " and meta_value >= " . $start_date;
-            } else {
-				$query .= ' AND e.' . $args['x_axis'] . '>=' . $start_date;
-                $x_query .= " and e." . $args['x_axis'] . ">= " . $start_date;
-				$and_query .= ' AND e.' . $args['x_axis'] . '>=' . $start_date;
-            }
-        }
+		/// If start date is set
+		if ( $args['start_date'] ) {
+			$start_date = $wpdb->prepare('%s', date('Y-m-d', strtotime( $args['start_date'] ) ) );
 
-        // If end date is set
-        if ( $args['end_date'] ) {
-            $end_date = $wpdb->prepare('%s', date('Y-m-d 23:59:59', strtotime( $args['end_date'] )));
-            if ( $args['x_field'] ) {
-                $x_query .= " and meta_value <= " . $end_date;
-            } else {
-				$query .= ' AND e.' . $args['x_axis'] . '<=' . $end_date;
-                $x_query .= " and e." . $args['x_axis'] . "<= " . $end_date;
-				$and_query .= ' AND e.' . $args['x_axis'] . '<=' . $end_date;
-            }
-        }
+			self::add_start_end_date_where( '>', $start_date, $args, $x_query );
+		}
+
+		// If end date is set
+		if ( $args['end_date'] ) {
+			$end_date = $wpdb->prepare('%s', date('Y-m-d 23:59:59', strtotime( $args['end_date'] )));
+
+			self::add_start_end_date_where( '<', $end_date, $args, $x_query );
+		}
 
         //If user_id is set
-        if ( $args['user_id'] ) {
+        if ( $args['user_id'] !== false ) {
             $query .= $wpdb->prepare(' AND user_id=%d', $args['user_id']);
             $x_query .= $wpdb->prepare(' AND user_id=%d', $args['user_id']);
             $and_query .= $wpdb->prepare(' AND user_id=%d', $args['user_id']);
@@ -826,6 +820,33 @@ class FrmProStatisticsController{
         $query .= ' AND e.is_draft=0';
         $x_query .= ' AND e.is_draft=0';
         $and_query .= ' AND e.is_draft=0';
+	}
+
+	/**
+	* Add start_date/end_date to x_axis WHERE query
+	*
+	* @since 2.0.12
+	*
+	* @param string $operator
+	* @param string $date
+	* @param array $args
+	* @param string $x_query - pass by reference
+	*
+	* TODO: Check if it's more efficient to add to the $query and $and_query at this time as well
+	*/
+	private static function add_start_end_date_where( $operator, $date, $args, &$x_query ){
+        if ( $args['x_field'] ) {
+			if ( $args['x_field']->type == 'date' ) {
+				// If the x axis is a date field, make sure the dates comes after start_date
+				$x_query .= ' AND meta_value ' . $operator . '=' . $date;
+			} else {
+				// If the x axis is NOT a date field, filter by creation date
+				$x_query .= ' and e.created_at' . $operator . '=' . $date;
+			}
+        } else {
+			// x_axis is created_at or updated_at
+            $x_query .= ' and e.' . $args['x_axis'] . $operator . '=' . $date;
+        }
 	}
 
     /**
@@ -864,9 +885,8 @@ class FrmProStatisticsController{
                     }
 				    unset($item, $i_key);
 			    }
-			    unset($k, $i);
 		    }
-            unset($count);
+            unset( $k, $i, $count);
 	    }
 
 		if ( $x_entries ) {
@@ -875,8 +895,8 @@ class FrmProStatisticsController{
 				if ( ! in_array ( $input['item_id'], $x_entries ) ) {
 					unset( $inputs[$key] );
 				}
-				unset( $key, $input );
 			}
+			unset( $key, $input );
 		}
 
 	    //Strip slashes from inputs
@@ -1401,7 +1421,7 @@ class FrmProStatisticsController{
                 $stats_args[] = 'created_at>' . $args['start_date'];
             }
         }
-        if ( $args['user_id'] ) {
+        if ( $args['user_id'] !== false ) {
             $stats_args['user_id'] = $args['user_id'];
         }
         if ( $args['entry_ids'] ) {

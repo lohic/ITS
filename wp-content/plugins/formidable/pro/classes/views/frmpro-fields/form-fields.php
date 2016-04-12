@@ -96,7 +96,7 @@ if ( 'date' == $field['type'] ) {
 } else if ($field['type'] == 'image' ) { ?>
 <input type="<?php echo ($frm_settings->use_html) ? 'url' : 'text'; ?>" id="<?php echo esc_attr( $html_id ) ?>" name="<?php echo esc_attr( $field_name ) ?>" value="<?php echo esc_attr( $field['value'] ) ?>" <?php do_action( 'frm_field_input_html', $field ) ?>/>
 <?php if ( $field['value'] ) {
-        ?><img src="<?php echo esc_attr( $field['value'] ) ?>" height="50px" /><?php
+		echo FrmProFieldsHelper::get_display_value( $field['value'], $field, array( 'html' => true ) );
     }
 
 } else if ( $field['type'] == 'scale' ) {
@@ -210,9 +210,7 @@ if ( ! $field['size'] ) {
     include_once(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-entries/loading.php');
 
 } else if ( $field['type'] == 'data' ) { ?>
-<div class="frm_data_field_container">
 <?php require(FrmAppHelper::plugin_path() .'/pro/classes/views/frmpro-fields/data-options.php'); ?>
-</div>
 <?php
 
 } else if ( $field['type'] == 'form' ) {
