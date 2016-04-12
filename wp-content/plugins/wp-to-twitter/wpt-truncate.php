@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = false ) {
 	// media file occupies 22 characters, need to account for in shortening.
 	$maxlength    = apply_filters( 'wpt_max_tweet_length', array( 'with_media' => 116, 'without_media' => 139 ) );
-	$tweet_length = ( wpt_post_with_media( $post_ID ) ) ? $maxlength['with_media'] : $maxlength['without_media'];
+	$tweet_length = ( wpt_post_with_media( $post_ID, $post ) ) ? $maxlength['with_media'] : $maxlength['without_media'];
 	$tweet        = apply_filters( 'wpt_tweet_sentence', $tweet, $post_ID );
 	$tweet        = trim( wpt_custom_shortcodes( $tweet, $post_ID ) );
 	$shrink       = ( $post['shortUrl'] != '' ) ? $post['shortUrl'] : apply_filters( 'wptt_shorten_link', $post['postLink'], $post['postTitle'], $post_ID, false );
@@ -76,12 +76,13 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 	     && strpos( $tweet, '#reference#' ) === false
 	     && strpos( $tweet, '#account#' ) === false
 	     && strpos( $tweet, '#@#' ) === false
-	     && strpos( $tweet, '#cat_desc' ) === false
+	     && strpos( $tweet, '#cat_desc#' ) === false
+		 && strpos( $tweet, '#longurl#' ) === false
 	) {
 		// there are no tags in this Tweet. Truncate and return.
 		$post_tweet = mb_substr( $tweet, 0, $tweet_length, $encoding );
 
-		return $post_tweet;
+		return apply_filters( 'wpt_custom_truncate', $post_tweet, $tweet, $post_ID, $retweet );
 	}
 	if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) {
 		$reference = ( $ref ) ? $account : '@' . get_option( 'wtt_twitter_username' );
@@ -104,7 +105,8 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 		'#author#',
 		'#displayname#',
 		'#tags#',
-		'#modified#'
+		'#modified#',
+		'#longurl#'
 	);
 	$replace    = array(
 		$account,
@@ -120,7 +122,8 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 		$author,
 		$display_name,
 		$tags,
-		$modified
+		$modified,
+		$post['postLink']
 	);
 	$post_tweet = str_ireplace( $search, $replace, $tweet );
 
@@ -132,7 +135,7 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 			$post_tweet = mb_substr( $post_tweet, 0, $tweet_length, $encoding );
 		}
 
-		return $post_tweet; // return early if all is well without replacements.
+		return apply_filters( 'wpt_custom_truncate', $post_tweet, $tweet, $post_ID, $retweet ); // return early if all is well without replacements.
 	} else {
 		// build an array of variable names and the number of characters in that variable.
 		$length_array             = array();
@@ -173,7 +176,7 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 						$trim      = $str_length - ( $tweet_length + 1 + $diff );
 						$old_value = ${$key};
 						// prevent URL from being modified
-						$post_tweet = str_ireplace( $thisposturl, '#url#', $post_tweet );
+						$post_tweet = str_ireplace( array( $thisposturl, $post['postLink'] ), array( '#url#', '#longurl#' ), $post_tweet );
 						// modify the value and replace old with new
 						if ( $key == 'account' || $key == 'author' || $key == 'category' || $key == 'date' || $key == 'modified' || $key == 'reference' || $key == '@' ) {
 							// these elements make no sense if truncated, so remove them entirely.
@@ -197,7 +200,7 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 						}
 						$post_tweet = str_ireplace( $old_value, $new_value, $post_tweet );
 						// put URL back before checking length
-						$post_tweet = str_ireplace( '#url#', $thisposturl, $post_tweet );
+						$post_tweet = str_ireplace( array( '#url#', '#longurl#' ), array( $thisposturl, $post['postLink'] ), $post_tweet );
 					} else {
 						if ( mb_strlen( fake_normalize( $post_tweet ), $encoding ) > ( $tweet_length + 1 + $diff ) ) {
 							$post_tweet = mb_substr( $post_tweet, 0, ( $tweet_length + $diff ), $encoding );
@@ -209,15 +212,15 @@ function jd_truncate_tweet( $tweet, $post, $post_ID, $retweet = false, $ref = fa
 		// this is needed in case a tweet needs to be truncated outright and the truncation values aren't in the above.
 		// 1) removes URL 2) checks length of remainder 3) Replaces URL
 		if ( mb_strlen( fake_normalize( $post_tweet ) ) > $tweet_length + 1 ) {
-			$temp = str_ireplace( $thisposturl, '#url#', $post_tweet );
+			$temp = str_ireplace( array( $thisposturl, $post['postLink'] ), array( '#url#', '#longurl#' ), $post_tweet );
 			if ( mb_strlen( fake_normalize( $temp ) ) > ( ( $tweet_length + 1 ) - ( $tco - strlen( '#url#' ) ) ) && $temp != $post_tweet ) {
 				$post_tweet = trim( mb_substr( $temp, 0, ( ( $tweet_length + 1 ) - ( $tco - strlen( '#url#' ) ) ), $encoding ) );
 				// it's possible to trim off the #url# part in this process. If that happens, put it back.
 				$sub_sentence = ( strpos( $tweet, '#url#' ) === false ) ? $post_tweet : $post_tweet . ' ' . $thisposturl;
-				$post_tweet   = ( strpos( $post_tweet, '#url#' ) === false ) ? $sub_sentence : str_ireplace( '#url#', $thisposturl, $post_tweet );
+				$post_tweet   = ( strpos( $post_tweet, '#url#' ) === false ) ? $sub_sentence : str_ireplace( array( '#url#', '#longurl#' ), array( $thisposturl, $post['postLink'] ), $post_tweet );
 			}
 		}
 	}
 
-	return apply_filters( 'wpt_custom_truncate', $post_tweet, $tweet, $post_ID, $retweet ); // catch all, should never happen. But no reason not to include it.
+	return apply_filters( 'wpt_custom_truncate', $post_tweet, $tweet, $post_ID, $retweet );
 }

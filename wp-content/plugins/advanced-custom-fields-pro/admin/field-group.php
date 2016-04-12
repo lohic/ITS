@@ -178,7 +178,6 @@ class acf_admin_field_group {
 			'fields'				=> __("Fields",'acf'),
 			'parent_fields'			=> __("Parent fields",'acf'),
 			'sibling_fields'		=> __("Sibling fields",'acf'),
-			'hide_show_all'			=> __("Hide / Show All",'acf'),
 			'move_field'			=> __("Move Custom Field",'acf'),
 			'move_field_warning'	=> __("This field cannot be moved until its changes have been saved",'acf'),
 			'null'					=> __("Null",'acf'),
@@ -638,15 +637,17 @@ class acf_admin_field_group {
 			
 			case "post_status" :
 				
-				$choices = array(
-					'publish'	=> __('Publish', 'acf'),
-					'pending'	=> __('Pending Review', 'acf'),
-					'draft'		=> __('Draft', 'acf'),
-					'future'	=> __('Future', 'acf'),
-					'private'	=> __('Private', 'acf'),
-					'inherit'	=> __('Revision', 'acf'),
-					'trash'		=> __('Trash', 'acf')
-				);
+				global $wp_post_statuses;
+				
+				if( !empty($wp_post_statuses) ) {
+					
+					foreach( $wp_post_statuses as $status ) {
+						
+						$choices[ $status->name ] = $status->label;
+						
+					}
+					
+				}
 								
 				break;
 			
@@ -907,7 +908,7 @@ class acf_admin_field_group {
 	/*
 	*  ajax_render_field_settings
 	*
-	*  This function can be accessed via an AJAX action and will return the result from the acf_render_field_settings function
+	*  This function will return HTML containing the field's settings based on it's new type
 	*
 	*  @type	function (ajax)
 	*  @date	30/09/13
@@ -934,7 +935,7 @@ class acf_admin_field_group {
 		
 		
 		// verify nonce
-		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') ) {
+		if( !wp_verify_nonce($options['nonce'], 'acf_nonce') ) {
 		
 			die(0);
 			
@@ -942,7 +943,7 @@ class acf_admin_field_group {
 		
 		
 		// required
-		if( ! $options['type'] ) {
+		if( !$options['type'] ) {
 		
 			die(0);
 			
@@ -960,7 +961,7 @@ class acf_admin_field_group {
 		
 		
 		// render
-		acf_render_field_settings( $field );
+		do_action("acf/render_field_settings/type={$field['type']}", $field);
 		
 		
 		// die

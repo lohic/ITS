@@ -65,6 +65,16 @@ class acf_admin_field_groups {
 			
 		}
 		
+/*
+		customize post stats (draft -> disabled)?
+		global $wp_post_statuses;
+		$wp_post_statuses['draft']->label = 'Disabled';
+		$wp_post_statuses['draft']->label_count[0] = 'Disabled (%s)';
+		$wp_post_statuses['draft']->label_count[1] = 'Disabled (%s)';
+		$wp_post_statuses['draft']->label_count['singular'] = 'Disabled (%s)';
+		$wp_post_statuses['draft']->label_count['plural'] = 'Disabled (%s)';
+		$post_states = apply_filters( 'display_post_states', $post_states, $post );
+*/
 		
 		// check stuff
 		$this->check_duplicate();
@@ -532,7 +542,7 @@ class acf_admin_field_groups {
 	
 	function admin_footer() {
 		
-		// vras
+		// vars
 		$www = 'http://www.advancedcustomfields.com/resources/';
 		
 ?><script type="text/html" id="tmpl-acf-col-side">

@@ -5,6 +5,182 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
+// FUNCTION to see if checkboxes should be checked
+function jd_checkCheckbox( $field, $sub1 = false, $sub2 = '' ) {
+	if ( $sub1 ) {
+		$setting = get_option( $field );
+		if ( isset( $setting[ $sub1 ] ) ) {
+			$value = ( $sub2 != '' ) ? $setting[ $sub1 ][ $sub2 ] : $setting[ $sub1 ];
+		} else {
+			$value = 0;
+		}
+		if ( $value == 1 ) {
+			return 'checked="checked"';
+		}
+	}
+	if ( get_option( $field ) == '1' ) {
+		return 'checked="checked"';
+	}
+	return '';
+}
+
+function jd_checkSelect( $field, $value, $type = 'select' ) {
+	if ( get_option( $field ) == $value ) {
+		return ( $type == 'select' ) ? 'selected="selected"' : 'checked="checked"';
+	}
+	return '';
+}
+
+function wpt_set_log( $data, $id, $message ) {
+	if ( $id == 'test' ) {
+		update_option( $data, $message );
+	} else {
+		update_post_meta( $id, '_' . $data, $message );
+	}
+	update_option( $data . '_last', array( $id, $message ) );
+}
+
+function wpt_log( $data, $id ) {
+	if ( $id == 'test' ) {
+		$log = get_option( $data );
+	} else if ( $id == 'last' ) {
+		$log = get_option( $data . '_last' );
+	} else {
+		$log = get_post_meta( $id, '_' . $data, true );
+	}
+
+	return $log;
+}
+
+function wpt_check_functions() {
+	$message = "<div class='update'><ul>";
+	// grab or set necessary variables
+	$testurl   = get_bloginfo( 'url' );
+	$testpost  = false;
+	$title     = urlencode( 'Your blog home' );
+	$shrink    = apply_filters( 'wptt_shorten_link', $testurl, $title, false, true );
+	if ( $shrink == false ) {
+		$error = htmlentities( get_option( 'wpt_shortener_status' ) );
+		$message .= __( "<li class=\"error\"><strong>WP to Twitter was unable to contact your selected URL shortening service.</strong></li>", 'wp-to-twitter' );
+		if ( $error != '' ) {
+			$message .= "<li><code>$error</code></li>";
+		} else {
+			$message .= "<li><code>" . __( 'No error message was returned.', 'wp-to-twitter' ) . "</code></li>";
+		}
+	} else {
+		$message .= __( "<li><strong>WP to Twitter successfully contacted your selected URL shortening service.</strong>  The following link should point to your blog homepage:", 'wp-to-twitter' );
+		$message .= " <a href='$shrink'>$shrink</a></li>";
+	}
+	//check twitter credentials
+	if ( wtt_oauth_test() ) {
+		$rand     = rand( 1000000, 9999999 );
+		$testpost = jd_doTwitterAPIPost( "This is a test of WP to Twitter. $shrink ($rand)" );
+		if ( $testpost ) {
+			$message .= __( "<li><strong>WP to Twitter successfully submitted a status update to Twitter.</strong></li>", 'wp-to-twitter' );
+		} else {
+			$error = wpt_log( 'wpt_status_message', 'test' );
+			$message .= __( "<li class=\"error\"><strong>WP to Twitter failed to submit an update to Twitter.</strong></li>", 'wp-to-twitter' );
+			$message .= "<li class=\"error\">$error</li>";
+		}
+	} else {
+		$message .= "<strong>" . _e( 'You have not connected WordPress to Twitter.', 'wp-to-twitter' ) . "</strong> ";
+	}
+	// If everything's OK, there's  no reason to do this again.
+	if ( $testpost == false && $shrink == false ) {
+		$message .= __( "<li class=\"error\"><strong>Your server does not appear to support the required methods for WP to Twitter to function.</strong> You can try it anyway - these tests aren't perfect.</li>", 'wp-to-twitter' );
+	} else {
+	}
+	if ( $testpost && $shrink ) {
+		$message .= __( "<li><strong>Your server should run WP to Twitter successfully.</strong></li>", 'wp-to-twitter' );
+	}
+	$message .= "</ul>
+	</div>";
+
+	return $message;
+}
+
+function wpt_settings_tabs() {
+	$output = '';
+	$default = ( get_option( 'wtt_twitter_username' ) == '' ) ? 'connection' : 'basic';
+	$current = ( isset( $_GET['tab'] ) ) ? $_GET['tab'] : $default;
+	$pro_text = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? __( 'Pro Settings', 'wp-to-twitter' ) : __( 'Get WP Tweets PRO', 'wp-to-twitter' );
+	$pages = array( 
+		'connection'=> __( 'Twitter Connection', 'wp-to-twitter' ), 
+		'basic'=> __( 'Basic Settings', 'wp-to-twitter' ),
+		'shortener'=> __( 'URL Shortener', 'wp-to-twitter' ),
+		'advanced' => __( 'Advanced Settings', 'wp-to-twitter' ),
+		'support' => __( 'Get Help', 'wp-to-twitter' ),
+		'pro' => $pro_text
+	);
+	$pages = apply_filters( 'wpt_settings_tabs_pages', $pages, $current );
+	$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php' );
+
+	foreach ( $pages as $key => $value ) {
+		$selected = ( $key == $current ) ? " nav-tab-active" : '';
+		$url = esc_url( add_query_arg( 'tab', $key, $admin_url ) );
+		if ( $key == 'pro' ) {
+			$output .= "<a class='wpt-pro-tab nav-tab$selected' href='$url'>$value</a>";
+		} else {
+			$output .= "<a class='nav-tab$selected' href='$url'>$value</a>";
+		}
+	}
+	echo $output;
+}
+
+function wpt_show_last_tweet() {
+	if ( apply_filters( 'wpt_show_last_tweet', true ) ) {
+		$log = wpt_log( 'wpt_status_message', 'last' );
+		if ( ! empty( $log ) && is_array( $log ) ) {
+			$post_ID = $log[0];
+			$post    = get_post( $post_ID );
+			if ( is_object( $post ) ) {
+				$title = "<a href='" . get_edit_post_link( $post_ID ) . "'>$post->post_title</a>";
+			} else {
+				$title = __( 'No post associated with this Tweet', 'wp-to-twitter' );
+			}
+			$notice = $log[1];
+			echo "<div class='updated'><p><strong>" . __( 'Last Tweet', 'wp-to-twitter' ) . "</strong>: $title &raquo; $notice</p></div>";
+		}
+	}
+}
+
+
+function wpt_handle_errors() {
+	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'clear-error' ) {
+		delete_option( 'wp_url_failure' );
+	}
+	if ( get_option( 'wp_url_failure' ) == '1' ) {
+		$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php' );
+		$nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
+		$error = '<div class="error">' . 
+			__( "<p>The query to the URL shortener API failed, and your URL was not shrunk. The full post URL was attached to your Tweet. Check with your URL shortening provider to see if there are any known issues.</p>", 'wp-to-twitter' ) .
+			'<form method="post" action="' . $admin_url . '">
+				<div>
+					<input type="hidden" name="submit-type" value="clear-error"/>
+					'. $nonce . '
+				</div>
+				<p>
+					<input type="submit" name="submit" value="' . __( "Clear 'WP to Twitter' Error Messages", 'wp-to-twitter' ) . '" class="button-primary" />
+				</p>
+			</form>
+		</div>';
+		echo $error;
+	}
+}
+// verify user capabilities
+function wpt_check_caps( $role, $cap ) {
+	$role = get_role( $role );
+	if ( $role->has_cap( $cap ) ) {
+		return " checked='checked'";
+	}
+	return '';
+}
+
+// output checkbox for user capabilities
+function wpt_cap_checkbox( $role, $cap, $name ) {
+	return "<li><input type='checkbox' id='wpt_caps_{$role}_$cap' name='wpt_caps[$role][$cap]' value='on'" . wpt_check_caps( $role, $cap ) . " /> <label for='wpt_caps_{$role}_$cap'>$name</label></li>";
+}
+
 function wpt_mail( $subject, $body, $override=false ) {
 	if ( ( WPT_DEBUG && function_exists( 'wpt_pro_exists' ) ) || $override == true ) {
 		$use_email = true;
@@ -296,6 +472,7 @@ function wpt_get_support_form() {
 	global $current_user, $wpt_version;
 	get_currentuserinfo();
 	$request = '';
+	$response_email = '';
 	// send fields for WP to Twitter
 	$license = ( get_option( 'wpt_license_key' ) != '' ) ? get_option( 'wpt_license_key' ) : 'none';
 	if ( $license != '' ) {
@@ -387,23 +564,26 @@ $plugins_string
 		if ( substr( $sitename, 0, 4 ) == 'www.' ) {
 			$sitename = substr( $sitename, 4 );
 		}
+		$response_email = ( isset( $_POST['response_email'] ) ) ? $_POST['response_email'] : false;
 		$from_email = 'wordpress@' . $sitename;
-		$from       = "From: \"$current_user->display_name\" <$from_email>\r\nReply-to: \"$current_user->display_name\" <$current_user->user_email>\r\n";
+		$from       = "From: \"$current_user->display_name\" <$response_email>\r\nReply-to: \"$current_user->display_name\" <$response_email>\r\n";
 
 		if ( ! $has_read_faq ) {
-			echo "<div class='message error'><p>" . __( 'Please read the FAQ and other Help documents before making a support request.', 'wp-to-twitter' ) . "</p></div>";
+			echo "<div class='notice error'><p>" . __( 'Please read the FAQ and other Help documents before making a support request.', 'wp-to-twitter' ) . "</p></div>";
+		} else if ( ! $response_email ) {
+			echo "<div class='notice error'><p>" . __( 'Please supply a valid email where you can receive support responses.', 'wp-to-twitter' ) . "</p></div>";			
 		} else if ( ! $request ) {
-			echo "<div class='message error'><p>" . __( 'Please describe your problem. I\'m not psychic.', 'wp-to-twitter' ) . "</p></div>";
+			echo "<div class='notice error'><p>" . __( 'Please describe your problem. I\'m not psychic.', 'wp-to-twitter' ) . "</p></div>";
 		} else {
 			$sent = wp_mail( "plugins@joedolson.com", $subject, $message, $from );
 			if ( $sent ) {
 				if ( $has_donated == 'Donor' ) {
-					echo "<div class='message updated'><p>" . sprintf( __( 'Thank you for supporting the continuing development of this plug-in! I\'ll get back to you as soon as I can. Please ensure that you can receive email at <code>%s</code>.', 'wp-to-twitter' ), $current_user->user_email ) . "</p></div>";
+					echo "<div class='notice updated'><p>" . sprintf( __( 'Thank you for supporting WP to Twitter! I\'ll get back to you as soon as I can. Please make sure you can receive email at <code>%s</code>.', 'wp-to-twitter' ), $response_email ) . "</p></div>";
 				} else {
-					echo "<div class='message updated'><p>" . sprintf( __( "Thanks for using WP to Twitter. Please ensure that you can receive email at <code>%s</code>.", 'wp-to-twitter' ), $current_user->user_email ) . "</p></div>";
+					echo "<div class='notice updated'><p>" . sprintf( __( "Thanks for using WP to Twitter. Please ensure that you can receive email at <code>%s</code>.", 'wp-to-twitter' ), $response_email ) . "</p></div>";
 				}
 			} else {
-				echo "<div class='message error'><p>" . __( "Sorry! I couldn't send that message. Here's the text of your request:", 'my-calendar' ) . "</p><p>" . sprintf( __( '<a href="%s">Contact me here</a>, instead</p>', 'wp-to-twitter' ), 'https://www.joedolson.com/contact/' ) . "<pre>$request</pre></div>";
+				echo "<div class='notice error'><p>" . __( "Sorry! I couldn't send that message. Here's the text of your request:", 'my-calendar' ) . "</p><p>" . sprintf( __( '<a href="%s">Contact me here</a>, instead.', 'wp-to-twitter' ), 'https://www.joedolson.com/contact/' ) . "</p><pre>$request</pre></div>";
 			}
 		}
 	}
@@ -413,6 +593,8 @@ $plugins_string
 		$checked = '';
 	}
 	$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php' );
+	$admin_url = add_query_arg( 'tab', 'support', $admin_url );
+	
 	echo "
 	<form method='post' action='$admin_url'>
 		<div><input type='hidden' name='_wpnonce' value='" . wp_create_nonce( 'wp-to-twitter-nonce' ) . "' /></div>
@@ -426,7 +608,8 @@ $plugins_string
 			<li>" . __( 'What happened instead?', 'wp-to-twitter' ) . "</li>
 		</ul>
 		<p>
-		<code>" . __( 'Reply to:', 'wp-to-twitter' ) . " \"$current_user->display_name\" &lt;$current_user->user_email&gt;</code>
+		<label for='response_email'>" . __( 'Your Email', 'wp-to-twitter' ) . "</label><br />
+		<input type='email' name='response_email' id='response_email' value='$response_email' class='widefat' required='required' aria-required='true' />
 		</p>
 		<p>
 		<input type='checkbox' name='has_read_faq' id='has_read_faq' value='on' required='required' aria-required='true' /> <label for='has_read_faq'>" . sprintf( __( 'I have read <a href="%1$s">the FAQ for this plug-in</a> <span>(required)</span>', 'wp-to-twitter' ), 'http://www.joedolson.com/wp-to-twitter/support-2/' ) . "
@@ -435,7 +618,7 @@ $plugins_string
         <input type='checkbox' name='has_donated' id='has_donated' value='on' $checked /> <label for='has_donated'>" . sprintf( __( 'I have <a href="%1$s">made a donation to help support this plug-in</a>', 'wp-to-twitter' ), 'http://www.joedolson.com/donate.php' ) . "</label>
         </p>
         <p>
-        <label for='support_request'>" . __( 'Support Request:', 'wp-to-twitter' ) . "</label><br /><textarea class='support-request' name='support_request' id='support_request' cols='80' rows='10'>" . stripslashes( esc_attr( $request ) ) . "</textarea>
+        <label for='support_request'>" . __( 'Support Request:', 'wp-to-twitter' ) . "</label><br /><textarea class='support-request' name='support_request' id='support_request' cols='80' rows='10' class='widefat'>" . stripslashes( esc_attr( $request ) ) . "</textarea>
 		</p>
 		<p>
 		<input type='submit' value='" . __( 'Send Support Request', 'wp-to-twitter' ) . "' name='wpt_support' class='button-primary' />
@@ -632,14 +815,11 @@ class WPT_Normalizer
         $i = 0;
         $len = strlen($s);
 
-        while ($i < $len)
-        {
-            if ($s[$i] < "\x80")
-            {
+        while ($i < $len) {
+            if ($s[$i] < "\x80") {
                 // ASCII chars
 
-                if ($c)
-                {
+                if ($c) {
                     ksort($c);
                     $result .= implode('', $c);
                     $c = array();
@@ -648,37 +828,29 @@ class WPT_Normalizer
                 $j = 1 + strspn($s, $ASCII, $i+1);
                 $result .= substr($s, $i, $j);
                 $i += $j;
-            }
-            else
-            {
+            } else {
                 $ulen = $ulen_mask[$s[$i] & "\xF0"];
                 $uchr = substr($s, $i, $ulen);
                 $i += $ulen;
 
-                if (isset($combClass[$uchr]))
-                {
+                if (isset($combClass[$uchr])) {
                     // Combining chars, for sorting
 
                     isset($c[$combClass[$uchr]]) || $c[$combClass[$uchr]] = '';
                     $c[$combClass[$uchr]] .= isset($compatMap[$uchr]) ? $compatMap[$uchr] : (isset($decompMap[$uchr]) ? $decompMap[$uchr] : $uchr);
-                }
-                else
-                {
-                    if ($c)
-                    {
+                } else {
+                    if ($c) {
                         ksort($c);
                         $result .= implode('', $c);
                         $c = array();
                     }
 
-                    if ($uchr < "\xEA\xB0\x80" || "\xED\x9E\xA3" < $uchr)
-                    {
+                    if ($uchr < "\xEA\xB0\x80" || "\xED\x9E\xA3" < $uchr) {
                         // Table lookup
 
                         $j = isset($compatMap[$uchr]) ? $compatMap[$uchr] : (isset($decompMap[$uchr]) ? $decompMap[$uchr] : $uchr);
 
-                        if ($uchr != $j)
-                        {
+                        if ($uchr != $j) {
                             $uchr = $j;
 
                             $j = strlen($uchr);
@@ -703,9 +875,7 @@ class WPT_Normalizer
                                 $uchr = substr($uchr, 0, $ulen);
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         // Hangul chars
 
                         $uchr = unpack('C*', $uchr);
@@ -727,8 +897,7 @@ class WPT_Normalizer
             }
         }
 
-        if ($c)
-        {
+        if ( $c ) {
             ksort($c);
             $result .= implode('', $c);
         }
@@ -736,10 +905,31 @@ class WPT_Normalizer
         return $result;
     }
 
-    protected static function getData($file)
-    {
+    protected static function getData($file) {
         $file = __DIR__ . '/unidata/' . $file . '.ser';
-        if (file_exists($file)) return unserialize(file_get_contents($file));
-        else return false;
+        if ( file_exists( $file ) ) { 
+			return unserialize( file_get_contents( $file ) );
+        } else {
+			return false;
+		}
     }
+}
+
+/**
+ * Functions to provide fallbacks for changed function names in case any plug-ins or themes are calling WP to Twitter functions in custom code.
+ */
+function jd_twit_link( $link_ID ) {
+	return wpt_twit_link( $link_ID );
+}
+
+function jd_post_info( $post_ID ) {
+	return wpt_post_info( $post_ID );
+}
+
+function jd_twit( $post_ID, $type = 'instant' ) {
+	return wpt_tweet( $post_ID, $type );
+}
+
+function jd_addTwitterAdminStyles() {
+	return wpt_admin_style();
 }

@@ -200,7 +200,16 @@ class WPT_TwitterFeed {
 		}
 		$result = json_decode( $result );
 		if ( isset( $options['search'] ) ) {
-			$result = $result->statuses;
+			if ( !method_exists( $result, 'errors' ) ) {
+				$result = $result->statuses;
+			} else {
+				$errors = $result->errors;
+				$return = '';
+				foreach ( $errors as $error ) {
+					$return .= "<li>$error->message</li>";
+				}
+				echo "<ul>" . $return . "</ul>"; return;
+			}
 		}
 		if ( is_file( $this->getCacheLocation() ) ) {
 			$cache = json_decode( file_get_contents( $this->getCacheLocation() ), true );

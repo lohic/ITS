@@ -2,114 +2,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
-
-function wpt_check_caps( $role, $cap ) {
-	$role = get_role( $role );
-	if ( $role->has_cap( $cap ) ) {
-		return " checked='checked'";
-	}
-	return '';
-}
-
-function wpt_cap_checkbox( $role, $cap, $name ) {
-	return "<li><input type='checkbox' id='wpt_caps_{$role}_$cap' name='wpt_caps[$role][$cap]' value='on'" . wpt_check_caps( $role, $cap ) . " /> <label for='wpt_caps_{$role}_$cap'>$name</label></li>";
-}
-
-// FUNCTION to see if checkboxes should be checked
-function jd_checkCheckbox( $field, $sub1 = false, $sub2 = '' ) {
-	if ( $sub1 ) {
-		$setting = get_option( $field );
-		if ( isset( $setting[ $sub1 ] ) ) {
-			$value = ( $sub2 != '' ) ? $setting[ $sub1 ][ $sub2 ] : $setting[ $sub1 ];
-		} else {
-			$value = 0;
-		}
-		if ( $value == 1 ) {
-			return 'checked="checked"';
-		}
-	}
-	if ( get_option( $field ) == '1' ) {
-		return 'checked="checked"';
-	}
-	return '';
-}
-
-function jd_checkSelect( $field, $value, $type = 'select' ) {
-	if ( get_option( $field ) == $value ) {
-		return ( $type == 'select' ) ? 'selected="selected"' : 'checked="checked"';
-	}
-	return '';
-}
-
-function wpt_set_log( $data, $id, $message ) {
-	if ( $id == 'test' ) {
-		update_option( $data, $message );
-	} else {
-		update_post_meta( $id, '_' . $data, $message );
-	}
-	update_option( $data . '_last', array( $id, $message ) );
-}
-
-function wpt_log( $data, $id ) {
-	if ( $id == 'test' ) {
-		$log = get_option( $data );
-	} else if ( $id == 'last' ) {
-		$log = get_option( $data . '_last' );
-	} else {
-		$log = get_post_meta( $id, '_' . $data, true );
-	}
-
-	return $log;
-}
-
-function jd_check_functions() {
-	$message = "<div class='update'><ul>";
-	// grab or set necessary variables
-	$testurl   = get_bloginfo( 'url' );
-	$testpost  = false;
-	$title     = urlencode( 'Your blog home' );
-	$shrink    = apply_filters( 'wptt_shorten_link', $testurl, $title, false, true );
-	if ( $shrink == false ) {
-		$error = htmlentities( get_option( 'wpt_shortener_status' ) );
-		$message .= __( "<li class=\"error\"><strong>WP to Twitter was unable to contact your selected URL shortening service.</strong></li>", 'wp-to-twitter' );
-		if ( $error != '' ) {
-			$message .= "<li><code>$error</code></li>";
-		} else {
-			$message .= "<li><code>" . __( 'No error message was returned.', 'wp-to-twitter' ) . "</code></li>";
-		}
-	} else {
-		$message .= __( "<li><strong>WP to Twitter successfully contacted your selected URL shortening service.</strong>  The following link should point to your blog homepage:", 'wp-to-twitter' );
-		$message .= " <a href='$shrink'>$shrink</a></li>";
-	}
-	//check twitter credentials
-	if ( wtt_oauth_test() ) {
-		$rand     = rand( 1000000, 9999999 );
-		$testpost = jd_doTwitterAPIPost( "This is a test of WP to Twitter. $shrink ($rand)" );
-		if ( $testpost ) {
-			$message .= __( "<li><strong>WP to Twitter successfully submitted a status update to Twitter.</strong></li>", 'wp-to-twitter' );
-		} else {
-			$error = wpt_log( 'wpt_status_message', 'test' );
-			$message .= __( "<li class=\"error\"><strong>WP to Twitter failed to submit an update to Twitter.</strong></li>", 'wp-to-twitter' );
-			$message .= "<li class=\"error\">$error</li>";
-		}
-	} else {
-		$message .= "<strong>" . _e( 'You have not connected WordPress to Twitter.', 'wp-to-twitter' ) . "</strong> ";
-	}
-	// If everything's OK, there's  no reason to do this again.
-	if ( $testpost == false && $shrink == false ) {
-		$message .= __( "<li class=\"error\"><strong>Your server does not appear to support the required methods for WP to Twitter to function.</strong> You can try it anyway - these tests aren't perfect.</li>", 'wp-to-twitter' );
-	} else {
-	}
-	if ( $testpost && $shrink ) {
-		$message .= __( "<li><strong>Your server should run WP to Twitter successfully.</strong></li>", 'wp-to-twitter' );
-	}
-	$message .= "</ul>
-	</div>";
-
-	return $message;
-}
-
-function wpt_update_settings() {
+	
+function wpt_updated_settings() {
 	wpt_check_version();
 
 	if ( ! empty( $_POST['_wpnonce'] ) ) {
@@ -127,77 +21,14 @@ function wpt_update_settings() {
 
 	$message = "";
 
-	// SET DEFAULT OPTIONS
-	if ( get_option( 'wpt_twitter_setup' ) != '1' ) {
-		$initial_settings = array(
-			'post' => array(
-				'post-published-update' => 1,
-				'post-published-text'   => 'New post: #title# #url#',
-				'post-edited-update'    => 1,
-				'post-edited-text'      => 'Post Edited: #title# #url#'
-			),
-			'page' => array(
-				'post-published-update' => 0,
-				'post-published-text'   => 'New page: #title# #url#',
-				'post-edited-update'    => 0,
-				'post-edited-text'      => 'Page edited: #title# #url#'
-			)
-		);
-		update_option( 'wpt_post_types', $initial_settings );
-		update_option( 'jd_twit_blogroll', '1' );
-		update_option( 'newlink-published-text', 'New link: #title# #url#' );
-		update_option( 'jd_shortener', '1' );
-		update_option( 'jd_strip_nonan', '0' );
-		update_option( 'jd_max_tags', 3 );
-		update_option( 'jd_max_characters', 15 );
-		update_option( 'jd_replace_character', '' );
-		$administrator = get_role( 'administrator' );
-		$administrator->add_cap( 'wpt_twitter_oauth' );
-		$administrator->add_cap( 'wpt_twitter_custom' );
-		$administrator->add_cap( 'wpt_twitter_switch' );
-		$administrator->add_cap( 'wpt_can_tweet' );
-		$administrator->add_cap( 'wpt_tweet_now' );
-		$editor = get_role( 'editor' );
-		if ( is_object( $editor ) ) {
-			$editor->add_cap( 'wpt_can_tweet' );
-		}
-		$author = get_role( 'author' );
-		if ( is_object( $author ) ) {
-			$author->add_cap( 'wpt_can_tweet' );
-		}
-		$contributor = get_role( 'contributor' );
-		if ( is_object( $contributor ) ) {
-			$contributor->add_cap( 'wpt_can_tweet' );
-		}
-
-		update_option( 'jd_twit_remote', '0' );
-		update_option( 'jd_post_excerpt', 30 );
-		// Use Google Analytics with Twitter
-		update_option( 'twitter-analytics-campaign', 'twitter' );
-		update_option( 'use-twitter-analytics', '0' );
-		update_option( 'jd_dynamic_analytics', '0' );
-		update_option( 'no-analytics', 1 );
-		update_option( 'use_dynamic_analytics', 'category' );
-		// Use custom external URLs to point elsewhere. 
-		update_option( 'jd_twit_custom_url', 'external_link' );
-		// Error checking
-		update_option( 'wp_url_failure', '0' );
-		// Default publishing options.
-		update_option( 'jd_tweet_default', '0' );
-		update_option( 'jd_tweet_default_edit', '0' );
-		update_option( 'wpt_inline_edits', '0' );
-		// Note that default options are set.
-		update_option( 'wpt_twitter_setup', '1' );
-		//YOURLS API
-		update_option( 'jd_keyword_format', '0' );
-	}
-
-// notifications from oauth connection		
+	// notifications from oauth connection		
 	if ( isset( $_POST['oauth_settings'] ) ) {
 		if ( $oauth_message == "success" ) {
+			$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro?tab=basic' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php&amp;tab=basic' );
+
 			print( '
 				<div id="message" class="updated fade">
-					<p>' . __( 'WP to Twitter is now connected with Twitter.', 'wp-to-twitter' ) . '</p>
+					<p>' . __( 'WP to Twitter is now connected with Twitter.', 'wp-to-twitter' ) . " <a href='$admin_url'>" . __( 'Configure your Tweet templates', 'wp-to-twitter' ) . '</a></p>
 				</div>
 			' );
 		} else if ( $oauth_message == "failed" ) {
@@ -230,9 +61,20 @@ function wpt_update_settings() {
 	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'advanced' ) {
 		update_option( 'jd_tweet_default', ( isset( $_POST['jd_tweet_default'] ) ) ? $_POST['jd_tweet_default'] : 0 );
 		update_option( 'jd_tweet_default_edit', ( isset( $_POST['jd_tweet_default_edit'] ) ) ? $_POST['jd_tweet_default_edit'] : 0 );
+		
+		if ( isset( $_POST['wpt_rate_limiting'] ) && get_option( 'wpt_rate_limiting' ) != 1 ) {
+			$extend = __( 'Rate Limiting is enabled. Default rate limits are set at 10 posts per category/term per hour. <a href="#special_cases">Edit global default</a> or edit individual terms to customize limits for each category or taxonomy term.', 'wp-to-twitter' );
+			wp_schedule_event( current_time( 'timestamp' )+3600, 'hourly', 'wptratelimits' );
+		} else {
+			$extend = '';
+			wp_clear_scheduled_hook( 'wptratelimits' );
+		}		
+		
+		update_option( 'wpt_rate_limiting', ( isset( $_POST['wpt_rate_limiting'] ) ) ? 1 : 0 );
 		update_option( 'wpt_inline_edits', ( isset( $_POST['wpt_inline_edits'] ) ) ? $_POST['wpt_inline_edits'] : 0 );
 		update_option( 'jd_twit_remote', ( isset( $_POST['jd_twit_remote'] ) ) ? $_POST['jd_twit_remote'] : 0 );
 		update_option( 'jd_twit_custom_url', $_POST['jd_twit_custom_url'] );
+		update_option( 'wpt_default_rate_limit', intval( $_POST['wpt_default_rate_limit'] ) );
 		update_option( 'jd_strip_nonan', ( isset( $_POST['jd_strip_nonan'] ) ) ? $_POST['jd_strip_nonan'] : 0 );
 		update_option( 'jd_twit_prepend', $_POST['jd_twit_prepend'] );
 		update_option( 'jd_twit_append', $_POST['jd_twit_append'] );
@@ -291,7 +133,7 @@ function wpt_update_settings() {
 		update_option( 'jd_donations', ( isset( $_POST['jd_donations'] ) ) ? 1 : 0 );
 		$wpt_truncation_order = $_POST['wpt_truncation_order'];
 		update_option( 'wpt_truncation_order', $wpt_truncation_order );
-		$message .= __( 'WP to Twitter Advanced Options Updated', 'wp-to-twitter' );
+		$message .= __( 'WP to Twitter Advanced Options Updated', 'wp-to-twitter' ) . '. ' . $extend;
 	}
 
 	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'options' ) {
@@ -320,56 +162,34 @@ function wpt_update_settings() {
 
 	// Check whether the server has supported for needed functions.
 	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'check-support' ) {
-		$message = jd_check_functions();
+		$message = wpt_check_functions();
 	}
+
+	if ( $message ) {
+		echo '<div id="message" class="updated is-dismissible"><p>' . $message . '</p></div>';
+	}
+}
+
+function wpt_update_settings() {
 	?>
 	<div class="wrap" id="wp-to-twitter">
-	<?php if ( $message ) { ?>
-		<div id="message" class="updated fade"><p><?php echo $message; ?></p></div>
-	<?php
-	}
-	wpt_manual_migrate();
-	
-	$log = wpt_log( 'wpt_status_message', 'last' );
-	if ( ! empty( $log ) && is_array( $log ) ) {
-		$post_ID = $log[0];
-		$post    = get_post( $post_ID );
-		if ( is_object( $post ) ) {
-			$title = "<a href='" . get_edit_post_link( $post_ID ) . "'>$post->post_title</a>";
-		} else {
-			$title = __( 'No post associated with this Tweet', 'wp-to-twitter' );
+	<?php 
+		if ( defined( 'WPT_STAGING_MODE' ) && WPT_STAGING_MODE == true ) {
+			echo "<div class='updated notice'><p>" . __( 'WP to Twitter is in staging mode. Tweets will be reported as if successfully sent to Twitter but will not be sent.', 'wp-to-twitter' ) . "</p></div>";
 		}
-		$notice = $log[1];
-		echo "<div class='updated fade'><p><strong>" . __( 'Last Tweet', 'wp-to-twitter' ) . "</strong>: $title &raquo; $notice</p></div>";
-	}
-	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'clear-error' ) {
-		delete_option( 'wp_url_failure' );
-	}
-	if ( get_option( 'wp_url_failure' ) == '1' ) {
-		?>
-		<div class="error">
-			<?php
-			if ( get_option( 'wp_url_failure' ) == '1' ) {
-				_e( "<p>The query to the URL shortener API failed, and your URL was not shrunk. The full post URL was attached to your Tweet. Check with your URL shortening provider to see if there are any known issues.</p>", 'wp-to-twitter' );
-			}
-			$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php' ); ?>
-			<form method="post" action="<?php echo $admin_url; ?>">
-				<div><input type="hidden" name="submit-type" value="clear-error"/></div>
-				<?php $nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
-				echo "<div>$nonce</div>"; ?>
-				<p><input type="submit" name="submit"
-				          value="<?php _e( "Clear 'WP to Twitter' Error Messages", 'wp-to-twitter' ); ?>"
-				          class="button-primary"/></p>
-			</form>
-		</div>
-	<?php
-	}
+		wpt_updated_settings(); 
+		wpt_show_last_tweet();
+		wpt_handle_errors();
 	?>
+	
 	<h2><?php _e( "WP to Twitter Options", 'wp-to-twitter' ); ?></h2>
-
+	<div class='nav-tab-wrapper'>
+		<?php wpt_settings_tabs(); ?>
+	</div>
 	<div id="wpt_settings_page" class="postbox-container jcd-wide">
 
 	<?php
+	// Nothing triggers this. If you want some debugging information, just add the parameter to the URL.
 	if ( isset( $_GET['debug'] ) && $_GET['debug'] == 'true' ) {
 		$debug = get_option( 'wpt_debug' );
 		echo "<pre>";
@@ -382,12 +202,62 @@ function wpt_update_settings() {
 	?>
 	<div class="metabox-holder">
 
-	<?php if ( function_exists( 'wtt_connect_oauth' ) ) {
-		wtt_connect_oauth();
-	} ?>
-	<?php if ( function_exists( 'wpt_pro_functions' ) ) {
-		wpt_pro_functions();
-	} ?>
+	<?php 
+		$default = ( get_option( 'wtt_twitter_username' ) == '' ) ? 'connection' : 'basic';
+		$current = ( isset( $_GET['tab'] ) ) ? $_GET['tab'] : $default;
+	if ( $current == 'connection' ) {
+		if ( function_exists( 'wtt_connect_oauth' ) ) {
+			wtt_connect_oauth();
+		}
+	}
+	if ( $current == 'pro' ) {
+		if ( function_exists( 'wpt_pro_functions' ) ) {
+			wpt_pro_functions();
+			if ( function_exists( 'wpt_notes' ) ) {
+				wpt_notes();
+			}
+		} else {
+			if ( ! function_exists( 'wpt_pro_exists' ) ) { ?>
+				<div class="ui-sortable meta-box-sortables">
+					<div class="postbox">
+						<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
+						<h3 class='wpt-upgrade hndle'><span><strong><?php _e( 'Upgrade Now!', 'wp-to-twitter' ); ?></strong></span>
+						</h3>
+
+						<div class="inside purchase">
+							<p>
+								<?php 
+									_e( '<strong>What can WP Tweets PRO do for you?</strong> It takes the great Tweeting abilities from WP to Twitter and puts them in high gear: publish to unique Twitter accounts for every site author; schedule up to 3 re-posts of Tweets at an interval of your choice; and, with a delay between publishing and Tweeting, verify your tweets before you share them with your followers.', 'wp-to-twitter' );
+								?>
+							</p>
+							<p class='wpt-button'>
+								<strong class='cta'><a href="https://www.joedolson.com/wp-tweets-pro/"><?php _e( 'Upgrade to <strong>WP Tweets PRO</strong>!', 'wp-to-twitter' ); ?></a></strong>
+							</p>	
+							
+							<h4><?php _e( 'What does WP Tweets PRO do?', 'wp-to-twitter' ); ?></h4>
+							
+							<p>
+								<?php _e( 'WP Tweets PRO is packed with features to help you increase engagement with your Twitter followers. Upload images, support for Twitter Cards, and automated re-posting of your Tweets are just a few of the features available in the premium add-on to WP to Twitter.', 'wp-to-twitter' ); ?>
+							</p>
+							
+							<h4><?php _e( 'Guy Kawasaki recommends WP to Twitter', 'wp-to-twitter' ); ?></h4>
+							
+							<blockquote class="twitter-tweet" lang="en"><p>WP to Twitter = best Wordpress plugin according to <a href="https://twitter.com/GuyKawasaki">@GuyKawasaki</a> <a href="https://twitter.com/hashtag/SMMW15?src=hash">#SMMW15</a></p>&mdash; Cision (@Cision) <a href="https://twitter.com/Cision/status/581170603224371200">March 26, 2015</a></blockquote>
+							<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+							
+							<p class='wpt-button'>
+								<strong class='cta'><a href="https://www.joedolson.com/wp-tweets-pro/"><?php _e( 'Buy WP Tweets PRO today!', 'wp-to-twitter' ); ?></a></strong>
+							</p>
+							
+						</div>
+					</div>
+				</div>
+			<?php
+			} 			
+		}
+	}
+	if ( $current == 'basic' ) {
+	?>
 	<div class="ui-sortable meta-box-sortables">
 		<div class="postbox">
 			<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
@@ -398,9 +268,6 @@ function wpt_update_settings() {
 					<?php $nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
 					echo "<div>$nonce</div>"; ?>
 					<div>
-						<input type="submit" name="submit"
-						       value="<?php _e( "Save WP to Twitter Options", 'wp-to-twitter' ); ?>"
-						       class="button-primary button-side"/>
 						<?php echo apply_filters( 'wpt_pick_shortener', '' ); ?>
 						<?php
 						$post_types   = get_post_types( array( 'public' => true ), 'objects' );
@@ -437,6 +304,7 @@ function wpt_update_settings() {
 	
 								<div class='wptab wpt_types wpt_<?php echo $slug; ?>' aria-labelledby='tab_wpt_<?php echo $slug; ?>' role="tabpanel" id='wpt_<?php echo $slug; ?>'>
 									<?php
+									// share information about any usage of pre 2.8 category filters
 									if ( get_option( 'limit_categories' ) != '0' && $slug == 'post' ) {
 										$falseness  = get_option( 'jd_twit_cats' );
 										$categories = get_option( 'tweet_categories' );
@@ -517,7 +385,7 @@ function wpt_update_settings() {
 									<input aria-describedby="newlink-published-text-label" type="text"
 									       class="wpt-template" name="newlink-published-text"
 									       id="newlink-published-text" size="60" maxlength="120"
-									       value="<?php echo( esc_attr( stripslashes( get_option( 'newlink-published-text' ) ) ) ); ?>"/><br/><span
+									       value="<?php esc_attr_e( stripslashes( get_option( 'newlink-published-text' ) ) ); ?>"/><br/><span
 										id="newlink-published-text-label"><?php _e( 'Available shortcodes: <code>#url#</code>, <code>#title#</code>, and <code>#description#</code>.', 'wp-to-twitter' ); ?></span>
 								</p>
 							</fieldset>
@@ -535,9 +403,51 @@ function wpt_update_settings() {
 			</div>
 		</div>
 	</div>
+	
+	<div class="ui-sortable meta-box-sortables">
+			<div class="postbox">
+				<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
+				<h3 class='hndle'><span><?php _e( 'Tweet Template Tags', 'wp-to-twitter' ); ?></span></h3>
 
-	<?php echo apply_filters( 'wpt_shortener_controls', '' ); ?>
-
+				<div class="inside">
+					<ul>
+						<li><?php _e( "<code>#title#</code>: the title of your blog post", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#blog#</code>: the title of your blog", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#post#</code>: a short excerpt of the post content", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#category#</code>: the first selected category for the post", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#cat_desc#</code>: custom value from the category description field", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#date#</code>: the post date", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#modified#</code>: the post modified date", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#url#</code>: the post URL", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#longurl#</code>: the unshortened post URL", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#author#</code>: the post author (@reference if available, otherwise display name)", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#displayname#</code>: post author's display name", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#account#</code>: the twitter @reference for the account (or the author, if author settings are enabled and set.)", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#@#</code>: the twitter @reference for the author or blank, if not set", 'wp-to-twitter' ); ?></li>
+						<li><?php _e( "<code>#tags#</code>: your tags modified into hashtags. See options in the Advanced Settings section, below.", 'wp-to-twitter' ); ?></li>
+						<?php if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) { ?>
+							<li><?php _e( "<code>#reference#</code>: Used only in co-tweeting. @reference to main account when posted to author account, @reference to author account in post to main account.", 'wp-to-twitter' ); ?></li>
+						<?php } ?>
+					</ul>
+					<p>
+					<?php 
+						_e( "Create custom shortcodes and access WordPress custom fields by using square brackets and the name of your custom field.", 'wp-to-twitter' );
+					?>
+					<br />
+					<?php
+						_e( "<strong>Example:</strong> <code>[[custom_field]]</code>", 'wp-to-twitter' ); 
+					?>
+					</p>
+				</div>
+			</div>
+		</div>	
+	<?php } 
+	if ( $current == 'shortener' ) { 
+		echo apply_filters( 'wpt_shortener_controls', '' ); 
+	}
+	
+	if ( $current == 'advanced' ) {
+	?>
 	<div class="ui-sortable meta-box-sortables">
 		<div class="postbox">
 			<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
@@ -546,11 +456,10 @@ function wpt_update_settings() {
 			<div class="inside">
 				<form method="post" action="">
 					<div>
-						<?php $nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
-						echo "<div>$nonce</div>"; ?>
-						<input type="submit" name="submit"
-						       value="<?php _e( "Save Advanced WP to Twitter Options", 'wp-to-twitter' ); ?>"
-						       class="button-primary button-side"/>
+						<?php 
+							$nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
+							echo "<div>$nonce</div>"; 
+						?>
 
 						<fieldset>
 							<legend><?php _e( 'Tags', 'wp-to-twitter' ); ?></legend>
@@ -571,7 +480,7 @@ function wpt_update_settings() {
 								<label
 									for="jd_replace_character"><?php _e( "Spaces in tags replaced with:", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="jd_replace_character" id="jd_replace_character"
-								       value="<?php echo esc_attr( get_option( 'jd_replace_character' ) ); ?>"
+								       value="<?php esc_attr_e( get_option( 'jd_replace_character' ) ); ?>"
 								       size="3"/>
 							</p>
 
@@ -579,12 +488,12 @@ function wpt_update_settings() {
 								<label
 									for="jd_max_tags"><?php _e( "Maximum number of tags to include:", 'wp-to-twitter' ); ?></label>
 								<input aria-describedby="jd_max_characters_label" type="text" name="jd_max_tags"
-								       id="jd_max_tags" value="<?php echo esc_attr( get_option( 'jd_max_tags' ) ); ?>"
+								       id="jd_max_tags" value="<?php esc_attr_e( get_option( 'jd_max_tags' ) ); ?>"
 								       size="3"/>
 								<label
 									for="jd_max_characters"><?php _e( "Maximum length in characters for included tags:", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="jd_max_characters" id="jd_max_characters"
-								       value="<?php echo esc_attr( get_option( 'jd_max_characters' ) ); ?>" size="3"/>
+								       value="<?php esc_attr_e( get_option( 'jd_max_characters' ) ); ?>" size="3"/>
 							</p>
 						</fieldset>
 						<fieldset>
@@ -592,10 +501,7 @@ function wpt_update_settings() {
 							<p>
 								<label
 									for="jd_post_excerpt"><?php _e( "Length of post excerpt (in characters):", 'wp-to-twitter' ); ?></label>
-								<input aria-describedby="jd_post_excerpt_label" type="text" name="jd_post_excerpt"
-								       id="jd_post_excerpt" size="3" maxlength="3"
-								       value="<?php echo( esc_attr( get_option( 'jd_post_excerpt' ) ) ) ?>"/> (<em
-									id="jd_post_excerpt_label"><?php _e( "Extracted from the post. If you use the 'Excerpt' field, it will be used instead.", 'wp-to-twitter' ); ?></em>)
+								<input type="text" name="jd_post_excerpt" id="jd_post_excerpt" size="3" maxlength="3" value="<?php echo( esc_attr( get_option( 'jd_post_excerpt' ) ) ) ?>"/>
 							</p>
 
 							<p>
@@ -612,21 +518,21 @@ function wpt_update_settings() {
 								} else {
 									echo "<em>" . date_i18n( get_option( 'date_format' ) ) . "</em>";
 								} ?> (<em
-									id="date_format_label"><?php _e( "Default is from your general settings. <a href='http://codex.wordpress.org/Formatting_Date_and_Time'>Date Formatting Documentation</a>.", 'wp-to-twitter' ); ?></em>)
+									id="date_format_label"><a href='http://codex.wordpress.org/Formatting_Date_and_Time'><?php _e( "Date Formatting", 'wp-to-twitter' ); ?></a></em>)
 							</p>
 
 							<p>
 								<label
 									for="jd_twit_prepend"><?php _e( "Custom text before all Tweets:", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="jd_twit_prepend" id="jd_twit_prepend" size="20"
-								       value="<?php echo( esc_attr( stripslashes( get_option( 'jd_twit_prepend' ) ) ) ) ?>"/>
+								       value="<?php esc_attr_e( stripslashes( get_option( 'jd_twit_prepend' ) ) ) ?>"/>
 							</p>
 
 							<p>
 								<label
 									for="jd_twit_append"><?php _e( "Custom text after all Tweets:", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="jd_twit_append" id="jd_twit_append" size="20"
-								       value="<?php echo( esc_attr( stripslashes( get_option( 'jd_twit_append' ) ) ) ) ?>"/>
+								       value="<?php esc_attr_e( stripslashes( get_option( 'jd_twit_append' ) ) ) ?>"/>
 							</p>
 
 							<p>
@@ -634,7 +540,7 @@ function wpt_update_settings() {
 									for="jd_twit_custom_url"><?php _e( "Custom field for an alternate URL to be shortened and Tweeted:", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="jd_twit_custom_url" id="jd_twit_custom_url" size="40"
 								       maxlength="120"
-								       value="<?php echo( esc_attr( stripslashes( get_option( 'jd_twit_custom_url' ) ) ) ) ?>"/>
+								       value="<?php esc_attr_e( stripslashes( get_option( 'jd_twit_custom_url' ) ) ) ?>"/>
 							</p>
 						</fieldset>
 
@@ -663,20 +569,19 @@ function wpt_update_settings() {
 						}
 						asort( $default_order );
 						foreach ( $default_order as $k => $v ) {
-							$label = ucfirst( $k );
-							$inputs .= "<input type='text' size='2' value='$v' name='wpt_truncation_order[$k]' /> <label for='$k-$v'>$label</label><br />";
+							$label = '<code>#' . $k . '#</code>';
+							$inputs .= "<div class='wpt-truncate'><label for='$k-$v'>$label</label><br /><input type='number' size='3' value='$v' name='wpt_truncation_order[$k]' /></div> ";
 						}
 						?>
 						<fieldset>
 							<legend><?php _e( 'Template tag priority order', 'wp-to-twitter' ); ?></legend>
-							<p><?php _e( 'The order in which items will be abbreviated or removed from your Tweet if the Tweet is too long to send to Twitter.', 'wp-to-twitter' ); ?></p>
-
+							<p><?php _e( 'The order in which items will be abbreviated or removed from your Tweet if the Tweet is too long to send to Twitter.', 'wp-to-twitter' ); ?> <?php _e( 'Tags with lower values will be modified first.', 'wp-to-twitter' ); ?></p>
 							<p>
 								<?php echo $inputs; ?>
 							</p>
 						</fieldset>
 						<fieldset>
-							<legend><?php _e( "Special Cases when WordPress should send a Tweet", 'wp-to-twitter' ); ?></legend>
+							<legend id="special_cases"><?php _e( "Special Cases", 'wp-to-twitter' ); ?></legend>
 							<p>
 								<input type="checkbox" name="jd_tweet_default" id="jd_tweet_default"
 								       value="1" <?php echo jd_checkCheckbox( 'jd_tweet_default' ) ?> />
@@ -690,29 +595,42 @@ function wpt_update_settings() {
 								       value="1" <?php echo jd_checkCheckbox( 'wpt_inline_edits' ) ?> />
 								<label
 									for="wpt_inline_edits"><?php _e( "Allow status updates from Quick Edit", 'wp-to-twitter' ); ?></label><br/>
+								<input type="checkbox" name="wpt_rate_limiting" id="wpt_rate_limiting"
+								       value="1" <?php echo jd_checkCheckbox( 'wpt_rate_limiting' ) ?> />
+								<label
+									for="wpt_rate_limiting"><?php _e( "Enable Rate Limiting", 'wp-to-twitter' ); ?></label><br/>
+								<?php
+								if ( get_option( 'wpt_rate_limiting' ) == 1 ) {
+									?>
+								<input type="number" name="wpt_default_rate_limit" id="wpt_default_rate_limit"
+								       value="<?php echo wpt_default_rate_limit(); ?>" />
+								<label
+									for="wpt_default_rate_limit"><?php _e( "Default Rate Limit per category per hour", 'wp-to-twitter' ); ?></label><br/>							
+									<?php
+								}
+								?>
 							</p>
 						</fieldset>
 						<fieldset>
 							<legend><?php _e( "Google Analytics Settings", 'wp-to-twitter' ); ?></legend>
-							<p><?php _e( "You can track the response from Twitter using Google Analytics by defining a campaign identifier here. You can either define a static identifier or a dynamic identifier. Static identifiers don't change from post to post; dynamic identifiers are derived from information relevant to the specific post. Dynamic identifiers will allow you to break down your statistics by an additional variable.", "wp-to-twitter" ); ?></p>
 
 							<p>
 								<input type="radio" name="twitter-analytics" id="use-twitter-analytics"
 								       value="1" <?php echo jd_checkCheckbox( 'use-twitter-analytics' ) ?> />
 								<label
-									for="use-twitter-analytics"><?php _e( "Use a Static Identifier with WP-to-Twitter", 'wp-to-twitter' ); ?></label><br/>
+									for="use-twitter-analytics"><?php _e( "Use a Static Identifier", 'wp-to-twitter' ); ?></label><br/>
 								<label
-									for="twitter-analytics-campaign"><?php _e( "Static Campaign identifier for Google Analytics:", 'wp-to-twitter' ); ?></label>
+									for="twitter-analytics-campaign"><?php _e( "Static Campaign identifier", 'wp-to-twitter' ); ?></label>
 								<input type="text" name="twitter-analytics-campaign" id="twitter-analytics-campaign"
 								       size="40" maxlength="120"
-								       value="<?php echo( esc_attr( get_option( 'twitter-analytics-campaign' ) ) ) ?>"/><br/>
+								       value="<?php esc_attr_e( get_option( 'twitter-analytics-campaign' ) ) ?>"/><br/>
 							</p>
 
 							<p>
 								<input type="radio" name="twitter-analytics" id="use-dynamic-analytics"
 								       value="2" <?php echo jd_checkCheckbox( 'use_dynamic_analytics' ) ?> />
 								<label
-									for="use-dynamic-analytics"><?php _e( "Use a dynamic identifier with Google Analytics and WP-to-Twitter", 'wp-to-twitter' ); ?></label><br/>
+									for="use-dynamic-analytics"><?php _e( "Use a dynamic identifier", 'wp-to-twitter' ); ?></label><br/>
 								<label
 									for="jd-dynamic-analytics"><?php _e( "What dynamic identifier would you like to use?", "wp-to-twitter" ); ?></label>
 								<select name="jd-dynamic-analytics" id="jd-dynamic-analytics">
@@ -735,15 +653,12 @@ function wpt_update_settings() {
 						<fieldset id="indauthors">
 							<legend><?php _e( 'Author Settings', 'wp-to-twitter' ); ?></legend>
 							<p>
-								<input aria-describedby="jd_individual_twitter_users_label" type="checkbox"
-								       name="jd_individual_twitter_users" id="jd_individual_twitter_users"
+								<input type="checkbox" name="jd_individual_twitter_users" id="jd_individual_twitter_users"
 								       value="1" <?php echo jd_checkCheckbox( 'jd_individual_twitter_users' ) ?> />
 								<label
 									for="jd_individual_twitter_users"><?php _e( "Authors have individual Twitter accounts", 'wp-to-twitter' ); ?></label>
 							</p>
 
-							<p id="jd_individual_twitter_users_label"><?php _e( 'Authors can add their username in their user profile. With the free edition of WP to Twitter, it adds an @reference to the author. The @reference is placed using the <code>#account#</code> shortcode, which will pick up the main account if the user account isn\'t configured.', 'wp-to-twitter' ); ?>
-							</p>
 						</fieldset>
 						<div class='wpt-permissions'>
 							<fieldset>
@@ -810,7 +725,9 @@ function wpt_update_settings() {
 			</div>
 		</div>
 	</div>
-
+	<?php }
+	if ( $current == 'support' ) {
+	?>
 	<div class="postbox" id="get-support">
 		<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
 		<h3 class='hndle'><span><?php _e( 'Get Plug-in Support', 'wp-to-twitter' ); ?></span></h3>
@@ -819,15 +736,17 @@ function wpt_update_settings() {
 			<?php wpt_get_support_form(); ?>
 		</div>
 	</div>
-
+	<?php } ?>
+	<p>
+		<?php _e( 'Check whether WP to Twitter is setup correctly for Twitter and your URL Shortener. The test sends a status update to Twitter and shortens a URL using your chosen shortener.', 'wp-to-twitter' ); ?>
+	</p>
 	<form method="post" action="">
 		<fieldset>
 			<input type="hidden" name="submit-type" value="check-support"/>
 			<?php $nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
 			echo "<div>$nonce</div>"; ?>
 			<p>
-				<input type="submit" name="submit" value="<?php _e( 'Check Support', 'wp-to-twitter' ); ?>"
-				       class="button-primary"/> <?php _e( 'Check whether your server supports <a href="http://www.joedolson.com/wp-to-twitter/">WP to Twitter\'s</a> queries to the Twitter and URL shortening APIs. This test will send a status update to Twitter and shorten a URL using your selected methods.', 'wp-to-twitter' ); ?>
+				<input type="submit" name="submit" value="<?php _e( 'Test WP to Twitter', 'wp-to-twitter' ); ?>" class="button-primary" />
 			</p>
 		</fieldset>
 	</form>
@@ -872,10 +791,10 @@ function wpt_sidebar() {
 					} else {
 						$support_url = admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php' );
 					} ?>
-					<a href="<?php echo $support_url; ?>#get-support"><?php _e( "Get Support", 'wp-to-twitter' ); ?></a> &bull;
-					<a href="https://www.joedolson.com/wp-content/uploads/wp-tweets-pro-users-guide-1.7.2.pdf"><?php _e( 'Read the Manual', 'wp-to-twitter' ); ?></a>
+					<a href="<?php echo esc_url( add_query_arg( 'tab', 'support', $support_url ) ); ?>#get-support"><?php _e( "Get Support", 'wp-to-twitter' ); ?></a> &bull;
+					<a href="https://www.joedolson.com/wp-content/uploads/wp-tweets-pro-users-guide-1.8.2.pdf"><?php _e( 'Read the Manual', 'wp-to-twitter' ); ?></a>
 					<?php if ( get_option( 'jd_donations' ) != 1 && ! function_exists( 'wpt_pro_exists' ) ) { ?>
-						<p><?php _e( '<a href="http://www.joedolson.com/donate.php">Make a donation today!</a><br />Every donation matters - donate $5, $20, or $100 today!', 'wp-to-twitter' ); ?></p>
+						<p><?php _e( '<a href="https://www.joedolson.com/wp-tweets-pro/">Get WP Tweets Pro</a> or <a href="http://www.joedolson.com/donate.php">Make a donation</a> today!', 'wp-to-twitter' ); ?></p>
 						<div class='donations'>
 							<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
 								<div>
@@ -896,37 +815,6 @@ function wpt_sidebar() {
 			</div>
 		</div>
 		
-		<?php if ( ! function_exists( 'wpt_pro_exists' ) ) { ?>
-			<div class="ui-sortable meta-box-sortables">
-				<div class="postbox">
-					<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
-					<h3 class='wpt-upgrade hndle'><span><strong><?php _e( 'Upgrade Now!', 'wp-to-twitter' ); ?></strong></span>
-					</h3>
-
-					<div class="inside purchase">
-						<strong><a
-								href="http://www.joedolson.com/wp-tweets-pro/"><?php _e( 'Upgrade to <strong>WP Tweets PRO</strong>!', 'wp-to-twitter' ); ?></a></strong>
-
-						<p><strong><?php _e( "What's in the premium add-on?", 'wp-to-twitter' ); ?></strong></p>
-						<ul>
-							<li><?php _e( 'Post to multiple Twitter accounts', 'wp-to-twitter' ); ?></li>
-							<li><?php _e( 'Delay Tweets until after publishing', 'wp-to-twitter' ); ?></li>
-							<li><?php _e( 'Automatically schedule Tweets to post again', 'wp-to-twitter' ); ?></li>
-							<li><?php _e( 'Send Tweets for approved comments', 'wp-to-twitter' ); ?></li>
-							<li><?php _e( 'Filter Tweets by category, tag, or custom taxonomy', 'wp-to-twitter' ); ?></li>
-							<li><?php _e( 'Upload post images to Twitter', 'wp-to-twitter' ); ?></li>
-						</ul>
-
-					</div>
-				</div>
-			</div>
-		<?php
-		} else {
-			if ( function_exists( 'wpt_notes' ) ) {
-				wpt_notes();
-			}
-		} ?>
-		
 		<div class="ui-sortable meta-box-sortables">
 			<div class="postbox">
 				<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
@@ -937,44 +825,19 @@ function wpt_sidebar() {
 				</div>
 			</div>
 		</div>
-		
+
+		<?php if ( get_option( 'wpt_rate_limiting' ) == 1 ) { ?>
 		<div class="ui-sortable meta-box-sortables">
 			<div class="postbox">
 				<div class="handlediv"><span class="screen-reader-text">Click to toggle</span></div>
-				<h3 class='hndle'><span><?php _e( 'Shortcodes', 'wp-to-twitter' ); ?></span></h3>
+				<h3 class='hndle'><?php _e( 'Monitor Rate Limiting', 'wp-to-twitter' ); ?></h3>
 
-				<div class="inside">
-					<p><?php _e( "Available in post update templates:", 'wp-to-twitter' ); ?></p>
-					<ul>
-						<li><?php _e( "<code>#title#</code>: the title of your blog post", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#blog#</code>: the title of your blog", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#post#</code>: a short excerpt of the post content", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#category#</code>: the first selected category for the post", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#cat_desc#</code>: custom value from the category description field", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#date#</code>: the post date", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#modified#</code>: the post modified date", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#url#</code>: the post URL", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#author#</code>: the post author (@reference if available, otherwise display name)", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#displayname#</code>: post author's display name", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#account#</code>: the twitter @reference for the account (or the author, if author settings are enabled and set.)", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#@#</code>: the twitter @reference for the author or blank, if not set", 'wp-to-twitter' ); ?></li>
-						<li><?php _e( "<code>#tags#</code>: your tags modified into hashtags. See options in the Advanced Settings section, below.", 'wp-to-twitter' ); ?></li>
-						<?php if ( function_exists( 'wpt_pro_exists' ) && wpt_pro_exists() == true ) { ?>
-							<li><?php _e( "<code>#reference#</code>: Used only in co-tweeting. @reference to main account when posted to author account, @reference to author account in post to main account.", 'wp-to-twitter' ); ?></li>
-						<?php } ?>
-					</ul>
-					<p>
-					<?php 
-						_e( "Create custom shortcodes and access WordPress custom fields by using square brackets and the name of your custom field.", 'wp-to-twitter' );
-					?>
-					<br />
-					<?php
-						_e( "<strong>Example:</strong> <code>[[custom_field]]</code>", 'wp-to-twitter' ); 
-					?>
-					</p>
+				<div class="inside server">		
+					<?php echo wpt_view_rate_limits(); ?>
 				</div>
 			</div>
-		</div>
+		</div>	
+		<?php } ?>
 	</div>
 <?php
 }
@@ -1033,6 +896,6 @@ function wpt_do_server_check( $test = false ) {
 		update_option( 'wpt_server_string', $wpt_server_string );
 	}
 	echo $wpt_server_string;
-	$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php?refresh_wpt_server_string=true' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php&amp;refresh_wpt_server_string=true' );
+	$admin_url = ( is_plugin_active( 'wp-tweets-pro/wpt-pro-functions.php' ) ) ? admin_url( 'admin.php?page=wp-tweets-pro&amp;refresh_wpt_server_string=true' ) : admin_url( 'options-general.php?page=wp-to-twitter/wp-to-twitter.php&amp;refresh_wpt_server_string=true' );
 	echo "<p><a href='" . $admin_url . "'>" . __( 'Test again', 'wp-to-twitter' ) . "</a></p>";
 }
