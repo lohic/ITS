@@ -25,6 +25,21 @@ $(document).ready(function(){
 	/*** fin masquer le paragraphe catégories sur les résultats de recherche si rien à afficher ***/
 
 
+	$articleMaxHeight = 250;
+	$('#agenda article').each(function(){
+		if($(this).outerHeight(true) > $articleMaxHeight){
+			$articleMaxHeight = $(this).outerHeight(true) + 25;
+		}
+	})
+
+	console.log('articleMaxHeight',$articleMaxHeight);
+
+	$("#actualites").css({
+		'margin-top' : $articleMaxHeight
+	});
+
+
+
 	/*** Survol bloc actualités et regards home ***/
 	$("#actualites").click(function(){
 		var chemin_actu = $("#actualites p.suite a").attr('href');

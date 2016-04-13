@@ -97,7 +97,7 @@
 				if($my_query->have_posts()){
 					while( $my_query->have_posts() ) : $my_query->the_post(); // variable must be called $post (IMPORTANT)
 			?>
-			            <h2 class="smaller"><span></span>Focus</h2>
+			            <h2 class="smaller"><span></span><?php the_field( "intitule_focus", 'option');?></h2>
 			            <div class="row">
 			<?php
 							if ( has_post_thumbnail() ) {
@@ -151,11 +151,13 @@
 									<div class="pb0 mb1">
 				                        <div class="small mb1">
 					                    <?php
+					                    	$is_resume = false;
 											$resume = get_field('resume_article');
 											if($resume==""){
 												echo get_the_content_by_id(get_the_ID());
 											}else{
-												echo $resume.'...';
+												echo $resume;//.'...';
+												$is_resume = true;
 											}
 										?>
 										</div>
@@ -163,7 +165,7 @@
 			<?php						
 								}
 			?>
-			                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire la suite</span></a></p>
+			                    <p class="small suite"><a href="<?php the_permalink();?>"><span>lire <?php echo $is_resume?"la suite" : "l'article";?></span></a></p>
 			                </article>
 			            </div>
 	        <?php 
@@ -175,7 +177,7 @@
         </section>
         
         <section id="regards" class="pl3">
-            <h2 class="smaller"><span></span>Regards sur…</h2>
+            <h2 class="smaller"><span></span><?php the_field( "intitule_regards", 'option');?></h2>
             <div class="row">
             <?php 
                 //$my_query = new WP_Query( array( 'post_type' => 'post', 'tag'=>'regards-d-aujourd-hui', 'orderby' => 'rand', 'posts_per_page'=>1));
@@ -212,9 +214,19 @@
 							?>
                         </h4>
                         <div class="pb0 mb1 small">
-	                        <?php the_content();?>
+	                        <?php //the_content();?>
+	                        <?php
+	                        	$is_resume = false;
+								$resume = get_field('resume_article');
+								if($resume==""){
+									echo get_the_content_by_id(get_the_ID());
+								}else{
+									$is_resume = true;
+									echo $resume;//.'...';
+								}
+							?>
 	                    </div>
-	                    <a href="<?php the_permalink(); ?>" class="small suite"><span>lire la suite</span></a>
+	                    <a href="<?php the_permalink(); ?>" class="small suite"><span>lire <?php echo $is_resume?"la suite" : "l'article";?></span></a>
 		            </article>
 		            <section id="meme_theme" class="pl3 col">
 		                <h3 class="small mb1">Archives en relation</h3>

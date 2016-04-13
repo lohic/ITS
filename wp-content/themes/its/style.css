@@ -1229,7 +1229,8 @@ h4.tag a{
 }
 
 #actualites{
-	margin:250px 0px 60px;
+	/*margin:250px 0px 60px;*/ /* LOIC */
+	margin:250px 0px 40px;
 }
 
 #actualites .row .col:first-child{
@@ -1649,6 +1650,7 @@ p.tags span.tags a:hover{
 	background: #f3f3f3;
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+	column-count: 3; /* Pour rélgler le problème des espaces */
 }
 
 #frise{
@@ -1747,10 +1749,21 @@ p.tags span.tags a:hover{
 	width:200px;
 }
 
-#sous_categories > ul > li{
-	display:inline-block;
-	width:185px;
+/*#sous_categories > ul:after{
+	content: " ";
+	height: 0px;
+	clear: both;
+	display: block;
+}*/
+
+#sous_categories > ul.menu > li{
 	padding-left: 30px;
+}
+#sous_categories > ul > li{
+	/*display:inline-block;*/
+	/*width:185px;
+	padding-left: 30px;*/
+	/*float: left;*/
 }
 
 #sous_categories > ul > li > a{

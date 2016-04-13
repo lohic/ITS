@@ -67,11 +67,11 @@
 		</div>
 		
 		<?php
-			
-			$postids=$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE SUBSTR($wpdb->posts.post_title,1,1) = %s ORDER BY $wpdb->posts.post_title",$first_char)); 
+					
+			$postids=$wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE SUBSTR($wpdb->posts.post_title,1,1) = %s ORDER BY $wpdb->posts.post_title", $first_char)); 
 
 			if ($postids) {
-				$args=array('post__in' => $postids, 'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => -1, 'category_name'=>'biographies', 'order' => 'ASC', 'caller_get_posts'=> 1);
+				$args=array('post__in' => $postids, 'post_type' => 'post', 'post_status' => 'publish', 'posts_per_page' => -1, 'category_name'=>'biographies', 'orderby'=>'title', 'order' => 'ASC', 'caller_get_posts'=> 1);
 				$my_query = null;
 				$my_query = new WP_Query($args);
 				if( $my_query->have_posts() ) {
