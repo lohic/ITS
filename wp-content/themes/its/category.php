@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 
-<!-- cathegory.php -->
+<!-- category.php -->
 
 <div class="row mb3">
     <div id="centre" class="col pl3 pr3">
@@ -86,12 +86,12 @@
 					}
 					if(!empty($categories)){
 				?>
-						<section id="sous_categories" class="small mb2 pt1 pb1">
-							<ul>
+						<section id="sous_categories" class="small mb2 pt1 pb1 tagcloud">
+							<ul class="pl3 pr3">
 				<?php
 							foreach ($categories as $categorie){
 				?>
-								<li class="pl3"><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
+								<li><a href="<?php echo get_category_link($categorie->term_id);?>" <?php if($categorie->term_id==get_query_var('cat')){echo ' class="actif"';}?>><?php echo $categorie->name;?></a></li>
 				<?php
 							}
 				?>
@@ -170,6 +170,6 @@
 		?>
 	</div>
 
-<!-- fin cathegory.php -->
+<!-- fin category.php -->
 
 <?php get_footer(); ?>

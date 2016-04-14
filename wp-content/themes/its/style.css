@@ -1653,6 +1653,10 @@ p.tags span.tags a:hover{
 	column-count: 3; /* Pour rélgler le problème des espaces */
 }
 
+#sous_categories.tagcloud{
+	column-count:auto; 
+}
+
 #frise{
 	width:650px;
 	position:relative;
@@ -1759,12 +1763,30 @@ p.tags span.tags a:hover{
 #sous_categories > ul.menu > li{
 	padding-left: 30px;
 }
-#sous_categories > ul > li{
-	/*display:inline-block;*/
-	/*width:185px;
-	padding-left: 30px;*/
+#sous_categories.tagcloud > ul > li{
+	display:inline-block;
+	/*padding-right: 14x;*/
+	/*margin-right: -4px;*/
+	
+	/*width:185px;*/
+	/*padding-left: 30px;*/
 	/*float: left;*/
 }
+
+#sous_categories.tagcloud > ul > li > a{
+	padding-right: 7px;
+	background: url("img/puce_sidebar.png") no-repeat scroll right 10px transparent;	
+}
+
+#sous_categories.tagcloud > ul > li:last-child > a{
+	padding-right: 0;
+	background: none;
+}
+/*#sous_categories > ul > li{
+	display:inline-block;
+	width:185px;
+	padding-left: 30px;
+}*/
 
 #sous_categories > ul > li > a{
 	color:#666;
