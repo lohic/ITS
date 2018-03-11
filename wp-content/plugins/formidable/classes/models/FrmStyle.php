@@ -13,7 +13,7 @@ class FrmStyle {
     public function get_new() {
 		$this->id = 0;
 
-        $max_slug_value = pow(36, 6);
+        $max_slug_value = 2147483647;
         $min_slug_value = 37; // we want to have at least 2 characters in the slug
         $key = base_convert( rand($min_slug_value, $max_slug_value), 10, 36 );
 
@@ -77,11 +77,17 @@ class FrmStyle {
             $default_settings = $this->get_defaults();
 
             foreach ( $default_settings as $setting => $default ) {
+				if ( ! isset( $new_instance['post_content'][ $setting ] ) ) {
+					$new_instance['post_content'][ $setting ] = $default;
+				}
+
 				if ( strpos( $setting, 'color' ) !== false || in_array( $setting, array( 'error_bg', 'error_border', 'error_text' ) ) ) {
                     //if is a color
 					$new_instance['post_content'][ $setting ] = str_replace( '#', '', $new_instance['post_content'][ $setting ] );
 				} else if ( in_array( $setting, array( 'submit_style', 'important_style', 'auto_width' ) ) && ! isset( $new_instance['post_content'][ $setting ] ) ) {
 					$new_instance['post_content'][ $setting ] = 0;
+                } else if ( $setting == 'font' ) {
+                	$new_instance['post_content'][ $setting ] = $this->force_balanced_quotation( $new_instance['post_content'][ $setting ] );
                 }
             }
 
@@ -91,7 +97,7 @@ class FrmStyle {
 
  		}
 
- 		$this->save_settings($all_instances);
+ 		$this->save_settings();
 
  		return $action_ids;
  	}
@@ -99,7 +105,7 @@ class FrmStyle {
     /**
      * Create static css file
      */
-	public function save_settings( $styles ) {
+	public function save_settings() {
 		$filename = FrmAppHelper::plugin_path() . '/css/custom_theme.css.php';
 		update_option( 'frm_last_style_update', date('njGi') );
 
@@ -107,114 +113,44 @@ class FrmStyle {
             return;
         }
 
-        $defaults = $this->get_defaults();
-        $uploads = wp_upload_dir();
-		$target_path = $uploads['basedir'] . '/formidable';
-		$needed_dirs = array( $target_path, $target_path . '/css' );
-        $dirs_exist = true;
+		$this->clear_cache();
 
-        $saving = true;
-		$css = '/* ' . __( 'WARNING: Any changes made to this file will be lost when your Formidable settings are updated', 'formidable' ) . ' */' . "\n";
+		$css = $this->get_css_content( $filename );
 
-        ob_start();
-        $frm_style = $this;
-        include($filename);
-		$css .= preg_replace( '/\/\*(.|\s)*?\*\//', '', str_replace( array( "\r\n", "\r", "\n", "\t", '    ' ), '', ob_get_contents() ) );
-        ob_end_clean();
-
-        $access_type = get_filesystem_method();
-        if ( $access_type === 'direct' ) {
-			$creds = request_filesystem_credentials( site_url() . '/wp-admin/', '', false, false, array() );
-		} else {
-			$creds = $this->get_ftp_creds( $access_type );
-		}
-
-		if ( ! empty( $creds ) ) {
-        	// initialize the API
-        	if ( ! WP_Filesystem( $creds ) ) {
-        		// any problems and we exit
-        		$dirs_exist = false;
-			}
-
-            if ( $dirs_exist ) {
-	        	global $wp_filesystem;
-
-            	$chmod_dir = defined('FS_CHMOD_DIR') ? FS_CHMOD_DIR : ( fileperms( ABSPATH ) & 0777 | 0755 );
-            	$chmod_file = defined('FS_CHMOD_FILE') ? FS_CHMOD_FILE : ( fileperms( ABSPATH . 'index.php' ) & 0777 | 0644 );
-
-                // Create the directories if need be:
-            	foreach ( $needed_dirs as $_dir ) {
-                    // Only check to see if the Dir exists upon creation failure. Less I/O this way.
-            		if ( ! $wp_filesystem->mkdir( $_dir, $chmod_dir ) && ! $wp_filesystem->is_dir( $_dir ) ) {
-            			$dirs_exist = false;
-                    }
-            	}
-
-				$index_path = $target_path . '/index.php';
-                $wp_filesystem->put_contents( $index_path, "<?php\n// Silence is golden.\n?>", $chmod_file );
-
-                // only write the file if the folders exist
-                if ( $dirs_exist ) {
-					$css_file = $target_path . '/css/formidablepro.css';
-                    $wp_filesystem->put_contents( $css_file, $css, $chmod_file );
-                }
-            }
-        }
+		$create_file = new FrmCreateFile( array( 'folder_name' => 'formidable/css', 'file_name' => 'formidablepro.css' ) );
+		$create_file->create_file( $css );
 
         update_option('frmpro_css', $css);
 
-        delete_transient('frmpro_css');
         set_transient('frmpro_css', $css);
 	}
 
-	private function get_ftp_creds( $type ) {
-		$credentials = get_option( 'ftp_credentials', array( 'hostname' => '', 'username' => '' ) );
+	private function get_css_content( $filename ) {
+		$css = '/* ' . __( 'WARNING: Any changes made to this file will be lost when your Formidable settings are updated', 'formidable' ) . ' */' . "\n";
 
-		$credentials['hostname'] = defined('FTP_HOST') ? FTP_HOST : $credentials['hostname'];
-		$credentials['username'] = defined('FTP_USER') ? FTP_USER : $credentials['username'];
-		$credentials['password'] = defined('FTP_PASS') ? FTP_PASS : '';
+		$saving = true;
+		$frm_style = $this;
 
-		// Check to see if we are setting the public/private keys for ssh
-		$credentials['public_key'] = defined('FTP_PUBKEY') ? FTP_PUBKEY : '';
-		$credentials['private_key'] = defined('FTP_PRIKEY') ? FTP_PRIKEY : '';
+        ob_start();
+        include( $filename );
+		$css .= preg_replace( '/\/\*(.|\s)*?\*\//', '', str_replace( array( "\r\n", "\r", "\n", "\t", '    ' ), '', ob_get_contents() ) );
+        ob_end_clean();
 
-		// Sanitize the hostname, Some people might pass in odd-data:
-		$credentials['hostname'] = preg_replace( '|\w+://|', '', $credentials['hostname'] ); //Strip any schemes off
+		return $css;
+	}
 
-		if ( strpos( $credentials['hostname'], ':' ) ) {
-			list( $credentials['hostname'], $credentials['port'] ) = explode( ':', $credentials['hostname'], 2 );
-			if ( ! is_numeric( $credentials['port'] ) ) {
-				unset( $credentials['port'] );
-			}
-		} else {
-			unset( $credentials['port'] );
-		}
+	private function clear_cache() {
+		$default_post_atts = array(
+			'post_type'   => FrmStylesController::$post_type,
+			'post_status' => 'publish',
+			'numberposts' => 99,
+			'orderby'     => 'title',
+			'order'       => 'ASC',
+		);
 
-		if ( ( defined( 'FTP_SSH' ) && FTP_SSH ) || ( defined( 'FS_METHOD' ) && 'ssh2' == FS_METHOD ) ) {
-			$credentials['connection_type'] = 'ssh';
-		} else if ( ( defined( 'FTP_SSL' ) && FTP_SSL ) && 'ftpext' == $type ) {
-			//Only the FTP Extension understands SSL
-			$credentials['connection_type'] = 'ftps';
-		} else if ( ! isset( $credentials['connection_type'] ) ) {
-			//All else fails (And it's not defaulted to something else saved), Default to FTP
-			$credentials['connection_type'] = 'ftp';
-		}
-
-		$has_creds = ( ! empty( $credentials['password'] ) && ! empty( $credentials['username'] ) && ! empty( $credentials['hostname'] ) );
-		$can_ssh = ( 'ssh' == $credentials['connection_type'] && ! empty( $credentials['public_key'] ) && ! empty( $credentials['private_key'] ) );
-		if ( $has_creds || $can_ssh ) {
-			$stored_credentials = $credentials;
-			if ( ! empty( $stored_credentials['port'] ) ) {
-				//save port as part of hostname to simplify above code.
-				$stored_credentials['hostname'] .= ':' . $stored_credentials['port'];
-			}
-
-			unset( $stored_credentials['password'], $stored_credentials['port'], $stored_credentials['private_key'], $stored_credentials['public_key'] );
-
-			return $credentials;
-		}
-
-		return false;
+		FrmAppHelper::delete_cache_and_transient( serialize( $default_post_atts ), 'frm_styles' );
+		FrmAppHelper::cache_delete_group( 'frm_styles' );
+		FrmAppHelper::delete_cache_and_transient( 'frmpro_css' );
 	}
 
 	public function destroy( $id ) {
@@ -269,7 +205,8 @@ class FrmStyle {
             if ( empty($temp_styles) ) {
                 // create a new style if there are none
          		$new = $this->get_new();
-         		$new->post_title = $new->post_name = __( 'Formidable Style', 'formidable' );
+				$new->post_title = __( 'Formidable Style', 'formidable' );
+				$new->post_name = $new->post_title;
          		$new->menu_order = 1;
          		$new = $this->save( (array) $new);
          		$this->update('default');
@@ -395,6 +332,7 @@ class FrmStyle {
             'description_weight' => 'normal',
             'description_style' => 'normal',
             'description_align' => 'left',
+			'description_margin' => '0',
 
             'field_font_size'   => '14px',
             'field_height' 		=> '32px',
@@ -480,6 +418,14 @@ class FrmStyle {
 
             'important_style'   => false,
 
+			'progress_bg_color'     => 'dddddd',
+			'progress_active_color' => 'ffffff',
+			'progress_active_bg_color' => '008ec2',
+			'progress_color'        => 'ffffff',
+			'progress_border_color' => 'dfdfdf',
+			'progress_border_size'  => '2px',
+			'progress_size'         => '30px',
+
             'custom_css'        => '',
         );
     }
@@ -496,5 +442,21 @@ class FrmStyle {
 			'bold' => __( 'bold', 'formidable' ),
 			800 => 800, 900 => 900,
 		);
+	}
+
+
+	/**
+	 * Don't let imbalanced font families ruin the whole stylesheet
+	 */
+	public function force_balanced_quotation( $value ) {
+		$balanced_characters = array( '"', "'" );
+		foreach ( $balanced_characters as $char ) {
+			$char_count = substr_count( $value, $char );
+			$is_balanced = $char_count % 2 == 0;
+			if ( ! $is_balanced ) {
+				$value .= $char;
+			}
+		}
+		return $value;
 	}
 }

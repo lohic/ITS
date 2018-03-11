@@ -70,8 +70,18 @@ class FrmProDisplay{
         }
 
 		foreach ( $new_values as $key => $val ) {
-            update_post_meta($id, $key, $val);
-            unset($key, $val);
+			if ( $key == 'frm_param' ) {
+				$last_param = get_post_meta( $id, $key, true );
+				if ( $last_param != $val ) {
+					update_post_meta( $id, $key, $val );
+					add_rewrite_endpoint( $val, EP_PERMALINK | EP_PAGES );
+					flush_rewrite_rules();
+				}
+			} else {
+				update_post_meta( $id, $key, $val );
+			}
+
+			unset( $key, $val );
         }
     }
 
@@ -237,20 +247,6 @@ class FrmProDisplay{
 			if ( $values['dyncontent'] == '' ) {
                 $errors[] = __( 'Dynamic Content cannot be blank', 'formidable' );
 			}
-
-			if ( ! FrmProAppHelper::rewriting_on() ) {
-				if ( $values['param'] == '' ) {
-					$errors[] = __( 'Parameter Name cannot be blank if content is dynamic', 'formidable' );
-				}
-
-				if ( $values['type'] == '' ) {
-					$errors[] = __( 'Parameter Value cannot be blank if content is dynamic', 'formidable' );
-				}
-			} else {
-				if ( $values['type'] == '' ) {
-					$errors[] = __( 'Detail Link cannot be blank if content is dynamic', 'formidable' );
-				}
-            }
         }
 
 		if ( isset( $values['options']['where'] ) ) {

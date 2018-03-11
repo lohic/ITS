@@ -361,6 +361,8 @@ class FrmFormAction {
             return array();
         }
 
+		$limit = apply_filters( 'frm_form_action_limit', $limit, compact( 'type', 'form_id' ) );
+
         if ( 'all' != $type ) {
             return $action_controls->get_all( $form_id, $limit );
         }
@@ -395,6 +397,26 @@ class FrmFormAction {
 
         return $settings;
     }
+
+	/**
+	 * @param int $action_id
+	 */
+	public static function get_single_action_type( $action_id, $type ) {
+		if ( ! $type ) {
+			return false;
+		}
+		$action_control = FrmFormActionsController::get_form_actions( $type );
+		return $action_control->get_single_action( $action_id );
+	}
+
+	/**
+	 * @param int $form_id
+	 * @return bool
+	 */
+	public static function form_has_action_type( $form_id, $type ) {
+		$payment_actions = self::get_action_for_form( $form_id, $type );
+		return ! empty( $payment_actions );
+	}
 
 	public function get_all( $form_id = false, $limit = 99 ) {
 	    if ( $form_id ) {
@@ -572,7 +594,7 @@ class FrmFormAction {
 
             // update form options
 			$wpdb->update( $wpdb->prefix . 'frm_forms', array( 'options' => $form->options ), array( 'id' => $form->id ) );
-            wp_cache_delete( $form->id, 'frm_form');
+	        FrmForm::clear_form_cache();
         }
 
         return $post_id;
@@ -596,14 +618,9 @@ class FrmFormAction {
 				continue;
 			}
 
-			if ( is_array($condition['hide_opt']) ) {
-				$condition['hide_opt'] = reset($condition['hide_opt']);
-			}
+			self::prepare_logic_value( $condition['hide_opt'] );
 
-			$observed_value = isset( $entry->metas[ $condition['hide_field'] ] ) ? $entry->metas[ $condition['hide_field'] ] : '';
-			if ( $condition['hide_opt'] == 'current_user' ) {
-				$condition['hide_opt'] = get_current_user_id();
-			}
+			$observed_value = self::get_value_from_entry( $entry, $condition['hide_field'] );
 
 			$stop = FrmFieldsHelper::value_meets_condition($observed_value, $condition['hide_field_cond'], $condition['hide_opt']);
 
@@ -621,6 +638,44 @@ class FrmFormAction {
 		}
 
 		return $stop;
+	}
+
+	/**
+	 * Prepare the logic value for comparison against the entered value
+	 *
+	 * @since 2.01.02
+	 * @param array|string $logic_value
+	 */
+	private static function prepare_logic_value( &$logic_value ) {
+		if ( is_array( $logic_value ) ) {
+			$logic_value = reset( $logic_value );
+		}
+
+		if ( $logic_value == 'current_user' ) {
+			$logic_value = get_current_user_id();
+		}
+	}
+
+
+	/**
+	 * Get the value from a specific field and entry
+	 *
+	 * @since 2.01.02
+	 * @param object $entry
+	 * @param int $field_id
+	 * @return array|bool|mixed|string
+	 */
+	private static function get_value_from_entry( $entry, $field_id ) {
+		$observed_value = '';
+
+		if ( isset( $entry->metas[ $field_id ] ) ) {
+			$observed_value = $entry->metas[ $field_id ];
+		} else if ( $entry->post_id && FrmAppHelper::pro_is_installed() ) {
+			$field = FrmField::getOne( $field_id );
+			$observed_value = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $field, array( 'links' => false, 'truncate' => false ) );
+		}
+
+		return $observed_value;
 	}
 
 	public static function default_action_opts( $class = '' ) {

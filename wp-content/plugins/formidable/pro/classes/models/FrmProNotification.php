@@ -29,16 +29,11 @@ class FrmProNotification{
 
             $file_ids = array();
             //Get attachment ID for uploaded files
-            if ( isset($entry->metas[$file_field->id]) ) {
-                $file_ids = $entry->metas[$file_field->id];
+            if ( isset( $entry->metas[ $file_field->id ] ) ) {
+                $file_ids = $entry->metas[ $file_field->id ];
             } else if ( $file_field->form_id != $form->id ) {
                 // this is in a repeating or embedded field
-                $values = array();
-
-                FrmEntryFormat::fill_entry_values( $atts, $file_field, $values );
-                if ( isset($values[$file_field->field_key]) ) {
-                    $file_ids = $values[$file_field->field_key];
-                }
+                $file_ids = self::fill_files_from_children( $atts, $file_field );
             } else if ( isset($file_field->field_options['post_field']) && !empty($file_field->field_options['post_field']) ) {
                 //get value from linked post
                 $file_ids = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $file_field );
@@ -73,9 +68,31 @@ class FrmProNotification{
     }
 
 	/**
+	 * This is a file field in a repeating or embedded field
+	 */
+	private static function fill_files_from_children( $atts, $file_field ) {
+        $values = $file_ids = array();
+        FrmEntryFormat::fill_entry_values( $atts, $file_field, $values );
+
+		$file_options = $file_field->field_options;
+		$parent_field = isset( $file_options['in_section'] ) ? $file_options['in_section'] : '';
+		$has_subentries = isset( $values[ $parent_field ] ) && isset( $values[ $parent_field ]['entries'] ) && is_array( $values[ $parent_field ]['entries'] );
+
+		if ( $has_subentries ) {
+			foreach ( $values[ $parent_field ]['entries'] as $entry ) {
+                if ( isset( $entry[ $file_field->id ] ) ) {
+                    $file_ids[] = $entry[ $file_field->id ]['val'];
+                }
+			}
+		}
+
+		return $file_ids;
+	}
+
+	/**
 	* Add to email attachments
 	*
-	* Since 2.0
+	* @since 2.0
 	* Called by add_attachments in FrmProNotification
 	*/
 	private static function add_to_attachments( &$attachments, $file_id ) {
@@ -85,21 +102,17 @@ class FrmProNotification{
 		// Get the file
 		$file = get_post_meta( $file_id, '_wp_attached_file', true);
 		if ( $file ) {
-			if ( ! isset( $uploads ) || ! isset( $uploads['basedir'] ) ) {
-				$uploads = wp_upload_dir();
-			}
+			$uploads = wp_upload_dir();
 			$attachments[] = $uploads['basedir'] . '/'. $file;
 		}
 	}
 
+	/**
+	 * @deprecated 2.03.04
+	 */
     public static function entry_created($entry_id, $form_id) {
-        FrmNotification::entry_created($entry_id, $form_id);
+	    $new_function = 'FrmFormActionsController::trigger_actions("create", ' . $form_id . ', ' . $entry_id . ', "email")';
+	    _deprecated_function( __FUNCTION__, '2.03.04', $new_function );
+	    FrmFormActionsController::trigger_actions( 'create', $form_id, $entry_id, 'email' );
     }
-
-    //send update email notification
-	public static function entry_updated( $entry_id, $form_id ) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmFormActionsController::trigger_actions("update", '. $form_id .', '. $entry_id .', "email")');
-        FrmFormActionsController::trigger_actions('update', $form_id, $entry_id, 'email');
-    }
-
 }

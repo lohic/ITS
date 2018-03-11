@@ -259,13 +259,20 @@ class FrmFormActionsController {
             $link_settings = array( $type => $link_settings );
         }
 
-        $stored_actions = $action_priority = array();
+		$stored_actions = array();
+		$action_priority = array();
 
-		$importing = in_array( $event, array( 'create', 'update' ) ) && defined( 'WP_IMPORTING' ) && WP_IMPORTING;
+		if ( in_array( $event, array( 'create', 'update' ) ) && defined( 'WP_IMPORTING' ) && WP_IMPORTING ) {
+			$this_event = 'import';
+		} else {
+			$this_event = $event;
+		}
 
         foreach ( $form_actions as $action ) {
-			$trigger_on_import = $importing && in_array( 'import', $action->post_content['event'] );
-			if ( ! in_array( $event, $action->post_content['event'] ) && ! $trigger_on_import ) {
+
+			$skip_this_action = ( ! in_array( $this_event, $action->post_content['event'] ) );
+			$skip_this_action = apply_filters( 'frm_skip_form_action', $skip_this_action, compact( 'action', 'entry', 'form', 'event' ) );
+			if ( $skip_this_action ) {
                 continue;
             }
 
@@ -280,8 +287,11 @@ class FrmFormActionsController {
 			$child_entry = ( ( $form && is_numeric( $form->parent_form_id ) && $form->parent_form_id ) || ( $entry && ( $entry->form_id != $form->id || $entry->parent_item_id ) ) || ( isset( $args['is_child'] ) && $args['is_child'] ) );
 
 			if ( $child_entry ) {
-                //don't trigger actions for sub forms
-                continue;
+				// maybe trigger actions for sub forms
+				$trigger_children = apply_filters( 'frm_use_embedded_form_actions', false, compact( 'form', 'entry' ) );
+				if ( ! $trigger_children ) {
+					continue;
+				}
             }
 
             // check conditional logic

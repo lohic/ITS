@@ -26,404 +26,88 @@ class FrmProFormsHelper{
         return $values;
     }
 
-    public static function get_sub_form($field_name, $field, $args = array()) {
-        $defaults = array(
-            'repeat'    => 0,
-            'errors'    => array(),
-        );
+	public static function load_chosen_js( $frm_vars ) {
+		if ( isset( $frm_vars['chosen_loaded' ] ) && $frm_vars['chosen_loaded'] ) {
+			$original_js = 'allow_single_deselect:true';
+			$chosen_js = apply_filters( 'frm_chosen_js', $original_js );
+			if ( $original_js != $chosen_js ) {
+				?>__frmChosen=<?php echo json_encode( $chosen_js ) ?>;<?php
+			}
+		}
+	}
 
-        $args = wp_parse_args($args, $defaults);
+	/**
+	 * Load the conditional field IDs for JavaScript
+	 *
+	 * @since 2.01.0
+	 * @param array $frm_vars
+	 */
+	public static function load_hide_conditional_fields_js( $frm_vars ) {
 
-        $subform = FrmForm::getOne($field['form_select']);
-		if ( empty( $subform ) ) {
+		if ( self::is_initial_load_for_at_least_one_form( $frm_vars ) ) {
+			// Check the logic on all dependent fields
+			if ( isset( $frm_vars['dep_logic_fields'] ) && ! empty( $frm_vars['dep_logic_fields'] ) ) {
+				// TODO: when this is missing and only Dynamic fields on page, problems happen.
+
+				echo 'var frmHide=' . json_encode( $frm_vars['dep_logic_fields'] ) . ';';
+				echo 'if(typeof __frmHideOrShowFields == "undefined"){__frmHideOrShowFields=frmHide;}';
+				echo 'else{__frmHideOrShowFields=jQuery.extend(__frmHideOrShowFields,frmHide);}';
+			}
+		} else {
+			// Save time and just hide the fields that are in frm_hide_fields
+			echo '__frmHideFields=true;';
+		}
+
+		// Check dependent Dynamic fields
+		if ( isset( $frm_vars['dep_dynamic_fields'] )  && ! empty( $frm_vars['dep_dynamic_fields'] ) ) {
+			echo '__frmDepDynamicFields=' . json_encode( $frm_vars['dep_dynamic_fields'] ) . ';';
+		}
+	}
+
+	/**
+	 * Check if at least one form is loading for the first time
+	 *
+	 * @since 2.01.0
+	 * @param array $frm_vars
+	 * @return bool
+	 */
+	private static function is_initial_load_for_at_least_one_form( $frm_vars ) {
+		$initial_load = true;
+
+		if ( isset( $_POST['form_id'] ) ) {
+			foreach ( $frm_vars['forms_loaded'] as $form ) {
+				if ( ! is_object( $form ) ) {
+					continue;
+				}
+
+				if ( isset($frm_vars['prev_page'][ $form->id ]) || self::going_to_prev( $form->id ) || FrmProFormsHelper::saving_draft() ) {
+					$initial_load = false;
+				} else {
+					$initial_load = true;
+					break;
+				}
+			}
+		}
+
+		return $initial_load;
+	}
+
+	public static function load_dropzone_js( $frm_vars ) {
+		if ( ! isset( $frm_vars['dropzone_loaded'] ) || empty( $frm_vars['dropzone_loaded'] ) || ! is_array( $frm_vars['dropzone_loaded'] ) ) {
 			return;
 		}
 
-        $subfields = FrmField::get_all_for_form($field['form_select']);
-
-?>
-<input type="hidden" name="<?php echo esc_attr( $field_name ) ?>[form]" value="<?php echo esc_attr( $field['form_select'] ) ?>" />
-<?php
-
-        if ( empty($subfields) ) {
-            return;
-        }
-
-        $repeat_atts = array(
-            'form'  => $subform,
-            'fields' => $subfields,
-            'errors' => $args['errors'],
-            'parent_field' => $field,
-            'repeat'    => $args['repeat'],
-			'field_name' => $field_name,
-        );
-
-        if ( empty($field['value']) ) {
-			// Row count must be zero if field value is empty
-			$start_rows = apply_filters( 'frm_repeat_start_rows', 1, $field );
-
-			for ( $i = 0, $j = $start_rows; $i < $j; $i++ ) {
-				// add an empty sub entry
-				$repeat_atts['row_count'] = $repeat_atts['i'] = $i;
-				self::repeat_field_set( $field_name, $repeat_atts );
-			}
-            return;
-        }
-
-		$row_count = 0;
-        foreach ( (array) $field['value'] as $k => $checked ) {
-            $repeat_atts['i'] = $k;
-			$repeat_atts['value'] = '';
-
-            if ( ! isset($field['value']['form']) ) {
-                // this is not a posted value from moving between pages
-                $checked = apply_filters('frm_hidden_value', $checked, $field);
-                if ( empty($checked) || ! is_numeric($checked) ) {
-                    continue;
-                }
-
-                $repeat_atts['i'] = 'i'. $checked;
-                $repeat_atts['entry_id'] = $checked;
-				$repeat_atts['value'] = $checked;
-            } else if ( $k === 'id' ) {
-                foreach ( $checked as $entry_id ) {
-?>
-<input type="hidden" name="<?php echo esc_attr( $field_name ) ?>[id][]" value="<?php echo esc_attr( $entry_id ) ?>" />
-<?php
-                    unset($entry_id);
-                }
-                continue;
-            } else if ( $k === 'form' ) {
-                continue;
-			} else if ( strpos( $k, 'i' ) === 0 ) {
-				// include the entry id when values are posted
-				$repeat_atts['entry_id'] = absint( str_replace( 'i', '', $k ) );
-            }
-
-			// Keep track of row count
-			$repeat_atts['row_count'] = $row_count;
-			$row_count++;
-
-            // show each existing sub entry
-            self::repeat_field_set($field_name, $repeat_atts);
-            unset($k, $checked);
-        }
-
-        unset($subform, $subfields);
-    }
-
-    public static function repeat_field_set($field_name, $args = array() ) {
-        $defaults = array(
-            'i'         => 0,
-            'entry_id'  => false,
-            'form'      => false,
-            'fields'    => array(),
-            'errors'    => array(),
-            'parent_field' => 0,
-            'repeat'    => 0,
-			'row_count'	=> false,
-			'value'     => '',
-			'field_name' => '',
-        );
-        $args = wp_parse_args($args, $defaults);
-
-        if ( empty($args['parent_field']) ) {
-            return;
-        }
-
-        if ( is_numeric($args['parent_field']) ) {
-            $args['parent_field'] = (array) FrmField::getOne($args['parent_field']);
-            $args['parent_field']['format'] = isset($args['parent_field']['field_options']['format']) ? $args['parent_field']['field_options']['format'] : '';
-        }
-
-		FrmForm::maybe_get_form( $args['form'] );
-
-        if ( empty($args['fields']) ) {
-            $args['fields'] = FrmField::get_all_for_form($args['form']->id);
-        }
-
-        $values = array();
-
-        if ( $args['fields'] ) {
-			// Get the ID of the form that houses the embedded form or repeating section
-			$parent_form_id = $args['parent_field']['form_id'];
-
-            if ( empty($args['entry_id']) ) {
-				$values = FrmEntriesHelper::setup_new_vars( $args['fields'], $args['form'], false, array( 'parent_form_id' => $parent_form_id ) );
-            } else {
-                $entry = FrmEntry::getOne($args['entry_id'], true);
-                if ( $entry && $entry->form_id == $args['form']->id ) {
-					$values = FrmAppHelper::setup_edit_vars( $entry, 'entries', $args['fields'], false, array(), array( 'parent_form_id' => $parent_form_id ) );
-                } else {
-                    return;
-                }
-            }
-        }
-
-        $format = isset($args['parent_field']['format']) ? $args['parent_field']['format'] : '';
-        $end = false;
-        $count = 0;
-        foreach ( $values['fields'] as $subfield ) {
-            if ( 'end_divider' == $subfield['type'] ) {
-                $end = $subfield;
-            } else if ( ! in_array( $subfield['type'] , array( 'hidden', 'user_id' ) ) ) {
-                if ( isset( $subfield['conf_field'] ) && $subfield['conf_field'] ) {
-                    $count = $count + 2;
-                } else {
-                    $count++;
-                }
-            }
-            unset($subfield);
-        }
-        if ( $args['repeat'] ) {
-            $count++;
-        }
-
-        $classes = array(
-            2 => 'half',
-            3 => 'third',
-            4 => 'fourth',
-            5 => 'fifth',
-            6 => 'sixth',
-            7 => 'seventh',
-            8 => 'eighth',
-        );
-
-        $field_class = ( ! empty($format) && isset($classes[$count]) ) ? $classes[$count] : '';
-
-        echo '<div id="frm_section_'. $args['parent_field']['id'] .'-'. $args['i'] .'" class="frm_repeat_'. ( empty($format) ? 'sec' : $format ) .' frm_repeat_'. $args['parent_field']['id'] . ( $args['row_count'] === 0 ? ' frm_first_repeat' : '' ) . '">' . "\n";
-
-		self::add_hidden_repeat_entry_id( $args );
-		self::add_default_item_meta_field( $args );
-
-        $label_pos = 'top';
-        $field_num = 1;
-        foreach ( $values['fields'] as $subfield ) {
-            $subfield_name = $field_name .'['. $args['i'] .']['. $subfield['id'] .']';
-            $subfield_plus_id = '-'. $args['i'];
-            $subfield_id = $subfield['id'] .'-'. $args['parent_field']['id'] . $subfield_plus_id;
-
-            if ( $args['parent_field'] && ! empty($args['parent_field']['value']) && isset($args['parent_field']['value']['form']) && isset($args['parent_field']['value'][$args['i']]) && isset($args['parent_field']['value'][$args['i']][$subfield['id']]) ) {
-                // this is a posted value from moving between pages, so set the POSTed value
-                $subfield['value'] = $args['parent_field']['value'][$args['i']][$subfield['id']];
-            }
-
-            if ( !empty($field_class) ) {
-                if ( 1 == $field_num ) {
-                    $subfield['classes'] .= ' frm_first frm_'. $field_class;
-                } else {
-                    $subfield['classes'] .= ' frm_'. $field_class;
-                }
-            }
-
-			$field_num++;
-
-            if ( 'top' == $label_pos && in_array($subfield['label'], array( 'top', 'hidden', '')) ) {
-                // add placeholder label if repeating
-                $label_pos = 'hidden';
-            }
-
-			$field_args = array(
-				'field_name'    => $subfield_name,
-				'field_id'      => $subfield_id,
-				'field_plus_id' => $subfield_plus_id,
-				'section_id'     => $args['parent_field']['id'],
-			);
-
-            if ( apply_filters('frm_show_normal_field_type', true, $subfield['type']) ) {
-				echo FrmFieldsHelper::replace_shortcodes( $subfield['custom_html'], $subfield, $args['errors'], $args['form'], $field_args );
-            } else {
-				do_action( 'frm_show_other_field_type', $subfield, $args['form'], $field_args );
-            }
-
-            unset($subfield_name, $subfield_id);
-            do_action('frm_get_field_scripts', $subfield, $args['form'], $args['parent_field']['form_id']);
-        }
-
-        if ( ! $args['repeat'] ) {
-			// Close frm_repeat div
-            echo '</div>'. "\n";
-            return;
-        }
-
-        $args['format'] = $format;
-        $args['label_pos'] = $label_pos;
-        $args['field_class'] = $field_class;
-        echo self::repeat_buttons($args, $end);
-
-		// Close frm_repeat div
-        echo '</div>'. "\n";
-    }
-
-	/**
-	 * Include the id of the entry being edited inside the repeating section
-	 * @since 2.0.12
-	 */
-	private static function add_hidden_repeat_entry_id( $args ) {
-		if ( ! empty( $args['value'] ) ) {
-			echo '<input type="hidden" name="' . esc_attr( $args['field_name'] ) . '[id][]" value="' . esc_attr( $args['value'] ) . '" />';
+		$load_dropzone = apply_filters( 'frm_load_dropzone', true );
+		if ( ! $load_dropzone ) {
+			return;
 		}
+
+		$js = array();
+		foreach ( $frm_vars['dropzone_loaded'] as $field_id => $options ) {
+			$js[] = $options;
+		}
+		echo '__frmDropzone=' . json_encode( $js ) . ';';
 	}
-
-	/**
-	* Add item meta to each row in repeating section or embedded form so the entry is always validated
-	*
-	* @since 2.0.08
-	* @param array $args
-	*/
-	private static function add_default_item_meta_field( $args ) {
-		echo '<input type="hidden" name="item_meta[' . $args['parent_field']['id'] . '][' . $args['i'] . '][0]" value="" />';
-	}
-
-    public static function repeat_buttons($args, $end = false) {
-        $args['end_format'] = 'icon';
-
-		if ( ! $end ) {
-			$end = self::get_end_repeat_field( $args );
-		}
-
-        if ( $end ) {
-            $args['add_label'] = $end['add_label'];
-            $args['remove_label'] = $end['remove_label'];
-
-            if (  ! empty($end['format']) ) {
-                $args['end_format'] = $end['format'];
-            }
-        }
-
-        $triggers = self::repeat_button_html($args, $end);
-
-        return apply_filters('frm_repeat_triggers', $triggers, $end, $args['parent_field'], $args['field_class']);
-    }
-
-	private static function get_end_repeat_field( $args ) {
-		$query = array( 'fi.form_id' => $args['parent_field']['form_id'], 'type' => 'end_divider', 'field_order >' => $args['parent_field']['field_order'] + 1 );
-		$end_field = FrmField::getAll( $query, 'field_order', 1 );
-		$field_array = FrmProFieldsHelper::initialize_array_field( $end_field );
-
-		foreach ( array( 'format', 'add_label' ,'remove_label', 'classes' ) as $o ) {
-			if ( isset( $end_field->field_options[ $o ] ) ) {
-				$field_array[ $o ] = $end_field->field_options[ $o ];
-			}
-		}
-
-		$prepared_field = apply_filters( 'frm_setup_new_fields_vars', $field_array, $end_field );
-
-		return $prepared_field;
-	}
-
-    public static function repeat_button_html($args, $end) {
-        $defaults = array(
-            'add_icon'      => '',
-            'remove_icon'   => '',
-            'add_label'     => __( 'Add', 'formidable' ),
-            'remove_label'  => __( 'Remove', 'formidable' ),
-            'add_classes'   => ' frm_button',
-            'remove_classes' => ' frm_button',
-        );
-
-        $args = wp_parse_args($args, $defaults);
-
-        if ( ! isset($args['end_format']) && isset($args['format']) ) {
-            $args['end_format'] = $args['format'];
-        }
-
-        if ( 'both' == $args['end_format'] ) {
-            $args['remove_icon'] = '<i class="frm_icon_font frm_minus_icon"> </i> ';
-            $args['add_icon'] = '<i class="frm_icon_font frm_plus_icon"> </i> ';
-        } else if ( 'text' != $args['end_format'] ) {
-            $args['add_label'] = $args['remove_label'] = '';
-            $args['add_classes'] = ' frm_icon_font frm_plus_icon';
-            $args['remove_classes'] = ' frm_icon_font frm_minus_icon';
-        }
-
-		// Hide Remove button on first row
-		if ( $args['row_count'] === 0 ) {
-			$args['remove_classes'] .= ' frm_hidden';
-		}
-
-		$classes = 'frm_form_field frm_'. $args['label_pos'] .'_container frm_repeat_buttons';
-		$classes .= empty( $args['field_class'] ) ? '' : ' frm_' . $args['field_class'];
-		// Get classes for end divider
-		$classes .= ( $end && isset( $end['classes'] ) ) ? ' ' . $end['classes'] : '';
-
-		$triggers = '<div class="' . esc_attr( $classes ) . '">';
-
-        if ( 'hidden' == $args['label_pos'] && ! empty($args['format']) ) {
-            $triggers .= '<label class="frm_primary_label">&nbsp;</label>';
-        }
-
-		$triggers .= '<a href="#" class="frm_remove_form_row' . esc_attr( $args['remove_classes'] ) . '" data-key="' . esc_attr( $args['i'] ) . '" data-parent="' . esc_attr( $args['parent_field']['id'] ) . '">' . $args['remove_icon'] . $args['remove_label'] . '</a> ';
-		$triggers .= '<a href="#" class="frm_add_form_row' . esc_attr( $args['add_classes'] ) . '" data-parent="' . esc_attr( $args['parent_field']['id'] ) . '">' . $args['add_icon'] . $args['add_label'] . '</a>' . "\n";
-
-        $triggers .= '</div>';
-
-        return $triggers;
-    }
-
-    public static function load_chosen_js($frm_vars) {
-        if ( isset($frm_vars['chosen_loaded']) && $frm_vars['chosen_loaded'] ) {
-            ?>$('.frm_chzn').chosen({<?php echo apply_filters('frm_chosen_js', 'allow_single_deselect:true') ?>});<?php
-        }
-    }
-
-    public static function hide_conditional_fields($frm_vars) {
-		$fields = array( 'hide' => array(), 'check' => array() );
-        if ( ! isset($frm_vars['hidden_fields']) || empty($frm_vars['hidden_fields']) ) {
-			return $fields;
-        }
-
-        $display_none = $trigger_check = array();
-
-        foreach ( (array) $frm_vars['hidden_fields'] as $field ) {
-            foreach ( $field['hide_field'] as $i => $hide_field ) {
-                if ( ! is_numeric($hide_field) || in_array($hide_field, $trigger_check) ) {
-                    continue;
-                }
-
-                $observed_field = FrmField::getOne($hide_field);
-
-                if ( ! $observed_field ) {
-                    continue;
-                }
-
-                $trigger_check[] = $observed_field->id;
-                if ( ! isset($field['hide_opt'][$i]) && $observed_field->type == 'data' && self::is_show_data_field($field) ) {
-                    self::hide_some_data_types($field, $observed_field, $display_none);
-                    continue;
-                }
-
-                if ( ! isset($field['hide_opt'][$i]) ) {
-                    continue;
-                }
-
-                if ( $observed_field->type != 'data' ) {
-                    $display_none[] = $field['id'];
-                    continue;
-                }
-
-                if ( $field['hide_opt'][$i] != '' && in_array($observed_field->field_options['data_type'], array( 'radio', 'checkbox', 'select')) ) {
-                    $display_none[] = $field['id'];
-                } else if ( $field['hide_opt'][$i] == '' && self::is_show_data_field($field) ) {
-                    self::hide_some_data_types($field, $observed_field, $display_none);
-                }
-
-            }
-            unset($observed_field, $i, $hide_field);
-        }
-
-		$fields['hide'] = array_unique( $display_none );
-		$fields['check'] = array_unique( $trigger_check );
-
-		return $fields;
-    }
-
-    private static function hide_some_data_types($field, $observed_field, array &$display_none) {
-        $observed_options = maybe_unserialize($observed_field->field_options);
-        if ( in_array($observed_options['data_type'], array( 'checkbox', 'select')) ) {
-            $display_none[] = $field['id'];
-        }
-    }
 
 	public static function load_datepicker_js( $frm_vars ) {
         if ( ! isset($frm_vars['datepicker_loaded']) || empty($frm_vars['datepicker_loaded']) || ! is_array($frm_vars['datepicker_loaded']) ) {
@@ -436,47 +120,83 @@ class FrmProFormsHelper{
         $datepicker = key($frm_vars['datepicker_loaded']);
 		$load_lang = false;
 
+		$datepicker_js = array();
         foreach ( $frm_vars['datepicker_loaded'] as $date_field_id => $options ) {
             if ( strpos($date_field_id, '^') === 0 ) {
                 // this is a repeating field
-                $trigger_id = 'input[id^="'. str_replace('^', '', $date_field_id) .'"]';
+                $trigger_id = 'input[id^="'. str_replace('^', '', esc_attr( $date_field_id ) ) .'"]';
             } else {
-                $trigger_id = '#'. $date_field_id;
+                $trigger_id = '#'. esc_attr( $date_field_id );
             }
-        ?>
+
+			$custom_options = self::get_custom_date_js( $date_field_id, $options );
+
+			$date_options = array(
+				'triggerID' => $trigger_id,
+				'locale'    => $options['locale'],
+				'options'   => array(
+					'dateFormat'  => $frmpro_settings->cal_date_format,
+					'changeMonth' => 'true',
+					'changeYear'  => 'true',
+					'yearRange'   => $options['start_year'] . ':' . $options['end_year'],
+					'defaultDate' => empty( $options['default_date'] ) ? '' : $options['default_date'],
+					'beforeShowDay' => null,
+				),
+				'customOptions'  => $custom_options,
+			);
+			$date_options = apply_filters( 'frm_date_field_options', $date_options, array( 'field_id' => $date_field_id, 'options' => $options ) );
+
+			if ( empty( $custom_options ) ) {
+				$datepicker_js[] = $date_options;
+			} else if ( $date_field_id ) {
+				?>
+jQuery(document).ready(function($){
+$('<?php echo $trigger_id ?>').addClass('frm_custom_date');
 $(document).on('focusin','<?php echo $trigger_id ?>', function(){
 $.datepicker.setDefaults($.datepicker.regional['']);
-$(this).datepicker($.extend($.datepicker.regional['<?php echo $options['locale'] ?>'],{dateFormat:'<?php echo $frmpro_settings->cal_date_format ?>',changeMonth:true,changeYear:true,yearRange:'<?php echo $options['start_year'] .':'. $options['end_year'] ?>',defaultDate:<?php echo empty($options['default_date']) ? "''" : 'new Date('. $options['default_date'] .')';
-do_action('frm_date_field_js', $date_field_id, $options);
+$(this).datepicker($.extend($.datepicker.regional['<?php echo esc_js( $options['locale'] ) ?>'],{dateFormat:'<?php echo esc_js( $frmpro_settings->cal_date_format ) ?>',changeMonth:true,changeYear:true,yearRange:'<?php echo esc_js( $date_options['options']['yearRange'] ) ?>',defaultDate:'<?php echo esc_js( $date_options['options']['defaultDate'] ); ?>'<?php
+echo $custom_options;
 ?>}));
 });
+});
 <?php
+			}
+
 			if ( ! empty( $options['locale'] ) && ! $load_lang ) {
 				$load_lang = true;
 				$base_url = FrmAppHelper::jquery_ui_base_url();
 				wp_enqueue_script( 'jquery-ui-i18n', $base_url . '/i18n/jquery-ui-i18n.min.js' );
 				// this was enqueued late, so make sure it gets printed
 				add_action( 'wp_footer', 'print_footer_scripts', 21 );
+				add_action( 'admin_print_footer_scripts', 'print_footer_scripts', 99 );
 			}
         }
 
-        self::load_timepicker_js($datepicker, $frm_vars);
+		if ( ! empty( $datepicker_js ) ) {
+			echo 'var frmDates=' . json_encode( $datepicker_js ) . ';';
+			echo 'if(typeof __frmDatepicker == "undefined"){__frmDatepicker=frmDates;}';
+			echo 'else{__frmDatepicker=jQuery.extend(__frmDatepicker,frmDates);}';
+		}
+
+		FrmProTimeFieldsController::load_timepicker_js( $datepicker ) ;
     }
 
-    public static function load_timepicker_js($datepicker, $frm_vars) {
-        if ( ! isset($frm_vars['timepicker_loaded']) || empty($frm_vars['timepicker_loaded']) || ! $datepicker ) {
-            return;
-        }
+	private static function get_custom_date_js( $date_field_id, $options ) {
+		ob_start();
+		do_action( 'frm_date_field_js', $date_field_id, $options );
+		$custom_options = ob_get_contents();
+		ob_end_clean();
 
-        foreach ( $frm_vars['timepicker_loaded'] as $time_field_id => $options ) {
-            if ( ! $options ) {
-                continue;
-            }
-?>
-$(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFrontForm.removeUsedTimes(this,'<?php echo $time_field_id ?>');});
-<?php
-        }
-    }
+		return $custom_options;
+	}
+
+	/**
+	 * @deprecated 2.03
+	 */
+	public static function load_timepicker_js( $datepicker ) {
+		_deprecated_function( __FUNCTION__, '2.03', 'FrmProTimeFieldsController::load_timepicker_js' );
+		FrmProTimeFieldsController::load_timepicker_js( $datepicker );
+	}
 
     public static function load_calc_js($frm_vars) {
         if ( ! isset($frm_vars['calc_fields']) || empty($frm_vars['calc_fields']) ) {
@@ -495,6 +215,7 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
         foreach ( $frm_vars['calc_fields'] as $result => $field ) {
 			$calc_rules['fieldsWithCalc'][ $field['field_id'] ] = $result;
             $calc = $field['calc'];
+			FrmProFieldsHelper::replace_non_standard_formidable_shortcodes( array( 'field' => $field['field_id'] ), $calc );
             preg_match_all("/\[(.?)\b(.*?)(?:(\/))?\]/s", $calc, $matches, PREG_PATTERN_ORDER);
 
             $field_keys = $calc_fields = array();
@@ -507,29 +228,26 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
                     continue;
                 }
 
-                $html_field_id = '="field_'. $calc_fields[$val]->field_key;
+				$field_keys[$calc_fields[$val]->id] = self::get_field_call_for_calc( $calc_fields[ $val ], $field['parent_form_id'] );
 
-				// If field is inside of repeating section/embedded form or it is a radio, scale, or checkbox field
-				if ( $field['parent_form_id'] != $calc_fields[ $val ]->form_id || in_array($calc_fields[$val]->type, array( 'radio', 'scale', 'checkbox')) ) {
-					$html_field_id = '^'. $html_field_id .'-';
-				}
-                $field_keys[$calc_fields[$val]->id] = '[id'. $html_field_id .'"]';
 				$calc_rules['fieldKeys'] = $calc_rules['fieldKeys'] + $field_keys;
 
                 $calc = str_replace($matches[0][$match_key], '['. $calc_fields[$val]->id .']', $calc);
 
 				// Prevent invalid decrement error for -- in calcs
-				$calc = str_replace( '-[', '- [', $calc );
+				if ( $field['calc_type'] != 'text' ) {
+					$calc = str_replace( '-[', '- [', $calc );
+				}
 			}
 
             $triggers[] = reset($field_keys);
-            $calc_rules['calc'][$result] = array(
-				'calc'      	=> $calc,
-				'calc_dec'		=> $field['calc_dec'],
-				'fields'    	=> array(),
-				'field_id'		=> $field['field_id'],
-				'form_id'		=> $field['parent_form_id'],
-            );
+			$calc_rules['calc'][ $result ] = self::get_calc_rule_for_field( array(
+				'field'    => $field,
+				'calc'     => $calc,
+				'field_id' => $field['field_id'],
+				'form_id'  => $field['parent_form_id'],
+			) );
+			$calc_rules['calc'][ $result ]['fields'] = array();
 
             foreach ( $calc_fields as $calc_field ) {
                 $calc_rules['calc'][$result]['fields'][] = $calc_field->id;
@@ -538,7 +256,7 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
                 } else {
                     $calc_rules['fields'][$calc_field->id] = array(
                         'total' => array($result),
-                        'type'  => $calc_field->type,
+                        'type'  => ( $calc_field->type == 'lookup' ) ? $calc_field->field_options['data_type'] : $calc_field->type,
                         'key'   => $field_keys[$calc_field->id],
                     );
                 }
@@ -552,29 +270,113 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
             }
         }
 
-        echo '__FRMCALC='. json_encode($calc_rules) .";\n";
-
         // trigger calculations on page load
         if ( ! empty($triggers) ) {
 			$triggers = array_filter( array_unique( $triggers ) );
-            ?>$('<?php echo implode(',', $triggers) ?>').trigger({type:'change',selfTriggered:true});<?php
+			$calc_rules['triggers'] = array_values( $triggers );
         }
+
+		$var_name = '__FRMCALC';
+		echo 'var frmcalcs=' . json_encode( $calc_rules ) . ";\n";
+		echo 'if(typeof ' . $var_name . ' == "undefined"){' . $var_name . '=frmcalcs;}';
+		echo 'else{' . $var_name . '=jQuery.extend(true,{},' . $var_name . ',frmcalcs);}';
     }
 
-    public static function load_input_mask_js($frm_input_masks) {
+	public static function get_calc_rule_for_field( $atts ) {
+		$field = $atts['field'];
+
+		$rule = array(
+			'calc'			=> isset( $atts['calc'] ) ? $atts['calc'] : $field['calc'],
+			'calc_dec'		=> $field['calc_dec'],
+			'calc_type'		=> $field['calc_type'],
+			'form_id'		=> $atts['form_id'],
+			'field_id'		=> isset( $atts['field_id'] ) ? $atts['field_id'] : $field['id'],
+			'in_section'    => isset( $field['in_section'] ) ? $field['in_section'] : '0',
+			'in_embed_form' => isset( $field['in_embed_form'] ) ? $field['in_embed_form'] : '0',
+		);
+
+		$rule['inSection'] = $rule['in_section'];
+		$rule['inEmbedForm'] = $rule['in_embed_form'];
+
+		if ( isset( $atts['parent_form_id'] ) ) {
+			$rule['parent_form_id'] = $atts['parent_form_id'];
+		}
+
+		return $rule;
+	}
+
+	/**
+	 * Get the field call for a calc field
+	 *
+	 * @since 2.01.0
+	 *
+	 * @param object $calc_field
+	 * @param int $parent_form_id
+	 * @return string $field_call
+	 */
+	private static function get_field_call_for_calc( $calc_field, $parent_form_id ) {
+		$html_field_id = '="field_'. $calc_field->field_key;
+
+		// If field is inside of repeating section/embedded form or it is a radio, scale, or checkbox field
+		$in_child_form = $parent_form_id != $calc_field->form_id;
+		if ( self::has_variable_html_id( $calc_field ) || $in_child_form ) {
+			$html_field_id = '^'. $html_field_id .'-';
+		} else if ( $calc_field->type == 'select' ) {
+			$is_multiselect = FrmField::get_option( $calc_field, 'multiselect' );
+			if ( $is_multiselect ) {
+				$html_field_id = '^'. $html_field_id;
+			}
+		} elseif ( $calc_field->type == 'time' && ! FrmField::is_option_true( $calc_field, 'single_time' ) ) {
+			$html_field_id = '^'. $html_field_id . '_';
+		}
+
+		$field_call = '[id'. $html_field_id .'"]';
+
+		return $field_call;
+	}
+
+	/**
+	 * Check if a field has a variable HTML ID
+	 *
+	 * @since 2.03.07
+	 *
+	 * @param stdClass $field
+	 *
+	 * @return bool
+	 */
+	private static function has_variable_html_id( $field ) {
+		if ( in_array( $field->type, array( 'radio', 'scale', 'checkbox' ) )
+		     || ( $field->type == 'lookup' && in_array( $field->field_options['data_type'], array( 'radio', 'checkbox' ) ) )
+		) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+    public static function load_input_mask_js() {
+		global $frm_input_masks;
         if ( empty($frm_input_masks) ) {
             return;
         }
 
+		$masks = array();
         foreach ( (array) $frm_input_masks as $f_key => $mask ) {
             if ( ! $mask ) {
                 continue;
 			} else if ( $mask !== true ) {
 				// this isn't used in the plugin, but is here for those using the mask filter
-				?>$(document).on('focusin','<?php echo is_numeric($f_key) ? 'input[name="item_meta['. $f_key .']"]' : '#field_'. $f_key; ?>',function(){$(this).mask("<?php echo $mask ?>");});<?php
+				$masks[] = array(
+					'trigger' => is_numeric( $f_key ) ? 'input[name="item_meta[' . $f_key . ']"]' : '#field_' . $f_key,
+					'mask'    => $mask,
+				);
 			}
             unset($f_key, $mask);
         }
+
+		if ( ! empty( $masks ) ) {
+			echo '__frmMasks=' . json_encode( $masks ) . ';';
+		}
     }
 
 	public static function get_default_opts() {
@@ -590,6 +392,9 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
             'success_page_id' => '', 'success_url' => '', 'ajax_submit' => 0,
             'cookie_expiration' => 8000, 'prev_value' => __( 'Previous', 'formidable' ),
 			'submit_align' => '', 'js_validate' => 0,
+			'protect_files' => 0, 'rootline' => '',
+			'rootline_titles_on' => 0, 'rootline_titles' => array(),
+			'rootline_lines_off' => 0, 'rootline_numbers_off' => 0,
         );
     }
 
@@ -697,6 +502,53 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
 	}
 
 	/**
+	 * @since 2.3
+	 */
+	public static function get_the_page_number( $form_id ) {
+		$page_num = 1;
+		if ( self::going_to_prev( $form_id ) ) {
+			self::prev_page_num( $form_id, $page_num );
+		} elseif ( self::going_to_next( $form_id ) ) {
+			self::next_page_num( $form_id, $page_num );
+		}
+		return $page_num;
+	}
+
+	/**
+	 * @since 2.3
+	 */
+	private static function next_page_num( $form_id, &$page_num ) {
+		$next_page = FrmAppHelper::get_post_param( 'frm_page_order_' . $form_id, 0, 'absint' );
+		if ( $next_page ) {
+			$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
+			foreach ( $page_breaks as $page_break ) {
+				$page_num++;
+				if ( $page_break->field_order >= $next_page ) {
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @since 2.3
+	 */
+	private static function prev_page_num( $form_id, &$page_num ) {
+		$next_page = FrmAppHelper::get_post_param( 'frm_next_page', 0, 'absint' );
+		if ( $next_page ) {
+			$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
+			$page_num = count( $page_breaks );
+			$page_breaks = array_reverse( $page_breaks );
+			foreach ( $page_breaks as $page_break ) {
+				if ( $page_break->field_order <= $next_page ) {
+					break;
+				}
+				$page_num--;
+			}
+		}
+	}
+
+	/**
 	 * @since 2.0.8
 	 */
 	public static function has_another_page( $form_id ) {
@@ -766,7 +618,7 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
 	/**
 	 * check if this entry is currently being saved as a draft
 	 */
-    public static function &saving_draft() {
+    public static function saving_draft() {
 		$saving_draft = FrmAppHelper::get_post_param( 'frm_saving_draft', '', 'sanitize_title' );
 		$saving = ( $saving_draft == '1' && is_user_logged_in() );
         return $saving;
@@ -792,6 +644,38 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
         return $html;
     }
 
+	/**
+	 * Check if we're on the final page of a given form
+	 *
+	 * @since 2.03.07
+	 *
+	 * @param int|string $form_id
+	 *
+	 * @return bool
+	 */
+    public static function is_final_page( $form_id ) {
+	    global $frm_vars;
+	    return ( ! isset( $frm_vars['next_page'][ $form_id ] ) );
+    }
+
+	/**
+	 * Add a class to the form's Submit button
+	 *
+	 * @since 2.03.07
+	 *
+	 * @param array $classes
+	 * @param stdClass $form
+	 *
+	 * @return array
+	 */
+    public static function add_submit_button_class( $classes, $form ) {
+		if ( self::is_final_page( $form->id ) ) {
+			$classes[] = 'frm_final_submit';
+		}
+
+		return $classes;
+    }
+
 	public static function get_draft_link( $form ) {
         $html = self::get_draft_button($form, '', FrmFormsHelper::get_draft_link());
         return $html;
@@ -803,7 +687,7 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
 
     public static function has_field($type, $form_id, $single = true) {
         if ( $single ) {
-            $included = FrmDb::get_var( 'frm_fields', array( 'form_id' => $form_id, 'type' => $type) );
+            $included = FrmDb::get_var( 'frm_fields', array( 'form_id' => $form_id, 'type' => $type ) );
             if ( $included ) {
                 $included = FrmField::getOne($included);
             }
@@ -862,9 +746,38 @@ $(document.getElementById('<?php echo $datepicker ?>')).change(function(){frmFro
         return $type;
     }
 
-    public static function hex2rgb($hex) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmStylesHelper::hex2rgb' );
-        return FrmStylesHelper::hex2rgb($hex);
-    }
+	/**
+	 * Require Ajax submission when a form is edited inline
+	 *
+	 * @since 2.03.02
+	 *
+	 * @param object $form
+	 *
+	 * @return object
+	 */
+	public static function prepare_inline_edit_form( $form ) {
+		global $frm_vars;
+		if ( ! empty( $frm_vars['inplace_edit'] ) ) {
+			$form->options['ajax_submit'] = '1';
+		}
 
+		return $form;
+	}
+
+	public static function get_sub_form($field_name, $field, $args = array()) {
+		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
+		FrmProNestedFormsController::display_front_end_nested_form( $field, $field_name, $args );
+	}
+
+	public static function repeat_field_set() {
+		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
+	}
+
+	public static function repeat_buttons() {
+		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
+	}
+
+	public static function repeat_button_html() {
+		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
+	}
 }

@@ -3,7 +3,7 @@
 class FrmProEntriesHelper{
 
     // check if form should automatically be in edit mode (limited to one, has draft)
-    public static function &allow_form_edit($action, $form) {
+    public static function allow_form_edit($action, $form) {
         if ( $action != 'new' ) {
             // make sure there is an entry id in the url if the action is being set in the url
 			$entry_id = FrmAppHelper::simple_get( 'entry', 'sanitize_title', 0 );
@@ -35,7 +35,7 @@ class FrmProEntriesHelper{
 
                 if ( $meta ) {
                     if ( $checking_drafts ) {
-                        $is_draft = 1;
+                        $is_draft = true;
                     }
 
                     $action = 'edit';
@@ -96,7 +96,7 @@ class FrmProEntriesHelper{
 	*/
 	private static function maybe_get_parent_form_and_entry( &$form, &$entry ) {
 		// If form is a child form, refer to parent form's settings
-		if ( $form->parent_form_id ) {
+		if ( $form && $form->parent_form_id ) {
 			$form = FrmForm::getOne( $form->parent_form_id );
 
 			// Make sure we're also checking the parent entry's permissions
@@ -278,9 +278,9 @@ class FrmProEntriesHelper{
             return;
         }
 
-        if ( $footer ) {
+        if ( $footer && $form_id ) {
             if ( apply_filters('frm_show_delete_all', current_user_can('frm_edit_entries'), $form_id) ) {
-            ?><div class="frm_uninstall alignleft actions"><a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo $form_id ? '&amp;form='. (int) $form_id : '' ?>" class="button" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to permanently delete ALL the entries in this form?', 'formidable' ) ?>')"><?php _e( 'Delete ALL Entries', 'formidable' ) ?></a></div>
+            ?><div class="frm_uninstall alignleft actions"><a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo esc_attr( $form_id ? '&form=' . absint( $form_id ) : '' ); ?>" class="button" onclick="return confirm('<?php esc_attr_e( 'Are you sure you want to permanently delete ALL the entries in this form?', 'formidable' ) ?>')"><?php _e( 'Delete ALL Entries', 'formidable' ) ?></a></div>
 <?php
             }
             return;
@@ -297,9 +297,15 @@ class FrmProEntriesHelper{
     	if ( !empty( $_REQUEST['fid'] ) )
     	    $page_params['fid'] = (int) $_REQUEST['fid'];
 
+		if ( $form_id ) {
         ?>
-        <div class="alignleft actions"><a href="<?php echo esc_url(add_query_arg($page_params, admin_url( 'admin-ajax.php' ))) ?>" class="button"><?php _e( 'Download CSV', 'formidable' ); ?></a></div>
+		<div class="alignleft actions">
+			<a href="<?php echo esc_url( add_query_arg( $page_params, admin_url( 'admin-ajax.php' ) ) ) ?>" class="button">
+				<?php _e( 'Download CSV', 'formidable' ); ?>
+			</a>
+		</div>
         <?php
+		}
     }
 
     // check if entry being updated just switched draft status
@@ -323,7 +329,7 @@ class FrmProEntriesHelper{
 
 	public static function get_dfe_values( $field, $entry, &$field_value ) {
 		_deprecated_function( __FUNCTION__, '2.0.08', 'FrmProEntriesHelper::get_dynamic_list_values' );
-		return FrmProEntriesHelper::get_dynamic_list_values( $field, $entry, $field_value );
+		FrmProEntriesHelper::get_dynamic_list_values( $field, $entry, $field_value );
 	}
 
 	/**
@@ -358,95 +364,239 @@ class FrmProEntriesHelper{
 	}
 
 	public static function get_search_str( $where_clause = '', $search_str, $form_id = 0, $fid = 0 ) {
-        if ( ! is_array($search_str) ) {
-			$search_str = explode( ' ', trim( $search_str) );
-        }
+		if ( ! is_array( $search_str ) ) {
+			$search_str = str_replace( array( ', ', ',' ), array( ' ', ' ' ), $search_str );
+			$search_str = explode( ' ', trim( $search_str ) );
+		}
 
-        $add_where = array();
+		$add_where = self::get_where_clause_for_entries_search( $fid, $form_id, $search_str );
 
-        foreach ( $search_str as $search_param ) {
-            self::add_entry_meta_query( $fid, $form_id, $search_param, $add_where );
-            self::add_entry_col_query( $fid, $search_param, $add_where );
-        }
+		self::add_where_to_query( $add_where, $where_clause );
 
-        if ( ! empty( $add_where ) ) {
-			self::add_where_to_query( $add_where, $where_clause );
-        }
+		return $where_clause;
+	}
 
-        return $where_clause;
-    }
+	/**
+	 * Generate the where clause for an entry search - used in back-end entries tab
+	 *
+	 * @since 2.02.01
+	 * @param int $fid
+	 * @param int $form_id
+	 * @param array $search_param
+	 * @return array
+	 */
+	private static function get_where_clause_for_entries_search( $fid, $form_id, $search_param ) {
+		if ( empty( $fid ) ) {
+			// General query submitted
+			$where = self::get_where_arguments_for_general_entry_query( $form_id, $search_param );
+		} else if ( is_numeric( $fid ) ) {
+			// Specific field searched
+			$where = self::get_where_arguments_for_specific_field_query( $fid, $search_param );
+		} else {
+			// Specific frm_items column searched
+			$where = self::get_where_arguments_for_frm_items_column( $fid, $search_param );
+		}
 
-    private static function add_entry_col_query( $fid, $search_param, &$add_where ) {
-        if ( is_numeric( $fid ) ) {
-            return;
-        }
+		return $where;
+	}
 
-        $add_where['or'] = 1;
+	/**
+	 * Set up the where arguments for a general entry query in the back-end Entries tab
+	 *
+	 * @since 2.02.01
+	 * @param int $form_id
+	 * @param array $search_param
+	 * @return array
+	 */
+	private static function get_where_arguments_for_general_entry_query( $form_id, $search_param ) {
+		$where = array(
+			'or' => 1,
+			'it.name like'        => $search_param,
+			'it.ip like'          => $search_param,
+			'it.item_key like'    => $search_param,
+			'it.description like' => $search_param,
+			'it.created_at like'  => implode( ' ', $search_param ),
+		);
 
-        if ( in_array( $fid, array( 'created_at', 'updated_at') ) ) {
-            $add_where['it.'. $fid .' like'] = $search_param;
-        } else if ( in_array( $fid, array( 'user_id', 'id') ) ) {
-            if ( $fid == 'user_id' && ! is_numeric( $search_param ) ) {
-                $search_param = FrmAppHelper::get_user_id_param( $search_param );
-            }
+		$ids_in_search_param = array_filter( $search_param, 'is_numeric' );
 
-            $add_where['it.' . $fid . ' like'] = $search_param;
-        } else {
-            $add_where['it.name like']      = $search_param;
-            $add_where['it.item_key like']  = $search_param;
-            $add_where['it.description like'] = $search_param;
-            $add_where['it.created_at like'] = $search_param;
-        }
-    }
+		$ids_from_field_searches = self::search_entry_metas_for_value( $form_id, $search_param );
 
-    /**
-     * Check the entry meta for the search term
-     *
-     * @param int $fid The id of the field we are searching
-     * @param int|false $form_id The id of the form we are searching or false
-     * @param string $search_param One word of the search
-     * @param array $add_where By reference. An array of queries for this search
-     */
-    private static function add_entry_meta_query( $fid, $form_id, $search_param, &$add_where ) {
-		$get_entry_ids = array();
+		$where['it.id'] = array_merge( $ids_in_search_param, $ids_from_field_searches );
 
-        if ( empty( $fid ) ) {
-            $add_where['or'] = 1;
-        } else if ( is_numeric( $fid ) ) {
-            $get_entry_ids['field_id'] = $fid;
-        } else {
-            return;
-        }
+		self::append_entry_ids_for_matching_posts( $form_id, $search_param, $where );
 
-        $where_entries_array = array( 'or' => 1, 'meta_value like' => $search_param );
+		if ( empty( $where['it.id'] ) ) {
+			$where['it.id'] = 0;
+		}
 
-        if ( $form_id ) {
-            $get_entry_ids['fi.form_id'] = $form_id;
-            self::add_linked_field_query( $fid, $form_id, $search_param, $where_entries_array );
-        }
+		return $where;
+	}
 
-        $get_entry_ids[] = $where_entries_array;
+	/**
+	 * Search the whole entry metas table for a matching value and return entry IDs
+	 *
+	 * @since 2.02.01
+	 * @param int $form_id
+	 * @param array $search_param
+	 * @return array
+	 */
+	private static function search_entry_metas_for_value( $form_id, $search_param ) {
+		$where_args = array(
+			'fi.form_id' => $form_id,
+			'meta_value like' => $search_param,
+		);
 
-        unset( $where_entries_array );
+		self::add_linked_field_query( '', $form_id, $search_param, $where_args );
 
-        if ( FrmAppHelper::is_admin_page('formidable-entries') ) {
-            // Search both drafts and non-drafts when on the back-end
-            $include_drafts = 'both';
-        } else {
-            $include_drafts = false;
-        }
+		return FrmEntryMeta::getEntryIds( $where_args, '', '', true, array( 'is_draft' => 'both' ) );
+	}
 
-        $meta_ids = FrmEntryMeta::getEntryIds( $get_entry_ids, '', '', true, array( 'is_draft' => $include_drafts));
-        if ( empty( $meta_ids ) ) {
-            $meta_ids = 0;
-        }
+	/**
+	 * Check linked entries for the search query
+	 */
+	private static function add_linked_field_query( $fid, $form_id, $search_param, &$where_entries_array ) {
+		$data_fields = FrmProFormsHelper::has_field( 'data', $form_id, false );
+		if ( empty ( $data_fields ) ) {
+			// this form has no linked fields
+			return;
+		}
 
-        if ( isset($add_where['it.id']) ) {
-            $add_where['it.id'] = array_merge( (array) $add_where['it.id'], (array) $meta_ids );
-        } else {
-            $add_where['it.id'] = $meta_ids;
-        }
-    }
+		$df_form_ids = array();
+
+		//search the joined entry too
+		foreach ( (array) $data_fields as $df ) {
+			//don't check if a different field is selected
+			if ( is_numeric( $fid ) && (int) $fid != $df->id ) {
+				continue;
+			}
+
+			FrmProFieldsHelper::get_subform_ids( $df_form_ids, $df );
+
+			unset( $df );
+		}
+		unset( $data_fields );
+
+		if ( empty( $df_form_ids ) ) {
+			return;
+		}
+
+		$data_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $df_form_ids), 'form_id' );
+
+		if ( $data_form_ids ) {
+			$data_entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => $data_form_ids, 'meta_value LIKE' => $search_param ),  '', '', true, array( 'is_draft' => 'both' ) );
+			if ( ! empty( $data_entry_ids ) ) {
+				if ( count($data_entry_ids) == 1 ) {
+					$where_entries_array['meta_value like'] = reset( $data_entry_ids );
+				} else {
+					$where_entries_array['meta_value'] = $data_entry_ids;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Search connected posts when a general search is submitted
+	 * @param $form_id
+	 * @param $search_param
+	 * @param $where
+	 */
+	private static function append_entry_ids_for_matching_posts( $form_id, $search_param, &$where ) {
+		// Check if form has a post action
+		$post_action = FrmFormAction::get_action_for_form( $form_id, 'wppost' );
+		if( ! $post_action ) {
+			return;
+		}
+
+		// Search all posts on site
+		$post_query = array(
+			'post_title LIKE' => $search_param,
+			'post_content LIKE' => $search_param,
+			'or' => 1,
+		);
+		$matching_posts = FrmDb::get_col( 'posts', $post_query, 'ID' );
+
+		// If there are any posts matching the query, retrieve entry IDs for those posts
+		if ( $matching_posts ) {
+			$entry_ids = FrmDb::get_col( 'frm_items', array( 'post_id' => $matching_posts, 'form_id' => $form_id ) );
+			if ( $entry_ids ) {
+				$where['it.id'] = array_merge( $where['it.id'], $entry_ids );
+			}
+		}
+	}
+
+	/**
+	 * Set up the it.id argument for the WHERE clause when searching for a specific field value
+	 *
+	 * @since 2.02.01
+	 * @param int $fid
+	 * @param array $search_param
+	 * @return array
+	 */
+	private static function get_where_arguments_for_specific_field_query( $fid, $search_param ) {
+		$field = FrmField::getOne( $fid );
+		$args = array( 'comparison_type' => 'like', 'is_draft' => 'both' );
+
+		if ( $field->type == 'data' && is_numeric( $field->field_options['form_select'] ) ) {
+			$linked_field = FrmField::getOne( $field->field_options['form_select'] );
+			$linked_entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $linked_field, $search_param, $args );
+			$search_param = array_merge( $search_param, $linked_entry_ids );
+		}
+
+		$entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $field, $search_param, $args );
+
+		if ( empty( $entry_ids ) ) {
+			$entry_ids = 0;
+		}
+
+		return array( 'it.id' => $entry_ids );
+	}
+
+	/**
+	 * Get the where argument for the specific frm_items column that was searched on back-end Entries tab
+	 *
+	 * @since 2.02.01
+	 * @param int $fid
+	 * @param array $search_param
+	 * @return array
+	 */
+	private static function get_where_arguments_for_frm_items_column( $fid, $search_param ) {
+		if ( 'user_id' == $fid ) {
+			$search_param = self::replace_search_param_with_user_ids( $search_param );
+			$where = array( 'it.' . $fid => $search_param );
+		} else if ( 'created_at' == $fid || 'updated_at' == $fid ) {
+			$search_param = implode( ' ', $search_param );
+			$where = array( 'it.' . $fid . ' like' => $search_param );
+		} else {
+			$where = array( 'it.' . $fid => $search_param );
+		}
+
+		return $where;
+	}
+
+	/**
+	 * Create an array of user IDs from an array of search parameters
+	 *
+	 * @since 2.02.01
+	 * @param array $search_param
+	 * @return array $user_ids
+	 */
+	private static function replace_search_param_with_user_ids( $search_param ) {
+		$user_ids = array();
+
+		foreach ( $search_param as $single_value ) {
+			if ( is_numeric( $single_value ) ) {
+				$user_ids[] = $single_value;
+			} else {
+				$user_id = FrmAppHelper::get_user_id_param( $single_value );
+				if ( $user_id ) {
+					$user_ids[] = $user_id;
+				}
+			}
+		}
+
+		return $user_ids;
+	}
 
 	/**
 	 * @since 2.0.8
@@ -461,51 +611,8 @@ class FrmProEntriesHelper{
 			FrmDb::parse_where_from_array( $add_where, '', $where, $values );
 			FrmDb::get_where_clause_and_values( $add_where );
 			$where_clause .= ' AND ('. $wpdb->prepare( $where, $values ) .')';
-        }
+		}
 	}
-
-    /**
-     * Check linked entries for the search query
-     */
-    private static function add_linked_field_query( $fid, $form_id, $search_param, &$where_entries_array ) {
-        $data_fields = FrmProFormsHelper::has_field( 'data', $form_id, false );
-        if ( empty ( $data_fields ) ) {
-            // this form has no linked fields
-            return;
-        }
-
-        $df_form_ids = array();
-
-        //search the joined entry too
-        foreach ( (array) $data_fields as $df ) {
-            //don't check if a different field is selected
-            if ( is_numeric( $fid ) && (int) $fid != $df->id ) {
-                continue;
-            }
-
-            FrmProFieldsHelper::get_subform_ids( $df_form_ids, $df );
-
-            unset( $df );
-        }
-        unset( $data_fields );
-
-        if ( empty( $df_form_ids ) ) {
-            return;
-        }
-
-        $data_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $df_form_ids), 'form_id' );
-
-        if ( $data_form_ids ) {
-            $data_entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => $data_form_ids, 'meta_value LIKE' => $search_param ),  '', '', true, array( 'is_draft' => 'both' ) );
-            if ( ! empty( $data_entry_ids ) ) {
-                if ( count($data_entry_ids) == 1 ) {
-                    $where_entries_array['meta_value like'] = reset( $data_entry_ids );
-                } else {
-                    $where_entries_array['meta_value'] = $data_entry_ids;
-                }
-            }
-        }
-    }
 
 	public static function get_search_ids( $s, $form_id, $args = array() ) {
         global $wpdb;

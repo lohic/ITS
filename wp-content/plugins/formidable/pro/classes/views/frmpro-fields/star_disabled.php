@@ -17,7 +17,11 @@ if ( in_array($name, $frm_vars['star_loaded']) ) {
 $frm_vars['star_loaded'][] = $name;
 
 $field->options = maybe_unserialize($field->options);
-$max = max($field->options);
+if ( is_array( $field->options ) ) {
+	$max = max($field->options);
+} else {
+	$max = 5;
+}
 
 $d = 0;
 if ( $stat != floor( $stat ) ) {
@@ -43,7 +47,6 @@ for ( $i = 1; $i <= $max; $i++ ) {
     // check if this is a half
     $class = ( $d && ($i-1) == $n ) ? ' frm_half_star' : '';
 
-    $checked = (round($stat) == $i) ? 'checked="checked"' : '';
-	?><input type="radio" name="item_meta[<?php echo esc_attr( $name ) ?>]" value="<?php echo esc_attr( $i ); ?>" <?php echo $checked ?> class="star<?php echo esc_attr( $class ) ?>" disabled="disabled" style="display:none;"/><?php
+	?><input type="radio" name="item_meta[<?php echo esc_attr( $name ) ?>]" value="<?php echo esc_attr( $i ); ?>" <?php checked( round( $stat ), $i ) ?> class="star<?php echo esc_attr( $class ) ?>" disabled="disabled" style="display:none;"/><?php
 } ?>
 </div>

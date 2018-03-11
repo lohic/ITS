@@ -1,6 +1,7 @@
 <?php
 
-class FrmCSVExportHelper{
+class FrmCSVExportHelper {
+
 	protected static $separator        = ', ';
 	protected static $column_separator = ',';
 	protected static $line_break       = 'return';
@@ -186,7 +187,7 @@ class FrmCSVExportHelper{
 					'type' => $col->type, 'post_id' => self::$entry->post_id, 'show_icon' => false,
 					'entry_id' => self::$entry->id, 'sep' => self::$separator,
 					'embedded_field_id' => ( isset( self::$entry->embedded_fields ) && isset( self::$entry->embedded_fields[ self::$entry->id ] ) ) ? 'form' . self::$entry->embedded_fields[ self::$entry->id ] : 0,
-					) );
+				) );
 				$row[ $col->id . '_label' ] = $sep_value;
 				unset( $sep_value );
 			}
@@ -223,12 +224,9 @@ class FrmCSVExportHelper{
 	}
 
 	private static function print_csv_row( $rows ) {
-		$col_count = count( $rows );
-		$this_col = 0;
+		$sep = '';
 
 		foreach ( self::$headings as $k => $heading ) {
-			$this_col++;
-
 			$row = isset( $rows[ $k ] ) ? $rows[ $k ] : '';
 			if ( is_array( $row ) ) {
 				// implode the repeated field values
@@ -240,10 +238,9 @@ class FrmCSVExportHelper{
 				$val = str_replace( array( "\r\n", "\r", "\n" ), self::$line_break, $val );
 			}
 
-			echo '"' . $val . '"';
-			if ( $this_col != $col_count ) {
-				echo self::$column_separator;
-			}
+			echo $sep . '"' . $val . '"';
+			$sep = self::$column_separator;
+
 			unset( $k, $row );
 		}
 		echo "\n";

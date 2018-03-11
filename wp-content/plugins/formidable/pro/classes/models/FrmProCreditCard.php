@@ -3,11 +3,14 @@
 class FrmProCreditCard {
 
 	public static function validate( $errors, $field, $values, $args ) {
+		if ( ! isset( $field->temp_id ) ) {
+			$field->temp_id = $field->id;
+		}
+
 		self::validate_required_fields( $errors, $field, $values );
 		self::validate_cc_number( $errors, $field, $values );
 		self::validate_cc_expiration( $errors, $field, $values );
 		self::validate_cvc( $errors, $field, $values );
-
 
 		add_filter( 'frm_redirect_url', 'FrmProCreditCard::secure_before_redirect', 50, 3 );
 		add_action( 'frm_after_entry_processed', 'FrmProCreditCard::secure_after_save', 100 );
@@ -16,13 +19,7 @@ class FrmProCreditCard {
 	}
 
 	public static function validate_required_fields( &$errors, $field, $values ) {
-		$skip_required = FrmProEntryMeta::skip_required_validation( $field );
-		if ( $skip_required ) {
-			return;
-		}
-
-		$is_editing = ( $_POST && isset( $_POST['id'] ) && is_numeric( $_POST['id'] ) );
-		if ( $field->required && ! $is_editing ) {
+		if ( self::should_require( $field, $values ) ) {
 			foreach ( $values as $key => $value ) {
 				if ( empty( $value ) ) {
 					$errors[ 'field' . $field->temp_id . '-' . $key ] = '';
@@ -31,10 +28,26 @@ class FrmProCreditCard {
 		}
 	}
 
+	public static function should_require( $field, $values ) {
+		$partial_fill = ( isset( $values['cc'] ) && ! empty( $values['cc'] ) );
+		$is_editing = ( $_POST && isset( $_POST['id'] ) && is_numeric( $_POST['id'] ) );
+
+		if ( $partial_fill && ! $is_editing ) {
+			return true;
+		}
+
+		if ( ! $field->required || $is_editing ) {
+			return false;
+		}
+
+		$skip_required = FrmProEntryMeta::skip_required_validation( $field );
+		return ( ! $skip_required );
+	}
+
 	public static function validate_cc_number( &$errors, $field, $values ) {
 		if ( isset( $values['cc'] ) && ! empty( $values['cc'] ) ) {
 			// if a CVC is present, then the user must have added it
-			$should_validate = isset( $values['cvc'] ) && ! empty( $values['cvc'] );
+			$should_validate = ( isset( $values['cvc'] ) && ! empty( $values['cvc'] ) ) || isset( $errors[ 'field' . $field->temp_id . '-cvc' ] );
 			if ( $should_validate ) {
 				$is_valid_cc = self::is_valid_cc_number( $values['cc'] );
 				if ( ! $is_valid_cc ) {
@@ -76,7 +89,7 @@ class FrmProCreditCard {
 			return;
 		}
 
-		$credit_card_number = str_replace( '-', '', $card_number );
+		$credit_card_number = str_replace( array( '-', ' ' ), '', $card_number );
 		$map = array( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 );
 		$sum = 0;
 		$last = strlen( $card_number ) - 1;
@@ -86,6 +99,11 @@ class FrmProCreditCard {
 
 		if ( $sum % 10 != 0 ) {
 			$is_valid = false;
+		}
+
+		if ( ! $is_valid ) {
+			$allow = array( '4242424242424242' );
+			$is_valid = in_array( $credit_card_number, $allow );
 		}
 	}
 
@@ -153,7 +171,8 @@ class FrmProCreditCard {
 		} else if ( $save_digits == 0 ) {
 			$cc_values['cc'] = '';
 		} else if ( ! empty( $cc_values['cc'] ) ) {
-			$cc_values['cc'] = str_repeat( 'x', strlen( $cc_values['cc'] ) - 4 ) . substr( $cc_values['cc'], -4 );
+			$length = max( strlen( $cc_values['cc'] ) - 4, 0 );
+			$cc_values['cc'] = str_repeat( 'x', $length ) . substr( $cc_values['cc'], -4 );
 		}
 	}
 }

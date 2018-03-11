@@ -1,4 +1,7 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} // Exit if accessed directly
 /*
 * Version 2.0.3, Twitter Feed for Developers by Storm Consultancy (Liam Gladdy)
 * The base class for the storm twitter feed for developers.
@@ -166,22 +169,22 @@ class WPT_TwitterFeed {
 		$token        = $this->defaults['token'];
 		$token_secret = $this->defaults['token_secret'];
 		$cachename    = $screenname . "-" . $this->getOptionsHash( $options );
-		$options      = array_merge( $options, array( 'screen_name' => $screenname, 'count' => 20 ) );
+		$options      = array_merge( $options, array( 'screen_name' => $screenname, 'count' => 20, 'include_ext_alt_text' => 'true' ) );
 
 		if ( empty( $key ) ) {
-			return array( 'error' => 'Missing Consumer Key - Check Settings' );
+			return array( 'error' => __( 'Missing Consumer Key - Check settings', 'wp-to-twitter' ) );
 		}
 		if ( empty( $secret ) ) {
-			return array( 'error' => 'Missing Consumer Secret - Check Settings' );
+			return array( 'error' => __( 'Missing Consumer Secret - Check settings', 'wp-to-twitter' ) );
 		}
 		if ( empty( $token ) ) {
-			return array( 'error' => 'Missing Access Token - Check Settings' );
+			return array( 'error' => __( 'Missing Access Token - Check settings', 'wp-to-twitter' ) );
 		}
 		if ( empty( $token_secret ) ) {
-			return array( 'error' => 'Missing Access Token Secret - Check Settings' );
+			return array( 'error' => __( 'Missing Access Token Secret - Check settings', 'wp-to-twitter' ) );
 		}
 		if ( empty( $screenname ) ) {
-			return array( 'error' => __( 'Missing Twitter Feed Screen Name - Check Settings', 'wp-to-twitter' ) );
+			return array( 'error' => __( 'Missing Twitter Feed Screen Name - Check settings', 'wp-to-twitter' ) );
 		}
 
 		$connection = new wpt_TwitterOAuth( $key, $secret, $token, $token_secret );

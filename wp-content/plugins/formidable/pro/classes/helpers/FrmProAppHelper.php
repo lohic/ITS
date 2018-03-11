@@ -56,21 +56,36 @@ class FrmProAppHelper{
 	 * Format the time field values
 	 * @since 2.0.14
 	 */
-	public static function format_time( $time, $format = 'Hi' ) {
-		$parts = str_replace( array( ' PM',' AM'), '', $time );
-		$parts = explode( ':', $parts );
-		if ( is_array( $parts ) && count( $parts ) > 1 ) {
-			if ( self::is_later_than_noon( $time, $parts ) ) {
-				$parts[0] = (int) $parts[0] + 12;
-			}
-			$time = $parts[0] . ':' . $parts[1] . ':00';
+	public static function format_time( $time, $format = 'H:i' ) {
+		if ( is_array( $time ) ) {
+			$time = '';
 		}
 
-		return date( $format, strtotime( $time ) );
+		if ( $time !== '' ) {
+			if ( $format == 'h:i A' ) {
+				// for reverse compatability
+				$format = 'g:i A';
+			}
+			$time = date( $format, strtotime( $time ) );
+		}
+		return $time;
+	}
+
+	public static function format_time_by_reference( &$time ) {
+		$time = self::format_time( $time, 'H:i' );
 	}
 
 	private static function is_later_than_noon( $time, $parts ) {
 		return ( ( preg_match( '/PM/', $time ) && ( (int) $parts[0] != 12 ) ) || ( ( (int) $parts[0] == 12 ) && preg_match( '/AM/', $time ) ) );
+	}
+
+	public static function get_time_format_for_field( $field ) {
+		$time_format = isset( $field->field_options['clock'] ) ? $field->field_options['clock'] : 12;
+		return self::get_time_format_for_setting( $time_format );
+	}
+
+	public static function get_time_format_for_setting( $time_format ) {
+		return ( $time_format == 12 ) ? 'g:i A' : 'H:i';
 	}
 
     /**
@@ -196,10 +211,13 @@ class FrmProAppHelper{
             }
         }
 
-        if(is_numeric($date_elements['m']))
-            $dummy_ts = mktime(0, 0, 0, $date_elements['m'], (isset($date_elements['j']) ? $date_elements['j'] : $date_elements['d']), (isset($date_elements['Y']) ? $date_elements['Y'] : $date_elements['y']) );
-        else
-            $dummy_ts = strtotime($date_str);
+		if ( is_numeric( $date_elements['m'] ) ) {
+			$day = ( isset( $date_elements['j'] ) ? $date_elements['j'] : $date_elements['d'] );
+			$year = ( isset( $date_elements['Y'] ) ? $date_elements['Y'] : $date_elements['y'] );
+			$dummy_ts = mktime( 0, 0, 0, $date_elements['m'], $day, $year );
+		} else {
+			$dummy_ts = strtotime( $date_str );
+		}
 
         return date( $to_format, $dummy_ts );
     }
@@ -213,42 +231,21 @@ class FrmProAppHelper{
     	return $output;
     }
 
-	public static function rewriting_on() {
-      $permalink_structure = get_option('permalink_structure');
-
-      return ( $permalink_structure && ! empty( $permalink_structure ) );
-    }
-
-	/*
-    public static function current_url() {
-		$page_url = 'http';
-		if ( is_ssl() ) {
-			$page_url .= 's';
-		}
-		$page_url .= '://' . FrmAppHelper::get_server_value( 'SERVER_NAME' );
-
-		$port = FrmAppHelper::get_server_value( 'SERVER_PORT' );
-		if ( $port != '80' ) {
-			$page_url .= ':' . $port;
-		}
-		$page_url .= FrmAppHelper::get_server_value( 'REQUEST_URI' );
-
-		return $page_url;
-    }
-
-    public static function get_permalink_pre_slug_uri(){
-      preg_match('#^([^%]*?)%#', get_option('permalink_structure'), $struct);
-      return $struct[1];
-    }
-	*/
-
 	public static function get_custom_post_types() {
-        $custom_posts = get_post_types( array(), 'object');
-        foreach ( array( 'revision', 'attachment', 'nav_menu_item') as $unset) {
-            unset($custom_posts[$unset]);
-        }
-        return $custom_posts;
-    }
+		$custom_posts = get_post_types( array(), 'object');
+		foreach ( array( 'revision', 'attachment', 'nav_menu_item' ) as $unset ) {
+			unset( $custom_posts[ $unset ] );
+		}
+
+		// alphebetize
+		ksort( $custom_posts );
+
+		// keep post and page first
+		$first_types = array( 'post' => $custom_posts['post'], 'page' => $custom_posts['page'] );
+		$custom_posts = $first_types + $custom_posts;
+
+		return $custom_posts;
+	}
 
 	public static function get_custom_taxonomy( $post_type, $field ) {
         $taxonomies = get_object_taxonomies($post_type);
@@ -339,19 +336,9 @@ class FrmProAppHelper{
      * Called by the filter_where function
      */
     private static function prepare_where_args( &$args, $where_field, $entry_ids ) {
-        if ( $args['where_val'] == 'NOW' ) {
-			$date_format = 'Y-m-d';
-			if ( $where_field->type == 'time' ) {
-				$time_format = isset( $where_field->field_options['clock'] ) ? $where_field->field_options['clock'] : 12;
-				$date_format = ( $time_format == 12 ) ? 'h:i A' : 'H:i';
-			}
-			$args['where_val'] = self::get_date( $date_format );
-			unset( $date_format );
-        }
+		self::prepare_where_datetime( $args, $where_field );
 
-        if ( $where_field->type == 'date' && ! empty($args['where_val']) ) {
-            $args['where_val'] = date('Y-m-d', strtotime($args['where_val']));
-		} else if ( $args['where_is'] == '=' && $args['where_val'] != '' && FrmField::is_field_with_multiple_values( $where_field ) ) {
+		if ( $args['where_is'] == '=' && $args['where_val'] != '' && FrmField::is_field_with_multiple_values( $where_field ) ) {
             if ( $where_field->type != 'data' || $where_field->field_options['data_type'] != 'checkbox' || is_numeric($args['where_val']) ) {
                 // leave $args['where_is'] the same if this is a data from entries checkbox with a numeric value
                 $args['where_is'] = 'LIKE';
@@ -365,7 +352,7 @@ class FrmProAppHelper{
             $args['temp_where_is'] = '!=';
         }
 
-		if ( in_array( $args['where_is'], array( 'LIKE', 'not LIKE') ) ) {
+		if ( self::option_is_like( $args['where_is'] ) ) {
              //add extra slashes to match values that are escaped in the database
 			$args['where_val_esc'] = addslashes( $args['where_val'] );
         } else if ( ! strpos( $args['where_is'], 'in' ) && ! is_numeric( $args['where_val'] ) ) {
@@ -377,6 +364,31 @@ class FrmProAppHelper{
 
         self::prepare_dfe_text($args, $where_field);
     }
+
+	/**
+	 * @since 2.3
+	 */
+	private static function prepare_where_datetime( &$args, $where_field ) {
+		$is_datetime = ( $args['where_val'] == 'NOW' || $where_field->type == 'date' || $where_field->type == 'time' );
+		if ( ! $is_datetime || empty( $args['where_val'] ) ) {
+			return;
+		}
+
+		$date_format = ( $where_field->type == 'time' ) ? 'H:i' : 'Y-m-d';
+
+		if ( $args['where_val'] == 'NOW' ) {
+			$args['where_val'] = self::get_date( $date_format );
+		} elseif ( ! self::option_is_like( $args['where_is'] )  ) {
+			$args['where_val'] = date( $date_format, strtotime( $args['where_val'] ) );
+		}
+	}
+
+	/**
+	 * @since 2.3
+	 */
+	private static function option_is_like( $where_is ) {
+		return in_array( $where_is, array( 'LIKE', 'not LIKE' ) );
+	}
 
 	/**
 	* Replace a text value where_val with the matching entry IDs for Dynamic Field filters
@@ -408,8 +420,6 @@ class FrmProAppHelper{
 			if ( ! $linked_field ) {
 				return;
 			}
-
-			$filter_args = array();
 
 			$linked_id = FrmDb::get_col( 'frm_items', array(
 				'form_id' => $linked_field->form_id,
@@ -582,70 +592,13 @@ class FrmProAppHelper{
      * @param int $field_id
      */
 	public static function upload_file( $field_id ) {
-        require_once(ABSPATH . 'wp-admin/includes/file.php');
-        require_once(ABSPATH . 'wp-admin/includes/image.php');
-        require_once(ABSPATH . 'wp-admin/includes/media.php');
-
-        $media_ids = $errors = array();
-        add_filter('upload_dir', array( 'FrmProAppHelper', 'upload_dir'));
-
-		if ( is_array( $_FILES[ $field_id ]['name'] ) ) {
-			foreach ( $_FILES[$field_id]['name'] as $k => $n ) {
-				if ( empty( $n ) ) {
-                    continue;
-				}
-
-                $f_id = $field_id . $k;
-                $_FILES[$f_id] = array(
-                    'name'  => $n,
-                    'type'  => $_FILES[$field_id]['type'][$k],
-                    'tmp_name' => $_FILES[$field_id]['tmp_name'][$k],
-                    'error' => $_FILES[$field_id]['error'][$k],
-                    'size'  => $_FILES[$field_id]['size'][$k]
-                );
-
-                unset($k);
-                unset($n);
-
-                $media_id = media_handle_upload($f_id, 0);
-                if (is_numeric($media_id))
-                    $media_ids[] = $media_id;
-                else
-                    $errors[] = $media_id;
-            }
-        }else{
-            $media_id = media_handle_upload($field_id, 0);
-            if (is_numeric($media_id))
-                $media_ids[] = $media_id;
-            else
-                $errors[] = $media_id;
-        }
-
-        remove_filter('upload_dir', array( 'FrmProAppHelper', 'upload_dir'));
-
-        unset($media_id);
-
-        if(empty($media_ids))
-            return $errors;
-
-        if(count($media_ids) == 1)
-            $media_ids = reset($media_ids);
-
-        return $media_ids;
+		_deprecated_function( __FUNCTION__, '2.02', 'FrmProFileField::upload_file' );
+        return FrmProFileField::upload_file( $field_id );
     }
 
-    //Upload files into "formidable" subdirectory
 	public static function upload_dir( $uploads ) {
-        $relative_path = apply_filters('frm_upload_folder', 'formidable' );
-        $relative_path = untrailingslashit($relative_path);
-
-        if ( ! empty( $relative_path ) ) {
-            $uploads['path'] = $uploads['basedir'] .'/'. $relative_path;
-            $uploads['url'] = $uploads['baseurl'] .'/'. $relative_path;
-            $uploads['subdir'] = '/'. $relative_path;
-        }
-
-        return $uploads;
+		_deprecated_function( __FUNCTION__, '2.02', 'FrmProFileField::upload_dir' );
+        return FrmProFileField::upload_dir( $uploads );
     }
 
 	public static function get_rand( $length ) {
@@ -696,34 +649,4 @@ class FrmProAppHelper{
         return $class;
     }
     /* End Genesis */
-
-	public static function import_csv( $path, $form_id, $field_ids, $entry_key = 0, $start_row = 2, $del = ',', $max = 250 ) {
-        _deprecated_function( __FUNCTION__, '1.07.05', 'FrmProXMLHelper::import_csv()' );
-        return FrmProXMLHelper::import_csv($path, $form_id, $field_ids, $entry_key, $start_row, $del, $max);
-    }
-
-	public static function get_user_id_param( $user_id ) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmAppHelper::get_user_id_param' );
-        return FrmAppHelper::get_user_id_param($user_id);
-    }
-
-    public static function get_formatted_time( $date, $date_format = false, $time_format = false ) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmAppHelper::get_formatted_time' );
-        return FrmAppHelper::get_formatted_time($date, $date_format, $time_format);
-    }
-
-	public static function get_current_form_id() {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmForm::get_current_form_id' );
-        return FrmForm::get_current_form_id();
-    }
-
-	public static function get_shortcodes( $content, $form_id ) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmFieldsHelper::get_shortcodes' );
-        return FrmFieldsHelper::get_shortcodes($content, $form_id);
-    }
-
-    public static function human_time_diff( $from, $to = '' ) {
-        _deprecated_function( __FUNCTION__, '2.0', 'FrmAppHelper::human_time_diff' );
-        return FrmAppHelper::human_time_diff( $from, $to );
-    }
 }

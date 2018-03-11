@@ -30,7 +30,7 @@
         <td class="frm_left_label"><?php _e( 'Order', 'formidable' ); ?></td>
         <td>
             <div id="frm_order_options" class="frm_add_remove" style="padding-bottom:8px;">
-                <a href="javascript:void(0)" class="frm_add_order_row button" style="<?php echo empty($post->frm_order_by) ? '' : 'display:none'; ?>">+ <?php _e( 'Add', 'formidable' ) ?></a>
+				<a href="javascript:void(0)" class="frm_add_order_row button <?php echo esc_attr( empty( $post->frm_order_by ) ? '' : 'frm_hidden' ); ?>">+ <?php _e( 'Add', 'formidable' ) ?></a>
                 <div class="frm_logic_rows">
             <?php
 			foreach ( $post->frm_order_by as $order_key => $order_by_field ) {
@@ -50,7 +50,7 @@
         </td>
         <td>
             <div id="frm_where_options" class="frm_add_remove">
-                <a href="javascript:void(0)" class="frm_add_where_row button" style="<?php echo empty($post->frm_where) ? '' : 'display:none'; ?>">+ <?php _e( 'Add', 'formidable' ) ?></a>
+				<a href="javascript:void(0)" class="frm_add_where_row button <?php echo esc_attr( empty( $post->frm_where ) ? '' : 'frm_hidden' ); ?>">+ <?php _e( 'Add', 'formidable' ) ?></a>
                 <div class="frm_logic_rows">
             <?php
 				foreach ( $post->frm_where as $where_key => $where_field ) {
@@ -67,12 +67,12 @@
     <tr class="form-field">
         <td><?php _e( 'No Entries Message', 'formidable' ); ?></td>
         <td>
-            <textarea id="empty_msg" name="options[empty_msg]" style="width:98%"><?php echo FrmAppHelper::esc_textarea($post->frm_empty_msg) ?></textarea>
+            <textarea id="empty_msg" name="options[empty_msg]" class="frm_98_width"><?php echo FrmAppHelper::esc_textarea($post->frm_empty_msg) ?></textarea>
         </td>
     </tr>
 </table>
 
-<?php if ( is_multisite() && is_super_admin() ) { ?>
+<?php if ( is_multisite() && current_user_can( 'setup_network' ) ) { ?>
 <h3><?php _e( 'Advanced', 'formidable' ) ?></h3>
 <?php } ?>
 
@@ -80,16 +80,6 @@
     <tr class="hide_dyncontent <?php echo in_array($post->frm_show_count, array( 'dynamic', 'calendar')) ? '' : 'frm_hidden'; ?>">
         <td><?php _e( 'Detail Page Slug', 'formidable' ); ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php printf(__( 'Example: If parameter name is \'contact\', the url would be like %1$s/selected-page?contact=2. If this entry is linked to a post, the post permalink will be used instead.', 'formidable' ), FrmAppHelper::site_url()) ?>" ></span></td>
         <td>
-            <?php
-            /*
-			if ( FrmProAppHelper::rewriting_on() && $frmpro_settings->permalinks ) { ?>
-                <select id="type" name="type">
-                    <option value="id" <?php selected($post->frm_type, 'id') ?>><?php _e( 'ID', 'formidable' ); ?></option>
-                    <option value="display_key" <?php selected($post->frm_type, 'display_key') ?>><?php _e( 'Key', 'formidable' ); ?></option>
-                </select>
-                <p class="description"><?php printf(__( 'Select the value that will be added onto the page URL. This will create a pretty URL like %1$s/selected-page/entry-key', 'formidable' ), FrmAppHelper::site_url()); ?></p>
-            <?php }else{ ?>
-            */ ?>
                 <input type="text" id="param" name="param" value="<?php echo esc_attr($post->frm_param) ?>">
 
                 <?php _e( 'Parameter Value', 'formidable' ); ?>:
@@ -103,7 +93,7 @@
 
     <?php
 	if ( is_multisite() ) {
-		if ( is_super_admin() ) { ?>
+		if ( current_user_can( 'setup_network' ) ) { ?>
         <tr class="form-field">
             <td><?php _e( 'Copy', 'formidable' ); ?></td>
             <td>

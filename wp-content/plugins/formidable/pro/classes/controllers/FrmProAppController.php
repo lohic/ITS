@@ -2,6 +2,21 @@
 
 class FrmProAppController{
 
+	/**
+	 * Use in-plugin translations instead of WP.org
+	 * @since 2.2.8
+	 */
+	public static function load_translation( $mo_file, $domain ) {
+		if ( 'formidable' === $domain ) {
+			$user_local = function_exists('get_user_locale') ? get_user_locale() : get_locale();
+			$file = FrmAppHelper::plugin_path() . '/languages/formidable-' . $user_local . '.mo';
+			if ( file_exists( $file ) ) {
+				$mo_file = $file;
+			}
+		}
+		return $mo_file;
+	}
+
     public static function create_taxonomies() {
         register_taxonomy( 'frm_tag', 'formidable', array(
             'hierarchical' => false,
@@ -43,6 +58,10 @@ class FrmProAppController{
     }
 
 	public static function set_get( $atts ) {
+		if ( empty( $atts ) ) {
+			return;
+		}
+
 		foreach ( $atts as $att => $val ) {
             $_GET[$att] = $val;
             unset($att, $val);

@@ -2,8 +2,21 @@
 
 class FrmProDb{
 
+	public static $db_version = 39;
+
+	/**
+	 * @since 2.3
+	 */
+	public static function needs_upgrade( $needs_upgrade ) {
+		if ( ! $needs_upgrade ) {
+			$db_version = (int) get_option( 'frmpro_db_version' );
+			$needs_upgrade = ( $db_version < self::$db_version );
+		}
+		return $needs_upgrade;
+	}
+
 	public static function upgrade() {
-        $db_version = FrmAppHelper::$pro_db_version; // this is the version of the database we're moving to
+        $db_version = self::$db_version; // this is the version of the database we're moving to
         $old_db_version = get_option('frmpro_db_version');
 
         if ( $db_version == $old_db_version ) {
@@ -11,7 +24,7 @@ class FrmProDb{
         }
 
         if ( $old_db_version ) {
-			$migrations = array( 16, 17, 25, 27, 28, 29, 30, 31, 32, 33 );
+			$migrations = array( 16, 17, 25, 27, 28, 29, 30, 31, 32, 34, 36, 37, 39 );
 			foreach ( $migrations as $migration ) {
 				if ( $db_version >= $migration && $old_db_version < $migration ) {
 					call_user_func( array( __CLASS__, 'migrate_to_' . $migration ) );
@@ -51,13 +64,152 @@ class FrmProDb{
 		delete_site_option( 'frmpro-wpmu-sitewide' );
     }
 
+	/**
+	 * Make sure new endpoints are added before the free version upgrade happens
+	 *
+	 * @since 2.02.09
+	 */
+	public static function before_free_version_db_upgrade() {
+		FrmProContent::add_rewrite_endpoint();
+	}
+
+	/**
+	 * Change saved time formats
+	 * @since 2.3
+	 */
+	public static function migrate_to_39() {
+		// Get all time fields on site
+		$times = FrmDb::get_col( 'frm_fields', array( 'type' => array( 'time', 'lookup' ) ), 'id' );
+		if ( ! $times ) {
+			return;
+		}
+		$values = FrmDb::get_results( 'frm_item_metas', array( 'field_id' => $times, 'meta_value LIKE' => array( ' AM', ' PM' ) ), 'meta_value, id' );
+
+		global $wpdb;
+		foreach ( $values as $value ) {
+			$meta_id = $value->id;
+			$value = maybe_unserialize( $value->meta_value );
+			$new_value = array();
+
+			foreach ( (array) $value as $v ) {
+				$formatted_time = FrmProAppHelper::format_time( $v );
+				if ( $formatted_time ) {
+					// double check to make sure the time is correct
+					$check_time = date( 'h:i A', strtotime( $formatted_time ) );
+					if ( $check_time != $v ) {
+						break;
+					}
+
+					$new_value[] = $formatted_time;
+				}
+			}
+
+			if ( ! empty( $new_value ) ) {
+				if ( count( $new_value ) <= 1 ) {
+					$new_time = implode( $new_value, '' );
+				} else {
+					$new_time = maybe_serialize( $new_value );
+				}
+
+				$wpdb->update( $wpdb->prefix . 'frm_item_metas', array( 'meta_value' => $new_time ), array( 'id' => $meta_id ) );
+			}
+		}
+	}
+
+	/**
+	 * Delete orphaned entries from duplicated repeating section data
+	 */
+    public static function migrate_to_37() {
+		// Get all section fields on site
+		$dividers = FrmDb::get_col( 'frm_fields', array( 'type' => 'divider' ), 'id' );
+
+		if ( ! $dividers ) {
+			return;
+		}
+
+		foreach ( $dividers as $divider_id ) {
+			$section_field = FrmField::getOne( $divider_id );
+
+			if ( ! $section_field || ! FrmField::is_repeating_field( $section_field ) ) {
+				continue;
+			}
+
+			self::delete_duplicate_data_in_section( $section_field );
+		}
+	}
+
+	/**
+	 * Delete orphaned entries from duplicated repeating section data
+	 *
+	 * @param object $section_field
+	 */
+	private static function delete_duplicate_data_in_section( $section_field ) {
+    	// Get all parent entry IDs for section field's parent form
+		$check_parents = FrmDb::get_col( 'frm_items', array( 'form_id' => $section_field->form_id ), 'id' );
+
+		if ( ! $check_parents ) {
+			return;
+		}
+
+		$child_form_id = $section_field->field_options['form_select'];
+
+		foreach ( $check_parents as $parent_id ) {
+			$all_child_ids = FrmDb::get_col( 'frm_items', array( 'form_id' => $child_form_id, 'parent_item_id' => $parent_id ), 'id' );
+
+			if ( ! $all_child_ids ) {
+				continue;
+			}
+
+			$keep_child_ids = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $section_field->id, 'item_id' => $parent_id ), 'meta_value' );
+			$keep_child_ids = maybe_unserialize( $keep_child_ids );
+
+			if ( ! is_array( $keep_child_ids ) ) {
+				$keep_child_ids = (array) $keep_child_ids;
+			}
+
+			foreach ( $all_child_ids as $child_id ) {
+				if ( in_array( $child_id, $keep_child_ids ) ) {
+					// Do nothing
+				} else {
+					FrmEntry::destroy( $child_id );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add the _frm_file meta to images without a post
+	 * This will prevent old files from showing in the media libarary
+	 */
+	public static function migrate_to_36() {
+		global $wpdb;
+		$file_field_ids = $wpdb->get_col( $wpdb->prepare( 'SELECT id FROM ' . $wpdb->prefix . 'frm_fields WHERE type=%s', 'file' ) );
+		if ( ! empty( $file_field_ids ) ) {
+			$file_field_ids = array_filter( $file_field_ids, 'is_numeric' );
+			$query = 'SELECT meta_value FROM ' . $wpdb->prefix . 'frm_item_metas m LEFT JOIN ' . $wpdb->prefix . 'frm_items e ON (e.id = m.item_id) WHERE e.post_id < %d';
+			$uploaded_files = $wpdb->get_col( $wpdb->prepare( $query, 1 ) . ' AND field_id in (' . implode( ',', $file_field_ids ) . ')' );
+
+			$file_ids = array();
+			foreach ( $uploaded_files as $files ) {
+				if ( ! is_numeric( $files ) ) {
+					$files = maybe_unserialize( $files );
+				}
+				$add_files = array_filter( (array) $files, 'is_numeric' );
+				$file_ids = array_merge( $file_ids, $add_files );
+			}
+
+			foreach ( $file_ids as $file_id ) {
+				update_post_meta( $file_id, '_frm_file', 1 );
+			}
+		}
+	}
 
 	/**
 	 * Add in_section variable to all fields within sections
 	 *
-	 * @since 2.0.25
+	 * @since 2.01.0
 	 */
-	private static function migrate_to_33(){
+	private static function migrate_to_34(){
 		$dividers = FrmDb::get_col( 'frm_fields', array( 'type' => 'divider' ), 'id' );
 
 		if ( ! $dividers ) {
@@ -81,8 +233,9 @@ class FrmProDb{
 	 * @param object $section_field
 	 */
 	private static function add_in_section_variable_to_section_children( $section_field ) {
+		$section_field_array = FrmProFieldsHelper::convert_field_object_to_flat_array( $section_field );
+
 		// Get all children for divider
-		$section_field_array = get_object_vars( $section_field );
 		$children = FrmProField::get_children( $section_field_array );
 
 		// Set in_section variable for all children
@@ -145,9 +298,11 @@ class FrmProDb{
 			$view_options[ 'where_val' ] = array();
 		}
 
-		$view_options[ 'where' ][] = 'id';
-		$view_options[ 'where_is' ][] = '=';
-		$view_options[ 'where_val' ][] = '[get param=entry old_filter=1]';
+		if ( ! in_array( 'id', $view_options[ 'where' ] ) ) {
+			$view_options[ 'where' ][] = 'id';
+			$view_options[ 'where_is' ][] = '=';
+			$view_options[ 'where_val' ][] = '[get param=entry old_filter=1]';
+		}
 	}
 
 	/**

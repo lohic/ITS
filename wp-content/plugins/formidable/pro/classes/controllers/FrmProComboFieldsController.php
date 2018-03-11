@@ -25,19 +25,34 @@ class FrmProComboFieldsController {
 		}
 	}
 
-	public static function include_placeholder( $default_value, $sub_field ) {
+	public static function include_placeholder( $default_value, $sub_field, $field = array() ) {
+		if ( ! empty( $field ) && ! FrmField::is_option_true( $field, 'clear_on_focus' ) ) {
+			return;
+		}
+
 		if ( isset( $default_value[ $sub_field ] ) && ! empty( $sub_field ) ) {
 			echo ' placeholder="' . esc_attr( $default_value[ $sub_field ] ) . '" ';
 		}
 	}
 
+	public static function get_dropdown_label( $atts ) {
+		$default = isset( $atts['sub_field']['placeholder'] ) ? $atts['sub_field']['placeholder'] : ' ';
+		return apply_filters( 'frm_combo_dropdown_label', $default, $atts );
+	}
+
 	public static function add_atts_to_input( $atts ) {
-		self::include_placeholder( $atts['field']['default_value'], $atts['key'] );
+		self::include_placeholder( $atts['field']['default_value'], $atts['key'], $atts['field'] );
+
+		if ( isset( $atts['field']['default_value'][ $atts['key'] ] ) ) {
+			$atts['field']['default_value'] = $atts['field']['default_value'][ $atts['key'] ];
+		} else{
+			$atts['field']['default_value'] = '';
+		}
 
 		if ( isset( $atts['sub_field']['optional'] ) && $atts['sub_field']['optional'] ) {
 			add_filter( 'frm_field_classes', 'FrmProAddressesController::add_optional_class', 20, 2 );
 			do_action( 'frm_field_input_html', $atts['field'] );
-			remove_filter( 'frm_field_classes', 'FrmProAddressesController::add_optional_class', 20, 2 );
+			remove_filter( 'frm_field_classes', 'FrmProAddressesController::add_optional_class', 20 );
 		} else {
 			do_action( 'frm_field_input_html', $atts['field'] );
 		}
@@ -51,7 +66,10 @@ class FrmProComboFieldsController {
 
 	public static function include_sub_label( $atts ) {
 		$is_form_builder = FrmAppHelper::is_admin_page('formidable' );
-		if ( $is_form_builder ) {
+		$ajax_action = FrmAppHelper::get_param( 'action', '', 'get', 'sanitize_text_field' );
+		$is_new_field = FrmAppHelper::doing_ajax() && ( $ajax_action == 'frm_insert_field' || $ajax_action == 'frm_load_field' );
+		
+		if ( $is_form_builder || $is_new_field ) {
 			self::include_inplace_sub_label( $atts );
 		} else {
 			self::show_sub_label( $atts );
@@ -67,7 +85,9 @@ class FrmProComboFieldsController {
 	public static function show_sub_label( $atts ) {
 		$field = $atts['field'];
 		$option_name = $atts['option_name'];
-		echo '<div class="frm_description">' . wp_kses_post( $field[ $option_name ] ) . '</div>';
+		if ( $field[ $option_name ] !== '' ) {
+			echo '<div class="frm_description">' . wp_kses_post( $field[ $option_name ] ) . '</div>';
+		}
 	}
 
 	public static function maybe_add_error_class( $atts ) {

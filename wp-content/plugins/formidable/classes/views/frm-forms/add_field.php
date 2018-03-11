@@ -38,7 +38,7 @@ $disabled_fields = FrmAppHelper::pro_is_installed() ? array() : $pro_field_selec
 
 if ( ! isset( $ajax ) ) {
     $li_classes .= ' ui-state-default widgets-holder-wrap'; ?>
-<li id="frm_field_id_<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $li_classes ) ?>" data-fid="<?php echo esc_attr( $field['id'] ) ?>" data-formid="<?php echo ( 'divider' == $field['type'] ) ? esc_attr( $field['form_select'] ) : esc_attr( $field['form_id'] ); ?>">
+<li id="frm_field_id_<?php echo esc_attr( $field['id'] ); ?>" class="<?php echo esc_attr( $li_classes ) ?>" data-fid="<?php echo esc_attr( $field['id'] ) ?>" data-formid="<?php echo ( 'divider' == $field['type'] ) ? esc_attr( $field['form_select'] ) : esc_attr( $field['form_id'] ); ?>" data-ftype="<?php echo esc_attr( $display['type'] ) ?>">
 <?php
 }
 
@@ -88,9 +88,10 @@ if ( $display['conf_field'] ) { ?>
 <div id="frm_conf_field_<?php echo esc_attr( $field['id'] ) ?>_container" class="frm_conf_field_container frm_form_fields frm_conf_details<?php echo esc_attr( $field['id'] . ( $field['conf_field'] ? '' : ' frm_hidden' ) ); ?>">
     <div id="frm_conf_field_<?php echo esc_attr( $field['id'] ) ?>_inner_container" class="frm_inner_conf_container">
 		<div class="frm_form_fields">
-			<input type="text" id="conf_field_<?php echo esc_attr( $field['field_key'] ) ?>" name="field_options[conf_input_<?php echo esc_attr( $field['id'] ) ?>]" value="<?php echo esc_attr( $field['conf_input'] ); ?>" <?php do_action('frm_field_input_html', $field) ?> />
+			<input type="text" id="conf_field_<?php echo esc_attr( $field['field_key'] ) ?>" name="field_options[conf_input_<?php echo esc_attr( $field['id'] ) ?>]" value="<?php echo esc_attr( $field['conf_input'] ); ?>" class="dyn_default_value" />
 		</div>
-    	<div class="frm_ipe_field_conf_desc description <?php echo ($field['conf_desc'] == '') ? 'frm-show-click' : '' ?>"><?php echo ($field['conf_desc'] == '') ? __( '(Click to add description)', 'formidable' ) : force_balance_tags($field['conf_desc']); ?></div>
+    	<div id="conf_field_description_<?php echo esc_attr( $field['id'] ) ?>" class="frm_ipe_field_conf_desc description <?php echo ($field['conf_desc'] == '') ? 'frm-show-click' : '' ?>"><?php
+			echo ($field['conf_desc'] == '') ? __( '(Click to add description)', 'formidable' ) : force_balance_tags($field['conf_desc']); ?></div>
     	<input type="hidden" name="field_options[conf_desc_<?php echo esc_attr( $field['id'] ) ?>]" value="<?php echo esc_attr( $field['conf_desc'] ); ?>" />
 </div>
 	<?php if ( $display['clear_on_focus'] ) { ?>
@@ -156,7 +157,10 @@ if ( $display['options'] ) { ?>
 
                 <?php
 				if ( $display['required'] ) { ?>
-                    <label for="frm_req_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_inline_label"><input type="checkbox" id="frm_req_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_req_field" name="field_options[required_<?php echo esc_attr( $field['id'] ) ?>]" value="1" <?php echo $field['required'] ? 'checked="checked"': ''; ?> /> <?php _e( 'Required', 'formidable' ) ?></label>
+					<label for="frm_req_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_inline_label">
+						<input type="checkbox" id="frm_req_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_req_field" name="field_options[required_<?php echo esc_attr( $field['id'] ) ?>]" value="1" <?php checked( $field['required'], 1 ) ?> />
+						<?php _e( 'Required', 'formidable' ) ?>
+					</label>
                 <?php
                 }
 
@@ -174,7 +178,10 @@ if ( $display['options'] ) { ?>
                         $field['read_only'] = false;
 					}
                 ?>
-                <label for="frm_read_only_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_inline_label frm_help" title="<?php esc_attr_e( 'Read Only: Show this field but do not allow the field value to be edited from the front-end.', 'formidable' ) ?>" ><input type="checkbox" id="frm_read_only_field_<?php echo esc_attr( $field['id'] ) ?>" name="field_options[read_only_<?php echo esc_attr( $field['id'] ) ?>]" value="1" <?php echo $field['read_only'] ? ' checked="checked"' : ''; ?>/> <?php _e( 'Read Only', 'formidable' ) ?></label>
+				<label for="frm_read_only_field_<?php echo esc_attr( $field['id'] ) ?>" class="frm_inline_label frm_help" title="<?php esc_attr_e( 'Read Only: Show this field but do not allow the field value to be edited from the front-end.', 'formidable' ) ?>" >
+					<input type="checkbox" id="frm_read_only_field_<?php echo esc_attr( $field['id'] ) ?>" name="field_options[read_only_<?php echo esc_attr( $field['id'] ) ?>]" value="1" <?php checked( $field['read_only'], 1 ) ?>/>
+					<?php _e( 'Read Only', 'formidable' ) ?>
+				</label>
                 <?php }
 
                 do_action('frm_field_options_form_top', $field, $display, $values);
@@ -224,36 +231,32 @@ if ( $display['options'] ) { ?>
                         </select>
                         </td>
                     </tr>
-                <?php } ?>
-				<?php if ( $display['size'] ) { ?>
-                    <tr><td class="frm_150_width"><label><?php _e( 'Field Size', 'formidable' ) ?></label></td>
-                        <td>
-                        <?php
-						if ( in_array( $field['type'], array( 'select', 'time', 'data' ) ) ) {
-							if ( ! isset( $values['custom_style'] ) || $values['custom_style'] ) { ?>
-								<label for="size_<?php echo esc_attr( $field['id'] ) ?>">
-									<input type="checkbox" name="field_options[size_<?php echo esc_attr( $field['id'] ) ?>]" id="size_<?php echo esc_attr( $field['id'] ) ?>" value="1" <?php echo FrmField::is_option_true( $field, 'size' ) ? 'checked="checked"' : ''; ?> />
-									<?php _e( 'automatic width', 'formidable' ) ?>
-								</label>
-                            <?php
-                            }
-						} else { ?>
-                                <input type="text" name="field_options[size_<?php echo esc_attr( $field['id'] ) ?>]" value="<?php echo esc_attr( $field['size'] ); ?>" size="5" /> <span class="howto"><?php _e( 'pixels wide', 'formidable' ) ?></span>
-
-								<?php if ( $display['max'] ) { ?>
-                                <input type="text" name="field_options[max_<?php echo esc_attr( $field['id'] ) ?>]" value="<?php echo esc_attr( $field['max'] ); ?>" size="5" /> <span class="howto"><?php echo ( $field['type'] == 'textarea' || $field['type'] == 'rte' ) ? __( 'rows high', 'formidable' ) : __( 'characters maximum', 'formidable' ) ?></span>
-                        <?php	}
-                        } ?>
-                        </td>
-                    </tr>
                 <?php }
-				if ( $display['captcha_size'] ) { ?>
-                <tr><td><label><?php _e( 'Size', 'formidable' ) ?></label>
+
+				// Field Size
+				if ( $display['size'] ) {
+					if ( in_array( $field['type'], array( 'select', 'time', 'data' ) ) ) {
+						if ( ! isset( $values['custom_style'] ) || $values['custom_style'] ) {
+							include( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/automatic-width.php' );
+						}
+					} else {
+						$display_max = $display['max'];
+						include( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/pixels-wide.php' );
+					}
+				}
+
+				if ( $display['captcha_size'] && $frm_settings->re_type != 'invisible' ) { ?>
+                <tr><td><label><?php _e( 'ReCaptcha Type', 'formidable' ) ?></label>
 					<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Set the size of the captcha field. The compact option is best if your form is in a small area.', 'formidable' ) ?>" ></span>
                     </td>
-                    <td><select name="field_options[captcha_size_<?php echo esc_attr( $field['id'] ) ?>]">
-                        <option value="default"<?php selected($field['captcha_size'], 'default'); ?>><?php _e( 'Default', 'formidable' ) ?></option>
-                        <option value="compact"<?php selected($field['captcha_size'], 'compact'); ?>><?php _e( 'Compact', 'formidable' ) ?></option>
+                    <td>
+					<select name="field_options[captcha_size_<?php echo esc_attr( $field['id'] ) ?>]">
+						<option value="normal" <?php selected( $field['captcha_size'], 'normal' ); ?>>
+							<?php _e( 'Normal', 'formidable' ) ?>
+						</option>
+						<option value="compact" <?php selected( $field['captcha_size'], 'compact' ); ?>>
+							<?php _e( 'Compact', 'formidable' ) ?>
+						</option>
                     </select>
                     </td>
                 </tr>

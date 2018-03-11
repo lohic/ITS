@@ -1,5 +1,4 @@
 <div id="form_global_settings" class="wrap">
-    <div class="frmicon icon32"><br/></div>
     <h1><?php _e( 'Global Settings', 'formidable' ); ?></h1>
 
 	<?php require( FrmAppHelper::plugin_path() . '/classes/views/shared/errors.php' ); ?>
@@ -40,11 +39,11 @@
 
             <h3><?php _e( 'Styling & Scripts', 'formidable' ); ?></h3>
 
-            <p><label class="frm_left_label"><?php _e( 'Load Formidable styling', 'formidable' ) ?></label>
+            <p><label class="frm_left_label"><?php _e( 'Load form styling', 'formidable' ) ?></label>
                 <select id="frm_load_style" name="frm_load_style">
                 <option value="all" <?php selected($frm_settings->load_style, 'all') ?>><?php _e( 'on every page of your site', 'formidable' ) ?></option>
                 <option value="dynamic" <?php selected($frm_settings->load_style, 'dynamic') ?>><?php _e( 'only on applicable pages', 'formidable' ) ?></option>
-                <option value="none" <?php selected($frm_settings->load_style, 'none') ?>><?php _e( 'Don\'t use Formidable styling on any page', 'formidable' ) ?></option>
+                <option value="none" <?php selected($frm_settings->load_style, 'none') ?>><?php _e( 'Don\'t use form styling on any page', 'formidable' ) ?></option>
                 </select>
             </p>
 
@@ -61,10 +60,11 @@
 				<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Select users that are allowed access to Formidable. Without access to View Forms, users will be unable to see the Formidable menu.', 'formidable' ) ?>"></span>
 			</h3>
             <table class="form-table">
-				<?php foreach ( $frm_roles as $frm_role => $frm_role_description ) { ?>
+				<?php foreach ( $frm_roles as $frm_role => $frm_role_description ) {
+					$role_field_name = $frm_role . '[]'; ?>
                 <tr>
                     <td class="frm_left_label"><label><?php echo esc_html( $frm_role_description ) ?></label></td>
-                    <td><?php FrmAppHelper::wp_roles_dropdown( $frm_role, $frm_settings->$frm_role, 'multiple' ) ?></td>
+                    <td><?php FrmAppHelper::wp_roles_dropdown( $role_field_name, $frm_settings->$frm_role, 'multiple' ) ?></td>
                 </tr>
                 <?php } ?>
             </table>
@@ -80,11 +80,22 @@
 			<p><label class="frm_left_label"><?php _e( 'Site Key', 'formidable' ) ?></label>
 			<input type="text" name="frm_pubkey" id="frm_pubkey" size="42" value="<?php echo esc_attr($frm_settings->pubkey) ?>" placeholder="<?php esc_attr_e( 'Optional', 'formidable' ) ?>" /></p>
 
-			<p><label class="frm_left_label"><?php _e( 'Private Key', 'formidable' ) ?></label>
+			<p><label class="frm_left_label"><?php _e( 'Secret Key', 'formidable' ) ?></label>
 			<input type="text" name="frm_privkey" id="frm_privkey" size="42" value="<?php echo esc_attr($frm_settings->privkey) ?>" placeholder="<?php esc_attr_e( 'Optional', 'formidable' ) ?>" /></p>
+
+		    <p><label class="frm_left_label"><?php _e( 'reCAPTCHA Type', 'formidable' ) ?></label>
+			<select name="frm_re_type" id="frm_re_type">
+				<option value="" <?php selected( $frm_settings->re_type, '' ) ?>>
+					<?php esc_html_e( 'Checkbox (V2)', 'formidable' ); ?>
+				</option>
+				<option value="invisible" <?php selected( $frm_settings->re_type, 'invisible' ) ?>>
+					<?php esc_html_e( 'Invisible', 'formidable' ); ?>
+				</option>
+            </select></p>
 
 		    <p><label class="frm_left_label"><?php _e( 'reCAPTCHA Language', 'formidable' ) ?></label>
 			<select name="frm_re_lang" id="frm_re_lang">
+				<option value="" <?php selected( $frm_settings->re_lang, '' ) ?>><?php esc_html_e( 'Browser Default', 'formidable' ); ?></option>
 			    <?php foreach ( $captcha_lang as $lang => $lang_name ) { ?>
 				<option value="<?php echo esc_attr($lang) ?>" <?php selected($frm_settings->re_lang, $lang) ?>><?php echo esc_html( $lang_name ) ?></option>
                 <?php } ?>
@@ -150,15 +161,11 @@
         <?php do_action('frm_settings_form', $frm_settings); ?>
 
         <?php if ( ! FrmAppHelper::pro_is_installed() ) { ?>
-        <div class="clear"></div>
-        <h3><?php _e( 'Miscellaneous', 'formidable' ) ?></h3>
-        <?php } ?>
-        <p><label class="frm_left_label"><?php _e( 'Admin menu label', 'formidable' ); ?></label>
-            <input type="text" name="frm_menu" id="frm_menu" value="<?php echo esc_attr($frm_settings->menu) ?>" />
-            <?php if ( is_multisite() && is_super_admin() ) { ?>
-            <label for="frm_mu_menu"><input type="checkbox" name="frm_mu_menu" id="frm_mu_menu" value="1" <?php checked($frm_settings->mu_menu, 1) ?> /> <?php _e( 'Use this menu name site-wide', 'formidable' ); ?></label>
-            <?php } ?>
-        </p>
+			<div class="clear"></div>
+			<h3><?php _e( 'Miscellaneous', 'formidable' ) ?></h3>
+			<input type="hidden" name="frm_menu" id="frm_menu" value="<?php echo esc_attr( $frm_settings->menu ) ?>" />
+			<input type="hidden" name="frm_mu_menu" id="frm_mu_menu" value="<?php echo esc_attr( $frm_settings->mu_menu ) ?>" />
+		<?php } ?>
 
         <p><label class="frm_left_label"><?php _e( 'Preview Page', 'formidable' ); ?></label>
         <?php FrmAppHelper::wp_pages_dropdown('frm-preview-page-id', $frm_settings->preview_page_id ) ?>

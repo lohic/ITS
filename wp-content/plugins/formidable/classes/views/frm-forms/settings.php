@@ -1,5 +1,4 @@
 <div id="form_settings_page" class="wrap">
-    <div class="frmicon icon32"><br/></div>
     <h2><?php _e( 'Settings', 'formidable' ) ?>
         <a href="#" class="add-new-h2 frm_invisible"></a>
     </h2>
@@ -35,7 +34,8 @@
 					$sec_name = $section['name'];
 					$sec_anchor = $section['anchor'];
 				} else {
-					$sec_anchor = $sec_name = $key;
+					$sec_name = $key;
+					$sec_anchor = $key;
 				} ?>
 				<li <?php echo ( $a == $sec_anchor . '_settings' ) ? 'class="tabs active"' : '' ?>>
 					<a href="#<?php echo esc_attr( $sec_anchor ) ?>_settings"><?php echo ucfirst( $sec_name ) ?></a>
@@ -133,9 +133,7 @@
             </table>
 
             <!--Permissions Section-->
-            <table class="form-table">
-                <?php do_action('frm_add_form_perm_options', $values); ?>
-            </table>
+	        <?php do_action('frm_add_form_perm_options', $values); ?>
 
             <!--Styling & Buttons Section-->
 			<h3><?php _e( 'Styling & Buttons', 'formidable' ) ?>

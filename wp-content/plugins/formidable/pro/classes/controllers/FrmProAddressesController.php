@@ -10,10 +10,6 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		self::fill_values( $field['value'], $defaults );
 		self::fill_values( $field['default_value'], $defaults );
 
-		if ( $field['default_value'] == $field['value'] ) {
-			$field['value'] = $defaults;
-		}
-
 		$sub_fields = self::get_sub_fields( $field );
 
 		include( FrmAppHelper::plugin_path() .'/pro/classes/views/combo-fields/input.php' );
@@ -32,16 +28,23 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		$sub_fields = self::get_sub_fields( $field );
 
 		parent::show_in_form_builder( $field, $name, $sub_fields );
+
+		$display = array(
+			'clear_on_focus' => true,
+			'default_blank' => true,
+		);
+
+		FrmFieldsHelper::clear_on_focus_html( $field, $display );
 	}
 
 	public static function get_sub_fields( $field ) {
 		$fields = array(
 			'line1' => array(
-				'type' => 'text', 'classes' => '', 'label' => 0,
+				'type' => 'text', 'classes' => '', 'label' => 1,
 				'atts' => array( 'x-autocompletetype' => 'address-line1', 'autocompletetype' => 'address-line1' ),
 		 	),
 			'line2' => array(
-				'type' => 'text', 'classes' => '', 'optional' => true, 'label' => 0,
+				'type' => 'text', 'classes' => '', 'optional' => true, 'label' => 1,
 				'atts' => array( 'x-autocompletetype' => 'address-line2', 'autocompletetype' => 'address-line2' ),
 			),
 			'city'  => array(
@@ -61,9 +64,9 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		if ( $field['address_type'] == 'us' ) {
 			$fields['state']['type'] = 'select';
 			$fields['state']['options'] = FrmFieldsHelper::get_us_states();
-		} else {
+		} else if ( $field['address_type'] != 'generic' ) {
 			$fields['country'] = array(
-				'type' => 'select', 'classes' => '', 'label' => 0,
+				'type' => 'select', 'classes' => '', 'label' => 1,
 				'options' => FrmFieldsHelper::get_countries(),
 				'atts' => array( 'x-autocompletetype' => 'country-name', 'autocompletetype' => 'country-name' ),
 			);
@@ -94,6 +97,9 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 
 		$new_value = '';
 		if ( ! empty( $value['line1'] ) ) {
+			$defaults = self::empty_value_array();
+			self::fill_values( $value, $defaults );
+
 			$new_value = $value['line1'] . ' <br/>';
 			if ( ! empty( $value['line2'] ) ) {
 				$new_value .= $value['line2'] . ' <br/>';
@@ -120,6 +126,10 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		return $headings;
 	}
 
+	public static function empty_value_array() {
+		return array( 'line1' => '', 'line2' => '', 'city' => '', 'state' => '', 'zip' => '', 'country' => '' );
+	}
+
 	/**
 	 * Get the label for the CSV
 	 * @since 2.0.23
@@ -140,22 +150,22 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		}
 
 		if ( empty( $label ) ) {
-			$label = $heading;
+			$label = $field_name;
 		}
 
-		$label = $field->name . ' ' . $label;
-		return $label;
-	}
+		$label = $field->name . ' - ' . $label;
 
-	private static function empty_value_array() {
-		return array( 'line1' => '', 'line2' => '', 'city' => '', 'state' => '', 'zip' => '', 'country' => '' );
+		return $label;
 	}
 
 	private static function default_labels() {
 		$options = array(
+			'line1' => '',
+			'line2' => '',
 			'city'  => __( 'City', 'formidable' ),
 			'state' => __( 'State/Province', 'formidable' ),
 			'zip'   => __( 'Zip/Postal', 'formidable' ),
+			'country' => __( 'Country', 'formidable' ),
 		);
 		return $options;
 	}
