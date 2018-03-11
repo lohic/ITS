@@ -81,9 +81,9 @@ function wpt_twitter_feed( $instance ) {
 		$header .= '<div class="wpt-header">';
 		$header .= "<div class='wpt-follow-button'>$follow_button</div>
 		<p>
-		<img src='$avatar' alt='' class='wpt-twitter-avatar $img_alignment $verified' />
-		<span class='wpt-twitter-name'>$name</span><br />
-		<span class='wpt-twitter-id'><a href='$follow_url'>@" .  esc_html( $twitter_ID ) . "</a></span>
+			<img src='$avatar' alt='' class='wpt-twitter-avatar $img_alignment $verified' />
+			<span class='wpt-twitter-name'>$name</span><br />
+			<span class='wpt-twitter-id'><a href='$follow_url'>@" .  esc_html( $twitter_ID ) . "</a></span>
 		</p>";
 		$header .= '</div>';
 	} else {
@@ -346,12 +346,19 @@ class WPT_Latest_Tweets_Widget extends WP_Widget {
 			<label
 				for="<?php echo $this->get_field_id( 'source' ); ?>"><?php _e( 'Include Tweet source', 'wp-to-twitter' ); ?></label>
 		</p>
+		<p>
+			<input id="<?php echo $this->get_field_id( 'cache' ); ?>" type="checkbox" name="<?php echo $this->get_field_name( 'cache' ); ?>" value="1" />
+			<label for="<?php echo $this->get_field_id( 'cache' ); ?>"><?php _e( 'Clear cache', 'wp-to-twitter' ); ?></label>
+		</p>
 	<?php
 	}
 }
 
-add_action( 'widgets_init', create_function( '', "register_widget('WPT_Latest_Tweets_Widget');" ) );
-
+add_action( 'widgets_init', 'wpt_register_widgets' );
+function wpt_register_widgets() {
+	register_widget( 'WPT_Latest_Tweets_Widget' );
+	register_widget( 'WPT_Search_Tweets_Widget' );
+}
 
 class WPT_Search_Tweets_Widget extends WP_Widget {
 
@@ -541,8 +548,6 @@ class WPT_Search_Tweets_Widget extends WP_Widget {
 	}
 }
 
-add_action( 'widgets_init', create_function( '', "register_widget('WPT_Search_Tweets_Widget');" ) );
-
 /**
  * Adds links to the contents of a tweet.
  * Forked from genesis_tweet_linkify, removed target = _blank
@@ -580,7 +585,7 @@ function wpt_tweet_linkify( $text, $opts, $tweet ) {
 	}
 	$text = ( $opts['links'] == true ) ? preg_replace( "#(^|[\n ])([\w]+?://[\w]+[^ \"\n\r\t< ]*)#", '\\1<a href="\\2" rel="nofollow">\\2</a>', $text ) : $text;
 	$text = ( $opts['links'] == true ) ? preg_replace( "#(^|[\n ])((www|ftp)\.[^ \"\t\n\r< ]*)#", '\\1<a href="http://\\2" rel="nofollow">\\2</a>', $text ) : $text;
-	$text = ( $opts['mentions'] == true ) ? preg_replace( '/@(\w+)/', '<a href="https://www.twitter.com/\\1" rel="nofollow">@\\1</a>', $text ) : $text;
+	$text = ( $opts['mentions'] == true ) ? preg_replace( '/@(\w+)/', '<a href="https://twitter.com/\\1" rel="nofollow">@\\1</a>', $text ) : $text;
 	$text = ( $opts['hashtags'] == true ) ? preg_replace( '/#(\w+)/', '<a href="https://twitter.com/search?q=%23\\1" rel="nofollow">#\\1</a>', $text ) : $text;
 	$urls = $tweet['entities']['urls'];
 	if ( is_array( $urls ) ) {

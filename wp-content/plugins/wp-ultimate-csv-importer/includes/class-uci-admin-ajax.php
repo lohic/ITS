@@ -402,8 +402,8 @@ class SmackUCIAdminAjax {
 	}
 
 	public static function parseDataToExport() {
-		global $wpdb, $uci_admin;
-		require_once ('class-uci-exporter.php');
+		global $expUci_admin;
+		$expUci_admin->includeExp();
 		die();
 	}
 
@@ -618,6 +618,9 @@ class SmackUCIAdminAjax {
 			$type = 'CustomerReviews';
 		} elseif(in_array('comment_author', $Headers) || in_array('comment_content', $Headers) ||  in_array('comment_approved', $Headers) ){
 			$type = 'Comments';
+		}
+		elseif (in_array('sku', $Headers)) {
+			$type = 'WooCommerce';
 		}
 
 		/*

@@ -2,9 +2,8 @@
 /******************************
  * Plugin Name: WP Ultimate CSV Importer
  * Description: Seamlessly create posts, custom posts, pages, media, SEO and more from your CSV data with ease.
- * Version: 5.3
+ * Version: 5.3.4
  * Author: smackcoders
- * Plugin URI: http://www.smackcoders.com/wp-ultimate-csv-importer-pro.html?utm_source=plugin&utm_campaign=csv_importer_pro&utm_medium=wordpress
  * Author URI: http://www.smackcoders.com/wp-ultimate-csv-importer-pro.html?utm_source=plugin&utm_campaign=csv_importer_pro&utm_medium=wordpress
  * Text Domain: wp-ultimate-csv-importer
  * Domain Path: /languages/
@@ -57,7 +56,7 @@ if ( ! class_exists( 'SM_WPUltimateCSVImporter' ) ) :
 	 */
 	class SM_WPUltimateCSVImporter {
 
-		public $version = '5.3';
+		public $version = '5.3.4';
 
 		/**
 		 * The single instance of the class.
@@ -128,7 +127,7 @@ if ( ! class_exists( 'SM_WPUltimateCSVImporter' ) ) :
 				}
 			} ); */
 			add_action('wp_dashboard_setup', array($this,'uci_pro_add_dashboard_widgets'));
-			add_action('smack_uci_email_scheduler', array('SmackUCIEmailScheduler', 'send_login_credentials_to_users'));
+			// add_action('smack_uci_email_scheduler', array('SmackUCIEmailScheduler', 'send_login_credentials_to_users'));
 			add_action('smack_uci_image_scheduler', array('SmackUCIMediaScheduler', 'populateFeatureImages'));
 			register_deactivation_hook( __FILE__, array( 'SmackUCIUnInstall', 'uninstall' ) );
 		}
@@ -183,14 +182,14 @@ if ( ! class_exists( 'SM_WPUltimateCSVImporter' ) ) :
 			include_once ( 'includes/class-uci-admin-ajax.php' );
 			include_once ( 'includes/class-uci-event-logging.php' );
 			include_once ( 'admin/class-uci-admin.php' );
-			include_once ( 'includes/class-uci-email-scheduler.php' );
+			//include_once ( 'includes/class-uci-email-scheduler.php' );
 			include_once ( 'includes/class-uci-media-scheduler.php' );
 			#SmackUCIMediaScheduler::populateFeatureImages();
 		}
 
 		public function smack_uci_enqueue_scripts() {
 			// Register / Enqueue the plugin scripts & style
-			$uciPages = array('sm-uci-dashboard', 'sm-uci-import', 'sm-uci-managers', 'sm-uci-export', 'sm-uci-settings', 'sm-uci-support');
+			$uciPages = array('sm-uci-dashboard', 'sm-uci-import', 'sm-uci-managers', 'sm-uci-export', 'sm-uci-settings', 'sm-uci-support', 'sm-uci-addons');
 			if (isset($_REQUEST['page']) && in_array(sanitize_text_field($_REQUEST['page']), $uciPages)) {
 				// Ultimate CSV Importer Styles
 				wp_enqueue_style( 'ultimate-css', plugins_url( 'assets/css/ultimate-importer.css', __FILE__ ) );

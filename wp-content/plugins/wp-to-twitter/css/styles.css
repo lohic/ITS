@@ -273,6 +273,13 @@ label[for='wpt_prepend_rt'], label[for='wpt_prepend_rt2'], label[for='wpt_prepen
 	background: #233c7f;
 }
 
+.tweet_length_control {
+	background: #ffd;
+	color:  #000;
+	border: 2px solid #dd1;
+	padding: .5em;
+}
+
 .jcd-narrow .free .postbox, .jcd-narrow .free .postbox a, .jcd-narrow .free .postbox h3 {
 	background: #233c7f;
 	color: #fff;
@@ -280,7 +287,6 @@ label[for='wpt_prepend_rt'], label[for='wpt_prepend_rt2'], label[for='wpt_prepen
 
 .jcd-narrow .free .postbox .cta a {
 	font-size: 1.4em;
-	padding: .5em;
 }
 
 .jcd-narrow .postbox a:hover, .jcd-narrow .postbox a:focus {

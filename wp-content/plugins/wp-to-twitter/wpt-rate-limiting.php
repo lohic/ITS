@@ -88,6 +88,7 @@ function wpt_test_rate_limit( $post_ID, $auth ) {
 function wpt_default_rate_limit( $term = false ) {
 	$limit = ( get_option( 'wpt_default_rate_limit' ) != '' ) ? get_option( 'wpt_default_rate_limit' ) : 10;
 	$limit = ( $limit == 0 ) ? 1 : $limit;
+	
 	return apply_filters( 'wpt_default_rate_limit', $limit, $term );	
 }
 
@@ -103,6 +104,9 @@ function wpt_default_rate_limit( $term = false ) {
 function wpt_get_rate_limit( $term ) {
 	$limits = get_option( 'wpt_rate_limit' );
 	$limit = isset( $limits[$term] ) ? $limits[$term] : wpt_default_rate_limit( $term );  
+	if ( !is_int( $limit ) ) {
+		$limit = wpt_default_rate_limit( $term );
+	}
 	
 	return $limit;
 }
@@ -115,10 +119,10 @@ function wpt_term_rate_limits() {
 		$taxonomies = array();
 	}
 	foreach ( $taxonomies as $value ) {
-			add_action( $value . '_add_form_fields', 'wpt_add_term_rate_limit', 10, 1 );
-			add_action( $value . '_edit_form_fields', 'wpt_edit_term_rate_limit', 10, 2 );
-			add_action( 'edit_'.$value, 'wpt_save_term_rate_limit', 10, 2 );
-			add_action( 'created_'.$value, 'wpt_save_term_rate_limit', 10, 2 );
+		add_action( $value . '_add_form_fields', 'wpt_add_term_rate_limit', 10, 1 );
+		add_action( $value . '_edit_form_fields', 'wpt_edit_term_rate_limit', 10, 2 );
+		add_action( 'edit_'.$value, 'wpt_save_term_rate_limit', 10, 2 );
+		add_action( 'created_'.$value, 'wpt_save_term_rate_limit', 10, 2 );
 	}
 }
 

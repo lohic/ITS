@@ -29,7 +29,7 @@ elseif ( 'full_library' == $args['from'] ) {
 		'post_status' => 'inherit',
 		'orderby' => $args['orderby'],
 		'order' => $args['order'],
-		'posts_per_page' => -1,
+		'posts_per_page' => 999, // This has an upper limit by default to avoid tragic queries
 		'no_found_rows' => true,
 	);
 
@@ -117,14 +117,15 @@ if ( $post_id ) {
 		'post_status' => 'inherit',
 		'post_type' => 'attachment',
 		'post_mime_type' => 'image',
-		'numberposts' => -1,
 		'orderby' => $args['orderby'],
 		'order' => $args['order'],
+		'posts_per_page' => 999, // This has an upper limit by default to avoid tragic queries
+		'no_found_rows' => true,
 	);
 
 	// limited number of images
 	if ( 0 != $args['num_images'] ) {
-		$query_images_args['numberposts'] = $args['num_images'];
+		$query_images_args['posts_per_page'] = $args['num_images'];
 	}
 
 	// filter the args used to query for images from a single specified post
@@ -178,7 +179,7 @@ if ( ! empty( $images ) ) {
 		$item_link_type = $args['link_type'];
 
 		// no post parent - set this one to use a file link if links are being used
-		if ( $post_id == '0' )
+		if ( $post_id == '0' && 'none' != $item_link_type )
 			$item_link_type = 'file';
 
 		// filter what type of link to use - helpful if you need to deal with an individual item

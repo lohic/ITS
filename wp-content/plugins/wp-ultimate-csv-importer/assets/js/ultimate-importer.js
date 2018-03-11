@@ -331,7 +331,15 @@ function upload_method(){
                                         var splitaction = get_current_action.split("&");
                                         var action = splitaction[0] + '&step=mapping_config&istemplate=no&eventkey=' + file.eventkey;
                                     }
-                                    jQuery('.selectpicker').selectpicker('val', priority_result['type']);
+                                   jQuery('.selectpicker').selectpicker('val', priority_result['type']);
+                                   var checkvalue = jQuery('.selectpicker').val();
+                                   if(checkvalue == null)
+                                    jQuery('.selectpicker').selectpicker('val', 'Posts');
+                                    if(priority_result['type'] == 'Users'){
+                                        if(document.getElementById('check_user_import').value == 'no'){
+                                            document.getElementById('user_import_warning').style.display = 'block';
+                                        }
+                                    }
                                 } else {
                                     var splitaction = get_current_action.split("&");
                                     var action = splitaction[0] + '&step=mapping_config&istemplate=no&eventkey=' + file.eventkey;
@@ -450,9 +458,11 @@ function server_method(){
 }
 
 function toggle_func(id){
-    jQuery('#'+id+'toggle').slideToggle('slow');
-    jQuery('#icon'+id).toggleClass("icon-circle-down").toggleClass("icon-circle-up");
-    jQuery('#'+id).toggleClass("text-primary");
+    if(id != 'types_custom_fields' && id != 'acf_fields' && id != 'pods_custom_fields' && id != 'cctm_custom_fields' && id != 'acf_repeater_fields' && id != 'acf_pro_fields' && id != 'yoast_seo_fields'){
+	    jQuery('#'+id+'toggle').slideToggle('slow');
+	    jQuery('#icon'+id).toggleClass("icon-circle-down").toggleClass("icon-circle-up");
+	    jQuery('#'+id).toggleClass("text-primary");
+    }
 }
 
 /** VAlidate Custom Field Choice Text **/
@@ -676,9 +686,10 @@ jQuery(document).ready(function () {
     pages[3] = 'sm-uci-managers';
     pages[4] = 'sm-uci-export';
     pages[5] = 'sm-uci-settings';
-    pages[6] = 'sm-uci-support';
+    pages[6] = 'sm-uci-addons';
+    pages[7] = 'sm-uci-support';
 
-    for(var i=1; i<=6; i++){
+    for(var i=1; i<=7; i++){
         if(activeModule == pages[i]) {
             jQuery('#menu'+i).addClass("nav-tab-active");
         }
@@ -1607,8 +1618,9 @@ function igniteExport() {
                 jQuery('#download_file').prop('disabled', false);
                 jQuery("a#download_file_link").attr("href", response.exported_file);
                 jQuery('#offset').val(response.new_offset);
-                if (parseInt(response.new_offset) >= parseInt(response.total_row_count)) {
+                if (parseInt(response.total_row_count) < parseInt(response.new_offset)) {
                     jQuery('#wpwrap').waitMe('hide');
+                    jQuery("html, body").animate({ scrollTop: 0 }, "slow");
                     return false;
                 }
                 igniteExport();

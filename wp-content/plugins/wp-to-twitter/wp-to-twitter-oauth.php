@@ -133,7 +133,7 @@ function wpt_update_oauth_settings( $auth = false, $post = false ) {
 								"http_code" => $connection->http_code,
 								"status"    => $status
 							);
-							$error_code        = __( "Twitter response: http_code $error_information[http_code] - $error_information[status]", 'wp-to-twitter' );
+							$error_code        = sprintf( __( "Twitter response: http_code %s", 'wp-to-twitter' ), "$error_information[http_code] - $error_information[status]" );
 							update_option( 'wpt_curl_error', $error_code );
 						}
 						if ( get_option( 'wp_debug_oauth' ) == '1' ) {
@@ -267,11 +267,11 @@ function wtt_connect_oauth( $auth = false ) {
 			</div>	
 				' );
 	} else if ( wtt_oauth_test( $auth ) ) {
-		$ack   = ( ! $auth ) ? esc_attr( get_option( 'app_consumer_key' ) ) : esc_attr( get_user_meta( $auth, 'app_consumer_key', true ) );
-		$acs   = ( ! $auth ) ? esc_attr( get_option( 'app_consumer_secret' ) ) : esc_attr( get_user_meta( $auth, 'app_consumer_secret', true ) );
-		$ot    = ( ! $auth ) ? esc_attr( get_option( 'oauth_token' ) ) : esc_attr( get_user_meta( $auth, 'oauth_token', true ) );
-		$ots   = ( ! $auth ) ? esc_attr( get_option( 'oauth_token_secret' ) ) : esc_attr( get_user_meta( $auth, 'oauth_token_secret', true ) );
-		$uname = ( ! $auth ) ? esc_attr( get_option( 'wtt_twitter_username' ) ) : esc_attr( get_user_meta( $auth, 'wtt_twitter_username', true ) );
+		$ack   = ( ! $auth ) ? get_option( 'app_consumer_key' ) : get_user_meta( $auth, 'app_consumer_key', true );
+		$acs   = ( ! $auth ) ? get_option( 'app_consumer_secret' ) : get_user_meta( $auth, 'app_consumer_secret', true );
+		$ot    = ( ! $auth ) ? get_option( 'oauth_token' ) : get_user_meta( $auth, 'oauth_token', true );
+		$ots   = ( ! $auth ) ? get_option( 'oauth_token_secret' ) : get_user_meta( $auth, 'oauth_token_secret', true );
+		$uname = ( ! $auth ) ? get_option( 'wtt_twitter_username' ) : get_user_meta( $auth, 'wtt_twitter_username', true );
 		$nonce = ( ! $auth ) ? wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false ) . '</form>' : '';
 		if ( ! $auth ) {			
 			$submit = '
@@ -289,11 +289,11 @@ function wtt_connect_oauth( $auth = false ) {
 				<div id="wtt_authentication_display">
 					<fieldset class="options">
 					<ul>
-						<li><strong class="auth_label">' . __( 'Twitter Username ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . $uname . '</code></li>
-						<li><strong class="auth_label">' . __( 'API Key ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . $ack . '</code></li>
-						<li><strong class="auth_label">' . __( 'API Secret ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . $acs . '</code></li>
-						<li><strong class="auth_label">' . __( 'Access Token ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . $ot . '</code></li>
-						<li><strong class="auth_label">' . __( 'Access Token Secret ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . $ots . '</code></li>
+						<li><strong class="auth_label">' . __( 'Twitter Username ', 'wp-to-twitter' ) . '</strong> <code class="auth_code"><a href="http://twitter.com/' . esc_attr( $uname ) . '">' . esc_attr( $uname ) . '</a></code></li>
+						<li><strong class="auth_label">' . __( 'API Key ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . esc_attr( $ack ) . '</code></li>
+						<li><strong class="auth_label">' . __( 'API Secret ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . esc_attr( $acs ) . '</code></li>
+						<li><strong class="auth_label">' . __( 'Access Token ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . esc_attr( $ot ) . '</code></li>
+						<li><strong class="auth_label">' . __( 'Access Token Secret ', 'wp-to-twitter' ) . '</strong> <code class="auth_code">' . esc_attr( $ots ) . '</code></li>
 					</ul>
 					</fieldset>
 					<div>

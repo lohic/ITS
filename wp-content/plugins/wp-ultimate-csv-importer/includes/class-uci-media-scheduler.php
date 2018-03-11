@@ -186,17 +186,14 @@ class SmackUCIMediaScheduler {
 	}
 
 	public static function get_img_from_URL($f_img, $fimg_path, $fimg_name) {
-		$f_img = str_replace(" ", "%20", $f_img);
+		//$f_img = str_replace(" ", "%20", $f_img);
 		if ($fimg_path != "" && $fimg_path) {
 			$fimg_path = $fimg_path . "/" . $fimg_name;
 		}
-		$ch = curl_init($f_img);
-		curl_setopt( $ch, CURLOPT_HEADER, 0 );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_BINARYTRANSFER, 1 );
-		curl_setopt( $ch, CURLOPT_FOLLOWLOCATION, 1 );
-		$rawdata = curl_exec( $ch );
-		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		// curl removed and used wordpress api for https image support
+		$response = wp_remote_get($f_img);
+		$rawdata =  wp_remote_retrieve_body($response);
+		$http_code = wp_remote_retrieve_response_code($response);
 		if ( $http_code != 200 && strpos( $rawdata, 'Not Found' ) != 0 ) {
 			$rawdata = false;
 		}
@@ -210,7 +207,6 @@ class SmackUCIMediaScheduler {
 			fwrite( $fp, $rawdata );
 			fclose( $fp );
 		}
-		curl_close($ch);
 	}
 
 	public static function active_plugins() {

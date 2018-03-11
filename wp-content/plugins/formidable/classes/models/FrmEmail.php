@@ -178,11 +178,11 @@ class FrmEmail {
 		$this->reply_to = trim( $this->settings['reply_to'] );
 
 		if ( empty( $this->reply_to ) ) {
-			$this->reply_to = $this->from;
+			$this->reply_to = $this->get_email_from_name( $this->from );
 		} else {
 			$this->reply_to = $this->prepare_email_setting( $this->settings['reply_to'], $user_id_args );
-			$this->reply_to = $this->format_reply_to( $this->reply_to );
 		}
+		$this->reply_to = $this->format_reply_to( $this->reply_to );
 	}
 
 	/**
@@ -258,6 +258,7 @@ class FrmEmail {
 	 */
 	private function set_subject() {
 		if ( empty( $this->settings['email_subject'] ) ) {
+			/* translators: %1$s: Form name, %2$s: Site name */
 			$this->subject = sprintf( __( '%1$s Form submitted on %2$s', 'formidable' ), $this->form->name, '[sitename]' );
 		} else {
 			$this->subject = $this->settings['email_subject'];
@@ -293,11 +294,11 @@ class FrmEmail {
 		) );
 
 		// Add the user info if it isn't already included
-		if ( $this->include_user_info && $prev_mail_body == $mail_body ) {
+		if ( $this->include_user_info && $prev_mail_body === $mail_body ) {
 			$data = maybe_unserialize( $this->entry->description );
 			$mail_body .= "\r\n\r\n" . __( 'User Information', 'formidable' ) . "\r\n";
-			$mail_body .= __( 'IP Address', 'formidable' ) . ': ' . $this->entry->ip . "\r\n";
-			$mail_body .= __( 'User-Agent (Browser/OS)', 'formidable' ) . ': ' . FrmEntryFormat::get_browser( $data['browser'] ) . "\r\n";
+			$this->maybe_add_ip( $mail_body );
+			$mail_body .= __( 'User-Agent (Browser/OS)', 'formidable' ) . ': ' . FrmEntriesHelper::get_browser( $data['browser'] ) . "\r\n";
 			$mail_body .= __( 'Referrer', 'formidable' ) . ': ' . $data['referrer'] . "\r\n";
 		}
 
@@ -310,6 +311,12 @@ class FrmEmail {
 		}
 
 		$this->message = apply_filters( 'frm_email_message', $this->message, $this->package_atts() );
+	}
+
+	private function maybe_add_ip( &$mail_body ) {
+		if ( ! empty( $this->entry->ip ) ) {
+			$mail_body .= __( 'IP Address', 'formidable' ) . ': ' . $this->entry->ip . "\r\n";
+		}
 	}
 
 	/**
@@ -486,7 +493,7 @@ class FrmEmail {
 	private function prepare_email_setting( $value, $user_id_args ) {
 		if ( strpos( $value, '[' . $user_id_args['field_id'] . ']' ) !== false ) {
 			$value = str_replace( '[' . $user_id_args['field_id'] . ']', '[' . $user_id_args['field_id'] . ' show="user_email"]', $value );
-		} else if ( strpos( $value, '[' . $user_id_args['field_key'] . ']' ) !== false ) {
+		} elseif ( strpos( $value, '[' . $user_id_args['field_key'] . ']' ) !== false ) {
 			$value = str_replace( '[' . $user_id_args['field_key'] . ']', '[' . $user_id_args['field_key'] . ' show="user_email"]', $value );
 		}
 
@@ -551,7 +558,7 @@ class FrmEmail {
 				}
 			}
 
-			$recipients[ $key ] = $name . ' <' . $email . '>';
+			$recipients[ $key ] = $this->format_from_email( $name, $email );
 		}
 
 		return $recipients;
@@ -580,16 +587,14 @@ class FrmEmail {
 
 			// Get the site domain and get rid of www.
 			$sitename = strtolower( FrmAppHelper::get_server_value( 'SERVER_NAME' ) );
-			if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+			if ( substr( $sitename, 0, 4 ) === 'www.' ) {
 				$sitename = substr( $sitename, 4 );
 			}
 
 			$from_email = 'wordpress@' . $sitename;
 		}
 
-		$from = $from_name . ' <' . $from_email . '>';
-
-		return $from;
+		return $this->format_from_email( $from_name, $from_email );
 	}
 
 	/**
@@ -604,15 +609,26 @@ class FrmEmail {
 	private function format_reply_to( $reply_to ) {
 		$reply_to = trim( $reply_to );
 
-		if ( empty( $reply_to ) ) {
-			return $this->from;
-		} else if ( is_email( $reply_to ) ) {
-			return $reply_to;
-		} else {
+		if ( ! is_email( $reply_to ) ) {
 			list( $name, $email ) = $this->get_name_and_email_for_sender( $reply_to );
+			$reply_to = $this->format_from_email( $name, $email );
 		}
 
-		return $name . ' <' . $email . '>';
+		return $reply_to;
+	}
+
+	/**
+	 * Get only the email if the name and email have been combined
+	 *
+	 * @since 3.0.06
+	 */
+	private function get_email_from_name( $name ) {
+		$email = trim( trim( $name, '>' ), '<' );
+		if ( strpos( $email, '<' ) !== false ) {
+			$parts = explode( '<', $email );
+			$email = trim( $parts[1], '>' );
+		}
+		return $email;
 	}
 
 	/**
@@ -640,6 +656,16 @@ class FrmEmail {
 	}
 
 	/**
+	 * @since 3.0.06
+	 */
+	private function format_from_email( $name, $email ) {
+		if ( '' !== $name ) {
+			$email = $name . ' <' . $email . '>';
+		}
+		return $email;
+	}
+
+	/**
 	 * Remove phone numbers from To addresses
 	 * Send the phone numbers to the frm_send_to_not_email hook
 	 *
@@ -648,7 +674,7 @@ class FrmEmail {
 	private function handle_phone_numbers() {
 
 		foreach ( $this->to as $key => $recipient ) {
-			if ( $recipient != '[admin_email]' && ! is_email( $recipient ) ) {
+			if ( '[admin_email]' !== $recipient && ! is_email( $recipient ) ) {
 				$recipient = explode( ' ', $recipient );
 
 				if ( is_email( end( $recipient ) ) ) {
@@ -691,6 +717,8 @@ class FrmEmail {
 			'message'     => $this->message,
 			'attachments' => $this->attachments,
 			'plain_text'  => $this->is_plain_text,
+			'form'        => $this->form,
+			'entry'       => $this->entry,
 		);
 	}
 
@@ -739,5 +767,4 @@ class FrmEmail {
 
 		return $subject;
 	}
-
 }

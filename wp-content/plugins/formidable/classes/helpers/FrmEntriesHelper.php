@@ -6,10 +6,11 @@ if ( ! defined('ABSPATH') ) {
 class FrmEntriesHelper {
 
     public static function setup_new_vars( $fields, $form = '', $reset = false, $args = array() ) {
-        $values = array();
-		foreach ( array( 'name' => '', 'description' => '', 'item_key' => '' ) as $var => $default ) {
-			$values[ $var ] = FrmAppHelper::get_post_param( $var, $default, 'wp_kses_post' );
-        }
+		$values = array(
+			'name'        => '',
+			'description' => '',
+			'item_key'    => '',
+		);
 
         $values['fields'] = array();
         if ( empty($fields) ) {
@@ -17,41 +18,20 @@ class FrmEntriesHelper {
         }
 
         foreach ( (array) $fields as $field ) {
-            $new_value = self::get_field_value_for_new_entry( $field, $reset, $args );
+			$original_default = $field->default_value;
+			self::prepare_field_default_value( $field );
+			$new_value = self::get_field_value_for_new_entry( $field, $reset, $args );
 
-            $field_array = array(
-                'id' => $field->id,
-                'value' => $new_value,
-                'default_value' => $field->default_value,
-                'name' => $field->name,
-                'description' => $field->description,
-                'type' => apply_filters('frm_field_type', $field->type, $field, $new_value),
-                'options' => $field->options,
-                'required' => $field->required,
-                'field_key' => $field->field_key,
-                'field_order' => $field->field_order,
-                'form_id' => $field->form_id,
-				'parent_form_id' => isset( $args['parent_form_id'] ) ? $args['parent_form_id'] : $field->form_id,
-	            'reset_value' => $reset,
-				'in_embed_form' => isset( $args['in_embed_form'] ) ? $args['in_embed_form'] : '0',
-            );
+			$field_array = FrmAppHelper::start_field_array( $field );
+			$field_array['value'] = $new_value;
+			$field_array['type']  = apply_filters( 'frm_field_type', $field->type, $field, $new_value );
+			$field_array['parent_form_id'] = isset( $args['parent_form_id'] ) ? $args['parent_form_id'] : $field->form_id;
+			$field_array['reset_value']    = $reset;
+			$field_array['in_embed_form']  = isset( $args['in_embed_form'] ) ? $args['in_embed_form'] : '0';
+			$field_array['original_default'] = $original_default;
 
-            $opt_defaults = FrmFieldsHelper::get_default_field_opts($field_array['type'], $field, true);
-            $opt_defaults['required_indicator'] = '';
-			$opt_defaults['original_type'] = $field->type;
+			FrmFieldsHelper::prepare_new_front_field( $field_array, $field, $args );
 
-			foreach ( $opt_defaults as $opt => $default_opt ) {
-                $field_array[ $opt ] = ( isset( $field->field_options[ $opt ] ) && $field->field_options[ $opt ] != '' ) ? $field->field_options[ $opt ] : $default_opt;
-                unset($opt, $default_opt);
-            }
-
-            unset($opt_defaults);
-
-            if ( $field_array['custom_html'] == '' ) {
-                $field_array['custom_html'] = FrmFieldsHelper::get_default_html($field->type);
-            }
-
-            $field_array = apply_filters('frm_setup_new_fields_vars', $field_array, $field, $args );
             $field_array = array_merge( $field->field_options, $field_array );
 
             $values['fields'][] = $field_array;
@@ -61,13 +41,10 @@ class FrmEntriesHelper {
             }
         }
 
-        $form->options = maybe_unserialize($form->options);
-        if ( is_array($form->options) ) {
-            foreach ( $form->options as $opt => $value ) {
-                $values[ $opt ] = FrmAppHelper::get_post_param( $opt, $value );
-                unset($opt, $value);
-            }
-        }
+		$form->options = maybe_unserialize( $form->options );
+		if ( is_array( $form->options ) ) {
+			$values = array_merge( $values, $form->options );
+		}
 
 		$form_defaults = FrmFormsHelper::get_default_opts();
 
@@ -78,6 +55,20 @@ class FrmEntriesHelper {
 
 		return apply_filters( 'frm_setup_new_entry', $values );
     }
+
+	/**
+	 * @since 2.05
+	 *
+	 * @param object $field
+	 */
+	private static function prepare_field_default_value( &$field ) {
+		//If checkbox, multi-select dropdown, or checkbox data from entries field, the value should be an array
+		$return_array = FrmField::is_field_with_multiple_values( $field );
+
+		// Do any shortcodes in default value and allow customization of default value
+		$field->default_value = apply_filters( 'frm_get_default_value', $field->default_value, $field, true, $return_array );
+		// Calls FrmProFieldsHelper::get_default_value
+	}
 
 	/**
 	* Set the value for each field
@@ -91,13 +82,6 @@ class FrmEntriesHelper {
 	* @return string|array $new_value
 	*/
 	private static function get_field_value_for_new_entry( $field, $reset, $args ) {
-		//If checkbox, multi-select dropdown, or checkbox data from entries field, the value should be an array
-		$return_array = FrmField::is_field_with_multiple_values( $field );
-
-		// Do any shortcodes in default value and allow customization of default value
-		$field->default_value = apply_filters('frm_get_default_value', $field->default_value, $field, true, $return_array);
-		// Calls FrmProFieldsHelper::get_default_value
-
 		$new_value = $field->default_value;
 
 		if ( ! $reset && self::value_is_posted( $field, $args ) ) {
@@ -150,31 +134,6 @@ class FrmEntriesHelper {
         return apply_filters('frm_setup_edit_entry_vars', $values, $record);
     }
 
-    public static function get_admin_params( $form = null ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmForm::get_admin_params' );
-		return FrmForm::set_current_form( $form );
-    }
-
-	public static function set_current_form( $form_id ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmForm::set_current_form' );
-		return FrmForm::set_current_form( $form_id );
-	}
-
-	public static function get_current_form( $form_id = 0 ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmForm::get_current_form' );
-		return FrmForm::get_current_form( $form_id );
-	}
-
-    public static function get_current_form_id() {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmForm::get_current_form_id' );
-		return FrmForm::get_current_form_id();
-    }
-
-    public static function maybe_get_entry( &$entry ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntry::maybe_get_entry' );
-		FrmEntry::maybe_get_entry( $entry );
-    }
-
 	public static function replace_default_message( $message, $atts ) {
         if ( strpos($message, '[default-message') === false &&
             strpos($message, '[default_message') === false &&
@@ -196,7 +155,7 @@ class FrmEntriesHelper {
                 $this_atts = $atts;
             }
 
-			$default = FrmEntryFormat::show_entry( $this_atts );
+			$default = FrmEntriesController::show_entry_shortcode( $this_atts );
 
             // Add the default message
             $message = str_replace( $shortcodes[0][ $short_key ], $default, $message );
@@ -253,25 +212,40 @@ class FrmEntriesHelper {
         }
 
         $val = implode(', ', (array) $field_value );
-		$val = wp_kses_post( $val );
-
-        return $val;
+		return FrmAppHelper::kses( $val, 'all' );
     }
 
     /**
-     * Prepare the saved value for display
-     * @return string
-     */
+	 * Prepare the saved value for display
+	 *
+	 * @param array|string $value
+	 * @param object $field
+	 * @param array $atts
+	 *
+	 * @return string
+	 */
 	public static function display_value( $value, $field, $atts = array() ) {
 
-        $defaults = array(
-            'type' => '', 'html' => false, 'show_filename' => true,
-            'truncate' => false, 'sep' => ', ', 'post_id' => 0,
-            'form_id' => $field->form_id, 'field' => $field, 'keepjs' => 0,
+		$defaults = array(
+			'type'     => '',
+			'html'     => false,
+			'show_filename' => true,
+			'truncate' => false,
+			'sep'      => ', ',
+			'post_id'  => 0,
+			'form_id'  => $field->form_id,
+			'field'    => $field,
+			'keepjs'   => 0,
 			'return_array' => false,
-        );
+		);
 
         $atts = wp_parse_args( $atts, $defaults );
+
+		if ( FrmField::is_image( $field ) || $field->type == 'star' ) {
+			$atts['truncate'] = false;
+			$atts['html'] = true;
+		}
+
         $atts = apply_filters('frm_display_value_atts', $atts, $field, $value);
 
         if ( ! isset($field->field_options['post_field']) ) {
@@ -295,39 +269,23 @@ class FrmEntriesHelper {
             return $value;
         }
 
-        $value = apply_filters('frm_display_value_custom', maybe_unserialize($value), $field, $atts);
+		$unfiltered_value = maybe_unserialize( $value );
+		$value = apply_filters('frm_display_value_custom', $unfiltered_value, $field, $atts);
 		$value = apply_filters( 'frm_display_' . $field->type . '_value_custom', $value, compact( 'field', 'atts' ) );
 
-        $new_value = '';
+		if ( $value == $unfiltered_value ) {
+			$value = FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
+		}
 
-        if ( is_array($value) && $atts['type'] != 'file' ) {
-            foreach ( $value as $val ) {
-                if ( is_array($val) ) {
-					//TODO: add options for display (li or ,)
-                    $new_value .= implode($atts['sep'], $val);
-                    if ( $atts['type'] != 'data' ) {
-                        $new_value .= '<br/>';
-                    }
-                }
-                unset($val);
-            }
-        }
-
-        if ( ! empty($new_value) ) {
-            $value = $new_value;
-        } else if ( is_array($value) && $atts['type'] != 'file' && ! $atts['return_array'] ) {
-            $value = implode($atts['sep'], $value);
-        }
-
-        if ( $atts['truncate'] && $atts['type'] != 'image' ) {
+        if ( $atts['truncate'] && $atts['type'] != 'url' ) {
             $value = FrmAppHelper::truncate($value, 50);
         }
 
 		if ( ! $atts['keepjs'] && ! is_array( $value ) ) {
-			$value = wp_kses_post( $value );
+			$value = FrmAppHelper::kses( $value, 'all' );
 		}
 
-        return apply_filters('frm_display_value', $value, $field, $atts);
+		return apply_filters( 'frm_display_value', $value, $field, $atts );
     }
 
 	public static function set_posted_value( $field, $value, $args ) {
@@ -450,23 +408,21 @@ class FrmEntriesHelper {
 
 					// By default, the array keys will be numeric for multi-select dropdowns
 					// If going backwards and forwards between pages, the array key will match the other key
-					if ( $o_key != $other_key ) {
+					if ( $o_key !== $other_key ) {
 						unset( $value[ $o_key ] );
 					}
 
 					$args['temp_value'] = $value;
 					$value[ $other_key ] = reset( $other_vals );
+					if ( FrmAppHelper::is_empty_value( $value[ $other_key ] ) ) {
+						unset( $value[ $other_key ] );
+					}
 				}
             } else if ( $field->options[ $other_key ] == $value ) {
                 $value = $other_vals;
             }
         }
     }
-
-	public static function enqueue_scripts( $params ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmFormsController::enqueue_scripts' );
-		FrmFormsController::enqueue_scripts( $params );
-	}
 
     // Add submitted values to a string for spam checking
 	public static function entry_array_to_string( $values ) {
@@ -487,37 +443,107 @@ class FrmEntriesHelper {
 		return $content;
     }
 
-	public static function fill_entry_values( $atts, $f, array &$values ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::fill_entry_values' );
-		FrmEntryFormat::fill_entry_values( $atts, $f, $values );
-	}
-
-	public static function flatten_multi_file_upload( &$val, $field ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::flatten_multi_file_upload' );
-		FrmEntryFormat::flatten_multi_file_upload( $field, $val );
-	}
-
-	public static function textarea_display_value() {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'custom code' );
-	}
-
-	public static function fill_entry_user_info( $atts, array &$values ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::fill_entry_user_info' );
-		FrmEntryFormat::fill_entry_user_info( $atts, $values );
-	}
-
-	public static function get_entry_description_data( $atts ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::get_entry_description_data' );
-		return FrmEntryFormat::get_entry_description_data( $atts );
-	}
-
-	public static function convert_entry_to_content( $values, $atts, array &$content ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::convert_entry_to_content' );
-		FrmEntryFormat::convert_entry_to_content( $values, $atts, $content );
-	}
-
+	/**
+	 * Get the browser from the user agent
+	 *
+	 * @since 2.04
+	 *
+	 * @param string $u_agent
+	 *
+	 * @return string
+	 */
 	public static function get_browser( $u_agent ) {
-		_deprecated_function( __FUNCTION__, '2.0.9', 'FrmEntryFormat::get_browser' );
-		return FrmEntryFormat::get_browser( $u_agent );
+		$bname = __( 'Unknown', 'formidable' );
+		$platform = __( 'Unknown', 'formidable' );
+		$ub = '';
+
+		// Get the operating system
+		if ( preg_match( '/windows|win32/i', $u_agent ) ) {
+			$platform = 'Windows';
+		} else if ( preg_match( '/android/i', $u_agent ) ) {
+			$platform = 'Android';
+		} else if ( preg_match( '/linux/i', $u_agent ) ) {
+			$platform = 'Linux';
+		} else if ( preg_match( '/macintosh|mac os x/i', $u_agent ) ) {
+			$platform = 'OS X';
+		}
+
+		$agent_options = array(
+			'Chrome'   => 'Google Chrome',
+			'Safari'   => 'Apple Safari',
+			'Opera'    => 'Opera',
+			'Netscape' => 'Netscape',
+			'Firefox'  => 'Mozilla Firefox',
+		);
+
+		// Next get the name of the useragent yes seperately and for good reason
+		if ( strpos( $u_agent, 'MSIE' ) !== false && strpos( $u_agent, 'Opera' ) === false ) {
+			$bname = 'Internet Explorer';
+			$ub = 'MSIE';
+		} else {
+			foreach ( $agent_options as $agent_key => $agent_name ) {
+				if ( strpos( $u_agent, $agent_key ) !== false ) {
+					$bname = $agent_name;
+					$ub = $agent_key;
+					break;
+				}
+			}
+		}
+
+		// finally get the correct version number
+		$known = array( 'Version', $ub, 'other' );
+		$pattern = '#(?<browser>' . join( '|', $known ) . ')[/ ]+(?<version>[0-9.|a-zA-Z.]*)#';
+		preg_match_all( $pattern, $u_agent, $matches ); // get the matching numbers
+
+		// see how many we have
+		$i = count($matches['browser']);
+
+		if ( $i > 1 ) {
+			//we will have two since we are not using 'other' argument yet
+			//see if version is before or after the name
+			if ( strripos( $u_agent, 'Version' ) < strripos( $u_agent, $ub ) ) {
+				$version = $matches['version'][0];
+			} else {
+				$version = $matches['version'][1];
+			}
+		} else if ( $i === 1 ) {
+			$version = $matches['version'][0];
+		} else {
+			$version = '';
+		}
+
+		// check if we have a number
+		if ( $version == '' ) {
+			$version = '?';
+		}
+
+		return $bname . ' ' . $version . ' / ' . $platform;
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	public static function actions_dropdown( $atts ) {
+		$id = isset( $atts['id'] ) ? $atts['id'] : FrmAppHelper::get_param( 'id', 0, 'get', 'absint' );
+		$links = self::get_action_links( $id, $atts['entry'] );
+		include( FrmAppHelper::plugin_path() . '/classes/views/frm-forms/actions-dropdown.php' );
+	}
+
+	/**
+	 * @since 3.0
+	 */
+	private static function get_action_links( $id, $entry ) {
+		$actions = array();
+
+		if ( current_user_can( 'frm_delete_entries' ) ) {
+			$actions['frm_delete'] = array(
+				'url'   => admin_url( 'admin.php?page=formidable-entries&frm_action=destroy&id=' . $id . '&form=' . $entry->form_id ),
+				'label' => __( 'Delete' ),
+				'icon'  => 'frm_icon_font frm_delete_icon',
+				'data'  => array( 'frmverify' => __( 'Really delete?', 'formidable' ) ),
+			);
+		}
+
+		return apply_filters( 'frm_entry_actions_dropdown', $actions, compact( 'id', 'entry' ) );
 	}
 }

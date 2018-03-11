@@ -12,9 +12,29 @@
     position: absolute;
     right: 4%;
     bottom: 2px;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 700;
     color: #666;
+}
+
+#wpt_custom_retweets .jtw2 label {
+	display: inline-block;
+	width: 4em;
+}
+
+#wpt_custom_retweets {
+	padding: .5em;
+	border: 1px solid #eee; 
+}
+
+
+.wp-to-twitter .panel-toggle {
+	margin-bottom: 0;
+}
+
+#wpt_custom_retweets fieldset {
+	margin: 1em 0;
+	border-bottom: 1px solid #ccc;
 }
 
 #wp2t .warning {
@@ -114,6 +134,18 @@
     -moz-column-count: 1;
     -webkit-column-count: 1;
     column-count: 1;
+}
+
+.wpt-debug-details {
+	display: none;
+	white-space: pre-wrap;
+}
+
+#wp2t-debug .wpt-debug-log button {
+	text-align: left;
+	white-space: normal;
+	height: auto;
+	width: 100%;
 }
 
 .wptab {

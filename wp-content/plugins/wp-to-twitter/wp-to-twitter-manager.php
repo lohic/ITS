@@ -82,6 +82,8 @@ function wpt_updated_settings() {
 		update_option( 'jd_twit_append', $_POST['jd_twit_append'] );
 		update_option( 'jd_post_excerpt', $_POST['jd_post_excerpt'] );
 		update_option( 'jd_max_tags', $_POST['jd_max_tags'] );
+		$use_cats = ( isset( $_POST['wpt_use_cats']  ) ) ? $_POST['wpt_use_cats'] : 0;
+		update_option( 'wpt_use_cats', $use_cats );
 		update_option( 'wpt_tag_source', ( ( isset( $_POST['wpt_tag_source'] ) && $_POST['wpt_tag_source'] == 'slug' ) ? 'slug' : '' ) );
 		update_option( 'jd_max_characters', $_POST['jd_max_characters'] );
 		update_option( 'jd_replace_character', $_POST['jd_replace_character'] );
@@ -141,21 +143,33 @@ function wpt_updated_settings() {
 	if ( isset( $_POST['submit-type'] ) && $_POST['submit-type'] == 'options' ) {
 		// UPDATE OPTIONS
 		$wpt_settings = get_option( 'wpt_post_types' );
+		if ( !is_array( $wpt_settings ) ) {
+			$wpt_settings = array();
+		}
+
+		$keys   = array();
+		$values = array();
 		foreach ( $_POST['wpt_post_types'] as $key => $value ) {
-			$array                = array(
+			// using wp_encode_emoji allows me to save emoji in templates
+			// ...but I haven't found a way to convert the saved emoji *back* to unicode
+			// sending the HTML entity just yields a broken character on Twitter.
+			$array = array(
 				'post-published-update' => ( isset( $value["post-published-update"] ) ) ? $value["post-published-update"] : "",
 				'post-published-text'   => $value["post-published-text"],
 				'post-edited-update'    => ( isset( $value["post-edited-update"] ) ) ? $value["post-edited-update"] : "",
 				'post-edited-text'      => $value["post-edited-text"]
 			);
-			$wpt_settings[ $key ] = $array;
+			array_push( $keys, $key );			
+			array_push( $values, $array );
 		}
+				
+		$wpt_settings = array_combine( $keys, $values );
 		update_option( 'wpt_post_types', $wpt_settings );
 		update_option( 'newlink-published-text', $_POST['newlink-published-text'] );
 		update_option( 'jd_twit_blogroll', ( isset( $_POST['jd_twit_blogroll'] ) ) ? $_POST['jd_twit_blogroll'] : "" );
-		$message = wpt_select_shortener( $_POST );
+		$message  = wpt_select_shortener( $_POST );
 		$message .= __( 'WP to Twitter Options Updated', 'wp-to-twitter' );
-		$message = apply_filters( 'wpt_settings', $message, $_POST );
+		$message  = apply_filters( 'wpt_settings', $message, $_POST );
 	}
 
 	if ( isset( $_POST['wpt_shortener_update'] ) && $_POST['wpt_shortener_update'] == 'true' ) {
@@ -182,7 +196,6 @@ function wpt_update_settings() {
 		wpt_updated_settings(); 
 		wpt_show_last_tweet();
 		wpt_handle_errors();
-		wpt_show_debug();
 	?>
 	<?php $elem = ( version_compare( '4.3', get_option( 'version' ), '>=' ) ) ? 'h1' : 'h2'; ?>
 	<<?php echo $elem; ?>><?php _e( "WP to Twitter Options", 'wp-to-twitter' ); ?></<?php echo $elem; ?>>
@@ -271,6 +284,7 @@ function wpt_update_settings() {
 					<?php $nonce = wp_nonce_field( 'wp-to-twitter-nonce', '_wpnonce', true, false ) . wp_referer_field( false );
 					echo "<div>$nonce</div>"; ?>
 					<div>
+						<?php echo apply_filters( 'wpt_tweet_length', '' ); ?>
 						<?php echo apply_filters( 'wpt_pick_shortener', '' ); ?>
 						<?php
 						$post_types   = get_post_types( array( 'public' => true ), 'objects' );
@@ -480,7 +494,10 @@ function wpt_update_settings() {
 								<label
 									for="wpt_tag_source"><?php _e( "Use tag slug as hashtag value", 'wp-to-twitter' ); ?></label><br/>
 							</p>
-
+								<p>
+								<input type="checkbox" name="wpt_use_cats" id="wpt_use_cats" value="1" <?php checked( get_option( 'wpt_use_cats' ), '1' ); ?> />
+								<label for="wpt_use_cats"><?php _e( "Use categories instead of tags", 'wp-to-twitter' ); ?></label><br/>
+							</p>
 							<p>
 								<label
 									for="jd_replace_character"><?php _e( "Spaces in tags replaced with:", 'wp-to-twitter' ); ?></label>
@@ -685,7 +702,13 @@ function wpt_update_settings() {
 						}
 						asort( $default_order );
 						foreach ( $default_order as $k => $v ) {
-							$label = '<code>#' . $k . '#</code>';
+							if ( $k == 'blogname' ) {
+								$label = '<code>#blog#</code>';								
+							} else if ( $k == 'excerpt' ) {
+								$label = '<code>#post#</code>';
+							} else {
+								$label = '<code>#' . $k . '#</code>';
+							}
 							$inputs .= "<div class='wpt-truncate'><label for='$k-$v'>$label</label><br /><input type='number' size='3' value='$v' name='wpt_truncation_order[$k]' /></div> ";
 						}
 						?>
@@ -896,5 +919,25 @@ function wpt_do_server_check( $test = false ) {
 	}
 	echo $wpt_server_string;
 	$admin_url = admin_url( 'admin.php?page=wp-tweets-pro&amp;refresh_wpt_server_string=true' );
+	
 	echo "<p><a href='" . $admin_url . "'>" . __( 'Test again', 'wp-to-twitter' ) . "</a></p>";
+}
+
+add_filter( 'wpt_tweet_length', 'wpt_tweet_length' );
+function wpt_tweet_length() {
+	$tweet_length = intval( ( get_option( 'wpt_tweet_length' ) ) ? get_option( 'wpt_tweet_length' ) : 140 );
+	$control = "<p class='tweet_length_control'>
+					<label for='wpt_tweet_length'>" . __( 'Tweet Length (max 280 characters)', 'wp-to-twitter' ) . "</label>
+					<input type='number' min='0' max='280' step='1' value='$tweet_length' id='wpt_tweet_length' name='wpt_tweet_length' /> 
+					<a href='https://www.joedolson.com/2017/11/twitter-expands-280-characters-sort/'>" . __( 'About this setting', 'wp-to-twitter' ) . "</a>
+				</p>";
+	
+	return $control;
+}
+
+add_filter( 'wpt_settings', 'wpt_set_tweet_length' );
+function wpt_set_tweet_length() {
+	if ( isset( $_POST['wpt_tweet_length'] ) ) {
+		update_option( 'wpt_tweet_length', intval( $_POST['wpt_tweet_length'] ) );
+	}
 }

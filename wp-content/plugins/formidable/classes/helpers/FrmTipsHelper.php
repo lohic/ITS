@@ -10,7 +10,7 @@ class FrmTipsHelper {
 		$tips = self::$callback();
 		$tip = self::get_random_tip( $tips );
 
-		if ( $html == 'p' ) {
+		if ( 'p' === $html ) {
 			echo '<p>';
 		}
 
@@ -23,7 +23,7 @@ class FrmTipsHelper {
 			<?php } ?>
 		</a>
 		<?php
-		if ( $html == 'p' ) {
+		if ( 'p' === $html ) {
 			echo '</p>';
 		}
 	}
@@ -196,12 +196,12 @@ class FrmTipsHelper {
 		$tips = array(
 			array(
 				'link' => '',
-				'tip'  => __( 'Looking for more options to get professional results?', 'formidable' ),
+				'tip'  => __( 'Looking for more ways to get professional results?', 'formidable' ),
 				'call' => __( 'Take your forms to the next level.', 'formidable' ),
 			),
 			array(
 				'link' => '',
-				'tip'  => __( 'Increase conversions in your long forms.', 'formidable' ),
+				'tip'  => __( 'Increase conversions in long forms.', 'formidable' ),
 				'call' => __( 'Add conditional logic, page breaks, and section headings.', 'formidable' ),
 			),
 			array(

@@ -38,6 +38,7 @@
 if ( ! defined( 'ABSPATH' ) )
         exit; // Exit if accessed directly
 #Removed: Helper class inclusion for managers.
+    $active_plugins = get_option( "active_plugins" );
 ?>
 <div class="list-inline pull-right mb10 wp_ultimate_csv_importer_pro">
             <div class="col-md-6 mt10"><a href="https://goo.gl/jdPMW8" target="_blank"><?php echo esc_html__('Documentation','wp-ultimste-csv-importer');?></a></div>
@@ -53,9 +54,11 @@ if ( ! defined( 'ABSPATH' ) )
                     <li id='1' class="bg-leftside selected">
                         <a style="font-size: 17px;" href="<?php echo esc_url(add_query_arg(array('page' => 'sm-uci-managers','step' => 'filemanager')));?>"><span class="icon-copy-file"></span><?php echo esc_html__('File Manager','wp-ultimate-csv-importer');?></a>
                     </li>
+                    <?php  if(in_array('wp-ultimate-exporter/index.php', $active_plugins)) { ?>
                     <li id='2'  class="bg-leftside">
                         <a style="font-size: 17px;" href="<?php echo esc_url(add_query_arg(array('page' => 'sm-uci-managers','step' => 'schedulemanager')));?>"><span class="icon-calendar3"></span><?php echo esc_html__('Smart Schedule','wp-ultimate-csv-importer');?></a>
                     </li>
+                    <?php } ?>
                     <li id='3' class="bg-leftside">
                         <a style="font-size: 17px;" href="<?php echo esc_url(add_query_arg(array('page' => 'sm-uci-managers','step' => 'templatemanager')));?>"><span class="icon-insert-template"></span><?php echo esc_html__('Templates','wp-ultimate-csv-importer');?></a></li>
                     <!--<li id='4'  class="bg-leftside notselect">
@@ -107,3 +110,6 @@ if ( ! defined( 'ABSPATH' ) )
         jQuery(".selected").addClass("right-arrow");
     });
 </script>
+
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>
+

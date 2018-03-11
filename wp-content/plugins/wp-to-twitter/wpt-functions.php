@@ -187,34 +187,66 @@ function wpt_cap_checkbox( $role, $cap, $name ) {
 
 function wpt_mail( $subject, $body, $override=false ) {
 	if ( ( WPT_DEBUG && function_exists( 'wpt_pro_exists' ) ) || $override == true ) {
-		$use_email = true;
-		if ( $use_email ) {
+		if ( WPT_DEBUG_BY_EMAIL ) {
 			wp_mail( WPT_DEBUG_ADDRESS, $subject, $body, WPT_FROM );
 		} else {
-			$debug                          = get_option( 'wpt_debug' );
-			$debug[ date( 'Y-m-d H:i:s' ) ] = array( $subject, $body );
-			update_option( 'wpt_debug', $debug );
+			wpt_debug_log( $subject, $body );
 		}
 	}
 }
 
-function wpt_show_debug() {
-	// Nothing triggers this. If you want some debugging information, just add the parameter to the URL.
-	if ( isset( $_GET['debug'] ) && $_GET['debug'] == 'true' ) {
-		$debug = get_option( 'wpt_debug' );
-		echo "<pre>";
-		print_r( $debug );
-		echo "</pre>";
+function wpt_debug_log( $subject, $body ) {
+	global $post_ID;
+	if ( $post_ID ) {
+		$time = current_time( 'timestamp' );
+		add_post_meta( $post_ID, '_wpt_debug_log', array( $time, $subject, $body ) );
 	}
-	if ( isset( $_GET['debug'] ) && $_GET['debug'] == 'delete' ) {
-		delete_option( 'wpt_debug' );
-	}	
+}
+
+function wpt_show_debug() {
+	global $post_ID;
+	if ( WPT_DEBUG ) {
+		$records = '';
+		$debug_log = get_post_meta( $post_ID, '_wpt_debug_log' );
+		if ( is_array( $debug_log ) ) {
+			foreach( $debug_log as $entry ) {
+				$date    = date_i18n( 'Y-m-d H:i', $entry[0] );
+				$subject = $entry[1];
+				$body    = $entry[2];
+				$records .= "<li><button type='button' class='toggle-debug button-secondary' aria-expanded='false'><strong>$date</strong>:<br />$subject</button><pre class='wpt-debug-details'>" . esc_html( $body ) . "</pre></li>";
+			}
+		}
+		$script = "
+<script>
+(function ($) {
+	$(function() {
+		$( 'button.toggle-debug' ).on( 'click', function() {
+			var next = $( this ).next( 'pre' );
+			if ( $( this ).next( 'pre' ).is( ':visible' ) ) {
+				$( this ).next( 'pre' ).hide();
+				$( this ).attr( 'aria-expanded', 'false' );
+			} else {
+				$( this ).next( 'pre' ).show();
+				$( this ).attr( 'aria-expanded', 'true' );				
+			}
+		});
+	})
+})(jQuery);
+</script>";
+		$delete = "<ul>
+		<li><input type='checkbox' name='wpt-delete-debug' value='true' id='wpt-delete-debug'> <label for='wpt-delete-debug'>" . __( 'Delete debugging logs on this post', 'wp-to-twitter' ) . "</label></li>
+		<li><input type='checkbox' name='wpt-delete-all-debug' value='true' id='wpt-delete-all-debug'> <label for='wpt-delete-all-debug'>" . __( 'Delete debugging logs for all posts', 'wp-to-twitter' ) . "</label></li>
+		</ul>";
+	
+		echo ( $records != '' ) ? "$script<div class='wpt-debug-log'><h3>Debugging Log:</h3><ul>$records</ul></div>$delete" : '';
+	}
 }
 
 function wpt_remote_json( $url, $array = true, $method = 'GET' ) {
 	$input = wpt_fetch_url( $url, $method );
+	wpt_mail( 'Remote JSON input', print_r( $input, 1 ) . "\n\n" . $url );
 	$obj   = json_decode( $input, $array );
-	wpt_mail( 'Remote JSON return value', print_r( $obj, 1 ) );
+	wpt_mail( 'Remote JSON return value', print_r( $obj, 1 ) . "\n\n" . "$url" );
 	if ( function_exists( 'json_last_error' ) ) { // > PHP 5.3
 		try {
 			if ( is_null( $obj ) ) {
@@ -466,6 +498,7 @@ function wpt_date_compare( $modified, $postdate ) {
  * @return mixed boolean|integer Attachment ID.
  */
 function wpt_post_attachment( $post_ID ) {
+	$return = false;
 	$use_featured_image = apply_filters( 'wpt_use_featured_image', true, $post_ID );
 	if ( has_post_thumbnail( $post_ID ) && $use_featured_image ) {
 		$attachment = get_post_thumbnail_id( $post_ID );
@@ -487,6 +520,7 @@ function wpt_post_attachment( $post_ID ) {
 			$return = false;
 		}
 	}
+	
 	return apply_filters( 'wpt_post_attachment', $return, $post_ID );
 }
 
@@ -1040,103 +1074,6 @@ function wpt_delete_copied_meta( $new_id, $post ) {
 	delete_post_meta( $new_id, '_jd_wp_twitter' );
 	delete_post_meta( $new_id, '_jd_twitter' );
 	delete_post_meta( $new_id, '_wpt_failed' );
-}
-
-// uninstall WP to Twitter
-function wtt_fs_uninstall_cleanup() {
-	delete_option( 'wpt_post_types' );
-	delete_option( 'jd_twit_remote' );
-	delete_option( 'jd_post_excerpt' );
-
-	delete_option( 'comment-published-update' );
-	delete_option( 'comment-published-text' );
-	delete_option( 'wpt_status_message_last' );
-	delete_option( 'wtt_twitter_username' );
-// Su.pr API
-	delete_option( 'suprapi' );
-
-// Error checking
-	delete_option( 'jd-functions-checked' );
-	delete_option( 'wp_twitter_failure' );
-	delete_option( 'wp_supr_failure' );
-	delete_option( 'wp_url_failure' );
-	delete_option( 'wp_bitly_failure' );
-	delete_option( 'wpt_curl_error' );
-
-// Rate Limiting
-	delete_option( 'wpt_rate_limits' );
-	delete_option( 'wpt_default_rate_limit' );
-	delete_option( 'wpt_rate_limit' );
-	delete_option( 'wpt_rate_limiting' );
-	
-// Blogroll options
-	delete_option( 'jd-use-link-title' );
-	delete_option( 'jd-use-link-description' );
-	delete_option( 'newlink-published-text' );
-	delete_option( 'jd_twit_blogroll' );
-
-// Default publishing options.
-	delete_option( 'jd_tweet_default' );
-	delete_option( 'jd_tweet_default_edit' );
-	delete_option( 'wpt_inline_edits' );
-
-// Note that default options are set.
-	delete_option( 'twitterInitialised' );
-	delete_option( 'wpt_twitter_setup' );
-	delete_option( 'wp_twitter_failure' );
-	delete_option( 'twitterlogin' );
-	delete_option( 'twitterpw' );
-	delete_option( 'twitterlogin_encrypted' );
-	delete_option( 'suprapi' );
-	delete_option( 'jd_twit_quickpress' );
-	delete_option( 'jd-use-supr' );
-	delete_option( 'jd-use-none' );
-	delete_option( 'jd-use-wp' );
-
-// Special Options
-	delete_option( 'jd_twit_prepend' );
-	delete_option( 'jd_twit_append' );
-	delete_option( 'jd_twit_remote' );
-	delete_option( 'twitter-analytics-campaign' );
-	delete_option( 'use-twitter-analytics' );
-	delete_option( 'jd_twit_custom_url' );
-	delete_option( 'jd_shortener' );
-	delete_option( 'jd_strip_nonan' );
-
-	delete_option( 'jd_individual_twitter_users' );
-	delete_option( 'use_tags_as_hashtags' );
-	delete_option( 'jd_max_tags' );
-	delete_option( 'jd_max_characters' );
-// Bitly Settings
-	delete_option( 'bitlylogin' );
-	delete_option( 'jd-use-bitly' );
-	delete_option( 'bitlyapi' );
-
-// twitter compatible api
-	delete_option( 'jd_api_post_status' );
-	delete_option( 'app_consumer_key' );
-	delete_option( 'app_consumer_secret' );
-	delete_option( 'oauth_token' );
-	delete_option( 'oauth_token_secret' );
-
-//dymamic analytics
-	delete_option( 'jd_dynamic_analytics' );
-	delete_option( 'use_dynamic_analytics' );
-//category limits
-	delete_option( 'limit_categories' );
-	delete_option( 'tweet_categories' );
-//yourls installation
-	delete_option( 'yourlsapi' );
-	delete_option( 'yourlspath' );
-	delete_option( 'yourlsurl' );
-	delete_option( 'yourlslogin' );
-	delete_option( 'jd_replace_character' );
-	delete_option( 'jd_date_format' );
-	delete_option( 'jd_keyword_format' );
-//Version
-	delete_option( 'wp_to_twitter_version' );
-	delete_option( 'wpt_authentication_missing' );
-	delete_option( 'wpt_http' );
 }
 
 /**

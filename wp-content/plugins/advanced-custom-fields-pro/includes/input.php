@@ -31,7 +31,7 @@ class acf_input {
 		
 		
 		// actions
-		add_action('acf/save_post', array($this, 'save_post'), 10, 2);
+		add_action('acf/save_post', array($this, 'save_post'), 10, 1);
 		
 	}
 	
@@ -86,29 +86,30 @@ class acf_input {
 		
 		// defaults
 		$data = acf_parse_args($data, array(
-			'post_id'		=> 0,		// ID of current post
-			'nonce'			=> 'post',	// nonce used for $_POST validation
+			'screen'		=> 'post',	// Current screen loaded (post, user, taxonomy, etc)
+			'post_id'		=> 0,		// ID of current post being edited
+			'nonce'			=> '',		// nonce used for $_POST validation (defaults to screen)
 			'validation'	=> 1,		// runs AJAX validation
-			'ajax'			=> 0,		// fetches new field groups via AJAX
-			'changed'		=> 0,
+			'ajax'			=> 0,		// if screen uses ajax to append new HTML (enqueue all assets)
+			'changed'		=> 0,		// used to detect change and prompt unload
 		));
 		
+		// nonce
+		if( !$data['nonce'] ) {
+			$data['nonce'] = $data['screen'];
+		}
+		
+		// enqueue uploader if page allows AJAX fields to appear
+		// priority must be less than 10 to allow WP to enqueue
+		if( $data['ajax'] ) {
+			add_action($this->admin_footer, 'acf_enqueue_uploader', 5);
+		}
 		
 		// update
 		$this->data = $data;
 		
-		
-		// enqueue uploader if page allows AJAX fields to appear
-		if( $data['ajax'] ) {
-			
-			add_action($this->admin_footer, 'acf_enqueue_uploader', 1);
-			
-		}
-		
-		
 		// return 
 		return $data;
-		
 	}
 	
 	
@@ -239,6 +240,7 @@ class acf_input {
 		
 		// options
 		$o = array(
+			'screen'		=> acf_get_form_data('screen'),
 			'post_id'		=> acf_get_form_data('post_id'),
 			'nonce'			=> wp_create_nonce( 'acf_nonce' ),
 			'admin_url'		=> admin_url(),
@@ -263,6 +265,7 @@ class acf_input {
 			'validation_failed_1'	=> __('1 field requires attention', 'acf'),
 			'validation_failed_2'	=> __('%d fields require attention', 'acf'),
 			'restricted'			=> __('Restricted','acf'),
+			'are_you_sure'			=> __('Are you sure?','acf'),
 			'yes'					=> __('Yes','acf'),
 			'no'					=> __('No','acf'),
 			'remove'				=> __('Remove','acf'),
@@ -307,10 +310,15 @@ do_action('acf/input/admin_footer');
 	*  @return	n/a
 	*/
 	
-	function save_post( $post_id, $values ) {
+	function save_post( $post_id ) {
+		
+		// bail early if empty
+		// - post data may have be modified
+		if( empty($_POST['acf']) ) return;
+		
 		
 		// loop
-		foreach( $values as $k => $v ) {
+		foreach( $_POST['acf'] as $k => $v ) {
 			
 			// get field
 			$field = acf_get_field( $k );
@@ -488,13 +496,14 @@ function acf_form_data( $args = array() ) {
 
 function acf_save_post( $post_id = 0, $values = null ) {
 	
-	// default
-	if( $values === null )
-		$values = acf_maybe_get_POST('acf');
+	// override $_POST
+	if( $values !== null ) {
+		$_POST['acf'] = $values;
+	}
 	
-	
+		
 	// bail early if no values
-	if( empty($values) ) return false;
+	if( empty($_POST['acf']) ) return false;
 	
 	
 	// set form data
@@ -504,7 +513,7 @@ function acf_save_post( $post_id = 0, $values = null ) {
 	
 	
 	// hook for 3rd party customization
-	do_action('acf/save_post', $post_id, $values);
+	do_action('acf/save_post', $post_id);
 	
 	
 	// return

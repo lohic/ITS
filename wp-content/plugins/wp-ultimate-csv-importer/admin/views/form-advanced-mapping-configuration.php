@@ -450,8 +450,12 @@ $ecommerce_module = array('WooCommerce', 'MarketPress', 'WPeCommerce', 'eShop');
                                        marketpress_lite_meta_api($template_mapping);
                                     }
                                  } else {
-                                    require_once ('form-woocommerce-meta.php');
-                                    woocommerce_meta_api($template_mapping);
+                                    if (in_array('import-woocommerce/index.php', $uci_admin->getActivePlugins() )) {
+                                       global $wcomUci_admin;
+                                       $wcomUci_admin->getWoocomDataHtml($template_mapping);
+                                    }
+                                    // require_once ('form-woocommerce-meta.php');
+                                    // woocommerce_meta_api($template_mapping);
                                  }
                                  ?>
                               </div>
@@ -752,6 +756,7 @@ $ecommerce_module = array('WooCommerce', 'MarketPress', 'WPeCommerce', 'eShop');
    </main>
    <!-- Main End -->
 </form>
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>
 <script type="text/javascript">
    jQuery(function() {
       CKEDITOR.replace('CORE__post_content');

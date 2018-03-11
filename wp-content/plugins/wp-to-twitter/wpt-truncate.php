@@ -12,7 +12,6 @@ function wpt_max_length() {
 			set_transient( 'wpt_twitter_config', $config, 60*60*24 );
 		} else {
 			$config     = json_encode( array( 
-				'base_length' => 139, 
 				'http_length' => 23, 
 				'https_length' => 23,
 				'reserved_chars' => 24
@@ -27,7 +26,6 @@ function wpt_max_length() {
 		$short_url_https  = $decoded->short_url_length_https;
 		$reserved_char    = $decoded->characters_reserved_per_media;
 		$values = array( 
-			'base_length' => 139, 
 			'http_length' => $short_url_length, 
 			'https_length' => $short_url_https,
 			'reserved_chars' => $reserved_char
@@ -36,12 +34,13 @@ function wpt_max_length() {
 	} else {
 		// if config query is invalid, use default values; these may become invalid
 		$values = array( 
-			'base_length' => 139, 
 			'http_length' => 23, 
 			'https_length' => 23,
 			'reserved_chars' => 24
 		);	
 	}
+		
+	$values['base_length'] = intval( ( get_option( 'wpt_tweet_length' ) ) ? get_option( 'wpt_tweet_length' ) : 140 ) - 1;
 	
 	return apply_filters( 'wpt_max_length', $values );	
 }

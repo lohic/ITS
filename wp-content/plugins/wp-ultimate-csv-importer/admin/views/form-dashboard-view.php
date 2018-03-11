@@ -45,6 +45,69 @@ if ( ! defined( 'ABSPATH' ) )
 <div class="box-one">
     <div class="top-right-box">
         <h3><span style="margin: -5px 5px 5px 5px;"><img src="<?php echo esc_url(SM_UCI_PRO_URL . '/assets/images/chart_bar.png');?>" /></span><?php echo __('Importers Activity','wp-ultimate-csv-importer'); ?></h3>
+        <!-- start of promotions -->
+        <div style="float:right;">
+        <div class="card" style="margin-top: 0%!important;" >
+ 
+  <h2 class="title1" style="font-size:medium;">WP Importer Woocommerce Pro</h2>
+  <hr class="divider"/>
+    <b style="font-size: small;font-style: italic;">+ Few minutes import</b>
+    <p style="padding-left: 11%;">Import all woocommerce details</p>
+    <b style="font-size: small;font-style: italic;">+ WooCommerce Products</b>
+    <div style="padding-left: 11%;"><p>Orders,Refunds,Variations</p></div>
+    <b style="font-size: small;font-style: italic;">+ Supports</b> 
+    <div style="padding-left: 11%;"><p>Easy import using CSV,XML</p></div>
+    <b style="font-size: small;font-style: italic;">+ Drag & Drop</b> 
+    <div style="padding-left: 11%;"><p>Ease Drag & drop import</p></div>
+    <p>Try our new plugin!</p>
+    <a class="button" href="https://www.smackcoders.com/wp-ultimate-csv-importer-pro.html" target="blank">Try it now!</a>
+  
+</div>
+ <div class="card" >
+    <h2 class="title2" style="font-size:medium;">WP Importer Customfields Pro</h2>
+     <hr class="divider"/>
+    <b style="font-size: small;font-style: italic;">+ Few minutes import</b>
+    <p style="padding-left: 11%;">Import all Custom Fields details</p>
+    <b style="font-size: small;font-style: italic;">+ Custom Fields</b>
+    <div style="padding-left: 11%;"><p>ACF,Pods,Types,CMB2,CFS<br>CCTM,Custom Press</p></div>
+    <b style="font-size: small;font-style: italic;">+ Supports</b> 
+    <div style="padding-left: 11%;"><p>Easy import using CSV,XML</p></div>
+    <b style="font-size: small;font-style: italic;">+ Drag & Drop</b> 
+    <div style="padding-left: 11%;"><p>Ease Drag & drop import</p></div>
+    <p>Try our new plugin!</p>
+    <a class="cus-button" href="https://www.smackcoders.com/wp-ultimate-csv-importer-pro.html" target="blank">Try it now!</a>
+  
+</div>
+ <div class="card" >
+ <h2 class="title3" style="font-size:medium;">WP Importer Basic Pro</h2>
+     <hr class="divider"/>
+  <b style="font-size: small;font-style: italic;">+ Few minutes import</b>
+    <p style="padding-left: 11%;">Import Posts,Pages,Users<br>Marketpress</p>
+    <b style="font-size: small;font-style: italic;">+ Fields</b>
+    <div style="padding-left: 11%;"><p>Marketpress,Wpecommerce<br>Wp-members,Members,BSI</p></div>
+    <b style="font-size: small;font-style: italic;">+ Supports</b> 
+    <div style="padding-left: 11%;"><p>Easy import using CSV,XML</p></div>
+    <b style="font-size: small;font-style: italic;">+ Drag & Drop</b> 
+    <div style="padding-left: 11%;"><p>Ease Drag & drop import</p></div>
+    <p>Try our new plugin!</p>
+    <a class="basic-button" href="https://www.smackcoders.com/wp-ultimate-csv-importer-pro.html" target="blank">Try it now!</a>
+  
+</div>
+ <!-- <div class="card" >
+  <b style="font-size: 1.4em;font-style: italic;color: #20db15;">WP Ultimate CSV Importer Pro</b><br><br>
+   <b style="font-size: small;font-style: italic;">+ Few minutes import</b>
+    <p style="padding-left: 11%;">Import & Export Datas<br>Scheduled Import/Export</p>
+    <b style="font-size: small;font-style: italic;">+ Features</b>
+    <div style="padding-left: 11%;"><p> Posts,Pages,Users,<br>Custom Posts,Woocommerce<br>All Custom Fields,Marketpress<br>Wpecommerce,</p></div>
+    <b style="font-size: small;font-style: italic;">+ Supports</b> 
+    <div style="padding-left: 11%;"><p>Easy import using CSV,XML</p></div>
+    <b style="font-size: small;font-style: italic;">+ Drag & Drop</b> 
+    <div style="padding-left: 11%;"><p>Ease Drag & drop import</p></div>
+    <p>Try our new plugin!</p>
+    <a class="csv-button" href="https://www.smackcoders.com/" target="blank">Try it now!</a>
+  
+</div> -->
+</div>
         <div class="top-right-content">
             <div id='dispLabel'></div>
             <canvas id="uci-line-chart"></canvas>
@@ -67,3 +130,4 @@ if ( ! defined( 'ABSPATH' ) )
 
     </script>
 </div>
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>

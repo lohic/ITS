@@ -293,53 +293,53 @@ class SmackUCIHelper {
 
 	public $detailed_log = array();
 
-	public $def_mpCols = array('Shipping Email' => 'msi_email',
-	                           'Shipping Name' => 'msi_name',
-	                           'Shipping Address1' => 'msi_address1',
-	                           'Shipping Address2' => 'msi_address2',
-	                           'Shipping City' => 'msi_city',
-	                           'Shipping State' => 'msi_state',
-	                           'Shipping Zip' => 'msi_zip',
-	                           'Shipping Country' => 'msi_country',
-	                           'Shipping Phone' => 'msi_phone',
-	                           'Billing Email' => 'mbi_email',
-	                           'Billing Name' => 'mbi_name',
-	                           'Billing Address1' => 'mbi_address1',
-	                           'Billing Address2' => 'mbi_address2',
-	                           'Billing City' => 'mbi_city',
-	                           'Billing State' => 'mbi_state',
-	                           'Billing Zip' => 'mbi_zip',
-	                           'Billing Country' => 'mbi_country',
-	                           'Billing Phone' => 'mbi_phone'
-	);
+	// public $def_mpCols = array('Shipping Email' => 'msi_email',
+	//                            'Shipping Name' => 'msi_name',
+	//                            'Shipping Address1' => 'msi_address1',
+	//                            'Shipping Address2' => 'msi_address2',
+	//                            'Shipping City' => 'msi_city',
+	//                            'Shipping State' => 'msi_state',
+	//                            'Shipping Zip' => 'msi_zip',
+	//                            'Shipping Country' => 'msi_country',
+	//                            'Shipping Phone' => 'msi_phone',
+	//                            'Billing Email' => 'mbi_email',
+	//                            'Billing Name' => 'mbi_name',
+	//                            'Billing Address1' => 'mbi_address1',
+	//                            'Billing Address2' => 'mbi_address2',
+	//                            'Billing City' => 'mbi_city',
+	//                            'Billing State' => 'mbi_state',
+	//                            'Billing Zip' => 'mbi_zip',
+	//                            'Billing Country' => 'mbi_country',
+	//                            'Billing Phone' => 'mbi_phone'
+	// );
 
-	public $def_wcCols = array('Billing First Name' => 'billing_first_name',
-	                           'Billing Last Name' => 'billing_last_name',
-	                           'Billing Company' => 'billing_company',
-	                           'Billing Address1' => 'billing_address_1',
-	                           'Billing Address2' => 'billing_address_2',
-	                           'Billing City' => 'billing_city',
-	                           'Billing PostCode' => 'billing_postcode',
-	                           'Billing State' => 'billing_state',
-	                           'Billing Country' => 'billing_country',
-	                           'Billing Phone' => 'billing_phone',
-	                           'Billing Email' => 'billing_email',
-	                           'Shipping First Name' => 'shipping_first_name',
-	                           'Shipping Last Name' => 'shipping_last_name',
-	                           'Shipping Company' => 'shipping_company',
-	                           'Shipping Address1' => 'shipping_address_1',
-	                           'Shipping Address2' => 'shipping_address_2',
-	                           'Shipping City' => 'shipping_city',
-	                           'Shipping PostCode' => 'shipping_postcode',
-	                           'Shipping State' => 'shipping_state',
-	                           'Shipping Country' => 'shipping_country',
-	                           'API Consumer Key' => 'woocommerce_api_consumer_key',
-	                           'API Consumer Secret' => 'woocommerce_api_consumer_secret',
-	                           'API Key Permissions' => 'woocommerce_api_key_permissions',
-	                           'Shipping Region' => '_wpsc_shipping_region' ,
-	                           'Billing Region' => '_wpsc_billing_region',
-	                           'Cart' => '_wpsc_cart'
-	);
+	// public $def_wcCols = array('Billing First Name' => 'billing_first_name',
+	//                            'Billing Last Name' => 'billing_last_name',
+	//                            'Billing Company' => 'billing_company',
+	//                            'Billing Address1' => 'billing_address_1',
+	//                            'Billing Address2' => 'billing_address_2',
+	//                            'Billing City' => 'billing_city',
+	//                            'Billing PostCode' => 'billing_postcode',
+	//                            'Billing State' => 'billing_state',
+	//                            'Billing Country' => 'billing_country',
+	//                            'Billing Phone' => 'billing_phone',
+	//                            'Billing Email' => 'billing_email',
+	//                            'Shipping First Name' => 'shipping_first_name',
+	//                            'Shipping Last Name' => 'shipping_last_name',
+	//                            'Shipping Company' => 'shipping_company',
+	//                            'Shipping Address1' => 'shipping_address_1',
+	//                            'Shipping Address2' => 'shipping_address_2',
+	//                            'Shipping City' => 'shipping_city',
+	//                            'Shipping PostCode' => 'shipping_postcode',
+	//                            'Shipping State' => 'shipping_state',
+	//                            'Shipping Country' => 'shipping_country',
+	//                            'API Consumer Key' => 'woocommerce_api_consumer_key',
+	//                            'API Consumer Secret' => 'woocommerce_api_consumer_secret',
+	//                            'API Key Permissions' => 'woocommerce_api_key_permissions',
+	//                            'Shipping Region' => '_wpsc_shipping_region' ,
+	//                            'Billing Region' => '_wpsc_billing_region',
+	//                            'Cart' => '_wpsc_cart'
+	// );
 
 	public function get_active_plugins() {
 		$active_plugins = get_option('active_plugins');
@@ -398,27 +398,12 @@ class SmackUCIHelper {
 		}
 		// Core fields for Users
 		if($type === 'Users') {
-			$defCols = array(
-				'User Login' => 'user_login',
-				'User Pass' => 'user_pass',
-				'First Name' => 'first_name',
-				'Last Name' => 'last_name',
-				'Nick Name' => 'nickname',
-				'User Email' => 'user_email',
-				'User URL' => 'user_url',
-				'User Nicename' => 'user_nicename',
-				'User Registered' => 'user_registered',
-				'User Activation Key' => 'user_activation_key',
-				'User Status' => 'user_status',
-				'Display Name' => 'display_name',
-				'User Role' => 'role',
-				'Biographical Info' => 'biographical_info',
-				'Disable Visual Editor' => 'disable_visual_editor',
-				'Admin Color Scheme' => 'admin_color',
-				'Enable Keyboard Shortcuts' => 'enable_keyboard_shortcuts',
-				'Show Toolbar' => 'show_toolbar'
-				//'Capabilities' => 'wp_capabilities',
-			);
+			$active_plugins = get_option( "active_plugins" );
+			if(in_array('import-users/index.php', $active_plugins)){
+				global $userUci_admin;
+				$defCols = $userUci_admin->getUserWidgets();
+
+			}
 		}
 		if(in_array('events-manager/events-manager.php', $this->get_active_plugins()) && $type === 'event' || $type === 'event-recurring' || $type === 'location' ){
 			$customarray = array(
@@ -653,14 +638,24 @@ class SmackUCIHelper {
 	}
 
 	public function get_import_post_types(){
+
 		$custom_array = array('post', 'page');
 		$other_posttypes = array('attachment','revision','nav_menu_item','wpsc-product-file','mp_order','shop_webhook');
 		$importas = array(
 			'Posts' => 'Posts',
 			'Pages' => 'Pages',
-			'Users' =>'Users',
 			'Comments' => 'Comments'
 		);
+
+		$active_plugins = get_option( "active_plugins" );
+		if(in_array('import-users/index.php', $active_plugins)){
+			$importas['Users'] = 'Users';
+		}
+
+		if(in_array('woocommerce/woocommerce.php', $active_plugins) && in_array('import-woocommerce/index.php', $active_plugins)){
+			$importas['WooCommerce'] = 'WooCommerce';
+		}
+
 		$all_post_types = get_post_types();
 		foreach($other_posttypes as $ptkey => $ptvalue) {
 			if (in_array($ptvalue, $all_post_types)) {
@@ -672,6 +667,8 @@ class SmackUCIHelper {
 				$importas[$value] = $value;
 			}
 		}
+
+		
 		# Added support for Customer Reviews plugin
 		if(in_array('wp-customer-reviews/wp-customer-reviews-3.php', $this->get_active_plugins()) ||  in_array('wp-customer-reviews/wp-customer-reviews.php', $this->get_active_plugins())) {
 			$importas['Customer Reviews'] = 'CustomerReviews';
@@ -811,68 +808,9 @@ class SmackUCIHelper {
 				'Conditions' => 'conditions'
 			);
 		}
-		if($module === 'WooCommerce') {
-			$MetaFields = array(
-				'Product Shipping Class' => 'product_shipping_class',
-				'Visibility' => 'visibility',
-				'Tax Status' => 'tax_status',
-				'Product Type' => 'product_type',
-				'Product Attribute Name' => 'product_attribute_name',
-				'Product Attribute Value' => 'product_attribute_value',
-				'Product Attribute Visible' => 'product_attribute_visible',
-				'Product Attribute Variation' => 'product_attribute_variation',
-				'Product Attribute Position' => 'product_attribute_position',
-				'Featured Product' => 'featured_product',
-				'Product Attribute Taxonomy' => 'product_attribute_taxonomy',
-				'Tax Class' => 'tax_class',
-				'File Paths' => 'file_paths',
-				'Edit Last' => 'edit_last',
-				'Edit Lock' => 'edit_lock',
-				'Thumbnail Id' => 'thumbnail_id',
-				// 'Visibility' => 'visibility',
-				'Stock Status' => 'stock_status',
-				'Stock Quantity' => 'stock_qty',
-				'Total Sales' => 'total_sales',
-				'Downloadable' => 'downloadable',
-				'Virtual' => 'virtual',
-				'Regular Price' => 'regular_price',
-				'Sale Price' => 'sale_price',
-				'Purchase Note' => 'purchase_note',
-				'Weight' => 'weight',
-				'Length' => 'length',
-				'Width' => 'width',
-				'Height' => 'height',
-				'SKU' => 'sku',
-				'UpSells Id' => 'upsell_ids',
-				'CrossSells Id' => 'crosssell_ids',
-				'Sales Price Date From' => 'sale_price_dates_from',
-				'Sales Price Date To' => 'sale_price_dates_to',
-				'Price' => 'price',
-				'Sold Individually' => 'sold_individually',
-				'Manage Stock' => 'manage_stock',
-				'Backorders' => 'backorders',
-				'Stock' => 'stock',
-				'Product Image Gallery' => 'product_image_gallery',
-				'Product URL' => 'product_url',
-				'Button Text' => 'button_text',
-				'Downloadable Files' => 'downloadable_files',
-				'Download Limit' => 'download_limit',
-				'Download Expiry' => 'download_expiry',
-				'Download Type' => 'download_type',
-				/* 'Min Variation Price' => 'min_variation_price',
-				'Max Variation Price' => 'max_variation_price',
-				'Min Price Variation Id' => 'min_price_variation_id',
-				'Max Price Variation Id' => 'max_price_variation_id',
-				'Min Variation Regular Price' => 'min_variation_regular_price',
-				'Max Variation Regular Price' => 'max_variation_regular_price',
-				'Min Regular Price Variation Id' => 'min_regular_price_variation_id',
-				'Max Regular Price Variation Id' => 'max_regular_price_variation_id',
-				'Min Variation Sale Price' => 'min_variation_sale_price',
-				'Max Variation Sale Price' => 'max_variation_sale_price',
-				'Min Sale Price Variation Id' => 'min_sale_price_variation_id',
-				'Max Sale Price Variation Id' => 'max_sale_price_variation_id', */
-				'Default Attributes' => 'default_attributes',
-			);
+		if($module === 'WooCommerce' && in_array('import-woocommerce/index.php', $this->getActivePlugins())) {
+			global $wcomUci_admin;
+			$MetaFields = $wcomUci_admin->getMetaFieldsOfWcom();
 		}
 		if($module === 'WooCommerceVariations'){
 			$MetaFields = array(
@@ -1512,22 +1450,22 @@ class SmackUCIHelper {
 		return $WPMemberFields;
 	}
 
-	public function billing_information_for_users () {
-		$billing_and_shipping_info = array();
-		if(in_array( 'marketpress/marketpress.php', $this->get_active_plugins() ) || in_array( 'wordpress-ecommerce/marketpress.php', $this->get_active_plugins() )) {
-			foreach($this->def_mpCols as $mp_key => $mp_val) {
-				$billing_and_shipping_info['BSI'][$mp_val]['label'] = $mp_key;
-				$billing_and_shipping_info['BSI'][$mp_val]['name'] = $mp_val;
-			}
-		}
-		if(in_array( 'woocommerce/woocommerce.php', $this->get_active_plugins() )) {
-			foreach($this->def_wcCols as $woo_key => $woo_val) {
-				$billing_and_shipping_info['BSI'][$woo_val]['label'] = $woo_key;
-				$billing_and_shipping_info['BSI'][$woo_val]['name'] = $woo_val;
-			}
-		}
-		return $billing_and_shipping_info;
-	}
+	// public function billing_information_for_users () {
+	// 	$billing_and_shipping_info = array();
+	// 	if(in_array( 'marketpress/marketpress.php', $this->get_active_plugins() ) || in_array( 'wordpress-ecommerce/marketpress.php', $this->get_active_plugins() )) {
+	// 		foreach($this->def_mpCols as $mp_key => $mp_val) {
+	// 			$billing_and_shipping_info['BSI'][$mp_val]['label'] = $mp_key;
+	// 			$billing_and_shipping_info['BSI'][$mp_val]['name'] = $mp_val;
+	// 		}
+	// 	}
+	// 	if(in_array( 'woocommerce/woocommerce.php', $this->get_active_plugins() )) {
+	// 		foreach($this->def_wcCols as $woo_key => $woo_val) {
+	// 			$billing_and_shipping_info['BSI'][$woo_val]['label'] = $woo_key;
+	// 			$billing_and_shipping_info['BSI'][$woo_val]['name'] = $woo_val;
+	// 		}
+	// 	}
+	// 	return $billing_and_shipping_info;
+	// }
 
 	public function terms_and_taxonomies($type, $optionalType = null, $mode = null) {
 		$term_taxonomies = array();
@@ -1702,7 +1640,9 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 			'action' => isset($screen_data['import_config']['handle_duplicate']) ? $screen_data['import_config']['handle_duplicate'] : '',
 			'media_handling' => isset($mediaConfig) ? $mediaConfig : ''
 		);
-
+		$active_plugins = get_option("active_plugins");
+		// print_r($uci_admin->getRowMapping());
+		// die();
 		foreach ($uci_admin->getRowMapping() as $groupName => $groupValue) {
 			#$this->groupName = $groupName;
 			//$this->groupMapping = $groupMapping;
@@ -1750,7 +1690,10 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 					}
 					break;
 				case 'ECOMMETA':
-					# Note: Removed data import for eCommerce meta fields
+					if(in_array('import-woocommerce/index.php', $active_plugins)){
+						global $wcomUci_admin;
+						$wcomUci_admin->importDataOfWcomMeta($groupValue, $this->getLastImportId());
+					}
 					break;
 				case 'CORECUSTFIELDS':
 					$this->importDataForWPMetaFields($groupValue, $this->getLastImportId(), $importType);
@@ -1795,12 +1738,16 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 					$this->importTermsAndTaxonomies($groupValue, $this->getLastImportId(), $importType);
 					break;
 				case 'WPMEMBERS':
-					# Note: Removed data import for WPMembers fields on Users
+					if(in_array('import-users/index.php', $active_plugins)){
+						global $userUci_admin;
+						$returnArr = $userUci_admin->importDataOfusersWPMem($groupValue, $this->getLastImportId());
+					}
 					break;
 				case 'BSI':
-					require_once "class-uci-user-data-import.php";
-					$userObj = new SmackUCIUserDataImport();
-					$userObj->importDataForUsers_BillingShipping($groupValue, $this->getLastImportId());
+					if(in_array('import-users/index.php', $active_plugins)){
+						global $userUci_admin;
+						$returnArr = $userUci_admin->importDataOfusersBS($groupValue, $this->getLastImportId());
+					}
 					break;
 			}
 		}
@@ -1810,6 +1757,7 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 		$returnArr = array();
 		global $wpdb, $uci_admin;
 		$mode_of_affect = 'Inserted';
+
 		if(!$data_array['post_format'])
 		{
 			if($data_array['post_format_option'])
@@ -1822,9 +1770,11 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 		if($importType != 'ticket') {
 			switch ($importType) {
 				case 'Users':
-					require_once "class-uci-user-data-import.php";
-					$userObj = new SmackUCIUserDataImport();
-					$returnArr = $userObj->importUserInformation($data_array, $mode, $eventKey, $duplicateHandling);
+					$active_plugins = get_option("active_plugins");
+					if(in_array('import-users/index.php', $active_plugins)){
+						global $userUci_admin;
+						$returnArr = $userUci_admin->importDataOfusers($data_array, $mode, $eventKey, $duplicateHandling);
+					}
 					break;
 				case 'CustomerReviews':
 					require_once "class-uci-customer-reviews-data-import.php";
@@ -1865,6 +1815,11 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 					return $returnArr;
 					break;
 				case 'WooCommerce':
+					if(in_array('import-woocommerce/index.php', $this->getActivePlugins() ) ){
+						global $wcomUci_admin;
+						$returnArr = $wcomUci_admin->importDataOfWcommerceProduct($data_array, $importType, $mode, $eventKey, $duplicateHandling);
+					}
+				break;
 				case 'WooCommerceVariations':
 				case 'WooCommerceOrders':
 				case 'WooCommerceCoupons':
@@ -2107,7 +2062,7 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 		if($group_id_arr != '') {
 			$group_id_arr = substr( $group_id_arr, 0, - 1 );
 			// Get available CFS fields based on the import type and group id
-			$get_cfs_fields = $wpdb->get_results( $wpdb->prepare("SELECT meta_value FROM $wpdb->postmeta WHERE post_id IN ($group_id_arr) and meta_key = 'cfs_fields'"), ARRAY_A);
+			$get_cfs_fields = $wpdb->get_results( $wpdb->prepare("SELECT meta_value FROM $wpdb->postmeta WHERE post_id IN (%s) and meta_key =%s ",$group_id_arr,'cfs_fields'), ARRAY_A);
 		}
 		// Available CFS fields
 		if (!empty($get_cfs_fields)) {
@@ -2588,7 +2543,7 @@ $currentMapping = $this->generateDataArrayBasedOnGroups( $available_groups_type,
 
 	public function get_mapping_screendata($module,$post_values){
 		global $uci_admin;
-		$available_group = $uci_admin->available_widgets($module, $importAs);
+		$available_group = $uci_admin->available_widgets($module, '');
 		foreach ($available_group as $groupname => $groupvalue) {
 			foreach ($post_values as $mapping_key => $mapping_value) {
 				$current_mapped_group_mapkey = explode($groupvalue . '__mapping', $mapping_key);

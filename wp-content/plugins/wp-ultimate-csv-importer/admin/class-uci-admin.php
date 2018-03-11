@@ -62,23 +62,31 @@ class SmackUCIAdmin extends SmackUCIHelper {
 	 */
 	public static function admin_menus() {
 		global $submenu;
+		$active_plugins = get_option( "active_plugins" );
 		add_menu_page(SM_UCI_SETTINGS, SM_UCI_NAME, 'manage_options', SM_UCI_SLUG, array(__CLASS__, 'sm_uci_screens'),plugins_url("assets/images/wp-ultimate-csv-importer.png",dirname(__FILE__)));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Dashboard', 'wp-ultimate-csv-importer') , 'manage_options', 'sm-uci-dashboard', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Import / Update','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-import', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Managers','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-managers', array(__CLASS__, 'sm_uci_screens'));
+		if(in_array('wp-ultimate-exporter/index.php', $active_plugins)){
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Export','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-export', array(__CLASS__, 'sm_uci_screens'));
+		}
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Settings','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-settings', array(__CLASS__, 'sm_uci_screens'));
+		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Addons','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-addons', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, esc_html__('Support','wp-ultimate-csv-importer'), 'manage_options', 'sm-uci-support', array(__CLASS__, 'sm_uci_screens'));
 		unset($submenu[SM_UCI_SLUG][0]);
 	}
 
 	public static function admin_menus_for_other_roles() {
 		global $submenu;
+		$active_plugins = get_option( "active_plugins" );
 		add_menu_page(SM_UCI_SETTINGS, SM_UCI_NAME, '2', SM_UCI_SLUG, array(__CLASS__, 'sm_uci_screens'),plugins_url("assets/images/wp-ultimate-csv-importer.png",dirname(__FILE__)));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Dashboard', '2', 'sm-uci-dashboard', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Import / Update', '2', 'sm-uci-import', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Managers', '2', 'sm-uci-managers', array(__CLASS__, 'sm_uci_screens'));
+		if(in_array('wp-ultimate-exporter/index.php', $active_plugins)){
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Export', '2', 'sm-uci-export', array(__CLASS__, 'sm_uci_screens'));
+		}
+		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Addons', '2', 'sm-uci-addons', array(__CLASS__, 'sm_uci_screens'));
 		add_submenu_page(SM_UCI_SLUG, SM_UCI_NAME, 'Support', '2', 'sm-uci-support', array(__CLASS__, 'sm_uci_screens'));
 		unset($submenu[SM_UCI_SLUG][0]);
 	}
@@ -105,6 +113,9 @@ class SmackUCIAdmin extends SmackUCIHelper {
 			case 'sm-uci-support':
 				$uci_admin->show_support_screen();
 				break;
+			case 'sm-uci-addons':
+				$uci_admin->show_addon_screen();
+			break;
 			default:
 				break;
 		}
@@ -112,17 +123,22 @@ class SmackUCIAdmin extends SmackUCIHelper {
 	}
 
 	public function show_top_navigation_menus() {
-		echo '<div class="menu_bar wp_ultimate_csv_importer_pro">
+		$active_plugins = get_option( "active_plugins" );
+
+		$menu = '<div class="menu_bar wp_ultimate_csv_importer_pro">
                 <h2 class="nav-tab-wrapper">
                         <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-dashboard') .'" class="nav-tab nav-tab-active" id = "menu1">'.esc_html__('Dashboard','wp-ultimate-csv-importer').'</a>
                         <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-import') . '" class="nav-tab" id = "menu2">'.esc_html__('Import / Update','wp-ultimate-csv-importer').'</a>
-                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-managers') . '" class="nav-tab" id = "menu3">'.esc_html__('Manager','wp-ultimate-csv-importer').'</a>
-                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-export') . '" class="nav-tab" id = "menu4">'.esc_html__('Export','wp-ultimate-csv-importer').'</a>
-                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-settings') . '" class="nav-tab" id = "menu5">'.esc_html__('Settings','wp-ultimate-csv-importer').'</a>
-                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-support') . '" class="nav-tab" id = "menu6">'.esc_html__('Support','wp-ultimate-csv-importer').'</a>
+                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-managers') . '" class="nav-tab" id = "menu3">'.esc_html__('Manager','wp-ultimate-csv-importer').'</a>';
+        if(in_array('wp-ultimate-exporter/index.php', $active_plugins))
+        $menu .= '<a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-export') . '" class="nav-tab" id = "menu4">'.esc_html__('Export','wp-ultimate-csv-importer').'</a>';
+        $menu .= '<a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-settings') . '" class="nav-tab" id = "menu5">'.esc_html__('Settings','wp-ultimate-csv-importer').'</a>
+        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-addons') . '" class="nav-tab" id = "menu6">'.esc_html__('Addons','wp-ultimate-csv-importer').'</a>
+                        <a href="'. esc_url (admin_url() .'admin.php?page=sm-uci-support') . '" class="nav-tab" id = "menu7">'.esc_html__('Support','wp-ultimate-csv-importer').'</a>
                 </h2>
 		        </div>
 		<div id="notification_wp_csv"></div>';
+		echo $menu;
 		$myDir = SM_UCI_DEFAULT_UPLOADS_DIR;
                if(is_dir($myDir)) {
                 echo "<input type='hidden' id='is_found' name='is_found' value='dir found'/>";
@@ -202,7 +218,15 @@ class SmackUCIAdmin extends SmackUCIHelper {
         }
 
 	public function show_export_screen() {
-		include ( 'views/form-export-data.php' );
+		$active_plugins = get_option( "active_plugins" );
+		if(in_array('wp-ultimate-exporter/index.php', $active_plugins)){
+			global $expUci_admin;
+			$expUci_admin->show_export_screen();
+		}
+		else{
+			wp_redirect('admin.php?page=sm-uci-import'); die();
+		}
+		
 	}
 
 	public function show_settings_screen() {
@@ -214,6 +238,12 @@ class SmackUCIAdmin extends SmackUCIHelper {
                include ('views/form-support-view.php' );
                return true;
         }
+
+     public function show_addon_screen()
+     {
+     	include ('views/form-addons-view.php');
+     	return true;
+     }
 
 
 	public function show_notices($parseObj) {
@@ -467,7 +497,11 @@ class SmackUCIAdmin extends SmackUCIHelper {
 				$fields = $this->CFSFields();
 				break;
 			case 'Billing And Shipping Information':
-				$fields = $this->billing_information_for_users();
+				$active_plugins = get_option("active_plugins");
+				if(in_array('import-users/index.php', $active_plugins)){
+					global $userUci_admin;
+					$fields = $userUci_admin->billing_information_for_users();
+				}
 				break;
 			case 'WP e-Commerce Custom Fields':
 				$fields = $this->WPeCommerceCustomFields();

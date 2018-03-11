@@ -39,6 +39,13 @@ if ( ! defined( 'ABSPATH' ) )
         exit; // Exit if accessed directly
 $ucisettings = get_option('sm_uci_pro_settings');
 $main_mode = isset($ucisettings['enable_main_mode']) ? $ucisettings['enable_main_mode'] : '';
+$active_plugins = get_option( "active_plugins" );
+if (!in_array('import-users/index.php', $active_plugins)) {
+   $user_import = 'no';
+}
+else{
+   $user_import = 'yes';
+}
 ?>
 <div class="whole_body wp_ultimate_csv_importer_pro">
    <form class="form-horizontal" id="form_import_file" method="post" action= "<?php echo esc_url(admin_url() . 'admin.php?page=sm-uci-import&step=suggested_template');?>" enctype="multipart/form-data">
@@ -49,6 +56,11 @@ $main_mode = isset($ucisettings['enable_main_mode']) ? $ucisettings['enable_main
  <?php if($main_mode == 'on') { ?>
       <div id='wp_warning_main' style = 'margin-top: 10px;font-size: 15px;color: red;' class = 'error' > Maintenance mode is enabled. <a style="cursor: pointer;" onclick="saveoptions('main_check_import_off', 'off')"> Disable </a> </div>
 <?php } ?>
+<input type="hidden" id="check_user_import" value="<?php echo $user_import; ?>">
+<div id='user_import_warning' class = 'notice notice-warning is-dismissible' style="display: none;">
+   <p> Importing User feature in Ultimate CSV Importer FREE moved to a separate add-on. To continue import users, kindly install <a href="https://wordpress.org/plugins/import-users/" target="blank">Import Users</a> addon.
+   </p></div>
+
       <div id='wp_warning' style = 'display:none;' class = 'error'></div>
       <input type='hidden' id="siteurl" value="<?php echo site_url(); ?>" />
       <!-- Code Added For POP UP  Starts here -->
@@ -96,14 +108,17 @@ $main_mode = isset($ucisettings['enable_main_mode']) ? $ucisettings['enable_main
                         <a id="2" href="#" class="list-group-item text-left" disabled="disabled">
                            <h4 class="glyphicon glyphicon-upload icon-upload"></h4>
                            <?php echo esc_html__('Upload from FTP/SFTP','wp-ultimate-csv-importer');?>
+                           <span style="background-color: #ec3939 !important" class="new badge">Pro</span>
                         </a>
                         <a id="3" href="#" class="list-group-item text-left" disabled="disabled">
                            <h4 class="glyphicon glyphicon-upload icon-link2"></h4>
                            <?php echo esc_html__('Upload from URL','wp-ultimate-csv-importer');?>
+                           <span style="background-color: #ec3939 !important" class="new badge">Pro</span>
                         </a>
                         <a id="4" href="#" class="list-group-item text-left" disabled="disabled">
                            <h4 class="glyphicon glyphicon-upload icon-tree"></h4>
                            <?php echo esc_html__('Choose File in the Server','wp-ultimate-csv-importer');?>
+                           <span style="background-color: #ec3939 !important" class="new badge">Pro</span>
                         </a>
                      </div>
                   </div>
@@ -200,3 +215,4 @@ $main_mode = isset($ucisettings['enable_main_mode']) ? $ucisettings['enable_main
    </form>
 </div>
 
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>

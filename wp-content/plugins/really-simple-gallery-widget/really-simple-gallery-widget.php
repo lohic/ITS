@@ -3,7 +3,7 @@
 Plugin Name: Really Simple Gallery Widget
 Plugin URI: http://helen.wordpress.com/category/plugins/really-simple-gallery-widget/
 Description: Widget to display images attached to a specific page/post or from the entire media library. Includes options for number of images, display order (including true random), any registered image size, caption toggling, type of link, rel attribute, and link title prefix. Can also show images attached to the page/post currently being viewed.
-Version: 1.3
+Version: 1.4
 Author: Helen Hou-Sandi
 Author URI: http://helenhousandi.com
 */
@@ -11,13 +11,13 @@ Author URI: http://helenhousandi.com
 if ( ! class_exists( 'RSGWidget' ) ) {
 
 	class RSGWidget extends WP_Widget {
-		function RSGWidget() {
+		function __construct() {
 			$widget_ops = array(
 				'classname' => 'widget_rsg',
 				'description' => __('Grab photos from a specified post/page or the entire media library and display them in a widget area.', 'rsg-widget' )
 			);
 
-			$this->WP_Widget( 'RSGWidget', __('Really Simple Gallery Widget', 'rsg-widget' ), $widget_ops );
+			parent::__construct( 'RSGWidget', __('Really Simple Gallery Widget', 'rsg-widget' ), $widget_ops );
 
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 		}

@@ -8,9 +8,15 @@ if ( ! function_exists( 'wpt_shorten_url' ) ) { // prep work for future plug-in 
 	add_filter( 'wptt_shorten_link', 'wpt_shorten_url', 10, 4 );
 
 	function wpt_shorten_url( $url, $thisposttitle, $post_ID, $testmode = false, $store_urls = true ) {
-		wpt_mail( "Initial Link Data: #$post_ID", "$url, $thisposttitle, $post_ID, $testmode" ); // DEBUG
+		wpt_mail( "Initial Link", "$url, $thisposttitle, $post_ID, $testmode" ); // DEBUG
 		// filter link before sending to shortener or adding analytics
 		$shortener = get_option( 'jd_shortener' );
+		// if the URL already exists, return it without processing
+		if ( get_post_meta( $post_ID, '_wpt_short_url', true ) ) {
+			$shrink = get_post_meta( $post_ID, '_wpt_short_url', true );
+			
+			return $shrink;
+		}
 		$url = apply_filters( 'wpt_shorten_link', $url, $shortener, $post_ID );
 		if ( $testmode == false ) {
 			if ( get_option( 'use-twitter-analytics' ) == 1 || get_option( 'use_dynamic_analytics' ) == 1 ) {
@@ -38,7 +44,11 @@ if ( ! function_exists( 'wpt_shorten_url' ) ) { // prep work for future plug-in 
 				}
 				$medium = urlencode( trim( apply_filters( 'wpt_utm_medium', 'twitter' ) ) );
 				$source = urlencode( trim( apply_filters( 'wpt_utm_source', 'twitter' ) ) );
-				$url = add_query_arg( array( 'utm_campaign'=>$campaign, 'utm_medium'=>$medium, 'utm_source'=>$source ), $url );
+				$url = add_query_arg( array( 
+					'utm_campaign' => $campaign, 
+					'utm_medium'   => $medium, 
+					'utm_source'   => $source ), $url 
+				);
 			}
 			$url     = urldecode( trim( $url ) ); // prevent double-encoding
 			$encoded = urlencode( $url );
@@ -121,25 +131,29 @@ if ( ! function_exists( 'wpt_shorten_url' ) ) { // prep work for future plug-in 
 					$token       = stripcslashes( get_option( 'yourlstoken' ) );
 					$yourlsurl   = esc_url( get_option( 'yourlsurl' ) );
 					if ( $token ) {
-						$api_url = add_query_arg( array(
-								'signature' => $token,
-								'url'       => $encoded,
-								'action'    => 'shorturl',
-								'keyword'   => $keyword_format,
-								'format'    => 'json',							
-								'title'     => urlencode( $thisposttitle )
-							), $yourlsurl );
+						$args = array(
+							'signature' => $token,
+							'url'       => $encoded,
+							'action'    => 'shorturl',
+							'format'    => 'json',							
+							'title'     => urlencode( $thisposttitle )
+						);
 					} else {
-						$api_url = add_query_arg( array(
-								'username' => $yourlslogin,
-								'password' => $yourlsapi,
-								'url'      => $encoded,
-								'action'   => 'shorturl',
-								'keyword'  => $keyword_format,
-								'format'   => 'json',							
-								'title'     => urlencode( $thisposttitle )						
-							), $yourlsurl );
+						$args = array(
+							'username' => $yourlslogin,
+							'password' => $yourlsapi,
+							'url'      => $encoded,
+							'action'   => 'shorturl',
+							'format'   => 'json',							
+							'title'     => urlencode( $thisposttitle )						
+						);
 					}
+					if ( $keyword_format ) {
+						$args['keyword'] = $keyword_format;
+					}
+					
+					$api_url = add_query_arg( $args, $yourlsurl );
+					
 					$json = wpt_remote_json( $api_url, false );
 					wpt_mail( "YOURLS JSON Response", print_r( $json, 1 ) ); // DEBUG YOURLS response
 					if ( is_object( $json ) ) {
@@ -405,22 +419,26 @@ if ( ! function_exists( 'wpt_shorten_url' ) ) { // prep work for future plug-in 
 						<?php echo $form_end; ?>
 					<?php } else if ( $shortener == 5 || $shortener == 6 ) { ?>
 						<?php echo $form_start; ?>
+						<?php if ( $shortener == 5 ) { ?>
 						<p>
 							<label
-								for="yourlspath"><?php _e( 'Path to your YOURLS config file (Local installations)', 'wp-to-twitter' ); ?></label><br/><input
+								for="yourlspath"><?php _e( 'Path to your YOURLS config file', 'wp-to-twitter' ); ?></label><br/><input
 								type="text" id="yourlspath" name="yourlspath" size="60"
 								value="<?php esc_attr_e( get_option( 'yourlspath' ) ); ?>"/><br/>
 							<small><?php _e( 'Example:', 'wp-to-twitter' ); ?> <code>/home/username/www/www/yourls/user/config.php</code>
 							</small>
 						</p>
+						<?php } ?>
+						<?php if ( $shortener == 6 ) { ?>
 						<p>
 							<label
-								for="yourlsurl"><?php _e( 'URI to the YOURLS API (Remote installations)', 'wp-to-twitter' ); ?></label><br/><input
+								for="yourlsurl"><?php _e( 'URI to the YOURLS API', 'wp-to-twitter' ); ?></label><br/><input
 								type="text" id="yourlsurl" name="yourlsurl" size="60"
 								value="<?php esc_attr_e( get_option( 'yourlsurl' ) ); ?>"/><br/>
 							<small><?php _e( 'Example:', 'wp-to-twitter' ); ?> <code>http://domain.com/yourls-api.php</code>
 							</small>
 						</p>
+						<?php } ?>
 						<p>
 							<label
 								for="yourlstoken"><?php _e( "YOURLS signature token:", 'wp-to-twitter' ); ?></label>
@@ -524,20 +542,22 @@ if ( ! function_exists( 'wpt_shorten_url' ) ) { // prep work for future plug-in 
 			}
 			update_option( 'yourlsurl', trim( $post['yourlsurl'] ) );
 			// yourls path is deprecated.
-			if ( $post['yourlspath'] != '' ) {
+			if ( isset( $post['yourlspath'] ) && $post['yourlspath'] != '' ) {
 				update_option( 'yourlspath', trim( $post['yourlspath'] ) );
 				if ( file_exists( $post['yourlspath'] ) ) {
-					$message .= __( "YOURLS local server path added. ", 'wp-to-twitter' );
+					$message .= ' ' . __( "YOURLS local server path added. ", 'wp-to-twitter' );
 				} else {
-					$message .= __( "The path to your YOURLS installation is not correct. ", 'wp-to-twitter' );
+					$message .= ' ' . __( "The path to your YOURLS installation is not correct. ", 'wp-to-twitter' );
 				}
 			}
 			if ( $post['jd_keyword_format'] != '' ) {
 				update_option( 'jd_keyword_format', $post['jd_keyword_format'] );
 				if ( $post['jd_keyword_format'] == 1 ) {
-					$message .= __( "YOURLS will use Post ID for short URL slug.", 'wp-to-twitter' );
+					$message .= ' ' . __( "YOURLS will use Post ID for short URL slug.", 'wp-to-twitter' );
+				} else if ( $post['jd_keyword_format'] == 0 ) {
+					$message .= ' ' . __( 'YOURLS will use default URL structures.', 'wp-to-twitter' );
 				} else {
-					$message .= __( "YOURLS will use your custom keyword for short URL slug.", 'wp-to-twitter' );
+					$message .= ' ' . __( "YOURLS will use your custom keyword for short URL slug.", 'wp-to-twitter' );
 				}
 			}
 			if ( isset( $post['clear'] ) ) {

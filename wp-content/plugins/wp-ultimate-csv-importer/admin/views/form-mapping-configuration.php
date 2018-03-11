@@ -121,17 +121,25 @@ if(isset($_REQUEST['mapping_type']) && $_REQUEST['mapping_type'] == 'normal') {
       <?php $import_mode = $get_records[sanitize_key($_REQUEST['eventkey'])]['import_file']['import_mode']; ?>
       <div class="mapping_table">
          <?php
+	 $profeatures = array('acf_pro_fields','acf_fields','acf_repeater_fields','types_custom_fields','cctm_custom_fields','pods_custom_fields','yoast_seo_fields');
          $integrations = $uci_admin->available_widgets($import_type, $importAs);
          if(!empty($integrations)) :
             foreach($integrations as $widget_name => $plugin_file) {
                $widget_slug = strtolower(str_replace(' ', '_', $widget_name));
-               $fields = $uci_admin->get_widget_fields($widget_name, $import_type, $importAs);
+	       if(in_array($widget_slug,$profeatures)){
+			$upgrade_pro = '<span style="background-color: #ec3939 !important;float:right;font-size:14px;" class="new badge">Upgrade to Pro</span>';
+			$fields = '';
+	       }else{
+			$upgrade_pro = '';
+               		$fields = $uci_admin->get_widget_fields($widget_name, $import_type, $importAs);
+	       }
                ?>
                <div class="panel-group" id='accordion'>
                   <div class='panel panel-default' data-target="#<?php echo $widget_slug;?>" data-parent="#accordion">
                      <div id='<?php echo $widget_slug;?>' class='panel-heading' style='width:100%'  onclick="toggle_func('<?php echo $widget_slug;?>');">
                         <div id= "corehead" class="panel-title"> <b style=""> <?php if($widget_name == 'Core Fields'){ echo 'WordPress Fields'; } else { echo $widget_name; } ?> </b>
                            <span class = 'glyphicon glyphicon-plus' id = '<?php echo 'icon'.$widget_slug ?>' style="float:right;"> </span>
+			   <?php echo $upgrade_pro; ?>
                         </div>
                      </div>
                      <div id= '<?php echo $widget_slug;?>toggle'  style="height:auto;">
@@ -284,3 +292,5 @@ if(isset($_REQUEST['mapping_type']) && $_REQUEST['mapping_type'] == 'normal') {
    </form>
 </div>
 <input type='hidden' id='h1' name='h1' value='<?php if (isset($mappingcount)) { echo $mappingcount; } ?>'/>
+
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>

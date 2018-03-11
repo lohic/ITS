@@ -23,20 +23,6 @@ function relevanssi_wpml_filter($data) {
 					$filtered_hits[] = $hit;
 				}
 			}
-			elseif (function_exists('icl_object_id') && function_exists('pll_is_translated_post_type')) {
-				if (pll_is_translated_post_type($hit->post_type)) {
-					if (PLL()->model->post->get_language($hit->ID)->slug == ICL_LANGUAGE_CODE) {
-						$filtered_hits[] = $hit;
-					}
-					else if ($hit->ID == icl_object_id($hit->ID, $hit->post_type, false, ICL_LANGUAGE_CODE)) {
-						$filtered_hits[] = $hit;
-					}
-				}
-				else {
-					$filtered_hits[] = $hit;
-				}
-			}
-
 			// if there is no WPML but the target blog has identical language with current blog,
 			// we use the hits. Note en-US is not identical to en-GB!
 			elseif (get_bloginfo('language') == $lang) {
@@ -51,52 +37,220 @@ function relevanssi_wpml_filter($data) {
 	return $data;
 }
 
+/*
+ * If the Polylang allow all option is enabled, removes the Polylang language filter.
+ */
+function relevanssi_polylang_filter($query) {
+	$polylang_allow_all = get_option('relevanssi_polylang_all_languages');
+	if ($polylang_allow_all == "on") {
+		$ok_queries = array();
+
+		foreach ($query->tax_query->queries as $tax_query) {
+			if ($tax_query['taxonomy'] != 'language') $ok_queries[] = $tax_query;
+		}
+		$query->tax_query->queries = $ok_queries;
+	
+		if (isset($query->query_vars['tax_query'])) {
+			$ok_queries = array();
+			foreach ($query->query_vars['tax_query'] as $tax_query) {
+				if ($tax_query['taxonomy'] != 'language') $ok_queries[] = $tax_query;
+			}
+			$query->query_vars['tax_query'] = $ok_queries;
+		}
+
+		if (isset($query->query_vars['taxonomy']) && $query->query_vars['taxonomy'] === 'language') {
+			unset($query->query_vars['taxonomy']);
+			unset($query->query_vars['term']);
+		}
+	}
+
+	return $query;
+}
+
+/*
+ * Fetches a key-direction pair from the orderby array. Converts key names to match the post object parameters
+ * when necessary and seeds the random generator, if required.
+*/
+function relevanssi_get_next_key(&$orderby) {
+	if (!is_array($orderby) || count($orderby) < 1) return array('key' => null, 'dir' => null, 'compare' => null);
+	
+ 	list($key) = array_keys($orderby);
+	$dir = $orderby[$key];
+	unset($orderby[$key]);
+
+	$compare = "string";
+
+	if (strtolower($dir) == "rand") $key = "rand";
+	
+	if ('title' == $key) $key = 'post_title';
+	if ('date' == $key) $key = 'post_date';
+	if ('modified' == $key) $key = 'post_modified';
+	if ('parent' == $key) $key = 'post_parent';
+	if ('type' == $key) $key = 'post_type';
+	if ('name' == $key) $key = 'post_name';
+	if ('author' == $key) $key = 'post_author';
+	if ('relevance' == $key) $key = 'relevance_score';
+
+	$numeric_keys = array('menu_order', 'ID', 'post_parent', 'post_author', 'comment_count', 'relevance_score');
+	$date_keys = array('post_date', 'post_date_gmt', 'post_modified', 'post_modified_gmt');
+
+	if (in_array($key, $numeric_keys)) $compare = "number";
+	if (in_array($key, $date_keys)) $compare = "date";
+
+	if ('rand' == $key) {
+		if (is_numeric($dir)) srand($dir);
+	}
+	else {
+		$dir = strtolower($dir);
+		if ($dir != "asc") $dir = "desc";
+	}
+	
+	$values = array(
+		'key' => $key,
+		'dir' => $dir,
+		'compare' => $compare
+	);
+	return $values;
+}
+
+/*
+ * Fetches the key values for the item pair. If random order is required, will randomize the order.
+ */
+function relevanssi_get_compare_values($key, $item_1, $item_2) {
+    function_exists('mb_strtolower') ? $strtolower = 'mb_strtolower' : $strtolower = 'strtolower';
+
+	if ($key === "rand") {
+		do {
+			$key1 = rand();
+			$key2 = rand();
+		} while ($key1 == $key2);
+		$keys = array(
+			'key1' => $key1,
+			'key2' => $key2,
+		);
+		return $keys;
+	}
+
+	$key1 = "";
+	$key2 = "";
+
+	if ($key === "meta_value" || $key === "meta_value_num") {
+		global $wp_query;
+		$key = $wp_query->query_vars['meta_key'];
+		if (!isset($key)) return array("", "");
+
+		$key1 = get_post_meta($item_1->ID, $key, true);
+		if (empty($key1)) $key1 = apply_filters('relevanssi_missing_sort_key', $key1, $key);
+
+		$key2 = get_post_meta($item_2->ID, $key, true);
+		if (empty($key2)) $key2 = apply_filters('relevanssi_missing_sort_key', $key2, $key);
+	}
+	else {
+		if (isset($item_1->$key)) {
+			$key1 = call_user_func($strtolower, $item_1->$key);
+		}
+		else {
+			$key1 = apply_filters('relevanssi_missing_sort_key', $key1, $key);
+		}
+		if (isset($item_2->$key)) {
+			$key2 = call_user_func($strtolower, $item_2->$key);
+		}
+		else {
+			$key2 = apply_filters('relevanssi_missing_sort_key', $key2, $key);
+		}
+	}
+
+	$keys = array(
+		'key1' => $key1,
+		'key2' => $key2,
+	);
+	return $keys;
+}
+
+function relevanssi_compare_values($key1, $key2, $compare) {
+	$val = 0;
+	if ($compare === "date") {
+		if (strtotime($key1) > strtotime($key2)) {
+			$val = 1;
+		}
+		else if (strtotime($key1) < strtotime($key2)) {
+			$val = -1;
+		}
+	}
+	else if ($compare === "string") {
+		$val = relevanssi_mb_strcasecmp($key1, $key2);
+	}
+	else {
+		if ($key1 > $key2) {
+			$val = 1;
+		}
+		else if ($key1 < $key2) {
+			$val = -1;
+		}
+	}
+	return $val;
+}
+
+function relevanssi_mb_strcasecmp($str1, $str2, $encoding = null) {
+	if (!function_exists('mb_internal_encoding')) {
+		return strcasecmp($str1, $str2);
+	}
+	else {
+		if (null === $encoding) $encoding = mb_internal_encoding();
+		return strcmp(mb_strtoupper($str1, $encoding), mb_strtoupper($str2, $encoding));
+	}
+}
+
+function relevanssi_cmp_function($a, $b) {
+	global $relevanssi_keys, $relevanssi_dirs, $relevanssi_compares;
+	$level = -1;
+	$val = 0;
+
+	while ($val === 0) {
+		$level++;
+		if (!isset($relevanssi_keys[$level])) {
+			$level--;
+			break; // give up – we can't sort these two
+		}
+		$compare = $relevanssi_compares[$level];
+		$compare_values = relevanssi_get_compare_values($relevanssi_keys[$level], $a, $b);
+		$val = relevanssi_compare_values($compare_values['key1'], $compare_values['key2'], $compare);
+	}
+	
+	if ('asc' === $relevanssi_dirs[$level]) {
+		return $val;
+	}
+	else {
+		return $val * -1;
+	}
+}
+
 /**
  * Function by Matthew Hood http://my.php.net/manual/en/function.sort.php#75036
  */
- function relevanssi_object_sort(&$data, $key, $dir = 'desc') {
- 	 if ('title' == $key) $key = 'post_title';
- 	 if ('date' == $key) $key = 'post_date';
- 	 if (!isset($data[0]->$key)) return;			// trying to sort by a non-existent key
- 	 $dir = strtolower($dir);
-     function_exists('mb_strtolower') ? $strtolower = 'mb_strtolower' : $strtolower = 'strtolower';
-     for ($i = count($data) - 1; $i >= 0; $i--) {
-         $swapped = false;
-       	 for ($j = 0; $j < $i; $j++) {
-             $key1 = "";
-             $key2 = "";
-             if (isset($data[$j]->$key)) {
-                 $key1 = call_user_func($strtolower, $data[$j]->$key);
-             }
-             else {
-                 $key1 = apply_filters('relevanssi_missing_sort_key', $key1, $key);
-             }
-             if (isset($data[$j + 1]->$key)) {
-                 $key2 = call_user_func($strtolower, $data[$j + 1]->$key);
-             }
-             else {
-                 $key2 = apply_filters('relevanssi_missing_sort_key', $key2, $key);
-             }
-             if ('asc' == $dir) {
-                 if ($key1 > $key2) {
-                     $tmp = $data[$j];
-                     $data[$j] = $data[$j + 1];
-                     $data[$j + 1] = $tmp;
-                     $swapped = true;
-                 }
-             }
-             else {
-                 if ($key1 < $key2) {
-                     $tmp = $data[$j];
-                     $data[$j] = $data[$j + 1];
-                     $data[$j + 1] = $tmp;
-                     $swapped = true;
-                 }
-             }
-         }
-         if (!$swapped) return;
-     }
- }
+function relevanssi_object_sort(&$data, $orderby) {
+	global $relevanssi_keys, $relevanssi_dirs, $relevanssi_compares;
+	 
+	$relevanssi_keys = array();
+	$relevanssi_dirs = array();
+	$relevanssi_compares = array();
+	
+	do {
+		$values = relevanssi_get_next_key($orderby);
+		if (!empty($values['key'])) {
+			$relevanssi_keys[] = $values['key'];
+			$relevanssi_dirs[] = $values['dir'];
+			$relevanssi_compares[] = $values['compare'];
+		}
+	} while (!empty($values['key']));
+	
+	$primary_key = $relevanssi_keys[0];
+	if (!isset($data[0]->$primary_key)) return;			// trying to sort by a non-existent key
+
+	usort($data, "relevanssi_cmp_function");
+
+    return;
+}
 
 function relevanssi_show_matches($data, $hit) {
 	isset($data['body_matches'][$hit]) ? $body = $data['body_matches'][$hit] : $body = 0;
@@ -115,7 +269,7 @@ function relevanssi_show_matches($data, $hit) {
 		$total_hits += $hits;
 	}
 
-	$text = get_option('relevanssi_show_matches_text');
+	$text = stripslashes(get_option('relevanssi_show_matches_text'));
 	$replace_these = array("%body%", "%title%", "%tags%", "%categories%", "%taxonomies%", "%comments%", "%score%", "%terms%", "%total%");
 	$replacements = array($body, $title, $tag, $category, $taxonomy, $comment, $score, $term_hits, $total_hits);
 
@@ -158,6 +312,14 @@ function relevanssi_update_log($query, $hits) {
     }
 }
 
+function relevanssi_trim_logs() {
+	global $wpdb, $relevanssi_variables;
+	$interval = get_option('relevanssi_trim_logs');
+	$query = "DELETE FROM " . $relevanssi_variables['log_table'] . " WHERE time < TIMESTAMP(DATE_SUB(NOW(), INTERVAL $interval DAY))";
+
+	$wpdb->query($query);
+}
+
 /**
  *	Do note that while this function takes $post_ok as a parameter, it actually doesn't care much
  *  about the previous value, and will instead overwrite it. If you want to make sure your value
@@ -182,6 +344,22 @@ function relevanssi_default_post_ok($post_ok, $doc) {
 			// So whatever is in here doesn't actually run.
 			$current_user = wp_get_current_user();
 			$post_ok = awp_user_can('read_post', $doc, $current_user->ID);
+		}
+		else if (defined('GROUPS_CORE_VERSION')) {
+			// Groups
+			$current_user = wp_get_current_user();
+			$post_ok = Groups_Post_Access::user_can_read_post($doc, $current_user->ID);
+		}
+		else if (defined('SIMPLE_WP_MEMBERSHIP_VER')) {
+			// Simple Membership
+			$logged_in = SwpmMemberUtils::is_member_logged_in();
+			if (!$logged_in) {
+				$post_ok = false;
+			}
+			else {
+				$access_ctrl = SwpmAccessControl::get_instance();
+				$post_ok = $access_ctrl->can_i_read_post($doc);
+			}
 		}
 		else {
 			// Basic WordPress version
@@ -210,6 +388,8 @@ function relevanssi_default_post_ok($post_ok, $doc) {
 }
 
 /**
+ * This is only for legacy use, current versions of s2member do not need this anymore, they filter through pre_get_posts and 'not_in'.
+ * 
  * Return values:
  *  2: full access to post
  *  1: show title only
@@ -294,9 +474,11 @@ function relevanssi_extract_phrases($q) {
 		$phrase = call_user_func($substr_function, $q, $start + 1, $end - $start - 1);
 		$phrase = trim($phrase);
 
-		if (!empty($phrase)) $phrases[] = $phrase;
+		// Do not count single-word phrases as phrases
+		if (!empty($phrase) && str_word_count($phrase) > 1) $phrases[] = $phrase;
 		$pos = $end;
 	}
+
 	return $phrases;
 }
 
@@ -312,6 +494,15 @@ function relevanssi_recognize_phrases($q) {
 	if (count($phrases) > 0) {
 		foreach ($phrases as $phrase) {
 			$queries = array();
+			$phrase = str_replace("‘", '_', $phrase);
+			$phrase = str_replace("’", '_', $phrase);
+			$phrase = str_replace("'", '_', $phrase);
+			$phrase = str_replace('"', '_', $phrase);
+			$phrase = str_replace("”", '_', $phrase);
+			$phrase = str_replace("“", '_', $phrase);
+			$phrase = str_replace("„", '_', $phrase);
+			$phrase = str_replace("´", '_', $phrase);
+			$phrase = $wpdb->esc_like($phrase);
 			$phrase = esc_sql($phrase);
 			"on" == get_option("relevanssi_index_excerpt") ? $excerpt = " OR post_excerpt LIKE '%$phrase%'" : $excerpt = "";
 			$query = "(SELECT ID FROM $wpdb->posts
@@ -404,37 +595,79 @@ function relevanssi_remove_punct($a) {
 
 	$a = preg_replace ('/<[^>]*>/', ' ', $a);
 
-	$a = str_replace("\r", '', $a);    // --- replace with empty space
+	$punct_options = get_option('relevanssi_punctuation');
+
+	$hyphen_replacement = " ";
+	$endash_replacement = " ";
+	$emdash_replacement = " ";
+	if (isset($punct_options['hyphens']) && $punct_options['hyphens'] === "remove") {
+		$hyphen_replacement = "";
+		$endash_replacement = "";
+		$emdash_replacement = "";
+	}
+	if (isset($punct_options['hyphens']) && $punct_options['hyphens'] === "keep") {
+		$hyphen_replacement = "HYPHENTAIKASANA";
+		$endash_replacement = "ENDASHTAIKASANA";
+		$emdash_replacement = "EMDASHTAIKASANA";
+	}
+
+	$quote_replacement = " ";
+	if (isset($punct_options['quote']) && $punct_options['quotes'] === "remove") $quote_replacement = "";
+
+	$ampersand_replacement = " ";
+	if (isset($punct_options['ampersands']) && $punct_options['ampersands'] === "remove") {
+		$ampersand_replacement = "";
+	}
+	if (isset($punct_options['ampersands']) && $punct_options['ampersands'] === "keep") {
+		$ampersand_replacement = "AMPERSANDTAIKASANA";
+	}
+
+	$replacement_array = array(
+		"ß" => 'ss',
+		"·" => '',
+		"…" => '',
+		"€" => '',
+		"®" => '',
+		"©" => '',
+		"&shy;" => '',
+		"&nbsp;" => ' ',
+		'&#8217;' => ' ',
+		chr(194) . chr(160) => ' ',
+		"×" => ' ',
+		"'" => $quote_replacement,
+		"’" => $quote_replacement,
+		"‘" => $quote_replacement,
+		"”" => $quote_replacement,
+		"“" => $quote_replacement,
+		"„" => $quote_replacement,
+		"´" => $quote_replacement,
+		"-" => $hyphen_replacement,
+		"–" => $endash_replacement,
+		"—" => $emdash_replacement,
+		"&amp;" => $ampersand_replacement,
+		"&" => $ampersand_replacement,
+	);
+
+	$replacement_array = apply_filters('relevanssi_punctuation_filter', $replacement_array);
+
+	$a = str_replace("\r", ' ', $a);    // --- replace with empty space
 	$a = str_replace("\n", ' ', $a);   // --- replace with space
 	$a = str_replace("\t", ' ', $a);   // --- replace with space
 
 	$a = stripslashes($a);
 
-	$a = str_replace('ß', 'ss', $a);
-
-	$a = str_replace("·", '', $a);
-	$a = str_replace("…", '', $a);
-	$a = str_replace("€", '', $a);
-	$a = str_replace("&shy;", '', $a);
-
-	$a = str_replace(chr(194) . chr(160), ' ', $a);
-	$a = str_replace("&nbsp;", ' ', $a);
-	$a = str_replace('&#8217;', ' ', $a);
-	$a = str_replace("'", ' ', $a);
-	$a = str_replace("’", ' ', $a);
-	$a = str_replace("‘", ' ', $a);
-	$a = str_replace("”", ' ', $a);
-	$a = str_replace("“", ' ', $a);
-	$a = str_replace("„", ' ', $a);
-	$a = str_replace("´", ' ', $a);
-	$a = str_replace("—", ' ', $a);
-	$a = str_replace("–", ' ', $a);
-	$a = str_replace("×", ' ', $a);
-    $a = preg_replace('/[[:punct:]]+/u', ' ', $a);
+	$a = str_replace(array_keys($replacement_array), array_values($replacement_array), $a);
+	
+    $a = preg_replace('/[[:punct:]]+/u', apply_filters('relevanssi_default_punctuation_replacement', ' '), $a);
 
     $a = preg_replace('/[[:space:]]+/', ' ', $a);
-	$a = trim($a);
 
+	$a = str_replace('AMPERSANDTAIKASANA', '&', $a);
+	$a = str_replace('HYPHENTAIKASANA', '-', $a);
+	$a = str_replace('ENDASHTAIKASANA', '–', $a);
+	$a = str_replace('EMDASHTAIKASANA', '—', $a);
+	
+	$a = trim($a);
     return $a;
 }
 
@@ -513,7 +746,7 @@ function relevanssi_tokenize($str, $remove_stops = true, $min_word_length = -1) 
 	}
 
 	$str = apply_filters('relevanssi_remove_punctuation', $str);
-
+	
 	if ( function_exists('mb_strtolower') )
 		$str = mb_strtolower($str);
 	else
@@ -752,4 +985,196 @@ function relevanssi_debug_echo($s) {
 	}
 }
 
-?>
+function get_Relevanssi_Taxonomy_Walker() {
+	if (!class_exists("Relevanssi_Taxonomy_Walker")) {
+		class Relevanssi_Taxonomy_Walker extends Walker_Category_Checklist {
+			public $name;
+
+			public function start_el( &$output, $category, $depth = 0, $args = array(), $id = 0 ) {
+				if ( empty( $args['taxonomy'] ) ) {
+					$taxonomy = 'category';
+				} else {
+					$taxonomy = $args['taxonomy'];
+				}
+
+				$name = $this->name;
+
+				$args['popular_cats'] = empty( $args['popular_cats'] ) ? array() : $args['popular_cats'];
+				$class = in_array( $category->term_id, $args['popular_cats'] ) ? ' class="popular-category"' : '';
+
+				$args['selected_cats'] = empty( $args['selected_cats'] ) ? array() : $args['selected_cats'];
+
+				if ( ! empty( $args['list_only'] ) ) {
+					$aria_checked = 'false';
+					$inner_class = 'category';
+
+				if ( in_array( $category->term_id, $args['selected_cats'] ) ) {
+					$inner_class .= ' selected';
+					$aria_checked = 'true';
+				}
+
+				/** This filter is documented in wp-includes/category-template.php */
+				$output .= "\n" . '<li' . $class . '>' .
+					'<div class="' . $inner_class . '" data-term-id=' . $category->term_id .
+					' tabindex="0" role="checkbox" aria-checked="' . $aria_checked . '">' .
+					esc_html( apply_filters( 'the_category', $category->name ) ) . '</div>';
+			} else {
+				/** This filter is documented in wp-includes/category-template.php */
+				$output .= "\n<li id='{$taxonomy}-{$category->term_id}'$class>" .
+					'<label class="selectit"><input value="' . $category->term_id . '" type="checkbox" name="'.$name.'[]" id="in-'.$taxonomy.'-' . $category->term_id . '"' .
+					checked( in_array( $category->term_id, $args['selected_cats'] ), true, false ) .
+					disabled( empty( $args['disabled'] ), false, false ) . ' /> ' .
+					esc_html( apply_filters( 'the_category', $category->name ) ) . '</label>';
+				}
+			}
+		}
+	}
+
+	return new Relevanssi_Taxonomy_Walker;
+}
+
+// Thanks to Teemu Muikku
+add_action('switch_blog', 'relevanssi_switch_blog', 1, 2 );
+function relevanssi_switch_blog($new_blog, $prev_blog) {
+    global $relevanssi_variables, $wpdb;
+
+    if (!isset($relevanssi_variables) || !isset($relevanssi_variables['relevanssi_table'] ))
+        return;
+
+    $relevanssi_variables['relevanssi_table'] = $wpdb->prefix . "relevanssi";
+    $relevanssi_variables['stopword_table'] = $wpdb->prefix . "relevanssi_stopwords";
+    $relevanssi_variables['log_table'] = $wpdb->prefix . "relevanssi_log";
+}
+
+function relevanssi_get_permalink() {
+	$permalink = apply_filters('relevanssi_permalink', get_permalink());
+	$highlight_docs = get_option('relevanssi_highlight_docs');
+	$query = get_search_query();
+	if (isset($highlight_docs) && $highlight_docs != "off" && !empty($query)) {
+		global $post;
+		$frontpage_id = get_option('page_on_front');
+		if ($post->ID != $frontpage_id) {
+			// We won't add the highlight parameter for the front page, as that will break the link
+			$permalink = esc_attr(add_query_arg(array(
+				'highlight' => urlencode(get_search_query())
+				), $permalink )
+			);
+		}
+	}
+	return $permalink;
+}
+
+function relevanssi_the_permalink() {
+	echo relevanssi_get_permalink();
+}
+
+function relevanssi_permalink($content, $link_post = NULL) {
+	if ($link_post == NULL) {
+		global $post;
+		if (isset($post->link))
+			$content = $post->link;
+	}
+	return $content;
+}
+
+function relevanssi_didyoumean($query, $pre, $post, $n = 5, $echo = true) {
+	if (function_exists('relevanssi_premium_didyoumean')) {
+		$result = relevanssi_premium_didyoumean($query, $pre, $post, $n);
+	}
+	else {
+		$result = relevanssi_simple_didyoumean($query, $pre, $post, $n);
+	}
+	
+	if ($echo) echo $result;
+
+	return $result;
+}
+
+function relevanssi_simple_didyoumean($query, $pre, $post, $n = 5) {
+	global $wpdb, $relevanssi_variables, $wp_query;
+
+	$total_results = $wp_query->found_posts;
+
+	if ($total_results > $n) return;
+
+	$q = "SELECT query, count(query) as c, AVG(hits) as a FROM " . $relevanssi_variables['log_table'] . " WHERE hits > 1 GROUP BY query ORDER BY count(query) DESC";
+	$q = apply_filters('relevanssi_didyoumean_query', $q);
+
+	$data = $wpdb->get_results($q);
+
+	$query = htmlspecialchars_decode($query);
+	$tokens = relevanssi_tokenize($query);
+	$suggestion = "";
+	$suggestions_made = false;
+	foreach ($tokens as $token => $count) {
+		$closest = "";
+		$distance = -1;
+		foreach ($data as $row) {
+			if ($row->c < 2) break;
+		
+			if ($token === $row->query) {
+				$closest = "";
+				break;
+			}
+			else {
+				$lev = levenshtein($token, $row->query);
+
+				if ($lev < $distance || $distance < 0) {
+					if ($row->a > 0) {
+						$distance = $lev;
+						$closest = $row->query;
+						if ($lev < 2) break; // get the first with distance of 1 and go
+					}
+				}
+			}
+		}
+		if (!empty($closest)) {
+			$query = str_ireplace($token, $closest, $query);
+			$suggestions_made = true;
+		} 
+	}
+
+	if ($suggestions_made) {
+		$suggestion = $query;
+		$suggestion_enc = urlencode($suggestion);
+	}
+
+	$result = null;
+	if ($suggestion) {
+ 		$url = get_bloginfo('url');
+		$url = esc_attr(add_query_arg(array(
+			's' => urlencode($suggestion)
+
+			), $url ));
+		$url = apply_filters('relevanssi_didyoumean_url', $url, $query, $suggestion);
+
+		// Escape the suggestion to avoid XSS attacks
+		$suggestion = htmlspecialchars($suggestion);
+
+		$result = apply_filters('relevanssi_didyoumean_suggestion', "$pre<a href='$url'>$suggestion</a>$post");
+ 	}
+
+ 	return $result;
+}
+
+function relevanssi_wpmu_drop($tables) {
+	global $relevanssi_variables;
+	$tables[] = $relevanssi_variables['relevanssi_table'];
+	$tables[] = $relevanssi_variables['stopword_table'];
+	$tables[] = $relevanssi_variables['log_table'];
+	return $tables;
+}
+
+function relevanssi_get_post($id) {
+	if (function_exists('relevanssi_premium_get_post')) return relevanssi_premium_get_post($id);
+	
+	global $relevanssi_post_array;
+
+	if (isset($relevanssi_post_array[$id])) {
+		$post = $relevanssi_post_array[$id];
+	}
+	else {
+		$post = get_post($id);
+	}
+	return $post;
+}

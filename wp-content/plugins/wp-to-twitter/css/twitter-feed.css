@@ -17,8 +17,18 @@
     line-height: 1;
 }
 
+.wpt-twitter-id {
+	display: inline-block;
+	margin-top: .5em;
+}
+
 .wpt-tweet-time {
     font-size: 90%;
+}
+
+.wpt-latest-tweets li, .wpt-search-tweets li {
+	margin-bottom: .75em;
+	list-style-type: none;
 }
 
 .wpt-intents-border {
@@ -30,6 +40,7 @@
 .wpt-intents {
     padding: 0 0 5px;
     text-align: center;
+	font-size: 12px;
 }
 
 .wpt-twitter-image {

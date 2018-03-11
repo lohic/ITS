@@ -3,10 +3,10 @@ Contributors: joedolson
 Donate link: http://www.joedolson.com/donate/
 Tags: twitter, microblogging, su.pr, bitly, yourls, redirect, shortener, post, links, social, sharing, media, tweet
 Requires at least: 4.4
-Tested up to: 4.7
+Tested up to: 4.9
 License: GPLv2 or later
 Text Domain: wp-to-twitter
-Stable tag: 3.2.16
+Stable tag: 3.3.2
 
 Posts a Twitter update when you update your WordPress blog or add a link, with your chosen URL shortening service.
 
@@ -40,7 +40,7 @@ WP to Twitter uses a customizable Tweet template for Tweets sent when updating o
 Upgrade to [WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/) for extra features, including:
 
 * Authors can set up their own Twitter accounts in their profiles
-* Time delayed Tweeting
+* Time delayed Tweeting 
 * Scheduled Tweet management
 * Simultaneously Tweet to site and author Twitter accounts
 * Preview and Tweet comments
@@ -48,7 +48,7 @@ Upgrade to [WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/) for extra fe
 * Upload images to Twitter
 * Integrated Twitter Card support
 * Automatically schedule Tweets of old posts
-* [Check out WP Tweets PRO!](http://www.joedolson.com/wp-tweets-pro/)
+* [Try out WP Tweets PRO!](http://www.joedolson.com/wp-tweets-pro/)
 
 Want to stay up to date on WP to Twitter? [Follow me on Twitter!](https://twitter.com/joedolson)
 
@@ -58,7 +58,47 @@ Visit the [WP to Twitter translation site](https://translate.wordpress.org/proje
 
 Translating my plug-ins is always appreciated. Work on WP to Twitter translations at <a href="https://translate.wordpress.org/projects/wp-plugins/wp-to-twitter">the WordPress translation site</a>! You'll need a WordPress.org account to contribute!
 
+= Extending WP to Twitter =
+
+Check out my <a href="https://github.com/joedolson/plugin-extensions/tree/master/wp-to-twitter">GitHub repository of plug-in extensions</a>.
+
 == Changelog ==
+
+= 3.3.2 =
+
+* If short URL already stored, do not execute shortening routine
+* Remove instances of create_function for PHP 7.2 compat
+* Remove language files completely in favor of WordPress.org translations
+* CSS fix
+* Minor text changes
+
+= 3.3.1 =
+
+* Add temporary method to extend character count. Twitter has not yet released their new character counting library.
+* Minor style changes
+
+= 3.3.0 =
+
+* Bug fix: Fix arguments when using keywords with YOURLS
+* Bug fix: Problem saving settings in PHP 7.1 due to array assignment changes
+* New: Add filter to provide custom support any taxonomy as hashtags, 'wpt_hash_source' & 'wpt_hash_tag_sources'
+* New: Add cache refresh checkbox for Tweet widget
+* Update: Rewritten debugging mechanism
+* New: admin notice to indicate in debugging.
+* Remove Freemius (with all thanks to the Freemius team.)
+* Minor tweaks to Tweet widget CSS
+
+= 3.2.19 =
+
+* Bug fix: account for mixed return values in get_the_tags()
+
+= 3.2.18 =
+
+* Bug fix: Only save last Tweet if sent successfully (See https://wordpress.org/support/topic/character-count-not-updating-and-subsequent-tweets-not-going-through/#post-9338623)
+* Bug fix: in truncation settings, match displayed tag names to tags used in templates.
+* Text fixes: clarify YOURLS settings notices & fields
+* Add option: Hash tags from categories instead of tags
+* Bug fix: incorrect url
 
 = 3.2.17 =
 
@@ -341,4 +381,4 @@ Writing and maintaining a plug-in is a lot of work. You can help me by providing
 
 == Upgrade Notice ==
 
-* 3.2.10: Minor security fix; recommend updating immediately. 
+* 3.3.1: 280 character Tweets

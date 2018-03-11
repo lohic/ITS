@@ -251,7 +251,7 @@ if ( ! class_exists( 'wpt_TwitterOAuth' ) ) {
 			$remote    = wp_remote_get( $image_url );
 			if ( is_wp_error( $remote ) ) {
 				$transport = 'curl';
-				$binary = wp_get_curl( $image_url );
+				$binary    = wp_get_curl( $image_url );
 			} else {
 				$transport = 'wp_http';
 				$binary    = wp_remote_retrieve_body( $remote );
@@ -276,8 +276,9 @@ if ( ! class_exists( 'wpt_TwitterOAuth' ) ) {
 			);
 			
 			$response = $tmhOAuth->response['response'];
-			$full = $tmhOAuth->response;
-			wpt_mail( "Media Posted - Media ID #$args[media] ($transport)", 
+			$full     = $tmhOAuth->response;
+			wpt_mail( "Media Posted", "
+				Media ID #$args[media] ($transport)" . "\n\n" .  
 				"Twitter Response" . "\n" . print_r( $full, 1 ) . "\n\n" . 
 				"Attachment Details" . "\n" . print_r( $upload, 1 ) .  "\n\n" . 
 				"Img Request Response" . "\n" . print_r( $remote, 1 )
@@ -312,8 +313,10 @@ if ( ! class_exists( 'wpt_TwitterOAuth' ) ) {
 					array( 'body' => $image_alt ),
 					true
 				);
+				
+				wpt_debug( 'Test of post image alt', print_r( $post_image, 1 ) );
 			}
-			**/
+			*/
 						
 			return $media_id;
 		}

@@ -185,3 +185,5 @@ $records =  $uci_admin->GetPostValues(sanitize_key($_REQUEST['eventkey']));
 		<div class="mb20"></div>
 	</form>
 </div>
+
+<div style="font-size: 15px;text-align: center;padding-top: 20px">Powered by <a href="https://www.smackcoders.com?utm_source=wordpress&utm_medium=plugin&utm_campaign=free_csv_importer" target="blank">Smackcoders</a>.</div>
