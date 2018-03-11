@@ -109,6 +109,31 @@
         font-size: 0.8em;
         margin-top: 4px;
     }
+
+    .wp-caption.aligncenter{
+        margin: auto;
+    }
+
+    /* left elements */
+    .left, .wp-caption.alignleft {
+        float: left;
+    }
+    img.left, .wp-caption.alignleft{
+        margin-right: 1em;
+    }
+
+    /* right elements */
+    .right, .wp-caption.alignright {
+        float: right;
+    }
+    img.right, .wp-caption.alignright {
+        margin-left: 1em;
+    }
+
+    img.left, img.right, .wp-caption.alignleft, .wp-caption.alignright, .wp-caption.aligncenter {
+        margin-bottom: 5px;
+    }
+
         
 
 </style>

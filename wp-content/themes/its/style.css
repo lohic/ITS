@@ -429,23 +429,27 @@ body > script {display: none !important;}
 /* alignments (blocks and inline) */
 /* ------------------------------ */
 
+.wp-caption.aligncenter{
+	margin: auto;
+}
+
 /* left elements */
-.left {
+.left, .wp-caption.alignleft {
 	float: left;
 }
-img.left {
+img.left, .wp-caption.alignleft{
 	margin-right: 1em;
 }
 
 /* right elements */
-.right {
+.right, .wp-caption.alignright {
 	float: right;
 }
-img.right {
+img.right, .wp-caption.alignright {
 	margin-left: 1em;
 }
 
-img.left, img.right {
+img.left, img.right, .wp-caption.alignleft, .wp-caption.alignright, .wp-caption.aligncenter {
 	margin-bottom: 5px;
 }
 

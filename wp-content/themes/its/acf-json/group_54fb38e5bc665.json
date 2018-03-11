@@ -48,7 +48,7 @@
         },
         {
             "key": "field_570e6164639b2",
-            "label": "Intitul\u00e9 Focus",
+            "label": "Intitulé Focus",
             "name": "intitule_focus",
             "type": "text",
             "instructions": "",
@@ -72,7 +72,7 @@
             "label": "Focus",
             "name": "remontee_its",
             "type": "relationship",
-            "instructions": "Article \u00e0 afficher sur la page d'accueil, dans la rubrique FOCUS. Privil\u00e9gier un article avec une \"image \u00e0 la une\". Vous pouvez s\u00e9lectionner jusqu'\u00e0 10 articles et la s\u00e9lection se fera en al\u00e9atoire. Si vous n'en mettez qu'un, ce sera celui qui s'affichera \u00e0 chaque fois.",
+            "instructions": "Article à afficher sur la page d'accueil, dans la rubrique FOCUS. Privilégier un article avec une \"image à la une\". Vous pouvez sélectionner jusqu'à 10 articles et la sélection se fera en aléatoire. Si vous n'en mettez qu'un, ce sera celui qui s'affichera à chaque fois.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -89,12 +89,12 @@
             ],
             "elements": "",
             "min": "",
-            "max": 1,
+            "max": 10,
             "return_format": "object"
         },
         {
             "key": "field_570e6171639b3",
-            "label": "Intitul\u00e9 Regards sur\u2026",
+            "label": "Intitulé Regards sur…",
             "name": "intitule_regards",
             "type": "text",
             "instructions": "",
@@ -115,10 +115,10 @@
         },
         {
             "key": "field_5188fc8304739",
-            "label": "Regards sur\u2026",
+            "label": "Regards sur…",
             "name": "categorie_insititut_tribune_socialiste",
             "type": "relationship",
-            "instructions": "S\u00e9lectionnez parmi les Regards d'aujourd'hui (documents datant d'apr\u00e8s 1990) jusqu'\u00e0 10 articles. L'affichage se fera al\u00e9atoirement parmi cette liste, comme pour le Focus. ",
+            "instructions": "Sélectionnez parmi les Regards d'aujourd'hui (documents datant d'après 1990) jusqu'à 10 articles. L'affichage se fera aléatoirement parmi cette liste, comme pour le Focus. ",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -158,6 +158,25 @@
             "new_lines": "br",
             "readonly": 0,
             "disabled": 0
+        },
+        {
+            "key": "field_5a33bf6f9e195",
+            "label": "",
+            "name": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": "",
+            "maxlength": ""
         }
     ],
     "location": [
@@ -177,5 +196,5 @@
     "hide_on_screen": "",
     "active": 1,
     "description": "",
-    "modified": 1460560493
+    "modified": 1513367196
 }
