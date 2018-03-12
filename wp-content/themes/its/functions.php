@@ -12,7 +12,7 @@ if ( ! function_exists( 'its_setup' ) ){
 		add_image_size('newsletter-1x'		, 122, 165, true);
 		add_image_size('newsletter-2x'		, 261, 165, true);
 		add_image_size('newsletter-3x'		, 400, 165, true);
-		add_image_size('remontee_its'		, 300, 500, true); // 300, 270
+		add_image_size('remontee_its'		, 300, 1000, false); // 300, 270, true
 		add_image_size('biographie'			, 200, 200, true);
 		add_image_size('iconographie'		, 310, 310, false);
 		add_image_size('miniature-iconographie'		, 124, 124, false);
