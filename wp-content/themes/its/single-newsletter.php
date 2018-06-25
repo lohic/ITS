@@ -3,8 +3,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title><?php bloginfo('name') ?> | <?php the_title() ?></title>
+</head>
+
+<!-- GABARIT SINGLE-NEWSLETTER.PHP -->
+
+<body bgcolor="#CCCCCC">
+<style type="text/css">
+    body, h1, h2, h3, h4, h5, h6{
+        font-family:Tahoma, Arial, sans-serif;
+    }
+</style>
 <style type="text/css" media="print">
-	
 	
 	@media print{
 		.no_visible{
@@ -12,8 +21,8 @@
 		}
 		
 		.main h1,.main h2,.main h3,.main h4,.main h5,.main h6,.main p,.main li{
-		-webkit-hyphens:auto;
-	}
+    		-webkit-hyphens:auto;
+    	}
 		
 		.main p{
 			text-align:justify;
@@ -29,12 +38,23 @@
 	}
 
 </style>
-</head>
-
-<!-- GABARIT SINGLE-NEWSLETTER.PHP -->
-
-<body bgcolor="#CCCCCC">
 <?php if(have_posts()) : ?><?php while(have_posts()) : the_post(); ?>
+
+<?php
+
+	$repeater = get_field("actualites");
+	$count_actualites = count($repeater);
+
+	//print_r($repeater);
+
+	$largeur = 570;
+
+	if($count_actualites > 0 && $repeater !== false){
+		"supérieur à 0";
+		$largeur = 400;
+	}
+?>
+
 <?php if(get_field('pdf_file')) { ?>
 <table width="630" border="0" cellpadding="0" cellspacing="0" align="center" id="download" style="background:#333333;" class="no_visible">
     <tr>    
@@ -71,8 +91,8 @@
 <tr>
 		<td width="30">&nbsp;</td>
     	<td valign="top"> <!--colonne 1 -->
-        	<table class="main" width="400" border="0" cellpadding="0" cellspacing="0">
-            	<?php while(has_sub_field("main")): ?>
+        	<table class="main" width="<?php echo $largeur; ?>" border="0" cellpadding="0" cellspacing="0">
+            	<?php while(have_rows("main")): the_row(); ?>
                 	<tr>
                     	<td>
                 	<?php if(get_row_layout() == "actualite"): // layout: Content ?>
@@ -94,8 +114,12 @@
                                     </td>
                                 </tr>
                                 <tr>
+								<?php if($largeur == 400){ ?>
                                 	<td><img src="<?php bloginfo('template_url') ?>/images/news-separateur1.png" width="400" height="5" style="margin:12px 0;" alt=""/></td>
-                                </tr>
+								<?php }else{ ?>
+									<td><img src="<?php bloginfo('template_url') ?>/images/news-separateur3.png" width="570" height="5" style="margin:12px 0;" alt=""/></td>
+								<?php }?>
+								</tr>
                             </table>
                     <?php elseif(get_row_layout() == "rubrique"):?>
                     		<!-- TITRE RUBRIQUE -->
@@ -110,13 +134,13 @@
                 			<table width="100%" border="0" cellpadding="0" cellspacing="0"> 
                                 <tr>
                                     <td><h2 style="color:#F03;font-family:'Gill Sans','Gill Sans MT',Arial, sans-serif;font-weight:bold;font-size:15px;text-transform:uppercase;margin:3px 0;"><?php $field = the_sub_field('sousrubrique_texte');?></h2></td>
-                                </tr>
-                            </table>
-                	<?php elseif(get_row_layout() == "galerie"):?>
-                    		<!--tableau bandeau images -->
-                            <table border="0" cellpadding="0" cellspacing="0" width="400"> 
-                           		<tr>
-                            <?php
+								</tr>
+							</table>
+					<?php elseif(get_row_layout() == "galerie"):?>
+							<!--tableau bandeau images -->
+							<table border="0" cellpadding="0" cellspacing="0" width="400"> 
+								<tr>
+							<?php
 															
 								$image_ref[] = get_sub_field('image_1') ;
 								$image_ref[] = get_sub_field('image_2') ;
@@ -157,16 +181,21 @@
             	
             </table>
         </td>
+
+
+<?php if($count_actualites > 0  && $repeater !== false) : ?>
 		<td width="30">&nbsp;</td>
         
-        
+
         
         <!--colonne 2 -->
-        
-        
+
     	<td valign="top" width="140"> 
         	<table border="0" cellpadding="0" cellspacing="0">
-            	<?php while(has_sub_field("actualites")): ?>
+
+
+
+            	<?php while(have_rows("actualites")): the_row(); ?>
             	<tr>
                 	<td>
                 	<?php if(get_row_layout() == "actualite"): // layout: Content ?>
@@ -244,6 +273,9 @@
 
             </table>
         </td>
+
+    <?php endif; ?>
+
 		<td width="30">&nbsp;</td>
   </tr>
 </table>

@@ -374,6 +374,7 @@ img {
 	/*width: auto;*/
 	height: auto;
 	vertical-align: middle;
+	max-width:100%;
 }
 a img { border: 0; }
 
