@@ -1,0 +1,13 @@
+<?php 
+
+
+// VIMEO API
+// 
+$channel = 'decoloniserterritoires';
+
+$json = json_decode( file_get_contents('https://vimeo.com/api/v2/channel/'.$channel.'/info.json') );
+
+print_r( $json );
+
+
+print_r( file_get_contents( $json->rss ) );

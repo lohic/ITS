@@ -638,13 +638,6 @@ function wpuxss_admin_scripts()
 	}
 }
 
-/*
-<div class="vimeoBadge horizontal">
-<script src="https://vimeo.com/itsats/badgeo/?script=1&badge_layout=horizontal&badge_quantity=9&badge_size=80&badge_stream=channel&show_titles=no&badge_channel=694968"></script>
-</div>
-</div>
- */
-
 if( function_exists('acf_add_options_page') ) {
 	
 	acf_add_options_page();
