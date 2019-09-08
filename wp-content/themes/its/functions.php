@@ -567,11 +567,15 @@ function fondsvideo_shortcode( $atts ) {
 	extract( shortcode_atts( array(
 		'nbr' => 12,
 		'channel' => null,
+		'presentation' => null,
 		'notitle' => null,
 		'nodesc'  => null,
 	), $atts ) );
 
-	$url = 'https://vimeo.com/itsats/badgeo/?script=1&badge_layout=horizontal&badge_quantity='.$nbr.'&badge_size=160&badge_stream=uploaded&show_titles=yes';
+	// $url = 'https://vimeo.com/itsats/badgeo/?script=1&badge_layout=horizontal&badge_quantity='.$nbr.'&badge_size=160&badge_stream=uploaded&show_titles=yes';
+
+	// <div style='padding:56.25% 0 0 0;position:relative;'><iframe src='https://vimeo.com/showcase/5849577/embed' allowfullscreen frameborder='0' style='position:absolute;top:0;left:0;width:100%;height:100%;'></iframe></div>
+
 	if(!empty( $channel )){
 
 		
@@ -585,7 +589,11 @@ function fondsvideo_shortcode( $atts ) {
 
 	//https://vimeo.com/api/v2/channel/psuguerredalgerie/info.json
 
-	$retour = '<style id="badge-styles">
+	
+
+    if(!empty( $channel )){
+
+    	$retour = '<style id="badge-styles">
         /* You can modify these CSS styles */
         .vimeoBadge { margin: 0; padding: 0; }
         .vimeoBadge img { border: 0; }
@@ -602,24 +610,45 @@ function fondsvideo_shortcode( $atts ) {
 		.vimeoClear{ clear:both; margin-bottom:40px;}
     </style>';
 
-    if(!empty( $channel )){
     	if(!isset( $notitle )){
-    		$retour .= '<h3><a target="_blank" href="'.$channelInfo->url.'">'.$channelInfo->name.'</h3></a>';
+    		$retour .= '<h3><a target="_blank" href="'.$channelInfo->url.'">'.$channelInfo->name.'</a></h3>';
 		}
 		if(!isset( $nodesc )){
     		$retour .= '<p>'.$channelInfo->description.'</p>';
     	}
+
+    	$retour .= '<p>&nbsp;</p>';
+	    $retour .= '<p><div class="badge">
+	<div class="vimeoBadge horizontal">
+	<script src="'.$url.'"></script>
+	</div>
+	</div>
+	<div class="vimeoClear"></div></p>
+	';
     	
+    }else if(!empty( $presentation )){
+
+    	$presentationInfo = json_decode(file_get_contents('https://vimeo.com/api/oembed.json?url=https%3A//vimeo.com/album/'.$presentation));
+
+
+    	$retour = "";
+
+    	if(!isset( $notitle )){
+    		$retour .= '<h3><a target="_blank" href="https://vimeo.com/showcase/'.$presentation.'">'.$presentationInfo->title.'</a></h3>';
+		}
+		if(!isset( $nodesc )){
+    		$retour .= '<p>'.$presentationInfo->description.'</p>';
+    	}
+
+    	$retour .= '<div style="padding:56.25% 0 0 0;position:relative;""><iframe src="https://vimeo.com/showcase/'.$presentation.'/embed" allowfullscreen frameborder="0" style="position:absolute;top:0;left:0;width:100%;height:100%;""></iframe></div>';
+
+    }else{
+
+    	$retour = '';
+
     }
 
-    $retour .= '<p>&nbsp;</p>';
-    $retour .= '<p><div class="badge">
-<div class="vimeoBadge horizontal">
-<script src="'.$url.'"></script>
-</div>
-</div>
-<div class="vimeoClear"></div></p>
-';
+    
 
 	return $retour;
 }
@@ -637,6 +666,13 @@ function wpuxss_admin_scripts()
 		wp_enqueue_script( 'popup', home_url('/wp-includes/js/tinymce/plugins/wpdialogs/js/popup.js') );	
 	}
 }
+
+/*
+<div class="vimeoBadge horizontal">
+<script src="https://vimeo.com/itsats/badgeo/?script=1&badge_layout=horizontal&badge_quantity=9&badge_size=80&badge_stream=channel&show_titles=no&badge_channel=694968"></script>
+</div>
+</div>
+ */
 
 if( function_exists('acf_add_options_page') ) {
 	
