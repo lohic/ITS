@@ -22,7 +22,7 @@ if (!class_exists('NSU_Admin')) {
             add_action('bp_include', array($this, 'set_bp_active'));
 
             if(isset($_GET['nsu-hide-mc4wp-notice'])) {
-                add_option("nsu_hide_mc4wp_notice", true);
+                add_option("nsu_hide_mc4wp_notice", true, false);
             } elseif($this->options['mailinglist']['provider'] == 'mailchimp' && get_option('nsu_hide_mc4wp_notice') == false) {
                 add_action( 'admin_notices', array($this, 'notice_mailchimp_for_wp'));
             }
@@ -58,8 +58,7 @@ if (!class_exists('NSU_Admin')) {
             if(!stripos($hook, $this->hook)) { return false; }
 
             wp_enqueue_style($this->hook, plugins_url('newsletter-sign-up/assets/css/admin.css'));
-            wp_enqueue_script(array('jquery'));
-            wp_enqueue_script($this->hook, plugins_url('newsletter-sign-up/assets/js/admin.js'));           
+            wp_enqueue_script($this->hook, plugins_url('newsletter-sign-up/assets/js/admin.js'), array('jquery'));
         }
 
         /**
@@ -265,7 +264,8 @@ if (!class_exists('NSU_Admin')) {
          * @return array The new array containing all the settings links
          */
         public function add_settings_link($links) {
-            $settings_link = '<a href="admin.php?page=' . $this->hook . '">Settings</a>';
+            $url = admin_url( 'admin.php?page='.$this->hook);
+            $settings_link = '<a href="'. $url . '">Settings</a>';
             array_unshift($links, $settings_link);
             return $links;
         }

@@ -1,8 +1,8 @@
 === Import any XML or CSV File to WordPress ===
 Contributors: soflyy, wpallimport 
 Requires at least: 4.1
-Tested up to: 4.9.4
-Stable tag: 3.4.7
+Tested up to: 5.2.3
+Stable tag: 3.5.2
 Tags: wordpress csv import, wordpress xml import, xml, csv, datafeed, import, migrate, import csv to wordpress, import xml to wordpress, advanced xml import, advanced csv import, bulk csv import, bulk xml import, bulk data import, xml to custom post type, csv to custom post type, woocommerce csv import, woocommerce xml import, csv import, import csv, xml import, import xml, csv importer
 
 WP All Import is an extremely powerful importer that makes it easy to import any XML or CSV file to WordPress.
@@ -20,7 +20,7 @@ There are no special requirements that the elements in your file must be laid ou
 
 WP All Import can be used for everything from migrating content from a legacy CMS to WordPress to building a store with an affiliate datafeed to displaying live stock quotes or sports scores to building a real estate portal.
 
-Check out our [documentation and video tutorials](http://www.wpallimport.com/documentation/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=docs) to make the most of WP All Import.
+Check out our [documentation and video tutorials](http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=docs) to make the most of WP All Import.
 
 WP All Import integrates with our companion plugin, [WP All Export](https://wordpress.org/plugins/wp-all-export/). You can export posts, WooCommerce products, orders, users, or anything else with WP All Export. Then you can edit in Excel and re-import to the same site or migrate the data to another site with WP All Import.
 
@@ -43,9 +43,9 @@ For technical support from the developers, please consider purchasing WP All Imp
 
 * Guaranteed technical support via e-mail.
 
-[Upgrade to the Pro edition of WP All Import.](http://www.wpallimport.com/upgrade-to-pro/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=upgrade)
+[Upgrade to the Pro edition of WP All Import.](http://www.wpallimport.com/upgrade-to-pro/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=upgrade-to-pro)
 
-Need to [import XML and CSV to WooCommerce?](http://wordpress.org/plugins/woocommerce-xml-csv-product-import/) Check out our WooCommerce add-on.
+Need to [import XML and CSV to WooCommerce?](http://www.wpallimport.com/woocommerce-product-import/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=upgrade-to-pro) Check out our WooCommerce add-on.
 
 = WordPress CSV Imports =
 
@@ -57,7 +57,7 @@ When importing CSV files, your CSV should have UTF-8 encoding if you are having 
 
 In step 2 of a CSV import, you can specify an alternative delimiter if you aren't using a comma. WP All Import can import CSVs that are pipe-delimited, # delimited, or delimited/separated by any other character.
 
-For CSV import tutorials and example files, visit our [documentation](http://www.wpallimport.com/documentation/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=documentation). Please keep in mind CSV imports with WP All Import are just like XML imports - you have all the same functionality, and the process is exactly the same. Any of our tutorial videos that apply to XML files also apply to importing CSV files, so if you see a tutorial with us importing an XML file, know that you can follow the exact same steps for a CSV import.
+For CSV import tutorials and example files, visit our [documentation](http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=docs). Please keep in mind CSV imports with WP All Import are just like XML imports - you have all the same functionality, and the process is exactly the same. Any of our tutorial videos that apply to XML files also apply to importing CSV files, so if you see a tutorial with us importing an XML file, know that you can follow the exact same steps for a CSV import.
 
 = Add-Ons =
 
@@ -68,27 +68,27 @@ A number of premium add-ons are available to add functionality to the importer a
  - User Import Add-On - XML & CSV importer for users, including user_meta
  - Link Cloak Add-On - Auto-create redirects for links present during an XML or CSV import
 
-Learn more about our add-ons at [http://www.wpallimport.com/add-ons](http://www.wpallimport.com/add-ons?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=add-ons)
+Learn more about our add-ons at [http://www.wpallimport.com/add-ons](http://www.wpallimport.com/add-ons/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=add-ons)
 
-A [developer API](http://www.wpallimport.com/documentation/developers/action-reference/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=documentation) (action hooks) is also available.
+A [developer API](http://www.wpallimport.com/documentation/developers/action-reference/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=docs) (action hooks) is also available.
 
 == Premium Support ==
-Upgrade to the Pro edition of WP All Import for premium support.
+Support for the free version of WP All Import is handled through the WordPress.org community forums.
 
-E-mail: support@wpallimport.com
+Support is not guaranteed and is based on ability. For premium support over email, [purchase WP All Import.](https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=import-plugin-free&utm_medium=readme&utm_campaign=premium-support)
 
 == Import To WooCommerce ==
 
 Need to [import XML and CSV to WooCommerce?](http://wordpress.org/plugins/woocommerce-xml-csv-product-import/) Check out our WooCommerce add-on.
 
-[WooCommerce XML & CSV Import Pro Version](http://www.wpallimport.com/woocommerce-product-import?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=woocommerce)
+[WooCommerce XML & CSV Import Pro Version](http://www.wpallimport.com/woocommerce-product-import/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=import-wooco-products)
 
 == Frequently Asked Questions ==
 
 **What Size Files Can WP All Import Handle?**
 It depends on your hosting provider’s settings. We’ve imported files of 200Mb and up, even on shared hosts. WP All Import splits your file into manageable chunks. 
 
-[Various settings are available](http://www.wpallimport.com/documentation/advanced/import-processing/?utm_source=free-plugin&utm_medium=dot-org&utm_campaign=large-files) to make it possible to import larger files or speed up your import.
+[Various settings are available](http://www.wpallimport.com/documentation/advanced/import-processing/?utm_source=import-plugin-free&utm_medium=readme&utm_campaign=upgrade-to-pro) to make it possible to import larger files or speed up your import.
 
 *The answer to all of the following questions is yes:*
 
@@ -104,6 +104,34 @@ Does it work with special character encoding like Hebrew, Arabic, Chinese, etc?
 4. Manage imports.
 
 == Changelog ==
+
+= 3.5.2 =
+* improvement: match existing images by filename with underscores
+* API: add new action wp_all_import_before_preserve_post_data
+* API: add new filter wp_all_import_specified_delimiters
+* bug fix: attachment author not imported for API image imports
+
+= 3.5.1 =
+* improvement: add support for importing WebP images
+* bug fix: images in content not being imported when creating new simple WooCommerce products
+
+= 3.5.0 =
+* improvement: add support for .tsv format
+* API: add current XML variable to pmxi_article_data filter
+* bug fix: post terms incorrect after import complete, must be recounted
+* bug fix: empty attachments created when attachment import fails
+* bug fix: matching posts by ID matches and imports into attachments with the same ID
+
+= 3.4.9 =
+* bug fix: import using stream reader
+* bug fix: generation temporary files in system temporary folder   
+
+= 3.4.8 =
+* improvement: various import speed optimizations
+* bug fix: remove deprecated function calls for PHP 7.2 compatibility
+* bug fix: delete db tables when mu blog deleted
+* bug fix: remove BOM from import templates
+* bug fix: saving CSV delimiter when changing import file
 
 = 3.4.7 =
 * improvement: skip to the first specified record when importing only part of a file

@@ -83,7 +83,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 			{
 				$import->deletePosts(false);
 				$options = $import->options;
+				if ( empty($import->options['custom_type']) || $import->options['custom_type'] != 'shop_order')
+				{
 				$options['unique_key'] = '';
+				}
 				$import->set(array(
 					'options'  => $options,
 					'imported' => 0,
@@ -94,9 +97,16 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 				))->save();				
 			}
 		}
+		if ( ! empty($import->options['custom_type']) && $import->options['custom_type'] == 'shop_order')
+		{
+			wp_redirect(add_query_arg(array('id' => $import->id, 'action' => 'edit'), $this->baseUrl)); die();
+		}
+		else
+		{
 		wp_redirect(add_query_arg(array('id' => $import->id, 'action' => 'options'), $this->baseUrl)); die();
 	}
-	
+	}
+
 	/**
 	 * Edit Template
 	 */
@@ -407,7 +417,10 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 								$dom->loadXML($xml); // FIX: libxml xpath doesn't handle default namespace properly, so remove it upon XML load							
 								libxml_use_internal_errors($old);
 								$xpath = new DOMXPath($dom);
-								if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)) $chunks += $elements->length;
+								if (($elements = @$xpath->query($item->xpath)) and !empty($elements) and !empty($elements->length)){
+                                    $chunks += $elements->length;
+                                }
+
 								unset($dom, $xpath, $elements);										
 						    }
 						}	
@@ -428,7 +441,8 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 						$this->errors->add('root-element-validation', __('No matching elements found for Root element and XPath expression specified', 'wp_all_import_plugin'));						
 					}
 				}													   							
-			}							
+
+			}
 			
 			if ( $chunks ) { // xml is valid						
 				
@@ -520,7 +534,7 @@ class PMXI_Admin_Manage extends PMXI_Controller_Admin {
 			}
 			else
 			{			
-				wp_redirect(add_query_arg(array('pmxi_nt' => urlencode(__('File does not exists.', 'wp_all_import_plugin'))), $this->baseUrl)); die();
+				wp_redirect(add_query_arg(array('pmxi_nt' => urlencode(__('File does not exist.', 'wp_all_import_plugin'))), $this->baseUrl)); die();
 			}
 		}
 	}

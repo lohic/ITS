@@ -30,9 +30,12 @@
               <td><input type="checkbox" id="ns_precheck_checkbox" name="nsu_checkbox[precheck]" value="1" <?php checked($opts['precheck'], 1); ?> /></td>
             </tr>
             <tr valign="top">
-              <th scope="row"><label for="do_css_reset">Do a CSS 'reset' on the checkbox.</label> <small>(check this if checkbox appears in a weird place)</small></th>
+              <th scope="row"><label for="do_css_reset">Do a CSS 'reset' on the checkbox.</label> </th>
               <td>
-                <input type="checkbox" id="do_css_reset" name="nsu_checkbox[css_reset]" value="1" <?php checked($opts['css_reset'], 1); ?> />
+                <label>
+                    <input type="checkbox" id="do_css_reset" name="nsu_checkbox[css_reset]" value="1" <?php checked($opts['css_reset'], 1); ?> />
+                    <small>(check this if checkbox appears in a weird place)</small>
+                </label>
               </td>
             </tr>
             <tr valign="top"><th scope="row">Where to show the sign-up checkbox?</th>

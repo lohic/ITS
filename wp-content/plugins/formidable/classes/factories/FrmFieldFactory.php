@@ -31,6 +31,7 @@ class FrmFieldFactory {
 
 	/**
 	 * @since 3.0
+	 *
 	 * @param object|array $field
 	 */
 	public static function get_field_factory( $field ) {
@@ -41,6 +42,7 @@ class FrmFieldFactory {
 		} else {
 			$field_info = self::get_field_type( $field['type'], $field );
 		}
+
 		return $field_info;
 	}
 
@@ -48,6 +50,7 @@ class FrmFieldFactory {
 		if ( ! is_object( $field ) ) {
 			$field = FrmField::getOne( $field );
 		}
+
 		return self::get_field_type( $field->type, $field );
 	}
 
@@ -64,7 +67,7 @@ class FrmFieldFactory {
 		if ( empty( $class ) ) {
 			$field = new FrmFieldDefault( $field, $field_type );
 		} else {
-			$field = new $class( $field );
+			$field = new $class( $field, $field_type );
 		}
 
 		return $field;
@@ -96,6 +99,7 @@ class FrmFieldFactory {
 		);
 
 		$class = isset( $type_classes[ $field_type ] ) ? $type_classes[ $field_type ] : '';
+
 		return apply_filters( 'frm_get_field_type_class', $class, $field_type );
 	}
 
@@ -114,6 +118,7 @@ class FrmFieldFactory {
 	 */
 	public static function field_has_property( $type, $property ) {
 		$field = self::get_field_type( $type );
+
 		return $field->{$property};
 	}
 }

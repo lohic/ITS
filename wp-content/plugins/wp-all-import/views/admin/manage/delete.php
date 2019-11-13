@@ -1,5 +1,29 @@
 <h2><?php _e('Delete Import', 'wp_all_import_plugin') ?></h2>
 
+<?php
+
+if (!empty($item->options['custom_type'])){
+	switch ($item->options['custom_type']){
+		
+		default:
+			$custom_type = get_post_type_object( $item->options['custom_type'] );
+			if ( ! empty($custom_type) ) {
+				$custom_type->label = $custom_type->labels->name;
+				$custom_type->singular_label = $custom_type->labels->singular_name;
+			}
+			break;
+	}
+	$cpt_name = ( ! empty($custom_type)) ? ( ($associated_posts == 1) ? $custom_type->singular_label : $custom_type->label) : '';
+	// Remove mention of WooCommerce from post type string
+	$cpt_del_name = str_replace("WooCommerce", "", $cpt_name);
+}
+else{
+	$cpt_name = '';
+	$cpt_del_name = '';
+}
+
+?>
+
 <form method="post">	
 	<div class="input">
 		<div class="input">
@@ -9,8 +33,8 @@
 		</div>
 		<div class="input">
 			<input type="hidden" name="is_delete_posts" value="0"/>
-			<input type="checkbox" id="is_delete_posts" name="is_delete_posts" class="switcher" style="position: relative; top: 2px;" value="1"/> 
-			<label for="is_delete_posts"><?php printf(__('Delete posts created by %s','wp_all_import_plugin'), empty($item->friendly_name) ? $item->name : $item->friendly_name );?> </label>
+			<input type="checkbox" id="is_delete_posts" name="is_delete_posts" class="switcher" style="position: relative; top: 2px;" value="1"/>
+			<label for="is_delete_posts"><?php printf(__('Delete %s created by %s','wp_all_import_plugin'), strtolower($cpt_del_name), empty($item->friendly_name) ? $item->name : $item->friendly_name );?> </label>
 		</div>
 		<div class="switcher-target-is_delete_posts" style="padding: 5px 17px;">
 			<div class="input">

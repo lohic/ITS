@@ -16,17 +16,25 @@ if ( 'select' == $field['data_type'] ) {
 		?>
 <select <?php echo $disabled ?> name="<?php echo esc_attr( $field_name ) ?>" id="<?php echo esc_attr( $html_id ) ?>" <?php do_action('frm_field_input_html', $field) ?>>
 <?php
+		$placeholder = FrmField::get_option( $field, 'placeholder' );
 		foreach ( $field['options'] as $opt ) {
-			$opt_value = ( $opt == $field['lookup_placeholder_text'] ) ? '' : $opt;
-			$selected = ( in_array( $opt_value, $saved_value_array ) ) ? ' selected="selected"' : ''; ?>
-<option value="<?php echo esc_attr( $opt_value ) ?>"<?php echo $selected ?>><?php echo ($opt == '') ? ' ' : esc_html( $opt ); ?></option>
+			$is_placeholder = ( $opt == $placeholder );
+			if ( $is_placeholder && ( $field['multiple'] || $field['autocom'] ) ) {
+				$opt = '';
+			}
+
+			$opt_value = $is_placeholder ? '' : $opt;
+			$selected = ( in_array( $opt_value, $saved_value_array ) && $opt_value !== '' ) ? ' selected="selected"' : '';
+			?>
+<option value="<?php echo esc_attr( $opt_value ); ?>"<?php echo $selected; ?>><?php
+	echo ( $opt == '' ) ? ' ' : esc_html( $opt );
+?></option>
 <?php
 		}
 ?>
 </select>
 <?php
     }
-
 } else if ( 'radio' == $field['data_type'] ) {
 	 // Radio Button Lookup Field
 
@@ -50,4 +58,12 @@ if ( 'select' == $field['data_type'] ) {
 	 // Text Lookup Field
 
 	 ?><input type="text" id="<?php echo esc_attr( $html_id ) ?>" name="<?php echo esc_attr( $field_name ) ?>" value="<?php echo esc_attr( $field['value'] ) ?>" <?php do_action('frm_field_input_html', $field) ?><?php echo $disabled ?>/><?php
+} elseif ( $field['data_type'] === 'data' && ! empty( $field['watch_lookup'] ) && is_numeric( $field['get_values_field'] ) ) {
+	$value = implode( ', ', $saved_value_array );
+	?>
+	<p>
+		<?php echo wp_kses_post( $value ); ?>
+	</p>
+	<input type="hidden" value="<?php echo esc_attr( $value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
+	<?php
 }

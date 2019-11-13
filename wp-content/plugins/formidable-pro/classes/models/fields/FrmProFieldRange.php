@@ -15,7 +15,6 @@ class FrmProFieldRange extends FrmFieldType {
 		$settings = array(
 			'invalid' => true,
 			'range'   => true,
-			'default_value' => true,
 		);
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
@@ -63,6 +62,9 @@ class FrmProFieldRange extends FrmFieldType {
 	public function front_field_input( $args, $shortcode_atts ) {
 		$input_html = $this->get_field_input_html_hook( $this->field );
 		$this->add_aria_description( $args, $input_html );
+		if ( is_callable( array( $this, 'add_min_max' ) ) ) {
+			$this->add_min_max( $args, $input_html );
+		}
 
 		$default = $this->get_field_column('default_value');
 		$starting_value = ( '' === $this->field['value'] || false === $this->field['value'] ) ? $default : $this->field['value'];
@@ -74,5 +76,12 @@ class FrmProFieldRange extends FrmFieldType {
 		$input .= '</div>';
 
 		return $input;
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
 	}
 }

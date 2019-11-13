@@ -1,7 +1,16 @@
 <?php
+$max = FrmField::get_option( $field, 'maxnum' );
+if ( $max !== '' ) {
+	$min = FrmField::get_option( $field, 'minnum' );
+	if ( $min !== '' ) {
+		$field['options'] = range( $min, $max );
+	}
+}
+
 if ( is_array($field['options']) ) {
     if ( ! isset($field['value']) ) {
-        $field['value'] = maybe_unserialize($field['default_value']);
+		$field['value'] = $field['default_value'];
+		FrmProAppHelper::unserialize_or_decode( $field['value'] );
     }
 
     foreach ( $field['options'] as $opt_key => $opt ) {
@@ -18,5 +27,6 @@ if ( is_array($field['options']) ) {
 <?php
 
 }
-} ?>
+}
+?>
 <div style="clear:both;"></div>

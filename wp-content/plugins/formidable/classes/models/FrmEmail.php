@@ -85,7 +85,7 @@ class FrmEmail {
 		$to = $this->prepare_email_setting( $this->settings['email_to'], $user_id_args );
 		$to = $this->explode_emails( $to );
 
-		$where = array(
+		$where  = array(
 			'it.field_id !' => 0,
 			'it.item_id'    => $this->entry->id,
 		);
@@ -286,16 +286,19 @@ class FrmEmail {
 
 		$prev_mail_body = $this->message;
 		$pass_entry     = clone $this->entry; // make a copy to prevent changes by reference
-		$mail_body      = FrmEntriesHelper::replace_default_message( $prev_mail_body, array(
-			'id'         => $this->entry->id,
-			'entry'      => $pass_entry,
-			'plain_text' => $this->is_plain_text,
-			'user_info'  => $this->include_user_info,
-		) );
+		$mail_body      = FrmEntriesHelper::replace_default_message(
+			$prev_mail_body,
+			array(
+				'id'         => $this->entry->id,
+				'entry'      => $pass_entry,
+				'plain_text' => $this->is_plain_text,
+				'user_info'  => $this->include_user_info,
+			)
+		);
 
 		// Add the user info if it isn't already included
 		if ( $this->include_user_info && $prev_mail_body === $mail_body ) {
-			$data = maybe_unserialize( $this->entry->description );
+			$data      = $this->entry->description;
 			$mail_body .= "\r\n\r\n" . __( 'User Information', 'formidable' ) . "\r\n";
 			$this->maybe_add_ip( $mail_body );
 			$mail_body .= __( 'User-Agent (Browser/OS)', 'formidable' ) . ': ' . FrmEntriesHelper::get_browser( $data['browser'] ) . "\r\n";
@@ -345,18 +348,20 @@ class FrmEmail {
 			$send = false;
 		} else {
 
+			$filter_args = array(
+				'message'   => $this->message,
+				'subject'   => $this->subject,
+				'recipient' => $this->to,
+				'header'    => $this->package_header(),
+			);
+
 			/**
 			 * Stop an email based on the message, subject, recipient,
 			 * or any information included in the email header
 			 *
 			 * @since 2.2.8
 			 */
-			$send = apply_filters( 'frm_send_email', true, array(
-				'message'   => $this->message,
-				'subject'   => $this->subject,
-				'recipient' => $this->to,
-				'header'    => $this->package_header(),
-			) );
+			$send = apply_filters( 'frm_send_email', true, $filter_args );
 		}
 
 		return $send;
@@ -412,10 +417,14 @@ class FrmEmail {
 	 * @return bool
 	 */
 	private function send_single( $recipient ) {
-		$header = apply_filters( 'frm_email_header', $this->package_header(), array(
-			'to_email' => $recipient,
-			'subject'  => $this->subject,
-		) );
+		$header = apply_filters(
+			'frm_email_header',
+			$this->package_header(),
+			array(
+				'to_email' => $recipient,
+				'subject'  => $this->subject,
+			)
+		);
 
 		$subject = $this->encode_subject( $this->subject );
 
@@ -440,7 +449,7 @@ class FrmEmail {
 	 * @return array
 	 */
 	private function package_header() {
-		$header   = array();
+		$header = array();
 
 		if ( ! empty( $this->cc ) ) {
 			$header[] = 'CC: ' . implode( ',', $this->cc );
@@ -513,6 +522,7 @@ class FrmEmail {
 	 * @since 2.03.04
 	 *
 	 * @param string $emails
+	 *
 	 * @return array|string $emails
 	 */
 	private function explode_emails( $emails ) {
@@ -628,6 +638,7 @@ class FrmEmail {
 			$parts = explode( '<', $email );
 			$email = trim( $parts[1], '>' );
 		}
+
 		return $email;
 	}
 
@@ -662,6 +673,7 @@ class FrmEmail {
 		if ( '' !== $name ) {
 			$email = $name . ' <' . $email . '>';
 		}
+
 		return $email;
 	}
 
@@ -681,17 +693,20 @@ class FrmEmail {
 					continue;
 				}
 
-				do_action( 'frm_send_to_not_email', array(
-					'e'           => $recipient,
-					'subject'     => $this->subject,
-					'mail_body'   => $this->message,
-					'reply_to'    => $this->reply_to,
-					'from'        => $this->from,
-					'plain_text'  => $this->is_plain_text,
-					'attachments' => $this->attachments,
-					'form'        => $this->form,
-					'email_key'   => $key,
-				) );
+				do_action(
+					'frm_send_to_not_email',
+					array(
+						'e'           => $recipient,
+						'subject'     => $this->subject,
+						'mail_body'   => $this->message,
+						'reply_to'    => $this->reply_to,
+						'from'        => $this->from,
+						'plain_text'  => $this->is_plain_text,
+						'attachments' => $this->attachments,
+						'form'        => $this->form,
+						'email_key'   => $key,
+					)
+				);
 
 				// Remove phone number from to addresses
 				unset( $this->to[ $key ] );

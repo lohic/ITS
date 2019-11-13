@@ -26,7 +26,7 @@ final class XmlImportTemplateScanner
     'ENDFOREACH',
     'WITH',
     'ENDWITH',
-	  'MATH',
+	'MATH',
     'SPINTAX'
   );
 

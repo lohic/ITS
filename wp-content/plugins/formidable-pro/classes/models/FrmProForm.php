@@ -1,5 +1,5 @@
 <?php
-class FrmProForm{
+class FrmProForm {
 
 	public static function update_options( $options, $values ) {
 		self::fill_option_defaults( $options, $values );
@@ -16,7 +16,7 @@ class FrmProForm{
 		}
 
 		if ( is_multisite() ) {
-			$options['copy'] = (isset($values['options']['copy'])) ? $values['options']['copy'] : 0;
+			$options['copy'] = isset( $values['options']['copy'] ) ? $values['options']['copy'] : 0;
 		}
 
 		return $options;
@@ -38,11 +38,12 @@ class FrmProForm{
 
 	/**
 	 * Create or remove the htaccess for this form folder
+	 *
 	 * @since 2.02
 	 */
 	private static function setup_file_protection( $atts ) {
 		$previous_opts = FrmDb::get_var( 'frm_forms', array( 'id' => $atts['form_id'] ), 'options' );
-		$previous_opts = maybe_unserialize( $previous_opts );
+		FrmProAppHelper::unserialize_or_decode( $previous_opts );
 		$previous_val = isset( $previous_opts['protect_files'] ) ? $previous_opts['protect_files'] : 0;
 
 		if ( $previous_val != $atts['new'] ) {
@@ -68,7 +69,7 @@ class FrmProForm{
 	/**
 	 * @since 2.02
 	 */
-	private static function get_htaccess_content( &$content ) {
+	public static function get_htaccess_content( &$content ) {
 		$url = home_url();
 		$url = str_replace( array( 'http://', 'https://' ), '', $url );
 
@@ -77,7 +78,7 @@ class FrmProForm{
 		$content .= 'RewriteRule \.*$ - [F]' . "\r\n";
 	}
 
-    public static function save_wppost_actions($settings, $action) {
+	public static function save_wppost_actions( $settings, $action ) {
         $form_id = $action['menu_order'];
 
         if ( isset($settings['post_custom_fields']) ) {
@@ -87,10 +88,10 @@ class FrmProForm{
                 }
 
                 if ( $n['meta_name'] == '' && $n['custom_meta_name'] != '' ) {
-                    $settings['post_custom_fields'][$cf_key]['meta_name'] = $n['custom_meta_name'];
+					$settings['post_custom_fields'][ $cf_key ]['meta_name'] = $n['custom_meta_name'];
                 }
 
-                unset($settings['post_custom_fields'][$cf_key]['custom_meta_name']);
+				unset( $settings['post_custom_fields'][ $cf_key ]['custom_meta_name'] );
 
                 unset($cf_key, $n);
             }
@@ -116,7 +117,7 @@ class FrmProForm{
             } else if ( 'new' == $settings['display_id'] ) {
                 // Get form name for View title
                 $form = FrmForm::getOne( $form_id );
-                if ( !empty( $form->name ) ) {
+				if ( ! empty( $form->name ) ) {
                     $post_title = $form->name;
                 } else {
                     $post_title = __( 'Single Post', 'formidable-pro' );
@@ -146,7 +147,7 @@ class FrmProForm{
         return $settings;
     }
 
-    private static function create_post_category_field(array &$settings, $form_id) {
+	private static function create_post_category_field( array &$settings, $form_id ) {
         if ( ! isset($settings['post_category']) || ! $settings['post_category'] ) {
             return;
         }
@@ -163,13 +164,13 @@ class FrmProForm{
             $new_values['field_options']['post_field'] = 'post_category';
             $new_values['field_options']['exclude_cat'] = isset($field_name['exclude_cat']) ? $field_name['exclude_cat'] : 0;
 
-            $settings['post_category'][$k]['field_id'] = FrmField::create( $new_values );
+			$settings['post_category'][ $k ]['field_id'] = FrmField::create( $new_values );
 
             unset($new_values, $k, $field_name);
         }
     }
 
-    private static function create_post_status_field(array &$settings, $form_id) {
+	private static function create_post_status_field( array &$settings, $form_id ) {
         if ( ! isset($settings['post_status']) || 'dropdown' != $settings['post_status'] ) {
             return;
         }
@@ -183,7 +184,7 @@ class FrmProForm{
         $settings['post_status'] = FrmField::create( $new_values );
     }
 
-    public static function update_form_field_options($field_options, $field) {
+	public static function update_form_field_options( $field_options, $field ) {
         $field_options['post_field'] = $field_options['custom_field'] = '';
         $field_options['taxonomy'] = 'category';
         $field_options['exclude_cat'] = 0;
@@ -235,18 +236,29 @@ class FrmProForm{
 	public static function update( $id, $values ) {
         global $wpdb;
 
-		if ( isset( $values['options'] ) ) {
-            $logged_in = isset($values['logged_in']) ? $values['logged_in'] : 0;
-            $editable = isset($values['editable']) ? $values['editable'] : 0;
-            $updated = $wpdb->update( $wpdb->prefix .'frm_forms', array( 'logged_in' => $logged_in, 'editable' => $editable), array( 'id' => $id ) );
-			if ( $updated ) {
-				FrmForm::clear_form_cache();
-				unset( $updated );
-			}
-        }
-    }
+		$action = FrmAppHelper::get_param( 'frm_action', '', 'post', 'sanitize_text_field' );
+		if ( ! isset( $values['options'] ) || $action !== 'update_settings' ) {
+			return;
+		}
 
-    public static function after_duplicate($new_opts) {
+		$logged_in = isset( $values['logged_in'] ) ? $values['logged_in'] : 0;
+		$editable = isset( $values['editable'] ) ? $values['editable'] : 0;
+		$updated = $wpdb->update(
+			$wpdb->prefix . 'frm_forms',
+			array(
+				'logged_in' => $logged_in,
+				'editable' => $editable,
+			),
+			array( 'id' => $id )
+		);
+
+		if ( $updated ) {
+			FrmForm::clear_form_cache();
+			unset( $updated );
+		}
+	}
+
+	public static function after_duplicate( $new_opts ) {
         if ( isset($new_opts['success_url']) ) {
             $new_opts['success_url'] = FrmFieldsHelper::switch_field_ids($new_opts['success_url']);
         }
@@ -261,13 +273,60 @@ class FrmProForm{
 	}
 
 	public static function is_ajax_on( $form ) {
-		$ajax = isset( $form->options['ajax_submit' ] ) ? $form->options['ajax_submit'] : 0;
+		$ajax = isset( $form->options['ajax_submit'] ) ? $form->options['ajax_submit'] : 0;
 		return $ajax;
+	}
+
+	/**
+	 * @since 3.04
+	 *
+	 * @param object $form
+	 * @return bool
+	 */
+	public static function is_open( $form ) {
+		$options = $form->options;
+
+		if ( ! isset( $options['open_status'] ) || empty( $options['open_status'] ) ) {
+			return true;
+		}
+
+		if ( $options['open_status'] === 'closed' ) {
+			return false;
+		}
+
+		if ( strpos( $options['open_status'], 'schedule' ) !== false ) {
+			$is_started = self::has_time_passed( $options['open_date'], true );
+			$is_ended   = self::has_time_passed( $options['close_date'], false );
+			$is_open    = $is_started && ! $is_ended;
+
+			if ( ! $is_open ) {
+				return false;
+			}
+		}
+
+		if ( strpos( $options['open_status'], 'limit' ) !== false && ! empty( $options['max_entries'] ) ) {
+			$count = FrmEntry::getRecordCount( $form->id );
+			return ( (int) $count < (int) $options['max_entries'] );
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * @since 3.04
+	 *
+	 * @param string $time
+	 * @param bool $if_blank - If no time is set, should it default to passed?
+	 * @return bool
+	 */
+	private static function has_time_passed( $time, $if_blank ) {
+		return empty( $time ) ? $if_blank : ( current_time( 'timestamp' ) > strtotime( $time ) );
 	}
 
 	public static function validate( $errors, $values ) {
         // add a user id field if the form requires one
-        if ( isset($values['logged_in']) || isset($values['editable']) || (isset($values['single_entry']) && isset($values['options']['single_entry_type']) && $values['options']['single_entry_type'] == 'user') || (isset($values['options']['save_draft']) && $values['options']['save_draft'] == 1) ) {
+        if ( isset( $values['logged_in'] ) || isset( $values['editable'] ) || ( isset( $values['single_entry'] ) && isset( $values['options']['single_entry_type'] ) && $values['options']['single_entry_type'] == 'user' ) || ( isset( $values['options']['save_draft'] ) && $values['options']['save_draft'] == 1 ) ) {
             $form_id = $values['id'];
 
             $user_field = FrmField::get_all_types_in_form($form_id, 'user_id', 1);

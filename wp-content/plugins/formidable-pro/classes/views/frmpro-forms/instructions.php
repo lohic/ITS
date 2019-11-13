@@ -1,29 +1,41 @@
-<div id="frm-dynamic-values" class="tabs-panel frm_hidden" style="max-height:none;">
-	<ol class="howto">
-		<li><?php _e( 'Click inside the "Dynamic default value" field setting or directly on the input field.', 'formidable-pro' ) ?></li>
-		<li><?php _e( 'This box will activate and you can click to insert dynamic default values as default text to fields in your form.', 'formidable-pro' ) ?></li>
-	</ol>
+<?php
+FrmAppHelper::show_search_box(
+	array(
+		'input_id'    => 'default-value-field',
+		'placeholder' => __( 'Search Smart Tags', 'formidable-pro' ),
+		'tosearch'    => 'search-smart-tags',
+	)
+);
+?>
 
-    <ul class="frm_code_list" style="margin-bottom:0;">
-        <?php
-        $col = 'one';
+<div id="frm-dynamic-values">
+	<ul class="frm_code_list frm-full-hover frm-short-list">
+		<?php
 		foreach ( $tags as $tag => $label ) {
 			$title = '';
 			if ( is_array( $label ) ) {
 				$title = isset( $label['title'] ) ? $label['title'] : '';
 				$label = isset( $label['label'] ) ? $label['label'] : reset( $label );
-            }
+			}
 
-        ?>
-            <li class="frm_col_<?php echo esc_attr( $col ) ?>">
-                <a href="javascript:void(0)" data-code="<?php echo esc_attr($tag) ?>" class="frmbutton button show_dyn_default_value frm_insert_code<?php
-                if ( ! empty($title) ) {
-                    echo ' frm_help" title="'. esc_attr($title);
-                } ?>"><?php echo esc_html( $label ) ?></a>
-            </li>
-        <?php
-            $col = ($col == 'one') ? 'two' : 'one';
-            unset($tag, $label);
-        } ?>
-    </ul>
+			?>
+			<li class="search-smart-tags">
+				<a href="javascript:void(0)" data-code="<?php echo esc_attr( $tag ); ?>" class="show_dyn_default_value frm_insert_code
+					<?php
+					if ( ! empty( $title ) ) {
+						echo ' frm_help" title="' . esc_attr( $title );
+					}
+					?>">
+					<span>[<?php echo esc_html( $tag ); ?>]</span>
+					<?php echo esc_html( $label ); ?>
+				</a>
+			</li>
+			<?php
+			unset( $tag, $label );
+		}
+		?>
+	</ul>
+	<p class="howto">
+		<?php esc_html_e( 'Click smart value to dynamically populate this field. Smart values are not used when editing entries.', 'formidable-pro' ); ?>
+	</p>
 </div>

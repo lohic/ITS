@@ -11,6 +11,14 @@ class FrmProFieldTime extends FrmFieldType {
 	 */
 	protected $type = 'time';
 
+	/**
+	 * Fix WCAG errors when multiple dropdowns for the time field.
+	 *
+	 * @var bool
+	 * @since 3.06.01
+	 */
+	protected $has_for_label = false;
+
 	public function show_on_form_builder( $name = '' ) {
 		$field = FrmFieldsHelper::setup_edit_vars( $this->field );
 		$field['value'] = $field['default_value'];
@@ -27,7 +35,6 @@ class FrmProFieldTime extends FrmFieldType {
 			'size'          => true,
 			'unique'        => true,
 			'read_only'     => true,
-			'default_value' => true,
 			'invalid'       => true,
 		);
 
@@ -45,9 +52,31 @@ class FrmProFieldTime extends FrmFieldType {
 		);
 	}
 
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/clock-settings.php' );
+
+		$this->auto_width_setting( $args );
+
+		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 4.0
+	 */
+	public function default_value_to_string( &$default_value ) {
+		if ( is_array( $default_value ) ) {
+			$this->time_array_to_string( $default_value );
+		}
+	}
+
 	protected function fill_default_atts( &$atts ) {
 		$defaults = array(
-			'format' => FrmProAppHelper::get_time_format_for_field( $this->field ),
+			'format' => $this->get_time_format_for_field(),
 		);
 
 		$atts = wp_parse_args( $atts, $defaults );
@@ -55,9 +84,13 @@ class FrmProFieldTime extends FrmFieldType {
 
 	public function prepare_front_field( $values, $atts ) {
 		$values['options'] = $this->get_options( $values );
-		$values['value'] = $this->get_display_value( $values['value'], $atts );
+		$values['value'] = $this->prepare_field_value( $values['value'], $atts );
 
 		return $values;
+	}
+
+	public function prepare_field_value( $value, $atts ) {
+		return $this->get_display_value( $value, $atts );
 	}
 
 	public function get_options( $values ) {
@@ -103,6 +136,9 @@ class FrmProFieldTime extends FrmFieldType {
 		$this->set_field_column( 'options', $field['options'] );
 
 		$hidden = $this->maybe_include_hidden_values( $values );
+		$this->maybe_format_time( $values['field_value'] );
+
+		$labeled_by = 'aria-labelledby="' . esc_attr( $values['html_id'] ) . '_label" ';
 
 		if ( isset( $field['options']['H'] ) ) {
 			$this->time_string_to_array( $values['field_value'] );
@@ -124,13 +160,46 @@ class FrmProFieldTime extends FrmFieldType {
 				$values['combo_name'] = 'A';
 				$html .= $this->get_select_box( $values ) . "\r\n";
 			}
+
+			$html  = str_replace( '<select ', '<select ' . $labeled_by, $html );
 			$html .= '</div>';
 		} else {
 			$this->time_array_to_string( $values['field_value'] );
 			$html = $this->get_select_box( $values );
+			$html = str_replace( '<select ', '<select ' . $labeled_by, $html );
 		}
 
 		echo $hidden . $html;
+	}
+
+	/**
+	 * If the value was in a hidden field on a previous page,
+	 * it may still be in the database format
+	 *
+	 * @since 3.02.01
+	 */
+	private function maybe_format_time( &$time ) {
+		if ( ! is_array( $time ) && ! strpos( $time, ' ' ) ) {
+			$time = $this->get_display_value( $time, array(
+				'format' => $this->get_time_format_for_field(),
+			) );
+		}
+	}
+
+	/**
+	 * Add extra classes on front-end input
+	 *
+	 * @since 3.01.04
+	 */
+	protected function get_input_class() {
+		$class = '';
+		$is_separate = $this->get_field_column( 'options' );
+		$combo_name = FrmField::get_option( $this->field, 'combo_name' );
+		if ( isset( $is_separate['H'] ) || ! empty( $combo_name ) ) {
+			$class = 'auto_width frm_time_select';
+		}
+
+		return $class;
 	}
 
 	protected function show_readonly_hidden() {
@@ -331,7 +400,7 @@ class FrmProFieldTime extends FrmFieldType {
 		$time = strtotime( $values['start_time_str'] );
 		$end_time = strtotime( $values['end_time_str'] );
 		$format = ( $values['clock'] == 24 ) ? 'H:i' : 'g:i A';
-		$values['step'] = $values['step'] * 60; //switch minutes to seconds
+		$values['step'] = max( $values['step'] * 60, 60 ); //switch minutes to seconds
 
 		$options[] = '';
 		while ( $time <= $end_time ) {
@@ -343,14 +412,14 @@ class FrmProFieldTime extends FrmFieldType {
 	private function get_multiple_time_field_options( $values, &$options ) {
 		$all_times = $options;
 
-		$options['H'] = array('');
-		$options['m'] = array('');
+		$options['H'] = array( '' );
+		$options['m'] = array( '' );
 
 		$this->get_hours( $all_times, $options );
 		$this->get_minutes( $all_times, $options );
 
 		if ( $values['clock'] != 24 ) {
-			$options['A'] = array( 'AM', 'PM');
+			$options['A'] = array( 'AM', 'PM' );
 		}
 	}
 
@@ -374,7 +443,6 @@ class FrmProFieldTime extends FrmFieldType {
 				$hour = substr( $time, 0, $colon_position );
 				$options['H'][] = $hour;
 			}
-
 		}
 		unset( $time );
 
@@ -433,9 +501,8 @@ class FrmProFieldTime extends FrmFieldType {
 	}
 
 	public function set_value_before_save( $value ) {
-		if ( is_array( $value ) ) {
-			$this->time_array_to_string( $value );
-		}
+		$this->default_value_to_string( $value );
+
 		return FrmProAppHelper::format_time( $value, 'H:i' );
 	}
 
@@ -469,12 +536,12 @@ class FrmProFieldTime extends FrmFieldType {
 			$value = wp_parse_args( $value, $defaults );
 		} elseif ( is_string( $value ) && strpos( $value, ':' ) !== false ) {
 			$h = explode( ':', $value );
-			$m = explode( ' ', $h[ 1 ] );
+			$m = explode( ' ', $h[1] );
 
 			$value = array(
 				'H' => reset( $h ),
 				'm' => reset( $m ),
-				'A' => isset( $m[ 1 ] ) ? $m[ 1 ] : '',
+				'A' => isset( $m[1] ) ? $m[1] : '',
 			);
 		} else {
 			$value = $defaults;
@@ -489,5 +556,30 @@ class FrmProFieldTime extends FrmFieldType {
 
 	protected function prepare_import_value( $value, $atts ) {
 		return FrmProAppHelper::format_time( $value );
+	}
+
+	/**
+	 * @since 3.02.01
+	 */
+	public function get_time_format_for_field( $field = array() ) {
+		if ( empty( $field ) ) {
+			$field = $this->field;
+		}
+		$time_format = FrmField::get_option( $field, 'clock', 12 );
+		return $this->get_time_format_for_setting( $time_format );
+	}
+
+	/**
+	 * @since 3.02.01
+	 */
+	public function get_time_format_for_setting( $time_format ) {
+		return ( $time_format == 12 ) ? 'g:i A' : 'H:i';
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
 	}
 }

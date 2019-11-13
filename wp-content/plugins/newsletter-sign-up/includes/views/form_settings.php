@@ -54,9 +54,10 @@
             <?php } ?>
 
             <tr valign="top">
-                <th scope="row"><label for="ns_load_form_styles">Load some default CSS</label></th>
-                <td><input type="checkbox" id="ns_load_form_styles" name="nsu_form[load_form_css]" value="1" <?php if($opts['load_form_css'] == 1) echo 'checked'; ?> /></td>
-                <td><small>Check this to load some default form CSS styles.</small></td>
+                <th scope="row"><label for="ns_load_form_styles">Load CSS</label></th>
+                <td>
+                    <label><input type="checkbox" id="ns_load_form_styles" name="nsu_form[load_form_css]" value="1" <?php if($opts['load_form_css'] == 1) echo 'checked'; ?> />
+                    Check this to load some default form styles.</label></td>
             </tr>
         </table>
         

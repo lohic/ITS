@@ -1,44 +1,21 @@
 <?php
 
-class FrmProLookupFieldsController{
+class FrmProLookupFieldsController {
 
 	/**
 	 * Get the data types for Lookup fields
 	 *
 	 * @return array $data_types
 	 */
-	public static function get_lookup_field_data_types(){
+	public static function get_lookup_field_data_types() {
 		$data_types = array(
 			'select'    => __( 'Dropdown', 'formidable-pro' ),
 			'radio'     => __( 'Radio Buttons', 'formidable-pro' ),
 			'checkbox'  => __( 'Checkboxes', 'formidable-pro' ),
 			'text'      => __( 'Single Line Text', 'formidable-pro' ),
+			'data'      => __( 'List', 'formidable-pro' ),
 		);
 		return $data_types;
-	}
-
-	/**
-	 * Get the data types for Lookup fields, formatted for Insert Field tab
-	 * @deprecated 3.0
-	 * @return array $lookup_display_options
-	 */
-	public static function get_lookup_options_for_insert_fields_tab(){
-		_deprecated_function( __METHOD__, '3.0', 'FrmProLookupFieldsController::get_lookup_field_data_types' );
-		return self::get_lookup_field_data_types();
-	}
-
-	/**
-	 * Add field options specific to Lookup Fields
-	 * Used on front and back end. Either $values or $field could be false :/
-	 *
-	 * @since 2.01.0
-	 * @deprecated 3.0
-	 * @param array $values
-	 * @param object $field
-	 * @param array $opts
-	 */
-	public static function add_field_options_specific_to_lookup_field( $values, $field, &$opts ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFieldLookup->get_default_field_options' );
 	}
 
 	/**
@@ -51,15 +28,9 @@ class FrmProLookupFieldsController{
 	 */
 	public static function clean_field_options_before_update( $values ) {
 		if ( $values['type'] == 'lookup' ) {
-
-			if ( isset( $values['field_options']['autopopulate_value'] ) ) {
-				unset( $values['field_options']['autopopulate_value'] );
-			}
-
 			if ( ! empty( $values['options'] ) ) {
 				$values['options'] = array();
 			}
-
 		}
 
 		return $values;
@@ -83,7 +54,6 @@ class FrmProLookupFieldsController{
 
 		$autopopulate_field_types = self::get_autopopulate_field_types();
 		if ( in_array( $field_type, $autopopulate_field_types ) ) {
-			$opts['autopopulate_value'] = false;
 			$opts['get_values_form'] = '';
 			$opts['get_values_field'] = '';
 			$opts['watch_lookup'] = array();
@@ -117,145 +87,20 @@ class FrmProLookupFieldsController{
 	}
 
 	/**
-	 * Add some of the standard field options to Lookup fields
-	 *
-	 * @since 2.01.0
-	 * @return array $add_options
-	 */
-	public static function add_standard_field_options() {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldLookup->field_settings_for_type' );
-		$lookup = new FrmProFieldLookup();
-		$options = $lookup->field_settings_for_type();
-		return $options;
-	}
-
-	/**
-	 * Show the 'Get options from' settings above a lookup field's Field Options
-	 *
-	 * @since 2.01.0
-	 * @param array $field
-	 */
-	public static function show_get_options_from_above_field_options( $field ) {
-		$lookup_args = self::get_args_for_get_options_from_setting( $field );
-		if ( $field['data_type'] == 'text' ) {
-			$opt_label = __( 'Search values from', 'formidable-pro' );
-		} else {
-			$opt_label = __( 'Get options from', 'formidable-pro' );
-		}
-
-		require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/top-options.php' );
-	}
-
-	/**
-	 * Show the field options specific to lookup fields for the form builder page
-	 *
-	 * @since 2.01.0
-	 * @param array $field
-	 */
-	public static function show_lookup_field_options_in_form_builder( $field ) {
-		// Display as
-		$lookup_args['data_types'] = self::get_lookup_field_data_types();
-		require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/display-as.php' );
-
-		if ( $field['data_type'] == 'text' ) {
-			// Field size
-			$display_max = true;
-			require( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/pixels-wide.php' );
-
-			// Filter options
-			require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/filter.php' );
-
-			FrmFieldsController::show_format_option( $field );
-		} else {
-
-			if ( $field['data_type'] == 'select' ) {
-				// Automatic width
-				require( FrmAppHelper::plugin_path() . '/classes/views/frm-fields/back-end/automatic-width.php' );
-
-				// Placeholder text
-				require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/placeholder.php' );
-			}
-
-			if ( in_array( $field['data_type'], array( 'checkbox', 'radio' ) ) ) {
-				// Alignment
-				require( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/alignment.php' );
-			}
-
-			// Watch Lookup Fields
-			$lookup_fields = self::get_lookup_fields_for_watch_row( $field );
-			$field['watch_lookup'] = array_filter( $field['watch_lookup'] );
-			require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/watch.php' );
-
-			// Filter options
-			require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/filter.php' );
-
-			// Option Order
-			require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/order.php' );
-
-			// Dynamic Default Value
-			require( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/dynamic-default-value.php' );
-		}
-
-		FrmProFieldsController::show_visibility_option( $field );
-		FrmProFieldsController::show_conditional_logic_option( $field );
-	}
-
-	/**
 	 * Show the "Autopopulate Value" option/section in the form builder
 	 *
 	 * @since 2.01.0
 	 * @param array $field
 	 */
 	public static function show_autopopulate_value_section_in_form_builder( $field ) {
-		$lookup_args = self::get_args_for_get_options_from_setting( $field );
+		if ( ! isset( $field['data_type'] ) ) {
+			$field['data_type'] = 'text';
+		}
 		$lookup_fields = self::get_lookup_fields_for_watch_row( $field );
 
+		$field_obj = FrmFieldFactory::get_field_type( 'lookup', $field );
+
 		require( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/autopopulate-values.php' );
-	}
-
-	/**
-	 * Get the form_list and form_fields for the Get Values From/Get Options From option
-	 *
-	 * @since 2.01.0
-	 * @param array $field
-	 * @return array $lookup_args
-	 */
-	private static function get_args_for_get_options_from_setting( $field ) {
-		$lookup_args = array();
-
-		// Get all forms for the -select form- option
-		$lookup_args['form_list'] = FrmForm::get_published_forms();
-
-		if ( is_numeric( $field['get_values_form'] ) ) {
-			$lookup_args['form_fields'] = self::get_fields_for_get_values_field_dropdown( $field['get_values_form'], $field['type'] );
-
-		} else {
-			$lookup_args['form_fields'] = array();
-		}
-
-		return $lookup_args;
-	}
-
-	/**
-	 * Get the fields fot the get_values_field dropdown
-	 *
-	 * @since 2.01.0
-	 *
-	 * @param int $form_id
-	 * @param string $field_type
-	 * @return array $form_fields
-	 */
-	private static function get_fields_for_get_values_field_dropdown( $form_id, $field_type ) {
-		if ( in_array( $field_type, array( 'lookup', 'text', 'hidden' ) ) ) {
-			$form_fields = FrmField::get_all_for_form( $form_id );
-		} else {
-			$where = array( 'type' => $field_type );
-			$where[] = array( 'or' => 1, 'fi.form_id' => $form_id, 'fr.parent_form_id' => $form_id );
-
-			$form_fields = FrmField::getAll( $where );
-		}
-
-		return $form_fields;
 	}
 
 	/**
@@ -265,7 +110,7 @@ class FrmProLookupFieldsController{
 	 * @param array $field
 	 * @return array $lookup_fields
 	 */
-	private static function get_lookup_fields_for_watch_row( $field ) {
+	public static function get_lookup_fields_for_watch_row( $field ) {
 		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
 		$lookup_fields = self::get_limited_lookup_fields_in_form( $parent_form_id, $field['form_id'] );
 		return $lookup_fields;
@@ -276,12 +121,14 @@ class FrmProLookupFieldsController{
 	 *
 	 * @since 2.01.0
 	 */
-	public static function ajax_get_options_for_get_values_field(){
+	public static function ajax_get_options_for_get_values_field() {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$form_id = FrmAppHelper::get_post_param( 'form_id', '', 'absint' );
 		$field_type = FrmAppHelper::get_post_param( 'field_type', '', 'sanitize_text_field');
-		$fields = self::get_fields_for_get_values_field_dropdown( $form_id, $field_type );
+
+		$field_obj = FrmFieldFactory::get_field_type( 'lookup' );
+		$fields    = $field_obj->get_fields_for_get_values_field_dropdown( $form_id, $field_type );
 
 		self::show_options_for_get_values_field( $fields );
 		wp_die();
@@ -294,7 +141,7 @@ class FrmProLookupFieldsController{
 	 * @param array $form_fields
 	 * @param array $field ($field is not empty on page load)
 	 */
-	private static function show_options_for_get_values_field( $form_fields, $field = array() ) {
+	public static function show_options_for_get_values_field( $form_fields, $field = array() ) {
 		$select_field_text = __( '&mdash; Select Field &mdash;', 'formidable-pro' );
 		echo '<option value="">' . esc_html( $select_field_text ) . '</option>';
 
@@ -318,15 +165,9 @@ class FrmProLookupFieldsController{
 	 */
 	public static function show_lookup_field_input_on_form_builder( $field ) {
 		if ( $field['data_type'] == 'text' ) {
-			// Set up variable for clear_on_focus
-			$display = array(
-				'clear_on_focus' => true,
-				'default_blank' => true
-			);
-
 			// Set up width string
-			if ( FrmField::is_option_true( $field, 'size' ) ) {
-				$width_string = ' style="width:'. $field['size'] . ( is_numeric( $field['size'] ) ? 'px' : '' ) . ';"';
+			if ( FrmField::is_option_true( $field, 'size' ) && ! FrmAppHelper::is_admin_page('formidable' ) ) {
+				$width_string = ' style="width:' . $field['size'] . ( is_numeric( $field['size'] ) ? 'px' : '' ) . ';"';
 			} else {
 				$width_string = '';
 			}
@@ -336,7 +177,7 @@ class FrmProLookupFieldsController{
 		}
 
 		// Generate field name and HTML id
-		$field_name = 'item_meta['. $field['id'] .']';
+		$field_name = 'item_meta[' . $field['id'] . ']';
 		if ( 'checkbox' == $field['data_type'] ) {
 			$field_name .= '[]';
 		}
@@ -346,6 +187,7 @@ class FrmProLookupFieldsController{
 		if ( ! isset( $field['value'] ) ) {
 			$field['value'] = '';
 		}
+
 		$saved_value_array = (array) $field['value'];
 
 		require(FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/input.php');
@@ -486,7 +328,8 @@ class FrmProLookupFieldsController{
 		$options = self::get_independent_lookup_field_values( $linked_field_id, $values );
 
 		if ( 'select' == $values['data_type'] ) {
-			$default_option = array( $values['lookup_placeholder_text'] );
+			$placeholder    = isset( $values['placeholder'] ) ? $values['placeholder'] : '';
+			$default_option = array( $placeholder );
 			$options = array_merge( $default_option, $options );
 		}
 
@@ -507,7 +350,9 @@ class FrmProLookupFieldsController{
 			return array();
 		}
 
-		$args = array();
+		$args = array(
+			'lookup_field' => $values,
+		);
 
 		if ( self::need_to_filter_values_for_current_user( $values['id'], $values ) ) {
 			$current_user = get_current_user_id();
@@ -524,13 +369,45 @@ class FrmProLookupFieldsController{
 			$args['limit'] = 500;
 		}
 
-		$options = FrmProEntryMeta::get_all_metas_for_field( $linked_field, $args );
+		$options = self::get_filtered_lookup_options( $linked_field, $args );
 
-		$options = self::flatten_and_unserialize_meta_values( $options );
-		self::get_unique_values( $options );
 		self::order_values( $values['lookup_option_order'], $options );
 
 		return $options;
+	}
+
+	/**
+	 * Formats meta values for a lookup field.
+	 *
+	 * @since 3.03.03
+	 * @param array  $metas
+	 * @param object $linked_field
+	 * @return array
+	 */
+	private static function format_field_value_for_lookup( $metas, $linked_field, $args ) {
+
+		// don't mess with formats for select fields since existing fields won't be selected on edit
+		$lookup_type = isset( $args['lookup_field'] ) ? FrmField::get_option( $args['lookup_field'], 'data_type' ) : '';
+		$alter_lookup_value = empty( $lookup_type ) || 'text' === $lookup_type || 'address' === $linked_field->type;
+		if ( ! $alter_lookup_value ) {
+			return $metas;
+		}
+
+		$field_class = FrmFieldFactory::get_field_object( $linked_field );
+		if ( ! is_callable( array( $field_class, 'prepare_field_value' ) ) ) {
+			return $metas;
+		}
+
+		$result = array();
+		foreach ( $metas as $value ) {
+			if ( 'address' === $linked_field->type ) {
+				$result[] = $field_class->format_address_for_display( $value, array( 'line_sep' => ' ' ) );
+			} else {
+				$result[] = $field_class->prepare_field_value( $value, array() );
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -549,7 +426,7 @@ class FrmProLookupFieldsController{
 		}
 
 		if ( 'select' == $values['data_type'] ) {
-			$placeholder = array( $values['lookup_placeholder_text'] );
+			$placeholder = array( $values['placeholder'] );
 			$options = array_merge( $placeholder, $options );
 		} else if ( empty( $options ) ) {
 			$options[] = '';
@@ -593,7 +470,7 @@ class FrmProLookupFieldsController{
 			return;
 		}
 
-		if ( $values['original_type'] == 'lookup' || FrmField::is_option_true( $values, 'autopopulate_value' ) ) {
+		if ( $values['original_type'] === 'lookup' || ! FrmField::is_option_empty( $values, 'get_values_field' ) ) {
 			global $frm_vars;
 
 			// If the field has already been through this function, leave now
@@ -677,7 +554,7 @@ class FrmProLookupFieldsController{
 					}
 				}
 			}
-			echo "__frmDepLookupFields=" . json_encode( $lookup_field_ids ) . ";";
+			echo '__frmDepLookupFields=' . json_encode( $lookup_field_ids ) . ';';
 		}
 	}
 
@@ -698,13 +575,14 @@ class FrmProLookupFieldsController{
 	 *
 	 * @since 2.01.0
 	 */
-	public static function ajax_get_dependent_lookup_field_options(){
+	public static function ajax_get_dependent_lookup_field_options() {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 		$field_id = FrmAppHelper::get_param( 'field_id', '', 'post', 'absint' );
 		$parent_args = array(
 			'parent_field_ids' => FrmAppHelper::get_param( 'parent_fields', '', 'post', 'absint' ),
 			'parent_vals' => FrmAppHelper::get_param( 'parent_vals', '', 'post', 'wp_kses_post' ),
 		);
+		FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_args['parent_vals'] );
 
 		$child_field = FrmField::getOne( $field_id );
 
@@ -726,6 +604,7 @@ class FrmProLookupFieldsController{
 			'parent_field_ids' => FrmAppHelper::get_param( 'parent_fields', '', 'post', 'absint' ),
 			'parent_vals' => FrmAppHelper::get_param( 'parent_vals', '', 'post', 'wp_kses_post' ),
 		);
+		FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_args['parent_vals'] );
 
 		$args = array(
 			'row_index' => FrmAppHelper::get_param( 'row_index', '', 'post', 'sanitize_text_field' ),
@@ -752,7 +631,7 @@ class FrmProLookupFieldsController{
 	 * @param object $child_field
 	 * @return array $final_values
 	 */
-	private static function get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field ) {
+	public static function get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field ) {
 		$entry_ids = self::get_entry_ids_from_parent_vals( $parent_args['parent_field_ids'], $parent_args['parent_vals'], $child_field );
 
 		$meta_values = self::get_meta_values_filtered_by_entry_ids( $entry_ids, $child_field );
@@ -780,7 +659,7 @@ class FrmProLookupFieldsController{
 
 		$field_name = self::generate_field_name_for_radio_inputs( $child_field, $args );
 
-		$disabled = ( FrmField::is_read_only( $child_field ) && ! FrmAppHelper::is_admin() ) ?  ' disabled="disabled"' : '';
+		$disabled = ( FrmField::is_read_only( $child_field ) && ! FrmAppHelper::is_admin() ) ? ' disabled="disabled"' : '';
 
 		if ( 'checkbox' == $field['data_type'] ) {
 			$field_name .= '[]';
@@ -836,10 +715,11 @@ class FrmProLookupFieldsController{
 	 *
 	 * @since 2.01.0
 	 */
-	public static function ajax_get_text_field_lookup_value(){
+	public static function ajax_get_text_field_lookup_value() {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 		$parent_field_ids = FrmAppHelper::get_param( 'parent_fields', '', 'post', 'absint' );
 		$parent_vals = FrmAppHelper::get_param( 'parent_vals', '', 'post', 'wp_kses_post' );
+		FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_vals );
 
 		$field_id = FrmAppHelper::get_param( 'field_id', '', 'post', 'absint' );
 
@@ -924,14 +804,30 @@ class FrmProLookupFieldsController{
 		if ( is_array( $parent_val ) ) {
 			$entry_ids = array( 'first' => true );
 			foreach ( $parent_val as $p_val ) {
+				self::get_save_value_from_display( $linked_field, $p_val );
 				$new_entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $linked_field, $p_val, $args );
 				$entry_ids = self::filter_or_merge_entry_ids( $entry_ids, $new_entry_ids, $args['and_or'] );
 			}
 		} else {
+			self::get_save_value_from_display( $linked_field, $parent_val );
 			$entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $linked_field, $parent_val, $args );
 		}
 
 		return $entry_ids;
+	}
+
+	/**
+	 * Get the value in the format saved to the database in order to
+	 * correctly compare with an SQL call
+	 *
+	 * @since 3.03.03
+	 * @param object $field
+	 * @param string $value
+	 * @return string
+	 */
+	private static function get_save_value_from_display( $field, &$value ) {
+		$field_obj = FrmFieldFactory::get_field_object( $field );
+		$value = $field_obj->set_value_before_save( $value );
 	}
 
 	/**
@@ -989,7 +885,8 @@ class FrmProLookupFieldsController{
 		}
 
 		$args = array(
-			'entry_ids' => $entry_ids,
+			'entry_ids'    => $entry_ids,
+			'lookup_field' => $child_field,
 		);
 
 		if ( FrmField::is_option_true_in_object( $child_field, 'get_most_recent_value' ) ) {
@@ -999,13 +896,27 @@ class FrmProLookupFieldsController{
 
 		$linked_field = FrmField::getOne( $child_field->field_options['get_values_field'] );
 
-		$meta_values = FrmProEntryMeta::get_all_metas_for_field( $linked_field, $args );
+		return self::get_filtered_lookup_options( $linked_field, $args );
+	}
 
-		$meta_values = self::flatten_and_unserialize_meta_values( $meta_values );
+	/**
+	 * @since 3.0.06
+	 *
+	 * @param object $field
+	 * @param array $args
+	 */
+	private static function get_filtered_lookup_options( $field, $args ) {
+		$options = FrmProEntryMeta::get_all_metas_for_field( $field, $args );
+		$options = self::format_field_value_for_lookup( $options, $field, $args );
+		$options = self::flatten_and_unserialize_meta_values( $options );
+		self::get_unique_values( $options );
 
-		self::get_unique_values( $meta_values );
+		/**
+		 * @since 3.0.06
+		 */
+		$options = apply_filters( 'frm_filtered_lookup_options', $options, compact( 'field', 'args' ) );
 
-		return $meta_values;
+		return $options;
 	}
 
 	/**
@@ -1035,7 +946,7 @@ class FrmProLookupFieldsController{
 		$final_values = array();
 		foreach ( $meta_values as $meta_val ) {
 
-			$meta_val = maybe_unserialize( $meta_val );
+			FrmProAppHelper::unserialize_or_decode( $meta_val );
 			if ( is_array( $meta_val ) ) {
 				$final_values = array_merge( $final_values, $meta_val );
 			} else {
@@ -1126,25 +1037,6 @@ class FrmProLookupFieldsController{
 	}
 
 	/**
-	 * Add the autocomplete classes to a dropdown field (if the autocomplete option is selected)
-	 *
-	 * @since 2.01.0
-	 *
-	 * @param array $field
-	 * @param string $class
-	 */
-	public static function maybe_add_autocomplete_class( $field, &$class ) {
-		// Don't add the autocomplete class to the form builder page
-		if ( FrmAppHelper::is_admin() || FrmField::is_read_only( $field ) ) {
-			return;
-		}
-
-		if ( $field['type'] == 'lookup' && $field['data_type'] == 'select' && FrmField::is_option_true( $field, 'autocom' ) ) {
-			 FrmProFieldsController::add_autocomplete_classes( $field, $class );
-		}
-	}
-
-	/**
 	 * Add the data-placeholder attribute to lookup fields with the autocomplete option
 	 *
 	 * @since 2.01.0
@@ -1158,4 +1050,85 @@ class FrmProLookupFieldsController{
 			$add_html .= ' data-placeholder=" "';
 		}
 	}
+
+	/**
+	 * Show the field options specific to lookup fields for the form builder page
+	 *
+	 * @since 2.01.0
+	 * @param array $field
+	 */
+	public static function show_lookup_field_options_in_form_builder( $field ) {
+		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldLookup->show_after_default' );
+	}
+
+	/**
+	 * Show the 'Get options from' settings above a lookup field's Field Options
+	 *
+	 * @since 2.01.0
+	 * @deprecated 4.0
+	 *
+	 * @param array $field
+	 */
+	public static function show_get_options_from_above_field_options( $field ) {
+		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldLookup->show_get_options' );
+		$field_obj = FrmFieldFactory::get_field_type( 'lookup', $field );
+		$field_obj->show_get_options( $field );
+	}
+
+	/**
+	 * Add the autocomplete classes to a dropdown field (if the autocomplete option is selected)
+	 *
+	 * @since 2.01.0
+	 * @deprecated 4.0
+	 *
+	 * @param array $field
+	 * @param string $class
+	 */
+	public static function maybe_add_autocomplete_class( $field, &$class ) {
+		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldsController::add_field_class' );
+		$class = FrmProFieldsController::add_field_class( $class, $field );
+	}
+
+	/**
+	 * Add some of the standard field options to Lookup fields
+	 *
+	 * @since 2.01.0
+	 * @codeCoverageIgnore
+	 * @return array $add_options
+	 */
+	public static function add_standard_field_options() {
+		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldLookup->field_settings_for_type' );
+		$lookup = new FrmProFieldLookup();
+		$options = $lookup->field_settings_for_type();
+		return $options;
+	}
+
+	/**
+	 * Get the data types for Lookup fields, formatted for Insert Field tab
+	 *
+	 * @deprecated 3.0
+	 * @codeCoverageIgnore
+	 *
+	 * @return array $lookup_display_options
+	 */
+	public static function get_lookup_options_for_insert_fields_tab() {
+		_deprecated_function( __METHOD__, '3.0', 'FrmProLookupFieldsController::get_lookup_field_data_types' );
+		return self::get_lookup_field_data_types();
+	}
+
+	/**
+	 * Add field options specific to Lookup Fields
+	 * Used on front and back end. Either $values or $field could be false :/
+	 *
+	 * @since 2.01.0
+	 * @deprecated 3.0
+	 * @codeCoverageIgnore
+	 * @param array $values
+	 * @param object $field
+	 * @param array $opts
+	 */
+	public static function add_field_options_specific_to_lookup_field( $values, $field, &$opts ) {
+		_deprecated_function( __METHOD__, '3.0', 'FrmProFieldLookup->get_default_field_options' );
+	}
+
 }

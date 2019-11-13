@@ -29,12 +29,11 @@ class FrmProFieldEndDivider extends FrmFieldType {
 
 	protected function field_settings_for_type() {
 		$settings = array(
-			'default_blank' => false,
 			'required'      => false,
 			'visibility'    => false,
 
 			'description'   => false,
-			'label_position'=> false,
+			'label_position' => false,
 
 			'label'         => false,
 			'logic'         => false,
@@ -50,6 +49,24 @@ class FrmProFieldEndDivider extends FrmFieldType {
 			'remove_label' => __( 'Remove', 'formidable-pro' ),
 			'format'       => 'both', // set icon format
 		);
+	}
+
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/repeat-buttons.php' );
+
+		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 3.06.01
+	 */
+	public function translatable_strings() {
+		return array( 'add_label', 'remove_label' );
 	}
 
 	public function prepare_field_html( $args ) {

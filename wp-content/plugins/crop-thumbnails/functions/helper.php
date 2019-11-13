@@ -12,8 +12,8 @@
  * This class is for overriding settings in php-tests - therefore the functions cant be static :(
  */
 class CropThumbnailsHelper {
-	private static $defaultSizes = array('thumbnail','medium','medium_large','large');
-	private static $optionsKey = 'crop-post-thumbs';
+	protected static $defaultSizes = array('thumbnail','medium','medium_large','large');
+	protected static $optionsKey = 'crop-post-thumbs';
 
 	public function getUploadDir() {
 		$upload_dir = wp_upload_dir();
@@ -62,11 +62,13 @@ class CropThumbnailsHelper {
 				$sizes[ $sizeId ]['height'] = intval(get_option( $sizeId . '_size_h' ));
 				$sizes[ $sizeId ]['crop']   = (bool) get_option( $sizeId . '_crop' );
 			} else {
-				$sizes[ $sizeId ] = array(
-					'width'  => intval($_wp_additional_image_sizes[ $sizeId ]['width']),
-					'height' => intval($_wp_additional_image_sizes[ $sizeId ]['height']),
-					'crop'   => (bool) $_wp_additional_image_sizes[ $sizeId ]['crop']
-				);
+				if(!empty($_wp_additional_image_sizes[ $sizeId ])) {
+					$sizes[ $sizeId ] = array(
+						'width'  => intval($_wp_additional_image_sizes[ $sizeId ]['width']),
+						'height' => intval($_wp_additional_image_sizes[ $sizeId ]['height']),
+						'crop'   => (bool) $_wp_additional_image_sizes[ $sizeId ]['crop']
+					);
+				}
 			}
 			$sizes[ $sizeId ]['name'] = $theName;
 			$sizes[ $sizeId ]['id'] = $sizeId;

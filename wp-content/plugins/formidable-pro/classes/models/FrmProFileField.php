@@ -28,8 +28,8 @@ class FrmProFileField {
 			$frm_vars['dropzone_loaded'][ $the_id ] = array(
 				'maxFilesize' => round( $file_size, 2 ),
 				'maxFiles'    => $max,
-				//'acceptedFiles' => '', //cover this in the php to minimize differences in mime types
 				'htmlID'      => $the_id,
+				'label'       => $atts['html_id'],
 				'uploadMultiple' => $is_multiple,
 				'fieldID'     => $field['id'],
 				'formID'            => $field['form_id'],
@@ -45,8 +45,26 @@ class FrmProFileField {
 				'cancel'           => __( 'Cancel upload', 'formidable-pro' ),
 				'cancelConfirm'    => __( 'Are you sure you want to cancel this upload?', 'formidable-pro' ),
 				'remove'           => __( 'Remove file', 'formidable-pro' ),
-				'maxFilesExceeded' => sprintf( __( 'You have uploaded too many files. You may only include %d file(s).', 'formidable-pro' ), $max ),
+				'maxFilesExceeded' => sprintf( __( 'You have uploaded more than %d file(s).', 'formidable-pro' ), $max ),
+				'resizeHeight'     => null,
+				'resizeWidth'      => null,
+				'timeout'          => self::get_timeout(),
 			);
+
+			$file_types = self::get_allowed_mimes( $field );
+			if ( ! empty( $file_types ) ) {
+				// Expected formats: image/*,application/pdf,.psd
+				$frm_vars['dropzone_loaded'][ $the_id ]['acceptedFiles'] = implode( ',', array_unique( $file_types ) );
+				foreach ( $file_types as $file_type => $mime ) {
+					$file_type = explode( '|', $file_type );
+					$frm_vars['dropzone_loaded'][ $the_id ]['acceptedFiles'] .= ',.' . implode( ',.', $file_type );
+				}
+			}
+
+			if ( $field['resize'] && ! empty( $field['new_size'] ) ) {
+				$setting_name = 'resize' . ucfirst( $field['resize_dir'] );
+				$frm_vars['dropzone_loaded'][ $the_id ][ $setting_name ] = $field['new_size'];
+			}
 
 			if ( strpos( $the_id, '-i' ) ) {
 				// we are editing, so get the base settings added too
@@ -64,8 +82,26 @@ class FrmProFileField {
 		}
 	}
 
+	/**
+	 * Increase the default timeout from 30 based on server limits
+	 *
+	 * @since 3.01.02
+	 */
+	private static function get_timeout() {
+		$timeout = absint( ini_get( 'max_execution_time' ) );
+		if ( $timeout <= 1 ) {
+			// allow for -1 or 0 for unlimited
+			$timeout = 5000 * 1000;
+		} elseif ( $timeout > 30 ) {
+			$timeout = $timeout * 1000;
+		} else {
+			$timeout = 30000;
+		}
+		return $timeout;
+	}
+
 	private static function add_mock_files( $media_ids, &$mock_files ) {
-		$media_ids = maybe_unserialize( $media_ids );
+		FrmProAppHelper::unserialize_or_decode( $media_ids );
 		if ( ! empty( $media_ids ) ) {
 			foreach ( (array) $media_ids as $media_id ) {
 				$file = self::get_mock_file( $media_id );
@@ -77,25 +113,25 @@ class FrmProFileField {
 	}
 
 	private static function get_mock_file( $media_id ) {
-		$file = array();
+		$file_url = wp_get_attachment_url( $media_id );
+		$url      = wp_get_attachment_thumb_url( $media_id );
+		if ( ! $url ) {
+			$url = wp_get_attachment_image_src( $media_id, 'thumbnail', true );
+			if ( $url ) {
+				$url = reset( $url );
+			}
+		}
+
+		$file = array(
+			'name'     => basename( $file_url ),
+			'url'      => $url,
+			'id'       => $media_id,
+			'file_url' => $file_url,
+		);
+
 		$image = get_attached_file( $media_id );
 		if ( file_exists( $image ) ) {
-			$file_url = wp_get_attachment_url( $media_id );
-			$url = wp_get_attachment_thumb_url( $media_id );
-			if ( ! $url ) {
-				$url = wp_get_attachment_image_src( $media_id, 'thumbnail', true );
-				if ( $url ) {
-					$url = reset( $url );
-				}
-			}
-			$label = basename( $image );
-			$size = filesize( $image );
-
-			$file = array(
-				'name' => $label, 'size' => $size,
-				'url' => $url, 'id' => $media_id,
-				'file_url' => $file_url,
-			);
+			$file['size'] = filesize( $image );
 		}
 
 		return $file;
@@ -108,30 +144,71 @@ class FrmProFileField {
 	 * @param WP_Query $query
 	 */
 	public static function filter_media_library( $query ) {
-		if ( 'attachment' == $query->get('post_type') ) {
-			if ( current_user_can('frm_edit_entries') ) {
-				$show = FrmAppHelper::get_param( 'frm-attachment-filter', '', 'get', 'absint' );
-			} else {
-				$show = false;
-			}
-
-			$meta_query = $query->get('meta_query');
-			if ( ! is_array ( $meta_query ) ) {
-				$meta_query = array();
-			}
-
-			$meta_query[] = array(
-				'key'     => '_frm_temporary',
-				'compare' => 'NOT EXISTS',
-			);
-
-			$meta_query[] = array(
-				'key'     => '_frm_file',
-				'compare' => $show ? 'EXISTS' : 'NOT EXISTS',
-			);
+		if ( 'attachment' == $query->get( 'post_type' ) ) {
+			$meta_query = $query->get( 'meta_query' );
+			self::query_to_exclude_files( $meta_query );
 
 			$query->set( 'meta_query', $meta_query );
 		}
+	}
+
+	private static function query_to_exclude_files( &$meta_query ) {
+		if ( current_user_can( 'frm_edit_entries' ) ) {
+			$show = FrmAppHelper::get_param( 'frm-attachment-filter', '', 'get', 'absint' );
+		} else {
+			$show = false;
+		}
+
+		if ( ! is_array( $meta_query ) ) {
+			$meta_query = array();
+		} else {
+			$continue = self::nest_attachment_query( $meta_query );
+			if ( ! $continue ) {
+				return;
+			}
+		}
+
+		$meta_query[] = array(
+			'relation' => 'AND',
+			array(
+				'key'     => '_frm_temporary',
+				'compare' => 'NOT EXISTS',
+			),
+			array(
+				'key'     => '_frm_file',
+				'compare' => $show ? 'EXISTS' : 'NOT EXISTS',
+			),
+		);
+	}
+
+	/**
+	 * If a query uses OR, adding to it will return unexpected results
+	 * Move the OR query into a subquery
+	 *
+	 * @return boolean true to continue adding the extra query
+	 */
+	private static function nest_attachment_query( &$meta_query ) {
+		if ( ! isset( $meta_query['relation'] ) || 'or' !== strtolower( $meta_query['relation'] ) ) {
+			return true;
+		}
+
+		$temp_group = array();
+		foreach ( $meta_query as $k => $meta ) {
+			// if looking for a Formidable file, don't exclude it
+			if ( isset( $meta['value'] ) && strpos( $meta['value'], 'formidable' ) !== false ) {
+				return false;
+			}
+			$temp_group[] = $meta;
+			unset( $meta_query[ $k ] );
+		}
+		$meta_query[] = $temp_group;
+
+		return true;
+	}
+
+	public static function filter_api_attachments( $args ) {
+		add_action( 'pre_get_posts', 'FrmProFileField::filter_media_library', 99 );
+		return $args;
 	}
 
 	/**
@@ -227,14 +304,14 @@ class FrmProFileField {
 	 * @since 3.0.03
 	 */
 	public static function remove_error_message( $errors, $field, $value, $args ) {
-		if ( ! isset( $errors['field' . $field->temp_id ] ) || $errors['field' . $field->temp_id ] != FrmFieldsHelper::get_error_msg( $field, 'blank' ) ) {
+		if ( ! isset( $errors[ 'field' . $field->temp_id ] ) || $errors[ 'field' . $field->temp_id ] != FrmFieldsHelper::get_error_msg( $field, 'blank' ) ) {
 			return $errors;
 		}
 
 		$file_name = self::get_file_name( $field, $args );
 		$file_uploads = $_FILES[ $file_name ];
 		if ( self::file_was_selected( $file_uploads ) ) {
-			unset( $errors['field' . $field->temp_id ] );
+			unset( $errors[ 'field' . $field->temp_id ] );
 		}
 
 		return $errors;
@@ -255,7 +332,7 @@ class FrmProFileField {
 		} elseif ( empty( $values ) ) {
 			$skip_required = FrmProEntryMeta::skip_required_validation( $field );
 			if ( $field->required && ! $skip_required ) {
-				$errors['field' . $field->temp_id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
+				$errors[ 'field' . $field->temp_id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
 			}
 		}
 	}
@@ -290,7 +367,7 @@ class FrmProFileField {
 
 			// check allowed file size
 			if ( ! empty( $file_uploads['error'] ) && in_array( 1, (array) $file_uploads['error'] ) ) {
-				$errors['field' . $field->temp_id ] = __( 'That file is too big. It must be less than %sMB.', 'formidable-pro' );
+				$errors[ 'field' . $field->temp_id ] = __( 'That file is too big. It must be less than %sMB.', 'formidable-pro' );
 			}
 
 			if ( empty( $name ) ) {
@@ -301,7 +378,7 @@ class FrmProFileField {
 			$this_file_size = $this_file_size / 1000000; // compare in MB
 
 			if ( $this_file_size > $size_limit ) {
-				$errors['field' . $field->temp_id ] = sprintf( __( 'That file is too big. It must be less than %sMB.', 'formidable-pro' ), $size_limit );
+				$errors[ 'field' . $field->temp_id ] = sprintf( __( 'That file is too big. It must be less than %sMB.', 'formidable-pro' ), $size_limit );
 			}
 
 			unset( $name );
@@ -316,7 +393,7 @@ class FrmProFileField {
 
 		$upload_max = wp_max_upload_size() / 1000000;
 
-		return min( $upload_max, $mb_limit );
+		return round( min( $upload_max, $mb_limit ), 3 );
 	}
 
 	/**
@@ -331,7 +408,7 @@ class FrmProFileField {
 
 		$total_upload_count = self::get_new_and_old_file_count( $field, $args, $values );
 		if ( $total_upload_count > $file_count_limit ) {
-			$errors['field' . $field->temp_id ] = sprintf( __( 'You have uploaded too many files. You may only include %d file(s).', 'formidable-pro' ), $file_count_limit );
+			$errors[ 'field' . $field->temp_id ] = sprintf( __( 'You have uploaded more than %d file(s).', 'formidable-pro' ), $file_count_limit );
 		}
 	}
 
@@ -356,7 +433,7 @@ class FrmProFileField {
 	 * @since 2.02
 	 */
 	public static function validate_file_type( &$errors, $field, $args ) {
-		if ( isset( $errors['field' . $field->temp_id ] ) ) {
+		if ( isset( $errors[ 'field' . $field->temp_id ] ) ) {
 			return;
 		}
 
@@ -378,7 +455,7 @@ class FrmProFileField {
 		}
 
         if ( isset( $file_type ) && ! $file_type['ext'] ) {
-            $errors['field' . $field->temp_id ] = self::get_invalid_file_type_message( $field->name, $field->field_options['invalid'] );
+			$errors[ 'field' . $field->temp_id ] = self::get_invalid_file_type_message( $field->name, $field->field_options['invalid'] );
         }
 	}
 
@@ -416,7 +493,6 @@ class FrmProFileField {
      * @param int $field_id
      * @param int $entry_id
      * @return array|string $meta_value
-     *
      */
 	public static function prepare_data_before_db( $meta_value, $field_id, $entry_id, $atts ) {
 		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldType::get_value_to_save' );
@@ -458,7 +534,7 @@ class FrmProFileField {
 			}
 
 			if ( ! empty( $response['errors'] ) ) {
-				$errors['field' . $field->temp_id ] = implode( ' ', $response['errors'] );
+				$errors[ 'field' . $field->temp_id ] = implode( ' ', $response['errors'] );
 			}
 		}
 	}
@@ -468,7 +544,7 @@ class FrmProFileField {
 		if ( ! empty( $_FILES ) ) {
 			$field_id = FrmAppHelper::get_param( 'field_id', '', 'post', 'absint' );
 			if ( $field_id ) {
-				$field = FrmField::getOne( $field_id );
+				$field = FrmField::getOne( $field_id, true );
 				$field->temp_id = $field->id;
 
 				foreach ( $_FILES as $file_name => $file ) {
@@ -502,9 +578,11 @@ class FrmProFileField {
 
     /**
      * Let WordPress process the uploads
+	 *
      * @param int $field_id
+     * @param bool $sideload
      */
-	public static function upload_file( $field_id ) {
+	public static function upload_file( $field_id, $sideload = false ) {
 		require_once( ABSPATH . 'wp-admin/includes/file.php' );
 		require_once( ABSPATH . 'wp-admin/includes/image.php' );
 		require_once( ABSPATH . 'wp-admin/includes/media.php' );
@@ -512,7 +590,7 @@ class FrmProFileField {
 		$response = array( 'media_ids' => array(), 'errors' => array() );
 		add_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
 
-		if ( is_array( $_FILES[ $field_id ]['name'] ) ) {
+		if ( ! $sideload && is_array( $_FILES[ $field_id ]['name'] ) ) {
 			foreach ( $_FILES[ $field_id ]['name'] as $k => $n ) {
 				if ( empty( $n ) ) {
 					continue;
@@ -532,7 +610,7 @@ class FrmProFileField {
 				self::handle_upload( $f_id, $response );
 			}
 		} else {
-			self::handle_upload( $field_id, $response );
+			self::handle_upload( $field_id, $response, $sideload );
 		}
 
 		remove_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
@@ -542,9 +620,9 @@ class FrmProFileField {
 		return $response;
 	}
 
-	private static function handle_upload( $field_id, &$response ) {
+	private static function handle_upload( $field_id, &$response, $sideload = false ) {
 		add_filter( 'wp_insert_attachment_data', 'FrmProFileField::change_attachment_slug' );
-		$media_id = media_handle_upload( $field_id, 0 );
+		$media_id = $sideload ? media_handle_sideload( $field_id, 0 ) : media_handle_upload( $field_id, 0 );
 		remove_filter( 'wp_insert_attachment_data', 'FrmProFileField::change_attachment_slug' );
 
 		if ( is_numeric( $media_id ) ) {
@@ -623,20 +701,52 @@ class FrmProFileField {
 		}
 	}
 
-    /**
+	/**
 	 * Upload files into "formidable" subdirectory
 	 */
 	public static function upload_dir( $uploads ) {
 		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+		if ( ! $form_id ) {
+			$form_id = FrmAppHelper::simple_get( 'form', 'absint', 0 );
+		}
+
 		$relative_path = self::get_upload_dir_for_form( $form_id );
 
 		if ( ! empty( $relative_path ) ) {
 			$uploads['path'] = $uploads['basedir'] . '/' . $relative_path;
 			$uploads['url'] = $uploads['baseurl'] . '/' . $relative_path;
 			$uploads['subdir'] = '/' . $relative_path;
+
+			self::create_index( $uploads, $relative_path );
 		}
 
 		return $uploads;
+	}
+
+	/**
+	 * Create an index.php in the folders where files are being uploaded.
+	 *
+	 * @since 3.06.01
+	 * @param array  $uploads Info about file locations.
+	 * @param string $path The folder where files will be saved.
+	 */
+	private static function create_index( $uploads, $path ) {
+		if ( file_exists( $uploads['path'] . $uploads['subdir'] . '/index.php' ) ) {
+			return;
+		}
+
+		remove_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
+
+		$file_atts = array(
+			'file_name'   => 'index.php',
+			'folder_name' => $path,
+		);
+
+		$file_content = '<?php' . "\r\n";
+		$new_file     = new FrmCreateFile( $file_atts );
+		$new_file->create_file( $file_content );
+
+		add_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
 	}
 
 	public static function get_upload_dir_for_form( $form_id ) {
@@ -654,6 +764,7 @@ class FrmProFileField {
 	/**
 	 * Automatically delete files when an entry is deleted.
 	 * If the "Delete all entries" button is used, entries will not be deleted
+	 *
 	 * @since 2.0.22
 	 */
 	public static function delete_files_with_entry( $entry_id, $entry = false ) {
@@ -713,7 +824,7 @@ class FrmProFileField {
 			return;
 		}
 
-		$media_ids = maybe_unserialize( $media_ids );
+		FrmProAppHelper::unserialize_or_decode( $media_ids );
 		foreach ( (array) $media_ids as $m ) {
 			if ( is_numeric( $m ) ) {
 				wp_delete_attachment( $m, true );
@@ -772,7 +883,6 @@ class FrmProFileField {
 				} else {
 					$new_value = $new_mids;
 				}
-
 			} else {
 				// Single file upload fields
 				$new_value = reset( $new_mids );
@@ -797,6 +907,78 @@ class FrmProFileField {
 	}
 
 	/**
+	 * @since 3.01.03
+	 */
+	public static function duplicate_files_with_entry( $entry_id, $form_id, $args ) {
+		$old_entry_id  = ! empty( $args['old_id'] ) ? $args['old_id'] : 0;
+		$upload_fields = FrmField::getAll( array( 'fi.type' => 'file', 'fi.form_id' => $form_id ) );
+
+		if ( ! $old_entry_id || ! $upload_fields ) {
+			return;
+		}
+
+		include_once( ABSPATH . 'wp-admin/includes/file.php' );
+
+		foreach ( $upload_fields as $field ) {
+			$attachments = self::get_previous_file_ids( $field, $old_entry_id );
+			FrmProAppHelper::unserialize_or_decode( $attachments );
+			if ( empty( $attachments ) ) {
+				continue;
+			}
+
+			$new_media_ids = array();
+
+			foreach ( (array) $attachments as $attachment_id ) {
+				$orig_path = get_attached_file( $attachment_id );
+
+				if ( ! file_exists( $orig_path ) ) {
+					continue;
+				}
+
+				// Copy path to a temp location because wp_handle_sideload() deletes the original.
+				$tmp_path = wp_tempnam();
+				if ( ! $tmp_path ) {
+					continue;
+				}
+
+				$read_file = new FrmCreateFile( array(
+				    'new_file_path' => dirname( $orig_path ),
+				    'file_name' => basename( $orig_path ),
+				) );
+				$file_contents = $read_file->get_file_contents();
+
+				if ( ! $file_contents || false === file_put_contents( $tmp_path, $file_contents ) ) { // phpcs:ignore WordPress.VIP.FileSystemWritesDisallow.file_ops_file_put_contents,
+					@unlink( $tmp_path );
+					continue;
+				}
+
+				$file_arr = array(
+					'name'     => basename( $orig_path ),
+					'size'     => @filesize( $tmp_path ),
+					'tmp_name' => $tmp_path,
+					'error'    => 0
+				);
+				$response = self::upload_file( $file_arr, true );
+
+				foreach ( (array) $response as $r ) {
+					if ( is_numeric( $r ) ) {
+						$new_media_ids[] = $r;
+					}
+				}
+			}
+
+			if ( 1 === count( $new_media_ids ) ) {
+				$new_meta = reset( $new_media_ids );
+			} else {
+				$new_meta = $new_media_ids;
+			}
+
+			FrmEntryMeta::update_entry_meta( $entry_id, $field->id, null, $new_meta );
+		}
+	}
+
+
+	/**
 	 * @deprecated 2.03.08
 	 */
 	public static function validate( $errors, $field, $values, $args ) {
@@ -805,3 +987,4 @@ class FrmProFileField {
 		return self::no_js_validate( $errors, $field, $values, $args );
 	}
 }
+

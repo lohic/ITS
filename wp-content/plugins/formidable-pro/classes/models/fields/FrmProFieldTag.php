@@ -53,7 +53,7 @@ class FrmProFieldTag extends FrmFieldType {
 		$tax_type = FrmField::get_option( $this->field, 'taxonomy' );
 		$tax_type = empty( $tax_type ) ? 'frm_tag' : $tax_type;
 
-		$tags = explode( ',', stripslashes( $value ) );
+		$tags = explode( ',', wp_unslash( $value ) );
 		$terms = array();
 
 		if ( isset( $_POST['frm_wp_post'] ) ) {
@@ -76,5 +76,12 @@ class FrmProFieldTag extends FrmFieldType {
 		}
 
 		wp_set_object_terms( $atts['entry_id'], $terms, $tax_type );
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
 	}
 }

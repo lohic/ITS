@@ -1,13 +1,27 @@
-<div class="general_settings metabox-holder tabs-panel frm_license_box <?php echo esc_attr( 'general_settings' === $a ? 'frm_block' : 'frm_hidden' ); ?>">
-<?php if ( ! is_multisite() || current_user_can( 'setup_network' ) ) { ?>
-    <div class="postbox">
-        <div class="inside">
-			<p><?php esc_html_e( 'Get more field types including multiple file upload and cascading lookups. PLUS multi-page forms, calculations, repeatable sections, confirmation fields, conditional logic, front-end editing, views, data management, and graph & stat reporting.', 'formidable' ); ?>
-			<?php printf( esc_html__( '%1$sClick here%2$s to go Pro.', 'formidable' ), '<a href="' . esc_url( FrmAppHelper::make_affiliate_url( 'https://formidableforms.com' ) ) . '">', '</a>' ); ?>
-			</p>
+<div id="frm_license_top" class="frm_unauthorized_box">
+<p id="frm-connect-btns" class="frm-show-unauthorized">
+	<a href="<?php echo esc_url( admin_url( 'admin.php?page=formidable-settings' ) ); ?>" target="_blank" class="button-primary frm-button-primary" id="frm-settings-connect-btn">
+		<?php esc_html_e( 'Connect an Account', 'formidable' ); ?>
+	</a>
+	or
+	<a href="<?php echo esc_url( FrmAppHelper::admin_upgrade_link( 'settings-license' ) ); ?>" target="_blank" class="button-secondary frm-secondary-button">
+		<?php esc_html_e( 'Get Formidable Now', 'formidable' ); ?>
+	</a>
+</p>
 
-			<p>Already have a Pro license? <a href="<?php echo esc_url( FrmAppHelper::make_affiliate_url( 'https://formidableforms.com/knowledgebase/install-formidable-forms/' ) ) ?>" target="_blank"><?php esc_html_e( 'Click here', 'formidable' ); ?></a> to get installation instructions and download the pro version.</p>
-        </div>
-    </div>
-<?php } ?>
+<div id="frm-using-lite" class="frm-show-unauthorized">
+<p>You're using Formidable Forms Lite - no license needed. Enjoy! 🙂</p>
+<p>
+		<?php
+		printf(
+			/* translators: %1$s: Start link HTML, %2$s: End link HTML */
+			esc_html__( 'To unlock more features consider %1$supgrading to PRO%2$s.', 'formidable' ),
+			'<a href="' . esc_url( FrmAppHelper::admin_upgrade_link( 'settings-license' ) ) . '">',
+			'</a>'
+		);
+		?>
+</p>
 </div>
+</div>
+
+<div class="frm_pro_license_msg frm_hidden"></div>

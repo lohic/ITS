@@ -1,28 +1,12 @@
-<tr>
-	<td><label><?php esc_html_e( 'Lookup value', 'formidable-pro' ) ?></label></td>
-    <td>
-	    <label for="autopopulate_value_<?php echo absint( $field['id'] ) ?>">
-			<input type="checkbox" value="1" name="field_options[autopopulate_value_<?php echo absint( $field['id'] ) ?>]" <?php checked($field['autopopulate_value'], 1) ?> class="autopopulate_value" id="autopopulate_value_<?php echo absint( $field['id'] ) ?>" />
-	        <?php esc_html_e( 'Dynamically retrieve the value from a Lookup field', 'formidable-pro' ) ?>
+<div class="frm_grid_container">
+	<?php $field_obj->show_get_options( $field ); ?>
+
+	<div class="frm_form_field">
+		<label class="frm_primary_label">
+			<?php esc_html_e( 'Watch Lookup Fields', 'formidable-pro' ); ?>
 		</label>
-	</td>
-</tr>
-<tr class="frm_autopopulate_value_section_<?php echo absint( $field['id'] ) . esc_attr( $field['autopopulate_value'] ? '' : ' frm_hidden' )?>">
-	<td>
-		<label><?php esc_html_e( 'Get value from', 'formidable-pro' ) ?></label>
-	</td>
-	<td><?php
-	require( FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/get-options-from.php' );
-	?></td>
-</tr>
-<tr class="frm_autopopulate_value_section_<?php echo absint( $field['id'] ) . esc_attr( $field['autopopulate_value'] ? '' : ' frm_hidden' )?>">
-	<td><label><?php esc_html_e( 'Watch Lookup fields', 'formidable-pro' ) ?></label></td>
-	<td>
-	    <a href="javascript:void(0)" id="frm_add_watch_lookup_link_<?php echo absint( $field['id'] ) ?>" class="frm_add_watch_lookup_row frm_add_watch_lookup_link frm_hidden">
-			<?php _e( 'Watch Lookup fields', 'formidable-pro' ) ?>
-		</a>
-		<div id="frm_watch_lookup_block_<?php echo absint( $field['id'] ) ?>"><?php
-			if ( empty( $field['watch_lookup'] ) ) {
+		<div id="frm_watch_lookup_block_<?php echo absint( $field['id'] ); ?>" class="frm_add_remove"><?php
+			if ( empty( $field['watch_lookup'] ) && ! empty( $lookup_fields ) ) {
 				$field_id = $field['id'];
 				$row_key = 0;
 				$selected_field = '';
@@ -34,14 +18,18 @@
 				}
 			}
 		?></div>
-	</td>
-</tr>
-<tr class="frm_autopopulate_value_section_<?php echo absint( $field['id'] ) . esc_attr( $field['autopopulate_value'] ? '' : ' frm_hidden' )?>">
-	<td><label><?php _e( 'Filter options', 'formidable-pro' ) ?></label></td>
-	<td>
-		<label for="get_most_recent_value_<?php echo absint( $field['id'] ) ?>">
-			<input type="checkbox" value="1" name="field_options[get_most_recent_value_<?php echo absint( $field['id'] ) ?>]" <?php checked($field['get_most_recent_value'], 1) ?> id="get_most_recent_value_<?php echo absint( $field['id'] ) ?>" />
-			<?php esc_html_e( 'Get only the most recent value', 'formidable-pro' ) ?>
-		</label>
-	</td>
-</tr>
+		<a href="#" id="frm_add_watch_lookup_link_<?php echo esc_attr( $field['id'] ); ?>" class="frm-small-add frm_add_watch_lookup_row frm_add_watch_lookup_link">
+			<span class="frm_icon_font frm_add_tag"></span>
+			<?php esc_html_e( 'Watch a Lookup Field', 'formidable-pro' ); ?>
+		</a>
+	</div>
+</div>
+<p>
+	<label for="get_most_recent_value_<?php echo absint( $field['id'] ); ?>">
+		<input type="checkbox" value="1" name="field_options[get_most_recent_value_<?php echo absint( $field['id'] ); ?>]" <?php checked( $field['get_most_recent_value'], 1 ); ?> id="get_most_recent_value_<?php echo absint( $field['id'] ); ?>" />
+		<?php esc_html_e( 'Get only the most recent value', 'formidable-pro' ); ?>
+	</label>
+</p>
+<p class="howto frm_no_bottom_margin">
+	<?php esc_html_e( 'Dynamically retrieve the value of this field from a lookup field.', 'formidable-pro' ); ?>
+</p>

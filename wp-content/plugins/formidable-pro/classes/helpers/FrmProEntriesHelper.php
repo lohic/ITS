@@ -1,9 +1,9 @@
 <?php
 
-class FrmProEntriesHelper{
+class FrmProEntriesHelper {
 
     // check if form should automatically be in edit mode (limited to one, has draft)
-    public static function allow_form_edit($action, $form) {
+	public static function allow_form_edit( $action, $form ) {
         if ( $action != 'new' ) {
             // make sure there is an entry id in the url if the action is being set in the url
 			$entry_id = FrmAppHelper::simple_get( 'entry', 'sanitize_title', 0 );
@@ -22,14 +22,15 @@ class FrmProEntriesHelper{
         }
 
         $is_draft = false;
-        if($action == 'destroy')
+		if ( $action == 'destroy' ) {
             return $action;
+		}
 
         global $wpdb;
 		if ( ( $form->editable && ( isset( $form->options['single_entry'] ) && $form->options['single_entry'] && $form->options['single_entry_type'] == 'user' ) || ( isset( $form->options['save_draft'] ) && $form->options['save_draft'] ) ) ) {
 			if ( $action == 'update' && $form->id == FrmAppHelper::get_param( 'form_id', '', 'get', 'absint' ) ) {
                 //don't change the action is this is the wrong form
-            }else{
+			} else {
                 $checking_drafts = isset($form->options['save_draft']) && $form->options['save_draft'] && ( ! $form->editable || ! isset($form->options['single_entry']) || ! $form->options['single_entry'] || $form->options['single_entry_type'] != 'user' );
                 $meta = self::check_for_user_entry($user_ID, $form, $checking_drafts);
 
@@ -57,10 +58,12 @@ class FrmProEntriesHelper{
         return $action;
     }
 
-    /**
-     * Check if the current user already has an entry
-     * @since 2.0
-     */
+	/**
+	 * Check if the current user already has an entry
+	 *
+	 * @since 2.0
+	 * @return array|false
+	 */
     public static function check_for_user_entry( $user_ID, $form, $is_draft ) {
         $query = array( 'user_id' => $user_ID, 'form_id' => $form->id);
         if ( $is_draft ) {
@@ -107,7 +110,7 @@ class FrmProEntriesHelper{
 		}
 	}
 
-    public static function user_can_edit_check($entry, $form) {
+	public static function user_can_edit_check( $entry, $form ) {
         $user_ID = get_current_user_id();
 
         if ( ! $user_ID || empty($form) || ( is_object($entry) && $entry->form_id != $form->id ) ) {
@@ -171,10 +174,11 @@ class FrmProEntriesHelper{
         return FrmEntry::getAll( $where, ' ORDER BY created_at DESC', 1, true);
     }
 
-    /**
-     * check if this user can edit entry from another user
-     * @return boolean True if user can edit
-     */
+	/**
+	 * Check if this user can edit entry from another user
+	 *
+	 * @return boolean True if user can edit
+	 */
     public static function user_can_edit_others( $form ) {
         if ( ! $form->editable || ! isset($form->options['open_editable_role']) || ! FrmAppHelper::user_has_permission($form->options['open_editable_role']) ) {
             return false;
@@ -183,11 +187,12 @@ class FrmProEntriesHelper{
         return ( ! isset($form->options['open_editable']) || $form->options['open_editable'] );
     }
 
-    /**
-     * only allow editing of drafts
-     * @return boolean
-     */
-    public static function user_can_only_edit_draft($form) {
+	/**
+	 * Only allow editing of drafts
+	 *
+	 * @return boolean
+	 */
+	public static function user_can_only_edit_draft( $form ) {
         if ( ! $form->editable || empty($form->options['editable_role']) || FrmAppHelper::user_has_permission($form->options['editable_role']) ) {
             return false;
         }
@@ -199,7 +204,7 @@ class FrmProEntriesHelper{
         return ! self::user_can_edit_others( $form );
     }
 
-    public static function user_can_delete($entry) {
+	public static function user_can_delete( $entry ) {
 		FrmEntry::maybe_get_entry( $entry );
         if ( ! $entry ) {
             return false;
@@ -209,7 +214,7 @@ class FrmProEntriesHelper{
             $allowed = true;
         } else {
             $allowed = self::user_can_edit($entry);
-            if ( !empty($allowed) ) {
+			if ( ! empty( $allowed ) ) {
                 $allowed = true;
             }
         }
@@ -217,11 +222,22 @@ class FrmProEntriesHelper{
         return apply_filters('frm_allow_delete', $allowed, $entry);
     }
 
-    public static function show_new_entry_button($form) {
-        echo self::new_entry_button($form);
-    }
+	/**
+	 * @since 4.0
+	 */
+	private static function show_list_entry_buttons( $form ) {
+		$form_id = is_numeric( $form ) ? $form : $form->id;
+		echo '<div class="actions alignleft frm-button-group">';
+		self::insert_download_csv_button( $form_id );
+		self::delete_all_button( $form_id );
+		echo '</div>';
+	}
 
-    public static function new_entry_button($form) {
+	public static function show_new_entry_button( $form ) {
+		echo self::new_entry_button( $form );
+	}
+
+	public static function new_entry_button( $form ) {
         if ( ! current_user_can('frm_create_entries') ) {
             return;
         }
@@ -229,18 +245,26 @@ class FrmProEntriesHelper{
         $link = '<a href="?page=formidable-entries&frm_action=new';
         if ( $form ) {
             $form_id = is_numeric($form) ? $form : $form->id;
-            $link .= '&form='. $form_id;
+			$link .= '&form=' . $form_id;
         }
-        $link .= '" class="add-new-h2 frm_animate_bg">'. __( 'Add New', 'formidable-pro' ) .'</a>';
+		$link .= '" class="button-primary frm-button-primary frm-with-plus">';
+		$link .= FrmProAppHelper::icon_by_class( 'frmfont frm_plus_icon frm_svg15', array( 'echo' => false ) );
+		$link .= __( 'Add New', 'formidable-pro' ) . '</a>';
 
         return $link;
     }
 
-    public static function show_duplicate_link($entry) {
+	/**
+	 * @codeCoverageIgnore
+	 */
+	public static function show_duplicate_link( $entry ) {
 		_deprecated_function( __METHOD__, '3.0' );
         echo self::duplicate_link($entry);
     }
 
+	/**
+	 * @codeCoverageIgnore
+	 */
 	public static function duplicate_link( $entry ) {
 		if ( current_user_can('frm_create_entries') ) {
 			_deprecated_function( __METHOD__, '3.0' );
@@ -251,11 +275,36 @@ class FrmProEntriesHelper{
 	}
 
 	/**
+	 * Add links to the entry actions including edit and resend emails.
+	 *
 	 * @since 3.0
-	 * @param $atts array includes id & entry
+	 * @param array $actions
+	 * @param array $atts Includes 'id' and 'entry'.
 	 */
 	public static function add_actions_dropdown( $actions, $atts ) {
 		$entry = $atts['entry'];
+		$page  = FrmAppHelper::get_param( 'frm_action' );
+
+		$actions['frm_resend'] = array(
+			'url'   => '#',
+			'id'    => 'frm_resend_email',
+			'label' => __( 'Resend Emails', 'formidable' ),
+			'icon'  => $actions['frm_resend']['icon'],
+			'data'  => array(
+				'eid' => $entry->id,
+				'fid' => $entry->form_id,
+			),
+		);
+
+		if ( $page !== 'edit' ) {
+			$actions['frm_edit'] = array(
+				'url'   => FrmProEntry::admin_edit_link( $entry->id ),
+				'label' => __( 'Edit Entry', 'formidable' ),
+				'icon'  => $actions['frm_edit']['icon'],
+			);
+		} else {
+			unset( $actions['frm_edit'] );
+		}
 
 		if ( current_user_can( 'frm_delete_entries' ) ) {
 			if ( ! empty( $entry->post_id ) ) {
@@ -272,27 +321,14 @@ class FrmProEntriesHelper{
 			$actions['frm_duplicate'] = array(
 				'url'   => admin_url( 'admin.php?page=formidable-entries&frm_action=duplicate&id=' . $entry->id . '&form=' . $entry->form_id ),
 				'label' => __( 'Duplicate', 'formidable-pro' ),
-				'icon'  => 'frm_icon_font frm_duplicate_icon',
+				'icon'  => 'frm_icon_font frm_clone_icon',
 			);
 		}
 
 		return $actions;
 	}
 
-    public static function edit_button( $entry = array() ) {
-        if ( ! current_user_can('frm_edit_entries') ) {
-            return;
-        }
-?>
-		<div id="publishing-action">
-			<a href="<?php echo esc_url( add_query_arg( 'frm_action', 'edit' ) ) ?>" class="button-primary">
-				<?php _e( 'Edit', 'formidable-pro' ) ?>
-			</a>
-		</div>
-<?php
-    }
-
-    public static function resend_email_links($entry_id, $form_id, $args = array()) {
+	public static function resend_email_links( $entry_id, $form_id, $args = array() ) {
         $defaults = array(
             'label' => __( 'Resend Email Notifications', 'formidable-pro' ),
             'echo' => true,
@@ -312,54 +348,61 @@ class FrmProEntriesHelper{
             return;
         }
 
-        if ( $footer ) {
-            if ( apply_filters('frm_show_delete_all', current_user_can('frm_edit_entries'), $form_id) ) {
-			?>
-			<div class="frm_uninstall alignleft actions">
-				<a href="?page=formidable-entries&amp;frm_action=destroy_all<?php echo esc_attr( $form_id ? '&form=' . absint( $form_id ) : '' ); ?>" class="button" data-frmverify="<?php esc_attr_e( 'Really permanently delete ALL entries in this form?', 'formidable-pro' ) ?>">
-					<?php _e( 'Delete ALL Entries', 'formidable-pro' ) ?>
-				</a>
-			</div>
-<?php
-            }
-            return;
-        }
+		if ( ! $footer ) {
+			self::show_list_entry_buttons( $form_id );
+			do_action( 'frm_before_entries_table', $form_id );
+		}
+	}
 
-		do_action( 'frm_before_entries_table', $form_id );
+	/**
+	 * @since 4.0
+	 * @param int $form_id
+	 */
+	private static function delete_all_button( $form_id ) {
+		if ( ! apply_filters( 'frm_show_delete_all', current_user_can( 'frm_delete_entries' ), $form_id ) ) {
+			return;
+		}
 
-		self::insert_download_csv_button( $form_id );
-    }
+		?>
+		<span class="frm_uninstall">
+			<a href="<?php echo esc_url( wp_nonce_url( '?page=formidable-entries&frm_action=destroy_all' . ( $form_id ? '&form=' . absint( $form_id ) : '' ) ) ); ?>" class="button frm-button-secondary" data-frmverify="<?php esc_attr_e( 'Do you want to permanently delete ALL entries in this form?', 'formidable-pro' ); ?>">
+				<?php esc_html_e( 'Delete All Entries', 'formidable-pro' ); ?>
+			</a>
+		</span>
+		<?php
+	}
 
 	private static function insert_download_csv_button( $form_id ) {
 		$page_params = array( 'frm_action' => 0, 'action' => 'frm_entries_csv', 'form' => $form_id );
 
-		if ( ! empty( $_REQUEST['s'] ) )
+		if ( ! empty( $_REQUEST['s'] ) ) {
 			$page_params['s'] = sanitize_text_field( $_REQUEST['s'] );
+		}
 
-		if ( ! empty( $_REQUEST['search'] ) )
+		if ( ! empty( $_REQUEST['search'] ) ) {
 			$page_params['search'] = sanitize_text_field( $_REQUEST['search'] );
+		}
 
-		if ( ! empty( $_REQUEST['fid'] ) )
+		if ( ! empty( $_REQUEST['fid'] ) ) {
 			$page_params['fid'] = (int) $_REQUEST['fid'];
+		}
 
 		?>
-		<div class="alignleft actions">
-			<a href="<?php echo esc_url( add_query_arg( $page_params, admin_url( 'admin-ajax.php' ) ) ) ?>" class="button">
-				<?php _e( 'Download CSV', 'formidable-pro' ); ?>
-			</a>
-		</div>
+		<a href="<?php echo esc_url( add_query_arg( $page_params, admin_url( 'admin-ajax.php' ) ) ); ?>" class="button frm-button-secondary">
+			<?php esc_html_e( 'Download CSV', 'formidable-pro' ); ?>
+		</a>
 		<?php
 	}
 
     // check if entry being updated just switched draft status
-    public static function is_new_entry($entry) {
+	public static function is_new_entry( $entry ) {
 		FrmEntry::maybe_get_entry( $entry );
 
         // this function will only be correct if the entry has already gone through FrmProEntriesController::check_draft_status
         return ( $entry->created_at == $entry->updated_at );
     }
 
-    public static function get_field($field = 'is_draft', $id) {
+	public static function get_field( $field = 'is_draft', $id ) {
         $entry = FrmDb::check_cache( $id, 'frm_entry' );
         if ( $entry && isset($entry->$field) ) {
             return $entry->{$field};
@@ -390,7 +433,8 @@ class FrmProEntriesHelper{
 				// Check if field in conditional logic is a Dynamic field
 				$cl_field_type = FrmField::get_type( $hfield );
 				if ( $cl_field_type == 'data' ) {
-					$cl_field_val = maybe_unserialize( $entry->metas[ $hfield ] );
+					$cl_field_val = $entry->metas[ $hfield ];
+					FrmProAppHelper::unserialize_or_decode( $cl_field_val );
 					if ( is_array( $cl_field_val ) ) {
 						$field_value += $cl_field_val;
 					} else {
@@ -510,7 +554,7 @@ class FrmProEntriesHelper{
 	 */
 	private static function get_linked_field_query( $form_id, $search_param ) {
 		$dynamic_fields = FrmProFormsHelper::has_field( 'data', $form_id, false );
-		if ( empty ( $dynamic_fields ) ) {
+		if ( empty( $dynamic_fields ) ) {
 			// this form has no Dynamic fields
 			return array();
 		}
@@ -530,9 +574,9 @@ class FrmProEntriesHelper{
 
 		$dynamic_field_query = array();
 
-		$linked_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids), 'form_id' );
+		$linked_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
 		if ( $linked_form_ids ) {
-			$linked_entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => $linked_form_ids, 'meta_value LIKE' => $search_param ),  '', '', true, array( 'is_draft' => 'both' ) );
+			$linked_entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => $linked_form_ids, 'meta_value LIKE' => $search_param ), '', '', true, array( 'is_draft' => 'both' ) );
 
 			if ( ! empty( $linked_entry_ids ) ) {
 				if ( count( $linked_entry_ids ) == 1 ) {
@@ -549,6 +593,7 @@ class FrmProEntriesHelper{
 
 	/**
 	 * Search connected posts when a general search is submitted
+	 *
 	 * @param $form_id
 	 * @param $search_param
 	 * @param $where
@@ -556,7 +601,7 @@ class FrmProEntriesHelper{
 	private static function append_entry_ids_for_matching_posts( $form_id, $search_param, &$where ) {
 		// Check if form has a post action
 		$post_action = FrmFormAction::get_action_for_form( $form_id, 'wppost' );
-		if( ! $post_action ) {
+		if ( ! $post_action ) {
 			return;
 		}
 
@@ -634,20 +679,44 @@ class FrmProEntriesHelper{
 	 * @return array $user_ids
 	 */
 	private static function replace_search_param_with_user_ids( $search_param ) {
-		$user_ids = array();
+		$user_ids = array_filter( $search_param, 'is_numeric' );
 
-		foreach ( $search_param as $single_value ) {
-			if ( is_numeric( $single_value ) ) {
-				$user_ids[] = $single_value;
-			} else {
-				$user_id = FrmAppHelper::get_user_id_param( $single_value );
-				if ( $user_id ) {
-					$user_ids[] = $user_id;
-				}
-			}
+		$add_user_ids = self::search_users( $search_param );
+		if ( ! empty( $add_user_ids ) ) {
+			$user_ids = array_merge( $user_ids, $add_user_ids );
+		}
+
+		if ( empty( $user_ids ) ) {
+			// prevent all results from being returned when there are no matches
+			$user_ids = array( 'none' );
 		}
 
 		return $user_ids;
+	}
+
+	/**
+	 * @since 3.03.03
+	 *
+	 * @param array $search
+	 * @return array
+	 */
+	private static function search_users( $search ) {
+		global $wpdb;
+
+		$single_value = implode( ' ', $search );
+		if ( is_numeric( $single_value ) ) {
+			// don't search the user record for the id
+			return array();
+		}
+
+		$query = array(
+			'or' => 1,
+			'user_login like'    => $single_value,
+			'user_email like'    => $single_value,
+			'user_nicename like' => $single_value,
+			'display_name like'  => $single_value,
+		);
+		return FrmDb::get_col( $wpdb->users, $query, 'ID' );
 	}
 
 	/**
@@ -662,7 +731,7 @@ class FrmProEntriesHelper{
 			$values = array();
 			FrmDb::parse_where_from_array( $add_where, '', $where, $values );
 			FrmDb::get_where_clause_and_values( $add_where );
-			$where_clause .= ' AND ('. $wpdb->prepare( $where, $values ) .')';
+			$where_clause .= ' AND (' . $wpdb->prepare( $where, $values ) . ')';
 		}
 	}
 
@@ -769,5 +838,22 @@ class FrmProEntriesHelper{
 		if ( $post_entries ) {
 			$p_ids['item_id'] = $post_entries;
 		}
+	}
+
+	/**
+	 * @since 4.0
+	 */
+	public static function edit_button( $entry = array() ) {
+		_deprecated_function( __METHOD__, '4.0' );
+		if ( ! current_user_can('frm_edit_entries') ) {
+			return;
+		}
+		?>
+		<div id="publishing-action">
+			<a href="<?php echo esc_url( add_query_arg( 'frm_action', 'edit' ) ) ?>" class="button-primary">
+				<?php esc_html_e( 'Edit', 'formidable-pro' ); ?>
+			</a>
+		</div>
+		<?php
 	}
 }

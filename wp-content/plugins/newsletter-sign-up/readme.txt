@@ -1,11 +1,12 @@
 === Newsletter Sign-Up ===
-Contributors: DvanKooten
+Contributors: DvanKooten, Ibericode
 Donate link: https://dannyvankooten.com/donate/
 Tags: newsletter, sign-up, mailchimp, aweber, ymlp, phplist, icontact, newsletter widget, subscribe widget
 Requires at least: 4.1
-Tested up to: 4.6
+Tested up to: 5.0
 Stable tag: 2.0.7
 License: GPL2
+Requires PHP: 5.3
 
 Integrate your WordPress site with 3rd-party newsletter services like Aweber and YMLP. Adds various sign-up methods to your site.
 
@@ -36,8 +37,7 @@ This plugin works with *almost all* third-party email marketing services includi
 **More information**
 
 * [MailChimp for WordPress plugin](https://mc4wp.com/)
-* Check out more [WordPress plugins](https://dannyvankooten.com/wordpress-plugins/) by Danny van Kooten
-* Follow [@DannyvanKooten](https://twitter.com/DannyvanKooten) on Twitter
+* More [WordPress plugins](https://dannyvankooten.com/wordpress-plugins/) by ibericode
 
 = Sign-up checkboxes =
 Most of your commenters will be interested in your newsletter as well. This plugin makes it extremely easie for them to subscribe to your mailinglist. With the sign-up checkbox, all they have to do is check it and the plugin will subscribe them to your mailinglist.
@@ -84,7 +84,10 @@ Yes, use the following code snippet in your theme files to display a sign-up for
 
 `if(function_exists('nsu_form')) nsu_form();`
 
-For more questions and answers go have a look at the [Newsletter Sign-Up](https://dannyvankooten.com/wordpress-plugins/newsletter-sign-up/) page on my website.
+= Can I use this with MailChimp? =
+
+You can, but we recommend using [MailChimp for WordPress](https://wordpress.org/plugins/mailchimp-for-wp/) instead.
+
 
 == Screenshots ==
 
@@ -93,6 +96,11 @@ For more questions and answers go have a look at the [Newsletter Sign-Up](https:
 3. The sign-up checkbox in the Twenty Eleven theme
 
 == Changelog ==
+
+= 2.0.8 - February 14, 2019 =
+
+Maintenance & updated compatibility test with WordPress 5.0.
+
 
 = 2.0.7 - August 30, 2016 =
 

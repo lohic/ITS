@@ -19,7 +19,7 @@
 				<h2><?php _e('Import XML / CSV', 'wp_all_import_plugin'); ?></h2>					
 			</div>
 			<div class="wpallimport-links">
-				<a href="http://www.wpallimport.com/support/" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
+				<a href="http://www.wpallimport.com/support/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=premium-support" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=docs" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
 			</div>
 		</div>	
 		<div class="clear"></div>		
@@ -62,7 +62,7 @@
 							<h4 style="font-size:18px;"><?php _e("It has changed and is not compatible with this import template.", "wp_all_import_plugin"); ?></h4>
 						</div>		
 					</div>		
-					<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+					<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid?utm_source=import-plugin-free&utm_medium=error&utm_campaign=import-file-changed" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 				</div>										
 
 				<form class="<?php echo ! $isWizard ? 'edit' : 'options' ?>" method="post" enctype="multipart/form-data" autocomplete="off" <?php echo ! $isWizard ? 'style="overflow:visible;"' : '' ?>>
@@ -80,6 +80,12 @@
 													
 							if ( in_array('reimport', $visible_sections)) include( 'options/_reimport_template.php' );
 							do_action('pmxi_options_tab', $isWizard, $post);
+
+							if(!isset($import)) {
+                                $import = $update_previous;
+                            }
+                            include( 'options/scheduling/_scheduling_ui.php' );
+							
 							if ( in_array('settings', $visible_sections)) include( 'options/_settings_template.php' );
 							
 							include( 'options/_buttons_template.php' );

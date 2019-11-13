@@ -28,7 +28,7 @@ if ( ! function_exists('wp_all_import_is_json')){
 		        	return new WP_Error( 'broke', __( "Unknown json error", "pmxi_plugin" ) );		            
 		        break;
 		    }	
-	 	}	 
-	 	return true;		 
+	 	}
+	 	return true;
 	}
 }

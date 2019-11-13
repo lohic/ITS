@@ -1,12 +1,13 @@
 === WP to Twitter ===
 Contributors: joedolson
 Donate link: http://www.joedolson.com/donate/
-Tags: twitter, microblogging, su.pr, bitly, yourls, redirect, shortener, post, links, social, sharing, media, tweet
+Tags: twitter, microblogging, bitly, yourls, redirect, shortener, post, links, social, sharing, media, tweet
 Requires at least: 4.4
-Tested up to: 4.9
+Tested up to: 5.3
+Requires PHP: 5.3
 License: GPLv2 or later
 Text Domain: wp-to-twitter
-Stable tag: 3.3.2
+Stable tag: 3.4.4
 
 Posts a Twitter update when you update your WordPress blog or add a link, with your chosen URL shortening service.
 
@@ -21,8 +22,6 @@ Yep. That's the basic functionality. But it's not the only thing you can do:
 * Shorten URLs in your Tweets with popular URL shorteners, or let Twitter to do it with [t.co](http://t.co). 
 
 [Upgrade to WP Tweets Pro](http://www.joedolson.com/wp-tweets-pro/) and schedule Tweets, set up automatic reposts, upload images and more!
-
-[youtube https://www.youtube.com/watch?v=3YIia5dQBSk]
 
 WP to Twitter uses a customizable Tweet template for Tweets sent when updating or editing posts and pages or custom post types. You can customize your Tweet for each post, using custom template tags to generate the Tweet. 
 
@@ -63,6 +62,99 @@ Translating my plug-ins is always appreciated. Work on WP to Twitter translation
 Check out my <a href="https://github.com/joedolson/plugin-extensions/tree/master/wp-to-twitter">GitHub repository of plug-in extensions</a>.
 
 == Changelog ==
+
+= 3.4.4 =
+
+* Bug fix: Due to external add-ons, need to test URL shortener settings as strings, not integers.
+* Bugfix: If YOURLS JSON object does not exist, it cannot have values.
+* Change: Support custom domains in jotURL.
+* Change: Add user info to debugging records.
+
+= 3.4.3 =
+
+* Bug fix: Failed to account for a URL value that could be false in template parsing.
+
+= 3.4.2 =
+
+* Bug fix: don't parse Username settings if user is connected to Twitter (Pro)
+* Bug fix: Non-semantic text in user settings.
+* Bug fix: type error in media comparison.
+* Improve logic for exiting media handling. (Pro)
+
+= 3.4.1 =
+
+* Removed goo.gl shortener completely (disabled by Goo.gl in March 2019)
+* Removed su.pr shortener completely (Stumbleupon closed down in June 2018)
+* Prep for removal of Bit.ly URL shortener. (Bitly API v3 will shut down March 2020)
+* Misc. markup improvements.
+
+= 3.4.0 =
+
+* New function: wpt_allowed_post_types(). Returns array of post types that can be Tweeted.
+* New template tag: #categories# Return string of all categories on post. Filterable with 'wpt_twitter_category_names'
+* Change: default tag length allowed raised to 20
+* Change: default number of tags allowed raised to 4
+* Breaking change: Remove major function deprecated in January 2017 and minor functions deprecated March 2018.
+
+= 3.3.12 =
+
+* Missed ssl_verify=false removed
+
+= 3.3.11 =
+
+* Pass post ID to wpt_retweet_text filter.
+* Don't throw duplicate Tweet error if Tweet is blank.
+
+= 3.3.10 =
+
+* Change: Display UI for post types that are private but have a UI (e.g., WooCommerce coupons)
+* Bug fix: User permissions for connecting to Oauth overrode ability to enter personal settings.
+* Bug fix: Exit meta migration if post does not exist.
+
+= 3.3.9 =
+
+* Added filter to cancel Tweets for custom reasons after all other filters executed.
+* Removed video on app creation, due to Twitter's radical revision of creation process.
+* Update setup instructions inside app.
+
+= 3.3.8 =
+
+* Change function name for checking edit vs. new for clarity.
+* Update debugging function to pass post ID of current Tweet.
+* Bug fix: PHP Notice in settings.
+* Bug fix: If rate limiting cron not set, automatically recreate.
+
+= 3.3.7 =
+
+* Change: Remove replacement character setting unless in use for non-space character
+* Change: Capitalize each word in tags sent to Twitter (accessibility)
+
+= 3.3.6 =
+
+* Bug fix: Check for existing short URL should not run when parsing text of Tweets for URLs.
+
+= 3.3.5 =
+
+* Bug fix: Assignment replaced with comparison in connection creation.
+
+= 3.3.4 =
+
+* Bug fix: fallback normalizer method called incorrectly
+
+= 3.3.3 =
+
+* Removed: upgrade paths from version 2.4.x
+* Removed: support for YOURLS version 1.3
+* Removed: support for Twitter Friendly Links (plug-in not updated in 8 years)
+* Removed: Ability to enable the Goo.gl URL shortener (see: https://developers.google.com/url-shortener/)
+* Removed: fallback functions required for PHP 4 support.
+* Add 'show images' as option in feeds.
+* Support for alt attributes displayed in Feeds
+* Improved URL generation to link to searched Tweets.
+* Improve parsing of URLs in Tweets.
+* Don't save URLs if no shortener used or shortener returns no value.
+* Option to ignore stored URLs when sending Tweets.
+* Code now conforms with WordPress PHP standards with the exception of four deprecated functions.
 
 = 3.3.2 =
 
@@ -366,6 +458,10 @@ Check out my <a href="https://github.com/joedolson/plugin-extensions/tree/master
 
 Right here: [WP to Twitter FAQ](http://www.joedolson.com/wp-to-twitter/support-2/). I don't maintain them here because I would prefer to only maintain one copy. This is better for everybody, since the responses are much more likely to be up to date!
 
+= Twitter's Application creation process is very difficult. Why do I have to do this? =
+
+WP to Twitter has always followed the principle that you are the owner of your own application. Many other applications require you to pass your data through a 3rd party that you authenticate to post to Twitter. Twitter has gradually made the process to create a new application more and more difficult. There is nothing I can do about that. 
+
 = How can I help you make WP to Twitter a better plug-in? =
 
 Writing and maintaining a plug-in is a lot of work. You can help me by providing detailed support requests (which saves me time), or by providing financial support, either via my [plug-in donations page](https://www.joedolson.com/donate/) or by [upgrading to WP Tweets Pro](http://www.wptweetspro.com/wp-tweets-pro). Believe me, your donation really makes a difference!
@@ -381,4 +477,4 @@ Writing and maintaining a plug-in is a lot of work. You can help me by providing
 
 == Upgrade Notice ==
 
-* 3.3.1: 280 character Tweets
+* 3.4.0: Removal of functions deprecated in January 2017 & March 2018. May break older Pro installations.

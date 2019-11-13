@@ -63,20 +63,23 @@ class FrmNotification {
 			$sent_to = array_filter( $sent_to );
 
 			$temp = str_replace( '<', '&lt;', $sent_to );
-			echo ' ' . FrmAppHelper::kses( implode( ', ', (array) $temp ) );
+			echo ' ' . FrmAppHelper::kses( implode( ', ', (array) $temp ) ); // WPCS: XSS ok.
 		}
 	}
 
 	/**
 	 * @deprecated 2.03.04
+	 * @codeCoverageIgnore
 	 */
 	public static function remove_mandrill_br() {
 		_deprecated_function( __FUNCTION__, '2.03.04', 'FrmEmailHelper::remove_mandrill_br' );
+
 		return FrmEmailHelper::remove_mandrill_br();
 	}
 
 	/**
 	 * @deprecated 2.03.04
+	 * @codeCoverageIgnore
 	 */
 	public static function send_email() {
 		_deprecated_function( __FUNCTION__, '2.03.04', 'FrmEmail::send' );

@@ -192,7 +192,6 @@ class NSU {
 						$request['merge_vars']['LNAME'] = substr( $name, $strpos );
 					} else {
 						$request['merge_vars']['FNAME'] = $name;
-						$request['merge_vars']['LNAME'] = '...';
 					}
 
 					$request['merge_vars'][$opts['name_id']] = $name;

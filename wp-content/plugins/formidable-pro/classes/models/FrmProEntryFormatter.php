@@ -213,13 +213,33 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @param string $content
 	 */
 	protected function append_child_entry_values( $field_value, &$content ) {
+		$is_repeater = $field_value->is_repeater();
 		foreach ( $field_value->get_displayed_value() as $child_id => $field_values ) {
+			$pre_content = $content;
 
 			foreach ( $field_values as $child_field_id => $child_field_info ) {
 				$child_field_info->prepare_displayed_value( $this->atts );
 
 				$this->add_field_value_to_content( $child_field_info, $content );
 			}
+
+			if ( $content !== $pre_content && $is_repeater ) {
+				$this->add_separator( $content );
+			}
+		}
+	}
+
+	/**
+	 * Add an empty line to separate repeater content.
+	 *
+	 * @since 3.06.01
+	 * @param string $content - The final output for the entry.
+	 */
+	protected function add_separator( &$content ) {
+		if ( $this->format === 'plain_text_block' ) {
+			$content .= "\r\n";
+		} else if ( $this->format === 'table' ) {
+			$content .= $this->table_generator->generate_single_cell_table_row( '&nbsp;' );
 		}
 	}
 
@@ -240,11 +260,33 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 			case 'divider':
 				$display_value = '<h3>' . $field_value->get_field_label() . '</h3>';
+				$this->maybe_remove_section_title( $field_value, $display_value );
 				break;
 
 			default:
 				parent::prepare_html_display_value_for_extra_fields( $field_value, $display_value );
 		}
+	}
+
+	/**
+	 * Check if a section's title should be hidden in the summary.
+	 *
+	 * @since 4.03
+	 *
+	 * @param $field_value FrmProFieldSummaryValue
+	 */
+	protected function maybe_remove_section_title( $field_value, &$display_value ) {
+		if ( $this->atts['summary'] && $this->is_field_label_hidden( $field_value ) ) {
+			$display_value = '';
+		}
+	}
+
+	/**
+	 * @since 4.03
+	 */
+	protected function is_field_label_hidden( $field_value ) {
+		$label = $field_value->get_field_option( 'label' );
+		return 'hidden' === $label || 'none' === $label;
 	}
 
 	/**
@@ -294,7 +336,6 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 				$child_values = reset( $child_values );
 				$this->push_field_values_to_array( $child_values, $output );
 			}
-
 		} else {
 			parent::push_single_field_to_array( $field_value, $output );
 		}
@@ -339,21 +380,23 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 			if ( $this->include_repeating_field_in_array( $field_value ) ) {
 
-				if ( ! isset( $output[ $this->get_key_or_id( $field_value ) ] ) ) {
-					$output[ $this->get_key_or_id( $field_value ) ] = array();
+				$key = $this->get_key_or_id( $field_value );
+
+				if ( ! isset( $output[ $key ] ) ) {
+					$output[ $key ] = array();
 				}
 
 				$displayed_value = $this->prepare_display_value_for_array( $field_value->get_displayed_value() );
-				$output[ $this->get_key_or_id( $field_value ) ][ $index ] = $displayed_value;
+				$output[ $key ][ $index ] = $displayed_value;
 
 				$saved_value = $field_value->get_saved_value();
 				if ( $displayed_value !== $saved_value ) {
 
-					if ( ! isset( $output[ $this->get_key_or_id( $field_value ) ] ) ) {
-						$output[ $this->get_key_or_id( $field_value ) . '-value' ] = array();
+					if ( ! isset( $output[ $key ] ) ) {
+						$output[ $key . '-value' ] = array();
 					}
 
-					$output[ $this->get_key_or_id( $field_value ) . '-value' ][ $index ] = $field_value->get_saved_value();
+					$output[ $key . '-value' ][ $index ] = $field_value->get_saved_value();
 				}
 			}
 		}

@@ -8,7 +8,7 @@ function pmxi_wp_ajax_auto_detect_sf(){
 	if ( ! current_user_can( PMXI_Plugin::$capabilities ) ){
 		exit( json_encode(array('result' => array(), 'msg' => __('Security check', 'wp_all_import_plugin'))) );
 	}
-	
+
 	$input = new PMXI_Input();
 	$fieldName = $input->post('name', '');
 	$post_type = $input->post('post_type', 'post');
@@ -18,20 +18,24 @@ function pmxi_wp_ajax_auto_detect_sf(){
 
 	if ($fieldName) {
 
-		if ($post_type == 'import_users'){
-			$values = $wpdb->get_results("
-				SELECT DISTINCT usermeta.meta_value
-				FROM ".$wpdb->usermeta." as usermeta
-				WHERE usermeta.meta_key='".$fieldName."'
-			", ARRAY_A);	
-		}
-		else{
-			$values = $wpdb->get_results("
-				SELECT DISTINCT postmeta.meta_value
-				FROM ".$wpdb->postmeta." as postmeta
-				WHERE postmeta.meta_key='".$fieldName."'
-			", ARRAY_A);	
-		}
+	    switch ($post_type){
+			case 'import_users':
+			case 'shop_customer':
+                $values = $wpdb->get_results("
+                    SELECT DISTINCT usermeta.meta_value
+                    FROM ".$wpdb->usermeta." as usermeta
+                    WHERE usermeta.meta_key='".$fieldName."'
+                ", ARRAY_A);
+                break;
+
+            default:
+                $values = $wpdb->get_results("
+                    SELECT DISTINCT postmeta.meta_value
+                    FROM ".$wpdb->postmeta." as postmeta
+                    WHERE postmeta.meta_key='".$fieldName."'
+                ", ARRAY_A);
+                break;
+        }
 
 		if ( ! empty($values) ){
 			foreach ($values as $key => $value) {

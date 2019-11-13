@@ -1,12 +1,12 @@
 <?php
 
-class FrmProHooksController{
+class FrmProHooksController {
 
 	/**
 	 * @since 3.0
 	 */
 	public static function load_pro() {
-		$frmedd_update = new FrmProEddController();
+		$frmedd_update = FrmProAppHelper::get_updater();
 
 		// load the license form
 		add_action( 'frm_upgrade_page', 'FrmProSettingsController::standalone_license_box' );
@@ -14,8 +14,11 @@ class FrmProHooksController{
 			add_action('frm_before_settings', 'FrmProSettingsController::license_box', 1);
 		}
 
+		add_action( 'admin_head', 'FrmProAppController::remove_upsells' );
+
 		global $frm_vars;
 		if ( ! $frm_vars['pro_is_authorized'] ) {
+			add_action( 'admin_notices', 'FrmProAppController::admin_notices' );
 			return;
 		}
 
@@ -48,8 +51,9 @@ class FrmProHooksController{
 	public static function load_hooks() {
 		add_action( 'plugins_loaded', 'FrmProAppController::load_lang' );
         add_action( 'init', 'FrmProAppController::create_taxonomies', 0 );
-		add_action( 'wp_before_admin_bar_render', 'FrmProAppController::admin_bar_configure', 25 );
 		add_filter( 'frm_combined_js_files', 'FrmProAppController::combine_js_files' );
+		add_filter( 'frm_js_location', 'FrmProAppController::pro_js_location' );
+		add_action( 'wp_before_admin_bar_render', 'FrmProAppController::admin_bar_configure', 25 );
 		add_action( 'frm_before_get_form', 'FrmProAppController::register_scripts' );
 
 		add_filter( 'frm_db_needs_upgrade', 'FrmProDb::needs_upgrade' );
@@ -60,6 +64,7 @@ class FrmProHooksController{
 
         add_shortcode('frm_set_get', 'FrmProAppController::set_get');
         add_shortcode('frm-set-get', 'FrmProAppController::set_get');
+		add_shortcode( 'frm-condition', 'FrmProAppController::frm_condition_shortcode' );
 
         add_action('genesis_init', 'FrmProAppController::load_genesis');
 
@@ -85,6 +90,7 @@ class FrmProHooksController{
         add_action('deleted_post', 'FrmProEntriesController::delete_entry');
         add_action('trashed_post', 'FrmProEntriesController::trashed_post');
         add_action('untrashed_post', 'FrmProEntriesController::trashed_post');
+		add_filter( 'frm_show_entry_defaults', 'FrmProEntriesController::show_entry_defaults' );
 
 		add_filter( 'frmpro_fields_replace_shortcodes', 'FrmProEntriesController::filter_shortcode_value', 10, 4 );
 		add_filter( 'frm_display_value_custom', 'FrmProEntriesController::filter_display_value', 1, 3 );
@@ -96,6 +102,8 @@ class FrmProHooksController{
 		// File field
 		add_filter( 'frm_validate_entry', 'FrmProFileField::upload_files_no_js', 10, 1 );
 		add_action( 'frm_before_destroy_entry', 'FrmProFileField::delete_files_with_entry', 10, 2 );
+		add_action( 'frm_after_duplicate_entry', 'FrmProFileField::duplicate_files_with_entry', 10, 3 );
+		add_filter( 'rest_attachment_query', 'FrmProFileField::filter_api_attachments' );
 
         // Entry and Meta Helpers
         add_filter('frm_show_new_entry_page', 'FrmProEntriesHelper::allow_form_edit', 10, 2);
@@ -154,10 +162,11 @@ class FrmProHooksController{
 		}
 		add_action( 'wp_head', 'FrmProFormsController::head' );
         add_action('formidable_shortcode_atts', 'FrmProFormsController::formidable_shortcode_atts', 10, 2);
+		add_action( 'frm_pre_get_form', 'FrmProFormsController::add_submit_conditions_to_frm_vars', 10 );
         add_filter('frm_replace_content_shortcodes', 'FrmProFormsController::replace_content_shortcodes', 10, 3);
         add_filter('frm_conditional_shortcodes', 'FrmProFormsController::conditional_options');
-        add_filter('frm_user_shortcodes', 'FrmProFormsController::user_options');
         add_filter( 'frm_helper_shortcodes', 'FrmProFormsController::add_pro_field_helpers', 10, 2 );
+		add_filter( 'frm_form_strings', 'FrmProFormsController::add_form_strings', 10, 2 );
 
 		add_filter( 'frm_validate_entry', 'FrmProFormsHelper::can_submit_form_now', 15, 2 );
 		add_filter( 'frm_pre_display_form', 'FrmProFormsHelper::prepare_inline_edit_form', 10, 1 );
@@ -175,8 +184,13 @@ class FrmProHooksController{
 		// Stats Controller
 		add_shortcode('frm-stats', 'FrmProStatisticsController::stats_shortcode');
 
+		// Math Controller
+		add_shortcode( 'frm-math', 'FrmProMathController::math_shortcode' );
+
 		// Styles Controller
 		add_action( 'frm_include_front_css', 'FrmProStylesController::include_front_css' );
+		add_filter( 'frm_default_style_settings', 'FrmProStylesController::add_defaults' );
+		add_filter( 'frm_override_default_styles', 'FrmProStylesController::override_defaults' );
 
 		// Graphs Controller
 		add_shortcode('frm-graph', 'FrmProGraphsController::graph_shortcode');
@@ -186,22 +200,27 @@ class FrmProHooksController{
         add_filter('frm_notification_attachment', 'FrmProNotification::add_attachments', 1, 3 );
 
 		// XML Controller
-		add_filter( 'frm_default_templates_files', 'FrmProXMLController::import_default_templates' );
 		add_filter( 'frm_importing_xml', 'FrmProXMLController::importing_xml', 10, 2 );
+
+		// Simple Blocks Controller
+		add_action( 'init', 'FrmProSimpleBlocksController::register_simple_view_block', 20 );
     }
 
     public static function load_admin_hooks() {
         add_action('frm_after_uninstall', 'FrmProDb::uninstall');
 		add_filter( 'frm_form_nav_list', 'FrmProAppController::form_nav', 10, 2 );
+		add_filter( 'frm_icon', 'FrmProAppController::whitelabel_icon', 10, 2 );
+		add_filter( 'frm_media_icon', 'FrmProAppController::whitelabel_media_icon' );
 
         // Displays Controller
         add_action('admin_menu', 'FrmProDisplaysController::menu', 13);
         add_filter('admin_head-post.php', 'FrmProDisplaysController::highlight_menu' );
         add_filter('admin_head-post-new.php', 'FrmProDisplaysController::highlight_menu' );
 
-        add_action('restrict_manage_posts', 'FrmProDisplaysController::switch_form_box');
+		add_action( 'restrict_manage_posts', 'FrmProDisplaysController::switch_form_box' );
         add_filter('parse_query', 'FrmProDisplaysController::filter_forms' );
         add_filter('views_edit-frm_display', 'FrmProDisplaysController::add_form_nav' );
+		add_filter( 'edit_form_top', 'FrmProDisplaysController::add_form_nav_edit' );
         add_filter('post_row_actions', 'FrmProDisplaysController::post_row_actions', 10, 2 );
         //add_filter('bulk_actions-edit-frm_display', 'FrmProDisplaysController::add_bulk_actions' );
 
@@ -220,9 +239,6 @@ class FrmProHooksController{
 
         // Entries Controller
         add_action('frm_after_show_entry', 'FrmProEntriesController::show_comments');
-        add_action('frm_entry_shared_sidebar', 'FrmProEntriesController::add_sidebar_links');
-        add_action('frm_entry_major_pub', 'FrmProEntriesController::add_edit_link');
-        add_action('frm_entry_inside_h2', 'FrmProEntriesController::add_new_entry_link');
 
         add_action('add_meta_boxes', 'FrmProEntriesController::create_entry_from_post_box', 10, 2);
 
@@ -235,11 +251,9 @@ class FrmProHooksController{
 		add_filter( 'frm_entry_actions_dropdown', 'FrmProEntriesHelper::add_actions_dropdown', 10, 2 );
 
 		// Address Fields
-		add_action( 'frm_address_field_options_form', 'FrmProAddressesController::form_builder_options', 10, 3 );
 		add_filter( 'frm_csv_field_columns', 'FrmProAddressesController::add_csv_columns', 10, 2 );
 
 		// Credit Card Fields
-		add_action( 'frm_credit_card_field_options_form', 'FrmProCreditCardsController::form_builder_options', 10, 3 );
 		add_filter( 'frm_csv_field_columns', 'FrmProCreditCardsController::add_csv_columns', 10, 2 );
 
 		// Upload Fields
@@ -249,10 +263,12 @@ class FrmProHooksController{
         // Fields Controller
         add_action('frm_after_field_created', 'FrmProFieldsController::create_multiple_fields', 10, 2);
         add_action('frm_duplicate_field_divider', 'FrmProFieldsController::duplicate_section', 10, 2);
-        add_action('frm_add_multiple_opts_labels', 'FrmProFieldsController::add_separate_value_opt_label');
         add_action('frm_field_options_form_top', 'FrmProFieldsController::options_form_top', 10, 3);
         add_action('frm_before_field_options', 'FrmProFieldsController::options_form_before');
-        add_action('frm_field_options_form', 'FrmProFieldsController::options_form', 10, 3);
+		add_action( 'frm_field_options', 'FrmProFieldsController::advanced_field_options' );
+		add_action( 'frm_after_field_options', 'FrmProFieldsController::options_form_after', 10, 3 );
+		add_action( 'frm_default_value_setting', 'FrmProFieldsController::more_default_values' );
+		add_filter( 'frm_default_value_types', 'FrmProFieldsController::default_value_types', 10, 2 );
         add_filter('frm_build_field_class', 'FrmProFieldsController::build_field_class', 10, 2);
 		add_filter( 'frm_clean_divider_field_options_before_update', 'FrmProFieldsController::update_repeater_form_name' );
 		add_action( 'restrict_manage_posts', 'FrmProFieldsController::filter_media_library_link' );
@@ -275,18 +291,18 @@ class FrmProHooksController{
 		add_filter( 'frm_action_update_callback', 'FrmProFormActionsController::remove_incomplete_logic' );
 
         // Forms Controller
+		add_filter( 'frm_builder_field_label', 'FrmProFormsController::builder_field_label', 10, 2 );
 		if ( FrmAppHelper::is_admin_page( 'formidable' ) ) {
             // form builder page hooks
 			add_action( 'frm_enqueue_builder_scripts', 'FrmProFormsController::load_builder_scripts' );
             add_action('frm_noallow_class', 'FrmProFormsController::noallow_class');
-            add_action('frm_extra_form_instruction_tabs', 'FrmProFormsController::instruction_tabs');
-            add_action('frm_extra_form_instructions', 'FrmProFormsController::instructions');
+			add_filter( 'frm_smart_values_box', 'FrmProFormsController::smart_values_box' );
             add_filter('frmpro_field_links', 'FrmProFormsController::add_field_link');
 
             // form settings page
             add_filter('frm_before_save_wppost_action', 'FrmProFormsController::save_wppost_actions', 10, 2 );
             add_filter('frm_update_form_field_options', 'FrmProFormsController::update_form_field_options', 10, 2);
-            add_action('frm_add_form_perm_options', 'FrmProFormsController::add_form_options');
+			add_action( 'frm_add_form_settings_section', 'FrmProFormsController::form_settings_sections' );
 			add_action( 'frm_add_form_perm_options', 'FrmProFormsController::add_form_page_options', 100 );
             add_action('frm_add_form_ajax_options', 'FrmProFormsController::add_form_ajax_options');
             add_action('frm_add_form_button_options', 'FrmProFormsController::add_form_button_options');
@@ -317,17 +333,15 @@ class FrmProHooksController{
         add_filter('frm_sc_popup_opts', 'FrmProFormsController::sc_popup_opts', 10, 2);
 
         // Settings Controller
-        add_action('frm_style_general_settings', 'FrmProSettingsController::general_style_settings');
-        add_action('frm_settings_form', 'FrmProSettingsController::more_settings', 1);
-        add_action('frm_update_settings',  'FrmProSettingsController::update');
+		add_filter( 'frm_add_settings_section', 'FrmProSettingsController::add_settings_section', 1 );
+		add_action( 'frm_update_settings', 'FrmProSettingsController::update' );
         add_action('frm_store_settings', 'FrmProSettingsController::store');
+		add_filter( 'frm_advanced_helpers', 'FrmProSettingsController::advanced_helpers', 10, 2 );
 
 		// Styles Controller
-		add_filter( 'frm_style_switcher', 'FrmProStylesController::style_switcher', 10, 2 );
 		add_action( 'wp_ajax_pro_fields_css', 'FrmProStylesController::include_pro_fields_ajax_css' );
 		add_action( 'frm_output_single_style', 'FrmProStylesController::output_single_style' );
 		add_filter( 'frm_style_boxes', 'FrmProStylesController::add_style_boxes' );
-		add_action( 'frm_sample_style_form', 'FrmProStylesController::append_style_form' );
 
         // XML Controller
         add_filter('frm_xml_route', 'FrmProXMLController::route', 10, 2 );
@@ -343,20 +357,21 @@ class FrmProHooksController{
 
         // XML Helper
         add_action( 'frm_after_field_is_imported', 'FrmProXMLHelper::after_field_is_imported', 10, 2 );
+		add_filter( 'frm_import_xml_field', 'FrmProXMLHelper::run_field_migrations' );
 
 		// Lookup Controller
 		add_filter( 'frm_clean_lookup_field_options_before_update', 'FrmProLookupFieldsController::clean_field_options_before_update' );
-		add_filter( 'frm_lookup_field_options_form', 'FrmProLookupFieldsController::show_lookup_field_options_in_form_builder', 10, 3 );
-
-		// Phone Controller
-		add_filter( 'frm_phone_field_options_form', 'FrmProPhoneFieldsController::show_field_options_in_form_builder', 10, 3 );
-
-		// Text Controller
-		add_filter( 'frm_text_field_options_form', 'FrmProTextFieldsController::show_field_options_in_form_builder', 10, 3 );
 
 		// Time Controller
 		add_action('wp_ajax_frm_fields_ajax_time_options', 'FrmProTimeFieldsController::ajax_time_options');
 		add_action('wp_ajax_nopriv_frm_fields_ajax_time_options', 'FrmProTimeFieldsController::ajax_time_options');
+
+		// Usage
+		add_filter( 'frm_usage_settings', 'FrmProUsageController::settings' );
+		add_filter( 'frm_usage_form', 'FrmProUsageController::form', 10, 2 );
+
+		// Summary field
+		add_action( 'frm_before_create_field', 'FrmProFieldSummary::maybeAddBreakFieldBeforeSummary', 10, 2 );
 	}
 
     public static function load_ajax_hooks() {
@@ -394,11 +409,10 @@ class FrmProHooksController{
         add_action('wp_ajax_frm_fields_ajax_data_options', 'FrmProFieldsController::ajax_data_options');
         add_action('wp_ajax_nopriv_frm_fields_ajax_data_options', 'FrmProFieldsController::ajax_data_options');
         add_action('wp_ajax_frm_add_logic_row', 'FrmProFieldsController::_logic_row');
-        add_action('wp_ajax_frm_populate_calc_dropdown', 'FrmProFieldsController::populate_calc_dropdown');
-        add_action('wp_ajax_frm_toggle_repeat', 'FrmProFieldsController::toggle_repeat');
         add_action( 'wp_ajax_frm_update_field_after_move', 'FrmProFieldsController::update_field_after_move' );
 		add_action( 'wp_ajax_nopriv_frm_submit_dropzone', 'FrmProFieldsController::ajax_upload' );
 		add_action( 'wp_ajax_frm_submit_dropzone', 'FrmProFieldsController::ajax_upload' );
+		add_action( 'wp_ajax_frm_add_field_option', 'FrmProFieldsController::add_other_option' );
 
 		// Lookup Fields
 		add_action( 'wp_ajax_frm_add_watch_lookup_row', 'FrmProLookupFieldsController::add_watch_lookup_row' );
@@ -411,10 +425,13 @@ class FrmProHooksController{
 		add_action('wp_ajax_frm_get_lookup_text_value', 'FrmProLookupFieldsController::ajax_get_text_field_lookup_value');
 
         // Form Actions Controller
-        add_action('wp_ajax_frm_add_form_logic_row', 'FrmProFormActionsController::_logic_row');
+		add_action('wp_ajax_frm_add_form_logic_row', 'FrmProFormActionsController::_logic_row');
         add_action('wp_ajax_frm_add_postmeta_row', 'FrmProFormActionsController::_postmeta_row');
         add_action('wp_ajax_frm_add_posttax_row', 'FrmProFormActionsController::_posttax_row');
         add_action('wp_ajax_frm_replace_posttax_options', 'FrmProFormActionsController::_replace_posttax_options');
+
+		//Form general settings controller
+		add_action('wp_ajax_frm_add_submit_logic_row', 'FrmProFormsController::_submit_logic_row');
 
 		// Nested forms controller
 		add_action('wp_ajax_frm_add_form_row', 'FrmProNestedFormsController::ajax_add_repeat_row');
@@ -425,6 +442,7 @@ class FrmProHooksController{
 
 		// Updates
 		add_action( 'wp_ajax_frm_deauthorize', 'FrmProEddController::deactivate', 9 );
+		add_action( 'wp_ajax_frm_reset_cache', 'FrmProEddController::reset_cache' );
     }
 
     public static function load_form_hooks() {
@@ -463,6 +481,7 @@ class FrmProHooksController{
 
     public static function load_view_hooks() {
 		add_filter( 'frm_display_entry_content', 'FrmProContent::replace_shortcodes', 10, 7 );
+		add_filter( 'frm_after_display_content', 'FrmProDisplaysController::include_pagination', 9, 4 );
 
 		// address
 		add_filter( 'frm_keep_address_value_array', '__return_true' );

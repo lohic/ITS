@@ -18,7 +18,7 @@
 						<h2><?php _e('Import XML / CSV', 'wp_all_import_plugin'); ?></h2>					
 					</div>
 					<div class="wpallimport-links">
-						<a href="http://www.wpallimport.com/support/" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
+						<a href="http://www.wpallimport.com/support/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=premium-support" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=docs" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
 					</div>
 				</div>			
 
@@ -92,7 +92,7 @@
 							<div class="wpallimport-note" style="margin: 20px auto 0; font-size: 13px;">
 								<?php _e('<strong>Hint:</strong> After you create this import, you can schedule it to run automatically, on a pre-defined schedule, with cron jobs.', 'wp_all_import_plugin'); ?>
 								<div class="wpallimport-free-edition-notice" style="display:none;">									
-									<a href="https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=free-plugin&utm_medium=in-plugin&utm_campaign=download-from-url" target="_blank" class="upgrade_link"><?php _e('Upgrade to the Pro edition of WP All Import to Download from URL', 'wp_all_import_plugin');?></a>
+									<a href="https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=download-from-url" target="_blank" class="upgrade_link"><?php _e('Upgrade to the Pro edition of WP All Import to Download from URL', 'wp_all_import_plugin');?></a>
 									<p><?php _e('If you already own it, remove the free edition and install the Pro edition.', 'wp_all_import_plugin'); ?></p>
 								</div>
 							</div>							
@@ -117,7 +117,7 @@
 								<div class="wpallimport-note" style="margin: 0 auto; font-size: 13px;">
 									<?php printf(__('Files uploaded to <strong>%s</strong> will appear in this list.', 'wp_all_import_plugin'), $upload_dir['basedir'] . '/wpallimport/files') ?>
 									<div class="wpallimport-free-edition-notice">									
-										<a href="https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=free-plugin&utm_medium=in-plugin&utm_campaign=use-existing-file" target="_blank" class="upgrade_link"><?php _e('Upgrade to the Pro edition of WP All Import to Use Existing Files', 'wp_all_import_plugin');?></a>
+										<a href="https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=use-existing-file" target="_blank" class="upgrade_link"><?php _e('Upgrade to the Pro edition of WP All Import to Use Existing Files', 'wp_all_import_plugin');?></a>
 										<p><?php _e('If you already own it, remove the free edition and install the Pro edition.', 'wp_all_import_plugin'); ?></p>
 									</div>
 								</div>
@@ -147,12 +147,32 @@
 								</div>
 
 								<?php
-									
-									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects'); 
+
+                                    $all_types = array();
+                                    $sort_order = array();
+
+									$hiddenPosts = array(
+                                        'attachment',
+                                        'revision',
+                                        'nav_menu_item',
+                                        'shop_webhook',
+                                        'import_users',
+                                        'wp-types-group',
+                                        'wp-types-user-group',
+                                        'wp-types-term-group',
+                                        'acf-field',
+                                        'acf-field-group',
+                                        'custom_css',
+                                        'customize_changeset',
+                                        'oembed_cache'
+                                    );
+
+									$custom_types = get_post_types(array('_builtin' => true), 'objects') + get_post_types(array('_builtin' => false, 'show_ui' => true), 'objects');
 									foreach ($custom_types as $key => $ct) {
-										if (in_array($key, array('attachment', 'revision', 'nav_menu_item', 'shop_webhook', 'import_users'))) unset($custom_types[$key]);
+										if (in_array($key, $hiddenPosts)) unset($custom_types[$key]);
 									}
-									$custom_types = apply_filters( 'pmxi_custom_types', $custom_types );
+
+                                    $custom_types = apply_filters( 'pmxi_custom_types', $custom_types, 'custom_types' );
 
 									$sorted_cpt = array();
 									foreach ($custom_types as $key => $cpt){
@@ -169,6 +189,13 @@
 											$sorted_cpt['import_users'] = new stdClass();
 											$sorted_cpt['import_users']->labels = new stdClass();
 											$sorted_cpt['import_users']->labels->name = __('Users','wp_all_export_plugin');
+
+//											if ( class_exists('WooCommerce') ) {
+//												$sorted_cpt['shop_customer'] = new stdClass();
+//												$sorted_cpt['shop_customer']->labels = new stdClass();
+//												$sorted_cpt['shop_customer']->labels->name = __('WooCommerce Customers','wp_all_export_plugin');
+//											}
+
 											break;
 										}
 									}
@@ -187,9 +214,9 @@
 
 									$hidden_post_types = get_post_types(array('_builtin' => false, 'show_ui' => false), 'objects');
 									foreach ($hidden_post_types as $key => $ct) {
-										if (in_array($key, array('attachment', 'revision', 'nav_menu_item'))) unset($hidden_post_types[$key]);
+										if (in_array($key, $hiddenPosts)) unset($hidden_post_types[$key]);
 									}
-									$hidden_post_types = apply_filters( 'pmxi_custom_types', $hidden_post_types );
+                                    $hidden_post_types = apply_filters( 'pmxi_custom_types', $hidden_post_types, 'hidden_post_types' );
 
 								?>	
 								<div class="wpallimport-choose-import-direction">
@@ -206,59 +233,85 @@
 										</div>
 									</div>
 									<select name="custom_type_selector" id="custom_type_selector" class="wpallimport-post-types">								
-										<?php if ( ! empty($sorted_cpt)): $unknown_cpt = array(); ?>
-											<?php foreach ($sorted_cpt as $key => $ct) :?>
+
 												<?php 
+                                    // *****************************************************
+                                    // **************** START CPT LOOP *********************
+                                    // *****************************************************
+                                    ?>
+
+
+                                    <?php
+                                    $known_imgs     = array( 'post', 'page', 'product', 'import_users', 'shop_order', 'shop_coupon', 'shop_customer', 'users', 'comments', 'taxonomies' );
+                                    $all_posts      = array_merge( $sorted_cpt, $hidden_post_types );
+                                    $all_posts      = apply_filters( 'pmxi_custom_types', $all_posts, 'all_types' );
+                                    $ordered_posts  = array( 0 => 'post', 1 => 'page', 2 => 'taxonomies', 3 => 'import_users', 4 => 'shop_order', 5 => 'shop_coupon', 6 => 'product', 7 => 'shop_customer' );
+
+                                    foreach ( $all_posts as $key => $post_obj ) {
+                                        if ( ! in_array( $key, $ordered_posts ) ) {
+                                            array_push( $ordered_posts, $key );
+                                        }
+                                    }
+
+                                    $order_arr          = apply_filters( 'pmxi_post_list_order', $ordered_posts );
+                                    $image_data         = apply_filters( 'wp_all_import_post_type_image', array() );
+
+                                    foreach ( $order_arr as $key => $post_name ) {
+                                        if ( array_key_exists( $post_name, $all_posts ) ) {
+                                            $post_obj = $all_posts[ $post_name ];
+
+                                            if ( in_array( $post_name, $known_imgs ) ) {
+                                                $image_src = 'dashicon-' . $post_name;
+                                            } else {
 													$image_src = 'dashicon-cpt';
+                                            }
+                                            if ( ! empty( $image_data ) && array_key_exists( $post_name, $image_data ) ) {
+                                                $custom_img_defined = true;
+                                            } else {
+                                                $custom_img_defined = false;
+                                            }
 
-													$cpt = $key;
-													$cpt_label = $ct->labels->name;
+                                            $original_image_src = $image_src;
+                                            $cpt = $post_name;
+                                            $cpt_label = $post_obj->labels->name;
 
-													if (  in_array($key, array('post', 'page', 'product', 'import_users', 'shop_order', 'shop_coupon', 'shop_customer', 'users', 'comments', 'taxonomies') ) )
-													{
-														$image_src = 'dashicon-' . $cpt;										
-													}
-													else
-													{
-														$unknown_cpt[$key] = $ct;
-														continue;
+                                            $custom_selected_post = apply_filters( 'wpai_custom_selected_post', false, $post, $cpt, 'step1' );
+
+                                            $img_to_echo = 'dashicon ';
+
+                                            if ( $custom_img_defined === true ) {
+                                                $img_to_echo .= $image_data[ $cpt ]['image'];
+                                            } else {
+                                                $img_to_echo .= $image_src;
 													}														
-												?>
-											<option value="<?php echo $cpt; ?>" data-imagesrc="dashicon <?php echo $image_src; ?>" <?php if ( $cpt == $post['custom_type'] ):?>selected="selected"<?php endif; ?>><?php echo $cpt_label; ?></option>
-											<?php endforeach; ?>
-											<?php if ( ! empty($unknown_cpt)):  ?>
-												<?php foreach ($unknown_cpt as $key => $ct):?>
-													<?php
-													$image_src = 'dashicon-cpt';
-													$cpt_label = $ct->labels->name;												
-													?>
-													<option value="<?php echo $key;?>" data-imagesrc="dashicon <?php echo $image_src; ?>" <?php if ($key == $post['custom_type']) echo 'selected="selected"'; ?>><?php echo $cpt_label; ?></option>
-												<?php endforeach ?>
-											<?php endif;?>
 
-										<?php endif; ?>
-										<?php if ( ! empty($hidden_post_types)): ?>							
-											<?php foreach ($hidden_post_types as $key => $cpt) :?>	
-												<?php 
-													$image_src = 'dashicon-cpt';
-													if (  in_array($key, array('post', 'page', 'product') ) )
-														$image_src = 'dashicon-' . $key;
 												?>
-											<option value="<?php echo $key; ?>" data-imagesrc="dashicon <?php echo $image_src; ?>"><?php echo $cpt->labels->name; ?></option>								
-											<?php endforeach; ?>
-										<?php endif; ?>			
-									</select>
+
+                                            <option value="<?php echo $cpt; ?>" data-imagesrc="<?php echo $img_to_echo; ?>" <?php if ( $custom_selected_post === true ):?>selected="selected"<?php else: if ( $cpt == $post['custom_type'] ):?>selected="selected"<?php endif; endif; ?>><?php echo $cpt_label; ?></option>
+													<?php
+                                        }
+
+                                    }
+                                    ?>
+
+                                    </select>
+
+                                    <?php
+                                    // *****************************************************
+                                    // **************** FINISH CPT LOOP ********************
+                                    // *****************************************************
+									?>
 
 									<?php if ( ! class_exists('PMUI_Plugin') ): ?>
 										<div class="wpallimport-upgrade-notice" rel="import_users">
-											<p><?php _e('The User Import Add-On is Required to Import Users', 'wp_all_import_plugin'); ?></p>
-											<a href="http://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1921&edd_options%5Bprice_id%5D=1" target="_blank" class="upgrade_link"><?php _e('Purchase the User Import Add-On', 'wp_all_import_plugin');?></a>
+											<p><?php _e('The User Add-On is Required to Import Users', 'wp_all_import_plugin'); ?></p>
+											<a href="https://www.wpallimport.com/checkout/?edd_action=purchase_collection&taxonomy=download_category&terms=40&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-users" target="_blank" class="upgrade_link"><?php _e('Purchase the User Add-On', 'wp_all_import_plugin');?></a>
 										</div>
 									<?php endif; ?>
 									<?php if ( class_exists('WooCommerce') && ! class_exists('PMWI_Plugin') ): ?>
 										<div class="wpallimport-upgrade-notice" rel="product">
 											<p><?php _e('The WooCommerce Add-On is Required to Import Products', 'wp_all_import_plugin'); ?></p>
-											<a href="http://www.wpallimport.com/order-now/?utm_source=free-plugin&utm_campaign=wooco-products&utm_medium=in-plugin" target="_blank" class="upgrade_link"><?php _e('Get the WooCommerce Add-On', 'wp_all_import_plugin');?></a>
+											<a href="https://www.wpallimport.com/checkout/?edd_action=purchase_collection&taxonomy=download_category&terms=14&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-wooco-products" target="_blank" class="upgrade_link"><?php _e('Purchase the WooCommerce Add-On', 'wp_all_import_plugin');?></a>
 										</div>
 									<?php endif; ?>
 									<?php if ( class_exists('WooCommerce') &&  ( ! class_exists('PMWI_Plugin') || class_exists('PMWI_Plugin') && PMWI_EDITION == 'free') ): ?>
@@ -268,7 +321,7 @@
 											<?php else: ?>
 												<p><?php _e('The WooCommerce Add-On Pro is Required to Import Orders', 'wp_all_import_plugin'); ?></p>
 											<?php endif; ?>
-											<a href="http://www.wpallimport.com/order-now/?utm_source=free-plugin&utm_campaign=wooco-orders&utm_medium=in-plugin" target="_blank" class="upgrade_link"><?php _e('Purchase the WooCommerce Add-On Pro', 'wp_all_import_plugin');?></a>
+											<a href="https://www.wpallimport.com/checkout/?edd_action=purchase_collection&taxonomy=download_category&terms=14&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-wooco-orders" target="_blank" class="upgrade_link"><?php _e('Purchase the WooCommerce Add-On', 'wp_all_import_plugin');?></a>
 										</div>
 										<div class="wpallimport-upgrade-notice" rel="shop_coupon">
 											<?php if (class_exists('PMWI_Plugin') && PMWI_EDITION == 'free'): ?>
@@ -276,13 +329,21 @@
 											<?php else: ?>
 												<p><?php _e('The WooCommerce Add-On Pro is Required to Import Coupons', 'wp_all_import_plugin'); ?></p>
 											<?php endif; ?>
-											<a href="http://www.wpallimport.com/order-now/?utm_source=free-plugin&utm_campaign=wooco-coupons&utm_medium=in-plugin" target="_blank" class="upgrade_link"><?php _e('Purchase the WooCommerce Add-On Pro', 'wp_all_import_plugin');?></a>
+											<a href="https://www.wpallimport.com/checkout/?edd_action=purchase_collection&taxonomy=download_category&terms=14&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-wooco-coupons" target="_blank" class="upgrade_link"><?php _e('Purchase the WooCommerce Add-On', 'wp_all_import_plugin');?></a>
 										</div>
 									<?php endif; ?>
 									<div class="wpallimport-upgrade-notice" rel="taxonomies">
 										<p><?php _e('WP All Import Pro is Required to Import Taxonomies', 'wp_all_import_plugin'); ?></p>
-										<a href="http://www.wpallimport.com/order-now/?utm_source=free-plugin&utm_campaign=taxonomies&utm_medium=in-plugin" target="_blank" class="upgrade_link"><?php _e('Purchase WP All Import Pro', 'wp_all_import_plugin');?></a>
+										<a href="https://www.wpallimport.com/checkout/?edd_action=add_to_cart&download_id=1748&edd_options%5Bprice_id%5D=0&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-taxonomies" target="_blank" class="upgrade_link"><?php _e('Purchase WP All Import Pro', 'wp_all_import_plugin');?></a>
 									</div>
+
+                                    <?php if ( class_exists('WooCommerce') && ! class_exists('PMUI_Plugin') ): ?>
+                                        <div class="wpallimport-upgrade-notice" rel="shop_customer">
+                                            <p><?php _e('The User Add-On is Required to Import Customers', 'wp_all_import_plugin'); ?></p>
+                                            <a href="https://www.wpallimport.com/checkout/?edd_action=purchase_collection&taxonomy=download_category&terms=40&utm_source=import-plugin-free&utm_medium=upgrade-notice&utm_campaign=import-users"><?php _e('Purchase the User Add-On', 'wp_all_import_plugin');?></a>
+                                        </div>
+                                    <?php endif; ?>
+
 
 								</div>
 								<div class="clear wpallimport-extra-text-below">
@@ -303,7 +364,7 @@
 								<h4><?php _e("Contact your host and have them check your server's error log.", "wp_all_import_plugin"); ?></h4>
 							</div>		
 						</div>		
-						<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+						<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/?utm_source=import-plugin-free&utm_medium=error&utm_campaign=docs" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 					</div>
 
 					<div class="rad4 first-step-errors error-file-validation" <?php if ( ! empty($upload_validation) ): ?> style="display:block;" <?php endif; ?>>
@@ -320,8 +381,9 @@
 								</h4>
 							</div>		
 						</div>		
-						<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+						<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid?utm_source=import-plugin-free&utm_medium=error&utm_campaign=docs" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 					</div>
+
 					<p class="wpallimport-submit-buttons">
 						<input type="hidden" name="custom_type" value="<?php echo $post['custom_type'];?>">
 						<input type="hidden" name="is_submitted" value="1" />

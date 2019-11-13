@@ -1,8 +1,14 @@
 <div class="frm-star-group">
 <?php
+$max = FrmField::get_option( $field, 'maxnum' );
+if ( ! empty( $max ) ) {
+	$field['options'] = range( 1, $max );
+}
+
 if ( is_array( $field['options'] ) ) {
 	if ( ! isset( $field['value'] ) ) {
-		$field['value'] = maybe_unserialize( $field['default_value'] );
+		$field['value'] = $field['default_value'];
+		FrmProAppHelper::unserialize_or_decode( $field['value'] );
 	}
 
 	foreach ( $field['options'] as $opt_key => $opt ) {
@@ -20,6 +26,7 @@ if ( is_array( $field['options'] ) ) {
 		?> /><label for="<?php echo esc_attr( $html_id . '-' . $opt_key ) ?>" class="<?php echo esc_attr( $class ) ?>"></label>
 <?php
 	}
-} ?>
+}
+?>
 <div style="clear:both;"></div>
 </div>

@@ -24,7 +24,7 @@
 
 	<p><i><?php _e('Example:', 'wp_all_import_plugin'); ?></i></p>
 
-	<p>wget -q -O /dev/null "<?php echo home_url() . '/wp-cron.php?import_key=' . $cron_job_key . '&import_id=' . $id . '&action=trigger'; ?>"</p>
+	<p>wget -q -O /dev/null "<?php echo home_url() . '/wp-load.php?import_key=' . $cron_job_key . '&import_id=' . $id . '&action=trigger'; ?>"</p>
 	 
 	<p><strong><?php _e('Execution Script', 'wp_all_import_plugin'); ?></strong></p>
 
@@ -36,7 +36,7 @@
 
 	<p><i><?php _e('Example:', 'wp_all_import_plugin'); ?></i></p>
 
-	<p>wget -q -O /dev/null "<?php echo home_url() . '/wp-cron.php?import_key=' . $cron_job_key . '&import_id=' . $id . '&action=processing'; ?>"</p>
+	<p>wget -q -O /dev/null "<?php echo home_url() . '/wp-load.php?import_key=' . $cron_job_key . '&import_id=' . $id . '&action=processing'; ?>"</p>
 
 	<p><strong><?php _e('Notes', 'wp_all_import_plugin'); ?></strong></p>
 	 
@@ -45,7 +45,7 @@
 	</p>
 
 	<p>
-		See the <a href='http://www.wpallimport.com/documentation/recurring/cron/'>documentation</a> for more details.
+		See the <a href='http://www.wpallimport.com/documentation/recurring/cron/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=manual-scheduling'>documentation</a> for more details.
 	</p>
 
 <?php else: ?>

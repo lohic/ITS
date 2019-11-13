@@ -1,13 +1,13 @@
 <div class="wrap">
-    <h2><?php _e( 'Import/Export', 'formidable-pro' ); ?></h2>
+	<h2><?php esc_html_e( 'Import/Export', 'formidable-pro' ); ?></h2>
 
-    <?php include(FrmAppHelper::plugin_path() .'/classes/views/shared/errors.php'); ?>
+	<?php include( FrmAppHelper::plugin_path() . '/classes/views/shared/errors.php' ); ?>
     <div id="poststuff" class="metabox-holder">
     <div id="post-body">
     <div id="post-body-content">
 
     <div class="postbox ">
-    <h3 class="hndle"><span><?php _e( 'Map Fields', 'formidable-pro' ) ?></span></h3>
+	<h3 class="hndle"><span><?php esc_html_e( 'Map Fields', 'formidable-pro' ); ?></span></h3>
     <div class="inside">
 
     <form method="post">
@@ -20,9 +20,9 @@
         <table class="form-table">
             <thead>
             <tr class="form-field">
-                <th><b><?php _e( 'CSV header' ,'formidable' ) ?></b></th>
-                <th><b><?php _e( 'Sample data' ,'formidable' ) ?></b></th>
-                <th><b><?php _e( 'Corresponding Field' ,'formidable' ) ?></b></th>
+                <th><b><?php esc_html_e( 'CSV header', 'formidable' ); ?></b></th>
+                <th><b><?php esc_html_e( 'Sample data', 'formidable' ); ?></b></th>
+                <th><b><?php esc_html_e( 'Corresponding Field', 'formidable' ); ?></b></th>
             </tr>
             </thead>
             <?php foreach ( $headers as $i => $header ) { ?>
@@ -34,11 +34,12 @@
                 <td>
                     <select name="data_array[<?php echo esc_attr( $i ) ?>]" id="mapping_<?php echo esc_attr( $i ) ?>">
                         <option value=""> </option>
-                        <?php foreach ( $fields as $field ) {
+						<?php
+						foreach ( $fields as $field ) {
 							if ( FrmField::is_no_save_field( $field->type ) ) {
                                 continue;
                             }
-                            $selected = (strtolower(strip_tags($field->name)) == strtolower(htmlspecialchars($header)) );
+							$selected = ( strtolower( strip_tags( $field->name ) ) == strtolower( htmlspecialchars( $header ) ) );
                             $selected = apply_filters('frm_map_csv_field', $selected, $field, $header);
                         ?>
                             <option value="<?php echo esc_attr( $field->id ) ?>" <?php selected($selected, true) ?>><?php echo FrmAppHelper::truncate($field->name, 50) ?></option>
@@ -46,15 +47,31 @@
                             unset($field);
                         }
                         ?>
-                        <option value="post_id"><?php _e( 'Post ID', 'formidable-pro' ) ?></option>
-                        <option value="created_at" <?php selected(strtolower(__( 'Timestamp', 'formidable-pro' )), strtolower(htmlspecialchars($header))) . selected(strtolower(__( 'Created at', 'formidable-pro' )), strtolower(htmlspecialchars($header))) . selected('created_at', $header) ?>><?php _e( 'Created at', 'formidable-pro' ) ?></option>
-                        <option value="user_id" <?php selected(strtolower(__( 'Created by', 'formidable-pro' )), strtolower(htmlspecialchars($header))) . selected('user_id', $header) ?>><?php _e( 'Created by', 'formidable-pro' ) ?></option>
-                        <option value="updated_at" <?php selected(__( 'last updated', 'formidable-pro' ), strtolower(htmlspecialchars($header))) . selected(__( 'updated at', 'formidable-pro' ), strtolower(htmlspecialchars($header))) . selected('updated_at', $header) ?>><?php _e( 'Updated at', 'formidable-pro' ) ?></option>
-                        <option value="updated_by" <?php selected(__( 'updated by', 'formidable-pro' ), strtolower(htmlspecialchars($header))) . selected('updated_by', $header) ?>><?php _e( 'Updated by', 'formidable-pro' ) ?></option>
-                        <option value="ip" <?php selected('ip', strtolower($header)) ?>><?php _e( 'IP Address', 'formidable-pro' ) ?></option>
-                        <option value="is_draft" <?php selected('is_draft', strtolower($header)); selected('draft', strtolower($header)) ?>><?php _e( 'Is Draft', 'formidable-pro' ) ?></option>
-                        <option value="id" <?php selected(__( 'Entry ID', 'formidable-pro' ), htmlspecialchars($header)) . selected('id', strtolower(htmlspecialchars($header))); ?>><?php _e( 'Entry ID', 'formidable-pro' ) ?></option>
-                        <option value="item_key" <?php selected(__( 'Entry Key', 'formidable-pro' ), htmlspecialchars($header)) . selected('key', strtolower(htmlspecialchars($header))); ?>><?php _e( 'Entry Key', 'formidable-pro' ) ?></option>
+						<option value="post_id"><?php esc_html_e( 'Post ID', 'formidable-pro' ); ?></option>
+						<option value="created_at" <?php selected( strtolower( __( 'Timestamp', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( strtolower( __( 'Created at', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'created_at', $header ); ?>>
+							<?php esc_html_e( 'Created at', 'formidable-pro' ); ?>
+						</option>
+						<option value="user_id" <?php selected( strtolower( __( 'Created by', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'user_id', $header ); ?>>
+							<?php esc_html_e( 'Created by', 'formidable-pro' ); ?>
+						</option>
+						<option value="updated_at" <?php selected( __( 'last updated', 'formidable-pro' ), strtolower( htmlspecialchars( $header ) ) ) . selected( __( 'updated at', 'formidable-pro' ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'updated_at', $header ); ?>>
+							<?php esc_html_e( 'Updated at', 'formidable-pro' ); ?>
+						</option>
+						<option value="updated_by" <?php selected( __( 'updated by', 'formidable-pro' ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'updated_by', $header ); ?>>
+							<?php esc_html_e( 'Updated by', 'formidable-pro' ); ?>
+						</option>
+						<option value="ip" <?php selected( 'ip', strtolower( $header ) ); ?>>
+							<?php esc_html_e( 'IP Address', 'formidable-pro' ); ?>
+						</option>
+						<option value="is_draft" <?php selected( 'is_draft', strtolower( $header ) ) . selected( 'draft', strtolower( $header ) ); ?>>
+							<?php esc_html_e( 'Is Draft', 'formidable-pro' ); ?>
+						</option>
+						<option value="id" <?php selected( __( 'Entry ID', 'formidable-pro' ), htmlspecialchars( $header ) ) . selected( 'id', strtolower( htmlspecialchars( $header ) ) ); ?>>
+							<?php esc_html_e( 'Entry ID', 'formidable-pro' ); ?>
+						</option>
+						<option value="item_key" <?php selected( __( 'Entry Key', 'formidable-pro' ), htmlspecialchars( $header ) ) . selected( 'key', strtolower( htmlspecialchars( $header ) ) ); ?>>
+							<?php esc_html_e( 'Entry Key', 'formidable-pro' ); ?>
+						</option>
                     </select>
                 </td>
             </tr>
@@ -63,7 +80,7 @@
         <p class="submit">
             <input type="submit" value="<?php esc_attr_e( 'Import', 'formidable-pro' ) ?>" class="button-primary" />
         </p>
-        <p class="howto"><?php _e( 'Note: If you select a field for the Entry ID, the matching entry with that ID will be updated.', 'formidable-pro' ) ?></p>
+        <p class="howto"><?php esc_html_e( 'Note: If you select a field for the Entry ID or Entry Key, the matching entry with that ID or key will be updated.', 'formidable-pro' ) ?></p>
     </form>
 
     </div>

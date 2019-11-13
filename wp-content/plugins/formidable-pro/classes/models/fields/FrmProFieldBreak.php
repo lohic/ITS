@@ -29,13 +29,13 @@ class FrmProFieldBreak extends FrmFieldType {
 
 	protected function field_settings_for_type() {
 		$settings = array(
-			'default_blank' => false,
 			'required'      => false,
 			'visibility'    => false,
 			'description'   => false,
-			'label_position'=> false,
+			'label_position' => false,
 			'css'           => false,
 			'options'       => true,
+			'default'       => false,
 		);
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
@@ -45,6 +45,36 @@ class FrmProFieldBreak extends FrmFieldType {
 		return array(
 			'show_hide' => 'hide',
 		);
+	}
+
+	/**
+	 * @since 4.0
+	 */
+	protected function include_form_builder_file() {
+		return FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/field-' . $this->type . '.php';
+	}
+
+	/**
+	 * Define parameters and include the field on form builder
+	 *
+	 * @since 3.0
+	 *
+	 * @param string $name
+	 * @param array $field
+	 */
+	protected function include_on_form_builder( $name, $field ) {
+		$form     = FrmForm::getOne( $field['form_id'] );
+		$previous = isset( $form->options['prev_value'] ) ? $form->options['prev_value'] : __( 'Previous', 'formidable-pro' );
+		unset( $form );
+
+		include( $this->include_form_builder_file() );
+	}
+
+	/**
+	 * @since 3.06.01
+	 */
+	public function translatable_strings() {
+		return array( 'name' );
 	}
 
 	public function prepare_field_html( $args ) {

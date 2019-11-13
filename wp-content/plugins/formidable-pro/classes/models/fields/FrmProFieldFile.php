@@ -11,7 +11,13 @@ class FrmProFieldFile extends FrmFieldType {
 	 */
 	protected $type = 'file';
 
-	protected $is_tall = true;
+	/**
+	 * Fix WCAG errors.
+	 *
+	 * @var bool
+	 * @since 3.06.01
+	 */
+	protected $has_for_label = false;
 
 	protected function include_form_builder_file() {
 		return FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/field-' . $this->type . '.php';
@@ -19,7 +25,6 @@ class FrmProFieldFile extends FrmFieldType {
 
 	protected function field_settings_for_type() {
 		$settings = array(
-			'default_value' => true,
 			'invalid'       => true,
 			'read_only'     => true,
 		);
@@ -34,7 +39,53 @@ class FrmProFieldFile extends FrmFieldType {
 			'attach' => false,
 			'delete' => false,
 			'restrict' => 0,
+			'resize'     => false,
+			'new_size'   => '600',
+			'resize_dir' => 'width',
+			'drop_msg'   => __( 'Drop a file here or click to upload', 'formidable-pro' ),
+			'choose_msg' => __( 'Choose File', 'formidable-pro' ),
 		);
+	}
+
+	/**
+	 * @since 4.0
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		$mimes = $this->get_mime_options( $field );
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/file-options.php' );
+
+		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 3.06.01
+	 */
+	public function translatable_strings() {
+		$strings   = parent::translatable_strings();
+		$strings[] = 'drop_msg';
+		$strings[] = 'choose_msg';
+		return $strings;
+	}
+
+	/**
+	 * @since 3.01.01
+	 */
+	private function get_mime_options( $field ) {
+		$mimes = get_allowed_mime_types();
+		$selected_mimes = $field['ftypes'];
+
+		$ordered = array();
+		foreach ( (array) $selected_mimes as $mime ) {
+			$key = array_search( $mime, $mimes );
+			if ( $key !== false ) {
+				$ordered[ $key ] = $mimes[ $key ];
+				unset( $mimes[ $key ] );
+			}
+		}
+
+		$mimes = $ordered + $mimes;
+		return $mimes;
 	}
 
 	public function validate( $args ) {
@@ -76,7 +127,8 @@ class FrmProFieldFile extends FrmFieldType {
 		if ( is_array( $value ) && ! $return_array ) {
 			$value = implode( $atts['sep'], $value );
 
-			if ( $showing_image ) {
+			$show_text_only = isset( $atts['show'] ) && 'id' === $atts['show'];
+			if ( $showing_image && ! $show_text_only ) {
 				$value = '<div class="frm_file_container">' . $value . '</div>';
 			}
 		}
@@ -106,7 +158,7 @@ class FrmProFieldFile extends FrmFieldType {
 				'show_filename' => ( isset( $atts['show_filename'] ) && $atts['show_filename'] ) ? true : false,
 				'show_image' => ( isset( $atts['show_image'] ) && $atts['show_image'] ) ? true : false,
 				'add_link' => ( isset( $atts['add_link'] ) && $atts['add_link'] ) ? true : false,
-				'new_tab' => ( isset ( $atts['new_tab'] ) && $atts['new_tab'] ) ? true: false,
+				'new_tab' => ( isset( $atts['new_tab'] ) && $atts['new_tab'] ) ? true : false,
 			);
 
 			$this->modify_atts_for_reverse_compatibility( $atts, $new_atts );
@@ -329,12 +381,34 @@ class FrmProFieldFile extends FrmFieldType {
 			unset( $repeat_meta );
 		}
 
+		$aria = '';
+		$this->add_aria_description( $args, $aria );
+
 		ob_start();
 		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/front-end/file.php' );
 		$input_html = ob_get_contents();
 		ob_end_clean();
 
 		return $input_html;
+	}
+
+	/**
+	 * Add extra classes on front-end input
+	 *
+	 * @since 3.01.04
+	 */
+	protected function get_input_class() {
+		$class = '';
+		if ( FrmField::is_option_true( $this->field, 'multiple' ) ) {
+			$class = 'frm_multiple_file';
+		}
+
+		// Hide the "No files selected" text if files are selected
+		if ( ! FrmField::is_option_empty( $this->field, 'value' ) ) {
+			$class .= ' frm_transparent';
+		}
+
+		return $class;
 	}
 
 	protected function prepare_import_value( $value, $atts ) {
@@ -353,7 +427,7 @@ class FrmProFieldFile extends FrmFieldType {
 			$value = explode(',', $value);
 		}
 
-		foreach ( (array) $value as $pos => $m) {
+		foreach ( (array) $value as $pos => $m ) {
 			$m = trim( $m );
 			if ( empty( $m ) ) {
 				continue;
@@ -361,7 +435,7 @@ class FrmProFieldFile extends FrmFieldType {
 
 			if ( ! is_numeric( $m ) ) {
 				//get the ID from the URL if on this site
-				$m = FrmDb::get_col( $wpdb->posts, array( 'guid' => $m), 'ID' );
+				$m = FrmDb::get_var( $wpdb->posts, array( 'guid' => $m ), 'ID' );
 			}
 
 			if ( ! is_numeric( $m ) ) {
@@ -374,5 +448,12 @@ class FrmProFieldFile extends FrmFieldType {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		// do nothing - this is just to override the parent's
 	}
 }

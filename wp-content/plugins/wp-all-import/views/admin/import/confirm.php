@@ -1,5 +1,5 @@
 <?php $is_new_import = ($isWizard or $import->imported + $import->skipped == $import->count or $import->imported + $import->skipped == 0 or $import->options['is_import_specified'] or $import->triggered); ?>
-
+<?php $visible_sections = apply_filters('pmxi_visible_confirm_sections', array('data_to_import'), $post['custom_type']); ?>
 <h2 class="wpallimport-wp-notices"></h2>
 
 <div class="wpallimport-wrapper wpallimport-step-5">
@@ -12,7 +12,7 @@
 				<h2><?php _e('Import XML / CSV', 'wp_all_import_plugin'); ?></h2>					
 			</div>
 			<div class="wpallimport-links">
-				<a href="http://www.wpallimport.com/support/" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
+				<a href="http://www.wpallimport.com/support/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=premium-support" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=docs" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
 			</div>
 		</div>	
 		<div class="clear"></div>
@@ -45,7 +45,7 @@
 				<h4><?php _e("It has changed and is not compatible with this import template.", "wp_all_import_plugin"); ?></h4>
 			</div>		
 		</div>		
-		<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+		<a class="button button-primary button-hero wpallimport-large-button wpallimport-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/problems-with-import-files/#invalid?utm_source=import-plugin-free&utm_medium=error&utm_campaign=docs" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 	</div>
 
 	<?php $custom_type = get_post_type_object( PMXI_Plugin::$session->custom_type ); ?>
@@ -105,7 +105,7 @@
 
 			<?php $max_execution_time = ini_get('max_execution_time');?>			
 
-			<div class="wpallimport-section">
+			<div class="wpallimport-section" style="margin-top: -20px;">
 				<div class="wpallimport-content-section">
 					<div class="wpallimport-collapsed-header" style="padding-left: 30px;">
 						<h3 style="color: #425e99;"><?php _e('Import Summary', 'wp_all_import_plugin'); ?> <?php if (!$isWizard):?><span style="color:#000;"><?php printf(__(" - ID: %s - %s"), $import->id, empty($import->friendly_name) ? $import->name : $import->friendly_name);?></span><?php endif;?></h3>
@@ -185,6 +185,7 @@
 							if ( 'title' == $post['duplicate_indicator']){
 								switch ($post['custom_type']){
 									case 'import_users':
+									case 'shop_customer':
 										$criteria = 'has the same Login';
 										break;
 									default:
@@ -195,6 +196,7 @@
 							if ( 'content' == $post['duplicate_indicator']){
 								switch ($post['custom_type']){
 									case 'import_users':
+									case 'shop_customer':
 										$criteria = 'has the same Email';
 										break;
 									default:
@@ -211,6 +213,7 @@
 							<?php } elseif ("no" == $post['is_keep_former_posts'] and "no" == $post['update_all_data']){?>
 							<div>
 								<p><?php printf(__('Next %s data will be updated, <strong>all other data will be left alone</strong>', 'wp_all_import_plugin'), $custom_type->labels->singular_name); ?></p>				
+								<?php if ( in_array('data_to_import', $visible_sections)):?>
 								<ul style="padding-left: 35px;">
 									<?php if ( $post['is_update_status']): ?>
 									<li> <?php _e('status', 'wp_all_import_plugin'); ?></li>
@@ -310,6 +313,8 @@
 										</li>						
 									<?php endif; ?>					
 								</ul>
+								<?php endif; ?>
+								<?php do_action('pmxi_confirm_data_to_import', $isWizard, $post);?>
 							</div>
 							<?php } ?>
 							<?php if ( $post['create_new_records']): ?>
@@ -342,7 +347,7 @@
 		</tr>
 	</table>
 	<?php if ($is_new_import):?>
-	<form class="confirm <?php echo ! $isWizard ? 'edit' : '' ?>" method="post">
+	<form id="wpai-submit-confirm-form" class="confirm <?php echo ! $isWizard ? 'edit' : '' ?>" method="post">
 		<?php wp_nonce_field('confirm', '_wpnonce_confirm') ?>
 		<input type="hidden" name="is_confirmed" value="1" />
 		<input type="submit" class="rad10" value="<?php _e('Confirm & Run Import', 'wp_all_import_plugin') ?>" />						

@@ -1,6 +1,6 @@
 <?php
 
-class FrmProDisplaysHelper{
+class FrmProDisplaysHelper {
 
 	public static function setup_new_vars() {
         $values = array();
@@ -21,7 +21,7 @@ class FrmProDisplaysHelper{
         $values = (object) $post;
 
 		foreach ( array( 'form_id', 'entry_id', 'dyncontent', 'param', 'type', 'show_count' ) as $var ) {
-            $values->{'frm_'. $var} = get_post_meta($post->ID, 'frm_'. $var, true);
+			$values->{'frm_' . $var} = get_post_meta( $post->ID, 'frm_' . $var, true );
             if ( $check_post ) {
 				$sanitize = self::sanitize_option( $var );
 				$values->{'frm_' . $var} = FrmAppHelper::get_param( $var, $values->{'frm_' . $var}, 'post', $sanitize );
@@ -31,14 +31,14 @@ class FrmProDisplaysHelper{
 		$defaults = self::get_default_opts();
         $options = get_post_meta($post->ID, 'frm_options', true);
 		foreach ( $defaults as $var => $default ) {
-            if ( ! isset( $values->{'frm_'. $var} ) ) {
-				$values->{'frm_'. $var} = isset($options[$var]) ? $options[$var] : $default;
+			if ( ! isset( $values->{'frm_' . $var} ) ) {
+				$values->{'frm_' . $var} = isset( $options[ $var ] ) ? $options[ $var ] : $default;
                 if ( $check_post ) {
 					$sanitize = self::sanitize_option( $var );
 					$values->{'frm_' . $var} = FrmAppHelper::get_post_param( 'options[' . $var . ']', $values->{'frm_' . $var}, $sanitize );
                 }
-            } else if ( $var == 'param' && empty($values->{'frm_'. $var}) ) {
-                $values->{'frm_'. $var} = $default;
+			} elseif ( $var == 'param' && empty( $values->{'frm_' . $var} ) ) {
+				$values->{'frm_' . $var} = $default;
             }
         }
 
@@ -62,18 +62,35 @@ class FrmProDisplaysHelper{
 
 	public static function get_default_opts() {
 
-        return array(
-            'name' => '', 'description' => '', 'display_key' => '',
-            'form_id' => 0, 'date_field_id' => '', 'edate_field_id' => '',
-			'repeat_event_field_id' => '', 'repeat_edate_field_id' => '', 'entry_id' => '',
-			'before_content' => '', 'content' => '',
-            'after_content' => '', 'dyncontent' => '', 'param' => 'entry',
-			'type' => '', 'show_count' => 'all', 'no_rt' => 0,
-            'order_by' => array(), 'order' => array(), 'limit' => '', 'page_size' => '',
-            'empty_msg' => __( 'No Entries Found', 'formidable-pro' ), 'copy' => 0,
-			'where' => array(), 'where_is' => array(), 'where_val' => array(),
-			'group_by' => array(),
-        );
+		return array(
+			'name'                  => '',
+			'description'           => '',
+			'display_key'           => '',
+			'form_id'               => 0,
+			'date_field_id'         => '',
+			'edate_field_id'        => '',
+			'repeat_event_field_id' => '',
+			'repeat_edate_field_id' => '',
+			'entry_id'              => '',
+			'before_content'        => '',
+			'content'               => '',
+			'after_content'         => '',
+			'dyncontent'            => '',
+			'param'                 => 'entry',
+			'type'                  => '',
+			'show_count'            => 'all',
+			'no_rt'                 => 0,
+			'order_by'              => array(),
+			'order'                 => array(),
+			'limit'                 => '',
+			'page_size'             => '',
+			'empty_msg'             => __( 'No Entries Found', 'formidable-pro' ),
+			'copy'                  => 0,
+			'where'                 => array(),
+			'where_is'              => array(),
+			'where_val'             => array(),
+			'group_by'              => array(),
+		);
     }
 
     public static function is_edit_view_page() {
@@ -101,7 +118,7 @@ class FrmProDisplaysHelper{
         return $post;
     }
 
-    public static function get_shortcodes($content, $form_id) {
+	public static function get_shortcodes( $content, $form_id ) {
 		if ( empty( $form_id ) || strpos( $content, '[' ) === false ) {
 			// don't continue if there are no shortcodes to check
 			return array( array() );
@@ -149,7 +166,7 @@ class FrmProDisplaysHelper{
 
 		$form_ids = array( $form_id );
 		foreach ( $fields as $field_options ) {
-			$field_options = maybe_unserialize( $field_options );
+			FrmProAppHelper::unserialize_or_decode( $field_options );
 			if ( isset( $field_options['form_select'] ) && ! empty( $field_options['form_select'] ) ) {
 				$form_ids[] = $field_options['form_select'];
 			}
@@ -160,7 +177,8 @@ class FrmProDisplaysHelper{
 	}
 
 	/**
-	 * make sure the backtrack limit is as least at the default
+	 * Make sure the backtrack limit is as least at the default
+	 *
 	 * @since 3.0
 	 */
 	private static function maybe_increase_regex_limit() {
@@ -216,5 +234,59 @@ class FrmProDisplaysHelper{
 			'group_by'        => __( 'unique (get oldest entries)', 'formidable-pro' ),
 			'group_by_newest' => __( 'unique (get newest entries)', 'formidable-pro' ),
 		);
+	}
+
+	/**
+	 * Get the View type (show_count) for each View, e.g. calendar, dynamic
+	 *
+	 * @return array|object|void|null
+	 */
+	public static function get_show_counts() {
+		$show_counts = self::get_meta_values( 'frm_show_count', 'frm_display' );
+
+		return $show_counts;
+	}
+
+	/**
+	 * Get the options for the site's Views
+	 *
+	 * @return array|object|void|null
+	 */
+	public static function get_frm_options_for_views() {
+
+		$views_options = self::get_meta_values( 'frm_options', 'frm_display' );
+
+		foreach ( $views_options as $key => $value ) {
+			FrmProAppHelper::unserialize_or_decode( $value->meta_value );
+			$views_options[ $key ]->meta_value = $value->meta_value;
+		}
+
+		return $views_options;
+	}
+
+	/**
+	 * Get the specified meta value for the specified post type
+	 *
+	 * @param string $key
+	 * @param string $post_type
+	 *
+	 * @return array|object|void|null
+	 */
+	public static function get_meta_values( $key = '', $post_type = 'frm_display' ) {
+
+		global $wpdb;
+
+		if ( empty( $key ) ) {
+			return;
+		}
+
+		$table                = $wpdb->postmeta . ' pm LEFT JOIN ' . $wpdb->posts . ' p ON p.ID = pm.post_id';
+		$field                = 'pm.post_id, pm.meta_value, pm.meta_key';
+		$where['pm.meta_key'] = $key;
+		$where['p.post_type'] = $post_type;
+
+		$results = FrmDb::get_var( $table, $where, $field, array(), '', 'associative_results' );
+
+		return $results;
 	}
 }

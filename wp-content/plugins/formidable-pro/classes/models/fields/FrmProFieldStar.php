@@ -21,9 +21,7 @@ class FrmProFieldStar extends FrmFieldType {
 
 	protected function field_settings_for_type() {
 		$settings = array(
-			'default_value' => true,
 			'unique'        => true,
-			'default_blank' => false,
 		);
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
@@ -41,6 +39,17 @@ class FrmProFieldStar extends FrmFieldType {
 		return array(
 			'options' => range( 1, 5 ),
 		);
+	}
+
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/star-options.php' );
+
+		parent::show_primary_options( $args );
 	}
 
 	public function get_container_class() {
@@ -109,5 +118,12 @@ class FrmProFieldStar extends FrmFieldType {
 		}
 
 		return $numbers;
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
 	}
 }

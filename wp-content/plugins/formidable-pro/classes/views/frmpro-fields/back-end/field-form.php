@@ -1,18 +1,30 @@
 <?php
 
-$form_key = empty( $field['form_select'] ) ? '' : FrmForm::get_key_by_id( $field['form_select'] );
-if ( empty( $form_key ) ) {
-	echo '<p>'. esc_html__( 'Select a form to import below', 'formidable-pro' ) .'</p>';
-} elseif ( in_array( FrmAppHelper::get_server_value( 'REMOTE_ADDR' ), array( '127.0.0.1', '::1' ) ) ) { ?>
-	<div class="frm_html_field_placeholder">
-		<div class="howto button-secondary frm_html_field">
-			<?php esc_html_e( 'This is a placeholder for an embedded form.', 'formidable' ) ?><br/>
-			<?php esc_html_e( 'The extra form fields will show in the form.', 'formidable' ) ?>
-		</div>
+$form = empty( $field['form_select'] ) ? '' : FrmForm::getOne( $field['form_select'] );
+?>
+<span class="frm-with-left-icon frm-not-set <?php if ( ! empty( $form ) ) { ?>
+		frm_hidden
+	<?php } ?>" id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
+	<?php FrmProAppHelper::icon_by_class( 'frmfont frm_report_problem_solid_icon' ); ?>
+	<input type="text" value="<?php esc_attr_e( 'This field is not set up yet.', 'formidable-pro' ); ?>" disabled />
+</span>
+
+<div class="frm-embed-field-placeholder frm_grid_container <?php if ( empty( $form ) ) { ?>
+		frm_hidden
+	<?php } ?>">
+	<div class="frm-fake-field"></div>
+	<div class="frm-fake-field"></div>
+	<div class="frm-fake-field frm6 frm_form_field"></div>
+	<div class="frm-fake-field frm6 frm_form_field"></div>
+	<div class="frm-embed-message" data-embedmsg="<?php echo esc_attr( __( 'Embedded Form: ', 'formidable-pro' ) ); ?>">
+		<?php
+		echo esc_html(
+			sprintf(
+				/* translators: %1$s: Form name */
+				__( 'Embedded Form: %1$s', 'formidable-pro' ),
+				empty( $form ) ? '' : $form->name
+			)
+		);
+		?>
 	</div>
-<?php } else { ?>
-	<div class="subform_section">
-		<img src="<?php echo esc_url( 'http://s0.wordpress.com/mshots/v1/' . urlencode( FrmFormsHelper::get_direct_link( $form_key ) ) ) . '?w=600&h=350'; ?>" style="max-width:100%" alt="<?php echo esc_attr( 'This is a placeholder for an embedded form.', 'formidable-pro' ); ?>" />
-	</div>
-<?php
-}
+</div>

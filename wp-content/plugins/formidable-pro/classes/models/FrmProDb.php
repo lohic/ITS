@@ -1,13 +1,13 @@
 <?php
 
-class FrmProDb{
+class FrmProDb {
 
-	public static $db_version = 60;
+	public static $db_version = 79;
 
 	/**
 	 * @since 3.0.02
 	 */
-	public static $plug_version = '3.0.06';
+	public static $plug_version = '4.03.03';
 
 	/**
 	 * @since 2.3
@@ -49,7 +49,7 @@ class FrmProDb{
 		}
 
 		if ( $old_db_version && is_numeric( $old_db_version ) ) {
-			$migrations = array( 16, 17, 25, 27, 28, 29, 30, 31, 32, 34, 36, 37, 39, 43, 44, 50 );
+			$migrations = array( 16, 17, 25, 27, 28, 29, 30, 31, 32, 34, 36, 37, 39, 43, 44, 50, 62, 65, 66, 71, 78, 79 );
 			foreach ( $migrations as $migration ) {
 				if ( $db_version >= $migration && $old_db_version < $migration ) {
 					call_user_func( array( __CLASS__, 'migrate_to_' . $migration ) );
@@ -62,21 +62,17 @@ class FrmProDb{
 		update_option( 'frmpro_db_version', self::$plug_version . '-' . self::$db_version );
 
 		FrmAppHelper::save_combined_js();
-
-        /**** ADD DEFAULT TEMPLATES ****/
-        if ( class_exists('FrmXMLController') ) {
-            FrmXMLController::add_default_templates();
-        }
     }
 
 	public static function uninstall() {
-        if ( !current_user_can('administrator') ) {
+		if ( ! current_user_can( 'administrator' ) ) {
             $frm_settings = FrmAppHelper::get_settings();
-            wp_die($frm_settings->admin_permission);
+			wp_die( esc_html( $frm_settings->admin_permission ) );
         }
 
         global $wpdb;
-        $wpdb->query( 'DROP TABLE IF EXISTS '. $wpdb->prefix .'frm_display' );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'frm_display' );
         delete_option('frmpro_options');
         delete_option('frmpro_db_version');
 
@@ -103,7 +99,165 @@ class FrmProDb{
 	}
 
 	/**
+	 * Move the lookup placeholder into the normal placeholder setting.
+	 *
+	 * @since 4.0
+	 */
+	private static function migrate_to_79() {
+		$query = array(
+			'field_options like'     => '"lookup_placeholder_text";s:',
+			'field_options not like' => '"lookup_placeholder_text";s:0:',
+			'type'                   => 'lookup',
+		);
+
+		$fields = FrmDb::get_results( 'frm_fields', $query, 'id, field_options' );
+
+		foreach ( $fields as $field ) {
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
+			$original      = $field_options;
+
+			FrmProXMLHelper::migrate_lookup_placeholder( $field_options );
+			if ( $original !== $field_options ) {
+				FrmField::update( $field->id, compact( 'field_options' ) );
+			}
+
+			unset( $field );
+		}
+	}
+
+	/**
+	 * Remove the checkbox to use Lookup values.
+	 *
+	 * @since 4.0
+	 */
+	private static function migrate_to_78() {
+		$query = array(
+			'field_options like'     => '"get_values_field";s:',
+			'field_options not like' => '"get_values_field";s:0:',
+		);
+
+		$fields = FrmDb::get_results( 'frm_fields', $query, 'id, field_options' );
+
+		foreach ( $fields as $field ) {
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
+			$original      = $field_options;
+
+			FrmProXMLHelper::migrate_lookup_checkbox_setting( $field_options );
+			if ( $original !== $field_options ) {
+				FrmField::update( $field->id, compact( 'field_options' ) );
+			}
+
+			unset( $field );
+		}
+	}
+
+	/**
+	 * Move dyn_default_value to default value.
+	 * Fields that still support dyn_default: data, radio, select, dropdown, lookup, address
+	 *
+	 * @since 4.0
+	 */
+	private static function migrate_to_71() {
+		$query = array(
+			'field_options like'     => ':"dyn_default_value";s:',
+			'field_options not like' => ':"dyn_default_value";s:0',
+		);
+
+		$fields = FrmDb::get_results( 'frm_fields', $query, 'id, type, field_options, default_value' );
+
+		foreach ( $fields as $field ) {
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
+			$update = FrmProXMLHelper::migrate_dyn_default_value( $field->type, $field_options );
+			if ( ! empty( $update ) ) {
+				FrmField::update( $field->id, $update );
+			}
+
+			unset( $field );
+		}
+	}
+
+	/**
+	 * Delete uneeded default templates
+	 *
+	 * @since 3.06
+	 */
+	private static function migrate_to_66() {
+		$form_keys = array( 'frmproapplication', 'frmprorealestatelistings', 'frmprocontact' );
+		foreach ( $form_keys as $form_key ) {
+			$form = FrmForm::getOne( $form_key );
+			if ( $form && $form->default_template == 1 ) {
+				FrmForm::destroy( $form_key );
+			}
+		}
+	}
+
+	/**
+	 * Make another attempt to move Pro if still nested.
+	 * Before running the move, check if migration 50 be triggered anyway.
+	 *
+	 * @since 3.04.03
+	 */
+	public static function migrate_to_65() {
+		$pro_folder = substr( untrailingslashit( FrmProAppHelper::plugin_path() ), -4 );
+
+		if ( '/pro' !== $pro_folder || ! is_callable( 'FrmAddonsController::get_pro_download_url' ) ) {
+			// not nested
+			return;
+		}
+
+		$new_plugin = WP_PLUGIN_DIR . '/formidable-pro/';
+		if ( file_exists( $new_plugin ) ) {
+			return;
+		}
+
+		require_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
+
+		$download_url = esc_url_raw( FrmAddonsController::get_pro_download_url() );
+
+		// Create the plugin upgrader with our custom skin.
+		$installer = new Plugin_Upgrader( new FrmInstallerSkin() );
+		$installer->install( $download_url );
+
+		// Flush the cache and get the newly installed plugin basename.
+		wp_cache_flush();
+		$installed = $installer->plugin_info();
+		if ( ! $installed ) {
+			return;
+		}
+
+		activate_plugin( $installed );
+	}
+
+	/**
+	 * Switch end year from 2020 to +10
+	 *
+	 * @since 3.01
+	 */
+	public static function migrate_to_62() {
+		// Get all date fields
+		$fields = FrmDb::get_results( 'frm_fields', array( 'type' => 'date' ), 'id, field_options, form_id' );
+
+		foreach ( $fields as $field ) {
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
+			if ( isset( $field_options['end_year'] ) && $field_options['end_year'] == '2020' ) {
+				$field_options['end_year'] = '+10';
+				$options = array(
+					'form_id'       => $field->form_id,
+					'field_options' => $field_options,
+				);
+
+				FrmField::update( $field->id, $options );
+			}
+		}
+	}
+
+	/**
 	 * Attempt to move formidable/pro to formidable-pro and activate
+	 *
 	 * @since 3.0
 	 */
 	public static function migrate_to_50() {
@@ -129,7 +283,7 @@ class FrmProDb{
 				return;
 			}
 
-			update_option( 'frm_attempt_copy', true );
+			update_option( 'frm_attempt_copy', true, 'no' );
 
 			if ( $plugin_helper->is_installed() ) {
 				$plugin_helper->activate_plugin();
@@ -152,13 +306,15 @@ class FrmProDb{
 
 	/**
 	 * Separate star from scale field
+	 *
 	 * @since 3.0
 	 */
 	public static function migrate_to_44() {
 		$image_fields = FrmDb::get_results( 'frm_fields', array( 'type' => array( 'scale', '10radio' ) ), 'id, field_options, form_id' );
 
 		foreach ( $image_fields as $field ) {
-			$field_options = maybe_unserialize( $field->field_options );
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
 			if ( isset( $field_options['star'] ) && $field_options['star'] ) {
 				$options = array(
 					'form_id'       => $field->form_id,
@@ -171,6 +327,7 @@ class FrmProDb{
 
 	/**
 	 * Switch image field to url
+	 *
 	 * @since 3.0
 	 */
 	public static function migrate_to_43() {
@@ -178,7 +335,8 @@ class FrmProDb{
 		$image_fields = FrmDb::get_results( 'frm_fields', array( 'type' => 'image' ), 'id, field_options, form_id' );
 
 		foreach ( $image_fields as $field ) {
-			$field_options = maybe_unserialize( $field->field_options );
+			$field_options = $field->field_options;
+			FrmProAppHelper::unserialize_or_decode( $field_options );
 			$field_options['show_image'] = 1;
 			$options = array(
 				'form_id'       => $field->form_id,
@@ -192,6 +350,7 @@ class FrmProDb{
 
 	/**
 	 * Change saved time formats
+	 *
 	 * @since 2.3
 	 */
 	public static function migrate_to_39() {
@@ -205,7 +364,8 @@ class FrmProDb{
 		global $wpdb;
 		foreach ( $values as $value ) {
 			$meta_id = $value->id;
-			$value = maybe_unserialize( $value->meta_value );
+			$value = $value->meta_value;
+			FrmProAppHelper::unserialize_or_decode( $value );
 			$new_value = array();
 
 			foreach ( (array) $value as $v ) {
@@ -278,16 +438,14 @@ class FrmProDb{
 			}
 
 			$keep_child_ids = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $section_field->id, 'item_id' => $parent_id ), 'meta_value' );
-			$keep_child_ids = maybe_unserialize( $keep_child_ids );
+			FrmProAppHelper::unserialize_or_decode( $keep_child_ids );
 
 			if ( ! is_array( $keep_child_ids ) ) {
 				$keep_child_ids = (array) $keep_child_ids;
 			}
 
 			foreach ( $all_child_ids as $child_id ) {
-				if ( in_array( $child_id, $keep_child_ids ) ) {
-					// Do nothing
-				} else {
+				if ( ! in_array( $child_id, $keep_child_ids ) ) {
 					FrmEntry::destroy( $child_id );
 				}
 			}
@@ -309,7 +467,7 @@ class FrmProDb{
 			$file_ids = array();
 			foreach ( $uploaded_files as $files ) {
 				if ( ! is_numeric( $files ) ) {
-					$files = maybe_unserialize( $files );
+					FrmProAppHelper::unserialize_or_decode( $files );
 				}
 				$add_files = array_filter( (array) $files, 'is_numeric' );
 				$file_ids = array_merge( $file_ids, $add_files );
@@ -326,7 +484,7 @@ class FrmProDb{
 	 *
 	 * @since 2.01.0
 	 */
-	private static function migrate_to_34(){
+	private static function migrate_to_34() {
 		$dividers = FrmDb::get_col( 'frm_fields', array( 'type' => 'divider' ), 'id' );
 
 		if ( ! $dividers ) {
@@ -387,7 +545,7 @@ class FrmProDb{
 			if ( ! $view_options ) {
 				$view_options = array();
 			} else {
-				$view_options = maybe_unserialize( $view_options );
+				FrmProAppHelper::unserialize_or_decode( $view_options );
 			}
 
 			self::add_entry_id_is_equal_to_get_param_filter( $view_options );
@@ -403,22 +561,22 @@ class FrmProDb{
 	 * @param array $view_options
 	 */
 	private static function add_entry_id_is_equal_to_get_param_filter( &$view_options ) {
-		if ( ! isset( $view_options[ 'where' ] ) ) {
-			$view_options[ 'where' ] = array();
+		if ( ! isset( $view_options['where'] ) ) {
+			$view_options['where'] = array();
 		}
 
-		if ( ! isset( $view_options[ 'where_is' ] ) ) {
-			$view_options[ 'where_is' ] = array();
+		if ( ! isset( $view_options['where_is'] ) ) {
+			$view_options['where_is'] = array();
 		}
 
-		if ( ! isset( $view_options[ 'where_val' ] ) ) {
-			$view_options[ 'where_val' ] = array();
+		if ( ! isset( $view_options['where_val'] ) ) {
+			$view_options['where_val'] = array();
 		}
 
-		if ( ! in_array( 'id', $view_options[ 'where' ] ) ) {
-			$view_options[ 'where' ][] = 'id';
-			$view_options[ 'where_is' ][] = '=';
-			$view_options[ 'where_val' ][] = '[get param=entry old_filter=1]';
+		if ( ! in_array( 'id', $view_options['where'] ) ) {
+			$view_options['where'][] = 'id';
+			$view_options['where_is'][] = '=';
+			$view_options['where_val'][] = '[get param=entry old_filter=1]';
 		}
 	}
 
@@ -472,12 +630,12 @@ class FrmProDb{
 	/**
 	* Remove form_select from all non-repeating sections
 	*/
-	private static function migrate_to_30(){
+	private static function migrate_to_30() {
 		// Get all section fields
 		$dividers = FrmField::getAll( array( 'fi.type' => 'divider' ) );
 
 		// Remove form_select for non-repeating sections
-		foreach( $dividers as $d ) {
+		foreach ( $dividers as $d ) {
 			if ( FrmField::is_repeating_field( $d ) ) {
 				continue;
 			}
@@ -492,12 +650,12 @@ class FrmProDb{
 	/**
 	* Switch repeating section forms to published and give them names
 	*/
-	private static function migrate_to_29(){
+	private static function migrate_to_29() {
 		// Get all section fields
 		$dividers = FrmField::getAll( array( 'fi.type' => 'divider' ) );
 
 		// Update the form name and status for repeating sections
-		foreach( $dividers as $d ) {
+		foreach ( $dividers as $d ) {
 			if ( ! FrmField::is_repeating_field( $d ) ) {
 				continue;
 			}
@@ -515,12 +673,12 @@ class FrmProDb{
 	*/
 	private static function migrate_to_28() {
 		global $wpdb;
-		$query = $wpdb->prepare( "SELECT fi.id, fi.form_id, form.parent_form_id FROM " . $wpdb->prefix . "frm_fields fi INNER JOIN " . $wpdb->prefix . "frm_forms form ON fi.form_id = form.id WHERE fi.type = %s AND parent_form_id > %d", 'end_divider', 0 );
+		$query = $wpdb->prepare( 'SELECT fi.id, fi.form_id, form.parent_form_id FROM ' . $wpdb->prefix . 'frm_fields fi INNER JOIN ' . $wpdb->prefix . 'frm_forms form ON fi.form_id = form.id WHERE fi.type = %s AND parent_form_id > %d', 'end_divider', 0 );
 		$end_dividers = $wpdb->get_results( $query );
 
 		foreach ( $end_dividers as $e ) {
 			// Update the form_id column for the end_divider field
-		    $wpdb->update( $wpdb->prefix .'frm_fields', array( 'form_id' => $e->parent_form_id ), array( 'id' => $e->id ) );
+			$wpdb->update( $wpdb->prefix . 'frm_fields', array( 'form_id' => $e->parent_form_id ), array( 'id' => $e->id ) );
 
 			// Clear the cache
 			wp_cache_delete( $e->id, 'frm_field' );
@@ -568,7 +726,7 @@ class FrmProDb{
 
         foreach ( $default_styles as $setting => $default ) {
             if ( isset($frmpro_settings->{$setting}) ) {
-                $new_post['post_content'][$setting] = $frmpro_settings->{$setting};
+				$new_post['post_content'][ $setting ] = $frmpro_settings->{$setting};
             }
         }
 
@@ -580,6 +738,7 @@ class FrmProDb{
 	 */
 	private static function migrate_to_25() {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange
         $wpdb->query( 'DROP TABLE IF EXISTS ' . $wpdb->prefix . 'frm_display' );
 	}
 
@@ -594,18 +753,19 @@ class FrmProDb{
         foreach ( $form as $f ) {
             if ( isset($f->options['single_entry']) && $f->options['single_entry'] && is_numeric($f->options['single_entry_type']) ) {
                 $f->options['single_entry'] = 0;
-                $wpdb->update( $wpdb->prefix .'frm_forms', array( 'options' => serialize($f->options)), array( 'id' => $f->id ) );
+				$wpdb->update( $wpdb->prefix . 'frm_forms', array( 'options' => serialize( $f->options ) ), array( 'id' => $f->id ) );
                 $field_ids[] = $f->options['single_entry_type'];
             }
             unset($f);
         }
 
         if ( ! empty($field_ids) ) {
-            $fields = FrmDb::get_results( 'frm_fields', array( 'id' => $field_ids), 'id, field_options' );
+			$fields = FrmDb::get_results( 'frm_fields', array( 'id' => $field_ids ), 'id, field_options' );
             foreach ( $fields as $f ) {
-                $opts = maybe_unserialize($f->field_options);
+				$opts = $f->field_options;
+				FrmProAppHelper::unserialize_or_decode( $opts );
                 $opts['unique'] = 1;
-                $wpdb->update( $wpdb->prefix .'frm_fields', array( 'field_options' => serialize($opts)), array( 'id' => $f->id ) );
+				$wpdb->update( $wpdb->prefix . 'frm_fields', array( 'field_options' => serialize( $opts ) ), array( 'id' => $f->id ) );
                 unset($f);
             }
         }
@@ -643,36 +803,36 @@ class FrmProDb{
                 $d->show_count = 'none';
             }
 
-            foreach ( array(
+			foreach ( array(
                 'dyncontent', 'param', 'form_id', 'post_id', 'entry_id',
                 'param', 'type', 'show_count', 'insert_loc'
-                ) as $f ) {
-                update_post_meta($post_ID, 'frm_'. $f, $d->{$f});
+			) as $f ) {
+				update_post_meta( $post_ID, 'frm_' . $f, $d->{$f} );
                 unset($f);
             }
 
-            $d->options = maybe_unserialize($d->options);
+			FrmProAppHelper::unserialize_or_decode( $d->options );
             update_post_meta($post_ID, 'frm_options', $d->options);
 
-            if ( isset($d->options['insert_loc']) && $d->options['insert_loc'] != 'none' && is_numeric($d->options['post_id']) && ! isset($display_posts[$d->options['post_id']]) ) {
-                $display_posts[$d->options['post_id']] = $post_ID;
-            }
+			if ( isset( $d->options['insert_loc'] ) && $d->options['insert_loc'] != 'none' && is_numeric( $d->options['post_id'] ) && ! isset( $display_posts[ $d->options['post_id'] ] ) ) {
+				$display_posts[ $d->options['post_id'] ] = $post_ID;
+			}
 
             unset($d, $post_ID);
         }
         unset($dis);
 
         //get all post_ids from frm_entries
-        $entry_posts = FrmDb::get_results( $wpdb->prefix .'frm_items', array( 'post_id >' => 1), 'id, post_id, form_id' );
+		$entry_posts = FrmDb::get_results( $wpdb->prefix . 'frm_items', array( 'post_id >' => 1 ), 'id, post_id, form_id' );
         $form_display = array();
         foreach ( $entry_posts as $ep ) {
-            if ( isset($form_display[$ep->form_id]) ) {
-                $display_posts[$ep->post_id] = $form_display[$ep->form_id];
-            } else {
-                $d = FrmProDisplay::get_auto_custom_display( array( 'post_id' => $ep->post_id, 'form_id' => $ep->form_id, 'entry_id' => $ep->id));
-                $display_posts[$ep->post_id] = $form_display[$ep->form_id] = ($d ? $d->ID : 0);
-                unset($d);
-            }
+			if ( isset( $form_display[ $ep->form_id ] ) ) {
+				$display_posts[ $ep->post_id ] = $form_display[ $ep->form_id ];
+			} else {
+				$d = FrmProDisplay::get_auto_custom_display( array( 'post_id' => $ep->post_id, 'form_id' => $ep->form_id, 'entry_id' => $ep->id ) );
+				$display_posts[ $ep->post_id ] = $form_display[ $ep->form_id ] = ( $d ? $d->ID : 0 );
+				unset( $d );
+			}
 
             unset($ep);
         }

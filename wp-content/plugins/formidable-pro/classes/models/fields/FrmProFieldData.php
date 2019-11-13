@@ -11,8 +11,6 @@ class FrmProFieldData extends FrmFieldType {
 	 */
 	protected $type = 'data';
 
-	protected $is_tall = true;
-
 	protected function input_html() {
 		return $this->multiple_input_html();
 	}
@@ -23,7 +21,7 @@ class FrmProFieldData extends FrmFieldType {
 
 	protected function field_settings_for_type() {
 		$settings = array();
-		
+
 		if ( $this->field && isset( $this->field->field_options['data_type'] ) ) {
 			$settings['default_value'] = true;
 			$settings['read_only'] = true;
@@ -32,13 +30,12 @@ class FrmProFieldData extends FrmFieldType {
 			switch ( $this->field->field_options['data_type'] ) {
 				case 'data':
 					$settings['required'] = false;
-					$settings['default_blank'] = false;
 					$settings['read_only'] = false;
 					$settings['unique'] = false;
-				break;
+					break;
 				case 'select':
 					$settings['size'] = true;
-				break;
+					$settings['clear_on_focus'] = true;
 			}
 		}
 
@@ -53,11 +50,65 @@ class FrmProFieldData extends FrmFieldType {
 		);
 	}
 
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		$field_types = array(
+			'select'    => __( 'Dropdown', 'formidable-pro' ),
+			'radio'     => __( 'Radio Buttons', 'formidable-pro' ),
+			'checkbox'  => __( 'Checkboxes', 'formidable-pro' ),
+			'data'      => __( 'List', 'formidable-pro' ),
+		);
+
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/dynamic-field.php' );
+
+		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_extra_field_choices( $args ) {
+		$field     = $args['field'];
+		$data_type = FrmField::get_option( $field, 'data_type' );
+		$form_list = FrmForm::get_published_forms();
+
+		if ( empty( $form_list ) ) {
+			return;
+		}
+
+		$selected_field   = $selected_form_id = '';
+		$current_field_id = $field['id'];
+		if ( isset( $field['form_select'] ) && is_numeric( $field['form_select'] ) ) {
+			$selected_field = FrmField::getOne( $field['form_select'] );
+			if ( $selected_field ) {
+				$selected_form_id = FrmProFieldsHelper::get_parent_form_id( $selected_field );
+				$fields = FrmField::get_all_for_form( $selected_form_id );
+			} else {
+				$selected_field = '';
+			}
+		} elseif ( isset( $field['form_select'] ) ) {
+			$selected_field = $field['form_select'];
+		}
+
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/options-form-before.php' );
+
+		if ( $data_type === 'select' ) {
+			include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php' );
+
+			$this->auto_width_setting( $args );
+		}
+	}
+
 	public function prepare_front_field( $values, $atts ) {
 		$data_type = FrmField::get_option( $this->field, 'data_type' );
 		$form_select = FrmField::get_option( $this->field, 'form_select' );
 		if ( in_array( $data_type, array( 'select', 'radio', 'checkbox' ) ) && is_numeric( $form_select ) ) {
-			$entry_id = isset( $values['entry_id'] ) ? $values['entry_id'] : 0;
+			$entry_id = isset( $atts['entry_id'] ) ? $atts['entry_id'] : 0;
 			FrmProDynamicFieldsController::add_options_for_dynamic_field( $this->field, $values, array( 'entry_id' => $entry_id ) );
 		}
 		return $values;
@@ -149,9 +200,10 @@ class FrmProFieldData extends FrmFieldType {
 	}
 
 	private function get_single_data_value( $linked_id, $atts ) {
+		$atts['includes_list_data'] = true;
 		$value = FrmProFieldsHelper::get_data_value( $linked_id, $this->field, $atts );
 
-		if ( $linked_id === $value ) {
+		if ( $linked_id === $value && ! FrmProField::is_list_field( $this->field ) ) {
 			$value = false;
 		} elseif ( is_array( $value ) ) {
 			$value = implode( $atts['sep'], $value );

@@ -35,7 +35,7 @@ class FrmProPageField {
 		$page_array = array();
 
 		foreach ( $page_breaks as $page_break ) {
-			if ( FrmProFieldsHelper::is_field_hidden( $page_break, stripslashes_deep( $_POST ) ) ) {
+			if ( FrmProFieldsHelper::is_field_hidden( $page_break, wp_unslash( $_POST ) ) ) {
 				continue;
 			}
 
@@ -97,7 +97,7 @@ class FrmProPageField {
 		$current_page = 0;
 		$page_count = count( $args['page_array'] );
 
-		$classes = array( 'frm_page_bar', 'frm_rootline_' . $page_count, 'frm_' . $type, 'frm_' . $type .'_line' );
+		$classes = array( 'frm_page_bar', 'frm_rootline_' . $page_count, 'frm_' . $type, 'frm_' . $type . '_line' );
 		$classes[] = $hide_numbers ? 'frm_no_numbers' : '';
 		$classes[] = $hide_lines ? '' : 'frm_show_lines';
 		$output = '<div class="frm_rootline_group">';
@@ -114,7 +114,7 @@ class FrmProPageField {
 
 			$output .= '<input type="button" value="' . esc_attr( $page_number ) . '" ';
 			foreach ( $page as $key => $attr ) {
-				$output .= $key .'="' . esc_attr( $attr ) . '" ';
+				$output .= $key . '="' . esc_attr( $attr ) . '" ';
 			}
 			$output .= ' />';
 
@@ -206,5 +206,33 @@ class FrmProPageField {
 		echo '<style type="text/css">';
 		include( FrmProAppHelper::plugin_path() . '/css/progress.css.php' );
 		echo '</style>';
+	}
+
+	/**
+	 * @since 4.03
+	 *
+	 * @return array
+	 */
+	public static function get_form_pages( $form ) {
+		if ( ! is_object( $form ) ) {
+			$form = FrmForm::getOne( $form );
+		}
+
+		$page_breaks = FrmProFormsHelper::has_field( 'break', $form->id, false );
+		if ( empty( $page_breaks ) ) {
+			return array();
+		}
+
+		$rootline = FrmForm::get_option(
+			array(
+				'form'    => $form,
+				'option'  => 'rootline',
+				'default' => '',
+			)
+		);
+
+		$page_array = self::get_pages_array( $page_breaks, $form );
+
+		return compact( 'rootline', 'page_array' );
 	}
 }

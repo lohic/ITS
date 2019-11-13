@@ -12,10 +12,7 @@ class FrmProFieldToggle extends FrmFieldType {
 	protected $type = 'toggle';
 
 	protected function field_settings_for_type() {
-		$settings = array(
-			'default_value' => true,
-			'toggle_labels' => true,
-		);
+		$settings = array();
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
@@ -24,9 +21,30 @@ class FrmProFieldToggle extends FrmFieldType {
 	protected function extra_field_opts() {
 		return array(
 			'show_label' => false,
-			'toggle_on'  => 1,
-			'toggle_off' => 0,
+			'toggle_on'  => __( 'Yes', 'formidable-pro' ),
+			'toggle_off' => __( 'No', 'formidable-pro' ),
 		);
+	}
+
+	/**
+	 * @since 4.0
+	 * @param array $args - Includes 'field', 'display', and 'values'
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		include( FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/toggle-labels.php' );
+
+		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 3.06.01
+	 */
+	public function translatable_strings() {
+		$strings   = parent::translatable_strings();
+		$strings[] = 'toggle_on';
+		$strings[] = 'toggle_off';
+		return $strings;
 	}
 
 	protected function builder_text_field( $name = '' ) {
@@ -46,7 +64,7 @@ class FrmProFieldToggle extends FrmFieldType {
 			$input_html = $this->get_field_input_html_hook( $this->field );
 			$this->add_aria_description( $args, $input_html );
 		}
-		
+
 		$checked_values = $this->get_field_column('value');
 
 		$show_labels = FrmField::get_option( $this->field, 'show_label' );
@@ -75,5 +93,23 @@ class FrmProFieldToggle extends FrmFieldType {
 		$input .= '</div>';
 
 		return $input;
+	}
+
+	/**
+	 * If no value is saved, set the off label if it's not 0.
+	 *
+	 * @since 3.06.01
+	 * @param array $args
+	 * @return array errors
+	 */
+	public function validate( $args ) {
+		if ( empty( $args['value'] ) ) {
+			$off_label = FrmField::get_option( $this->field, 'toggle_off' );
+			if ( ! empty( $off_label ) ) {
+				FrmEntriesHelper::set_posted_value( $this->field, $off_label, $args );
+			}
+		}
+
+		return array();
 	}
 }

@@ -5,6 +5,68 @@
 
 	if ( ! $('body.wpallimport-plugin').length) return; // do not execute any code if we are not on plugin page	
 	
+    function wpai_set_custom_select_image() {
+        // The class name to add to the element.
+        var class_name = jQuery('[class^="dd-selected-text dashicon"]').text().toLowerCase();
+        class_name = class_name.replace( /\s+/g, '' );
+
+        // This gets the image URL out of the class.
+        var class_check = jQuery('[class^="dd-selected-text dashicon"]').attr( 'class' );
+        class_check = class_check.replace( "dd-selected-text dashicon ", "" );
+
+        // String of allowed images.
+        var imgs = ['jpg','jpeg','jpe','gif','png','bmp'], length = imgs.length;
+        while( length-- ) {
+            if ( class_check.indexOf( imgs[ length ] ) != -1 ) {
+
+                // They have defined an image URL, which means it's a custom image and we need to add the class.
+                jQuery('[class^="dd-selected-text dashicon"]').addClass("wpaiimgfor" + class_name);
+                jQuery('[class^="dd-selected-text dashicon"]').removeClass( class_check );
+
+            }
+        }
+    }
+
+    // Rapid Add-On API Images
+    $(document).ready(function($){
+        var class_check;
+        var original_class;
+        var new_class_name;
+        var allstyles = "<style type='text/css'>";
+
+        $.each($('[class^="dd-option-text"]'), function(key, value) {
+            class_check = $(this).attr('class');
+            if ( class_check.includes( 'dashicon' ) ) {
+
+                // Grab the URL to the image by removing the other classes out of the string.
+                class_check = class_check.replace( "dd-option-text dashicon ", "" );
+
+                // Build the class name that we need to append to head.
+                new_class_name = $(this).text().toLowerCase();
+                new_class_name = new_class_name.replace( /\s+/g, '' );
+
+                var imgs = ['jpg','jpeg','jpe','gif','png','bmp'],
+                length = imgs.length;
+                while( length-- ) {
+                    if ( class_check.indexOf( imgs[ length ] ) != -1 ) {
+
+                        // They've defined a custom image URL, so we need to append the class to the head and add it to the list item.
+                        allstyles = allstyles + ".wpaiimgfor" + new_class_name + ":before { font-family: 'dashicons'; font-size: 24px; float: left; margin: 2px 5px 2px 2px;background-image: url(" + class_check + "); background-repeat: no-repeat; background-position: center center; content:'';height: 25px;width:24px; }";
+                        allstyles = allstyles + "label.dd-option-text.dashicon.wpaiimgfor" + new_class_name + " { top: 2px !important; }";
+                        $(this).addClass("wpaiimgfor" + new_class_name);
+                        $(this).removeClass( class_check );
+
+                    }
+                }
+            }
+        });
+
+        // Append all of the classes to head.
+        allstyles = allstyles + "</style>";
+        $( allstyles ).appendTo("head");
+
+    });
+
 	// fix wpallimport-layout position
 	setTimeout(function () {
 		$('table.wpallimport-layout').length && $('table.wpallimport-layout td.left h2:first-child').css('margin-top',  $('.wrap').offset().top - $('table.wpallimport-layout').offset().top);
@@ -230,7 +292,12 @@
 				else{
 					$('.wpallimport-submit-buttons').slideDown();
 				}
-		    } 
+
+                // Rapid Add-On API Images
+                wpai_set_custom_select_image();
+
+
+		    }
 		});
 
 		$('.wpallimport-import-from').click(function(){
@@ -268,6 +335,21 @@
 	}).blur(function(){
 		if($(this).val() == '')
 			$(this).val('Enter a web address to download the file from...');			
+	});
+
+	$('#taxonomy_to_import').ddslick({
+		width: 300,
+		onSelected: function(selectedData){
+			if (selectedData.selectedData.value != ""){
+				$('#taxonomy_to_import').find('.dd-selected').css({'color':'#555'});
+				$('.wpallimport-choose-file').find('.wpallimport-submit-buttons').show();
+			}
+			else{
+				$('#taxonomy_to_import').find('.dd-selected').css({'color':'#cfceca'});
+				$('.wpallimport-choose-file').find('.wpallimport-submit-buttons').hide();
+			}
+			$('input[name=taxonomy_type]').val(selectedData.selectedData.value);
+		}
 	});
 
 	// enter-submit form on step 1
@@ -324,7 +406,9 @@
 				$('.wpallimport-choose-file').find('.wpallimport-upload-resource-step-two').slideDown();
 				$('.wpallimport-choose-file').find('.wpallimport-submit-buttons').show();						
 			}
+
 		});
+
 		$('.wpallimport-import-from.selected').click();
 
 		$('.wpallimport-download-from-url').click(function(){
@@ -339,17 +423,19 @@
 		$('#custom_type_selector').ddslick({
 			width: 300,		
 			onSlideDownOptions: function(o){	
-				formHeight = $wrap.height();			
+				formHeight = ($('.wpallimport-layout').height() < 730) ? 730 : $('.wpallimport-layout').height();
 				$wrap.css({'height': formHeight + $('#custom_type_selector').find('.dd-options').height() + 'px'});				
 			},
 			onSlideUpOptions: function(o){
-				$wrap.css({'height': formHeight + 'px'});				
+				$wrap.css({'height' : 'auto'});
 			},		
 			onSelected: function(selectedData){					
-				if (fixWrapHeight)
-					$wrap.css({'height': formHeight + 'px'});				
-				else
-					fixWrapHeight = true;				
+				if (fixWrapHeight){
+					$wrap.css({'height': 'auto'});
+				}
+				else {
+                    fixWrapHeight = true;
+                }
 
 				$('#custom_type_selector').find('.dd-selected').css({'color':'#555'});
 
@@ -380,7 +466,10 @@
 			        {			        	
 			        	$('.wpallimport-choose-file').find('.wpallimport-submit-buttons').hide();		
 			        }
-				}		        
+				}
+
+                // Rapid Add-On API Images
+                wpai_set_custom_select_image();
 		    } 
 		});				
 
@@ -673,7 +762,7 @@
 				$(this).parents('.wpallimport-collapsed-content:first').find('.advanced_options_files').find('p:first').hide();
 				$(this).parents('.wpallimport-collapsed-content:first').find('.advanced_options_files').find('input').removeAttr('disabled');
 			}
-			
+
 		});
 
 		// Auto-detect custom fields
@@ -958,24 +1047,34 @@
 		}
 
 		$form.find('input[name$=download_images]:checked').each(function(){			
-			if ($(this).val() == 'gallery')
-			{
+			if ($(this).val() == 'gallery') {
 				$(this).parents('table:first').find('.search_through_the_media_library').slideUp();
 			}
-			else
-			{
+			else {
 				$(this).parents('table:first').find('.search_through_the_media_library').slideDown();
 			}
+            // download images hosted elsewhere
+            if ($(this).val() == 'yes'){
+                $('.search_through_the_media_library_logic').show();
+            }
+            else{
+                $('.search_through_the_media_library_logic').hide();
+            }
 		});
 
 		$form.find('input[name$=download_images]').click(function(){
-			if ($(this).is(':checked') && $(this).val() == 'gallery')
-			{
+			if ($(this).is(':checked') && $(this).val() == 'gallery') {
 				$(this).parents('table:first').find('.search_through_the_media_library').slideUp();
 			}
-			else
-			{
+			else {
 				$(this).parents('table:first').find('.search_through_the_media_library').slideDown();
+			}
+			// download images hosted elsewhere
+			if ($(this).val() == 'yes'){
+				$('.search_through_the_media_library_logic').slideDown();
+			}
+			else{
+				$('.search_through_the_media_library_logic').slideUp();
 			}
 		});
 
@@ -1854,9 +1953,9 @@
 
 	});
 
-	$('.wpallimport-collapsed').find('.wpallimport-collapsed-header').click(function(){
+	$('.wpallimport-collapsed').find('.wpallimport-collapsed-header').not('.disabled').click(function(){
 		var $parent = $(this).parents('.wpallimport-collapsed:first');
-		if ($parent.hasClass('closed')){			
+		if ($parent.hasClass('closed')){
 			$parent.removeClass('closed');
 			$parent.find('.wpallimport-collapsed-content:first').slideDown(400, function(){
 				if ($('#wp_all_import_code').length) editor.setCursor(1);
@@ -1866,7 +1965,7 @@
 			$parent.addClass('closed');			
 			$parent.find('.wpallimport-collapsed-content:first').slideUp();
 		}
-	});	
+	});		
 
 	$('#is_delete_posts').change(function(){
 		if ($(this).is(':checked')){

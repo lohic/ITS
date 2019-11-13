@@ -3,7 +3,7 @@
 /**
  * @since 3.0
  */
-class FrmProInstallPlugin{
+class FrmProInstallPlugin {
 
 	protected $plugin_file; // format: folder/filename.php
 	protected $plugin_slug;
@@ -16,8 +16,10 @@ class FrmProInstallPlugin{
 
 	public function maybe_install_and_activate() {
 		if ( $this->is_installed() && $this->is_active() ) {
-			// do nothing
-		} elseif ( $this->is_installed() ) {
+			return;
+		}
+
+		if ( $this->is_installed() ) {
 			$this->activate_plugin();
 		} else {
 			$this->install_plugin();

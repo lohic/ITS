@@ -21,13 +21,13 @@ class FrmFieldEmail extends FrmFieldType {
 	protected function field_settings_for_type() {
 		return array(
 			'size'           => true,
-            'clear_on_focus' => true,
+			'clear_on_focus' => true,
 			'invalid'        => true,
 		);
 	}
 
 	/**
-	 * validate the email format
+	 * Validate the email format
 	 *
 	 * @param array $args
 	 *
@@ -38,6 +38,14 @@ class FrmFieldEmail extends FrmFieldType {
 		if ( $args['value'] != '' && ! is_email( $args['value'] ) ) {
 			$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'invalid' );
 		}
+
 		return $errors;
+	}
+
+	/**
+	 * @since 4.0.04
+	 */
+	public function sanitize_value( &$value ) {
+		FrmAppHelper::sanitize_value( 'sanitize_email', $value );
 	}
 }

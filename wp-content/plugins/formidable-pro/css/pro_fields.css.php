@@ -19,6 +19,12 @@
 .with_frm_style .frm_repeat_sec{
     margin-bottom:20px;
     margin-top:20px;
+	padding-bottom:15px;
+}
+
+.with_frm_style .frm_repeat_sec:last-child{
+	border-bottom:none;
+	padding-bottom:0;
 }
 
 .with_frm_style .frm_repeat_inline{
@@ -61,6 +67,14 @@
 	pointer-events: auto;
 }
 
+.frm_add_form_row.frm_button.frm_hidden:last-child, .frm_add_form_row.frm_icon_font.frm_hidden:last-child {
+	display: inline-block;
+}
+
+.frm_form_fields .frm_section_heading.frm_hidden {
+	display: none;
+}
+
 .frm_repeat_inline .frm_repeat_buttons a.frm_icon_font{
 	vertical-align: sub;
 }
@@ -73,32 +87,86 @@
 .frm_repeat_inline .frm_button,
 .frm_repeat_sec .frm_button{
 	display: inline-block;
-	line-height:1.3;
+	line-height:1;
 }
 
 .frm_repeat_sec .frm_button .frm_icon_font:before,
 .frm_repeat_grid .frm_button .frm_icon_font:before,
 .frm_repeat_inline .frm_button .frm_icon_font:before{
-    line-height:1.3;
+    line-height:1;
 }
 
-.frm_form_field .frm_repeat_grid .frm_form_field label.frm_primary_label{
+.frm_form_field .frm_repeat_grid ~ .frm_repeat_grid .frm_form_field .frm_primary_label{
     display:none !important;
 }
 
-.frm_form_field .frm_repeat_grid.frm_first_repeat .frm_form_field label.frm_primary_label{
-    display:inherit !important;
-}
+/* Datepicker */
 
 #ui-datepicker-div{
     display:none;
     z-index:999999 !important;
 }
 
+<?php $use_default_date = ( empty( $defaults['theme_css'] ) || 'ui-lightness' === $defaults['theme_css'] ); ?>
+
+.ui-datepicker .ui-datepicker-title select.ui-datepicker-month,
+.ui-datepicker .ui-datepicker-title select.ui-datepicker-year {
+    width: <?php echo esc_html( $use_default_date ? '33' : '45' ); ?>%;
+	background-color:#fff;
+	float:none;
+}
+
+.ui-datepicker select.ui-datepicker-month{
+	margin-right: 3px;
+}
+
+.ui-datepicker-month, .ui-datepicker-year{
+	max-width:100%;
+	max-height:2em;
+	padding:6px 10px;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	box-sizing:border-box;
+}
+
+<?php if ( $use_default_date ) { ?>
+.ui-datepicker .ui-widget-header,
+.ui-datepicker .ui-datepicker-header {
+    background: <?php echo esc_html( $defaults['date_head_bg_color'] ); ?> !important;
+	color: <?php echo esc_html( $defaults['date_head_color'] ); ?> !important;
+}
+
+.ui-datepicker td.ui-datepicker-today{
+	background: rgba(<?php echo esc_html( FrmStylesHelper::hex2rgb( $defaults['date_band_color'] ) ); ?>,0.15) !important;
+}
+
+.ui-datepicker td.ui-datepicker-current-day,
+.ui-datepicker td .ui-state-hover,
+.ui-datepicker thead {
+    background: <?php echo esc_html( $defaults['date_band_color'] ); ?> !important;
+	color: <?php echo esc_html( $defaults['date_head_color'] ); ?> !important;
+}
+
+.ui-datepicker td.ui-datepicker-current-day .ui-state-default{
+	color: <?php echo esc_html( $defaults['date_head_color'] ); ?> !important;
+}
+<?php } ?>
+
+/* Graphs */
+.google-visualization-tooltip-item-list,
+.google-visualization-tooltip-item-list .google-visualization-tooltip-item:first-child {
+	margin: 1em 0 !important;
+}
+
+.google-visualization-tooltip-item {
+	list-style-type: none !important;
+	margin: 0.65em 0 !important;
+}
+
 /* Radio Scale */
 
 .with_frm_style .frm_scale{
-	margin-right:10px;
+	margin-right:15px;
 	text-align:center;
 	float:left;
 }
@@ -117,16 +185,17 @@
 .frm-star-group .star-rating,
 .frm-star-group input + label {
 	float:left;
-	width:20px;
-	height:20px;
-	font-size:20px;
-	line-height:1.4em;
+	width:25px;
+	height:25px;
+	font-size:25px;
+	line-height:1;
 	cursor:pointer;
 	display:block;
 	background:transparent;
 	overflow:hidden !important;
 	clear:none;
 	font-style:normal;
+	margin-right:15px;
 }
 
 .frm-star-group input + label:before,
@@ -135,6 +204,7 @@
 	content:'\e9d7';
 	color:#F0AD4E;
 	display: inline-block;
+	vertical-align: top;
 }
 
 .frm-star-group input[type=radio]:checked + label:before,
@@ -280,12 +350,12 @@ table.frmcal-calendar .frmcal_date{
 }
 
 table.frmcal-calendar .frmcal-today .frmcal_date{
-    background-color:#<?php echo esc_html( $defaults['bg_color_active'] ) ?>;
+    background-color:<?php echo esc_html( $defaults['bg_color_active'] ) ?>;
     padding:0 5px;
     text-align:right;
-    -moz-box-shadow:0 2px 5px #<?php echo esc_html( $defaults['border_color_active'] ) ?>;
-    -webkit-box-shadow:0 2px 5px #<?php echo esc_html( $defaults['border_color_active'] ) ?>;
-    box-shadow:0 2px 5px #<?php echo esc_html( $defaults['border_color_active'] ) ?>;
+    -moz-box-shadow:0 2px 5px <?php echo esc_html( $defaults['border_color_active'] ) ?>;
+    -webkit-box-shadow:0 2px 5px <?php echo esc_html( $defaults['border_color_active'] ) ?>;
+    box-shadow:0 2px 5px <?php echo esc_html( $defaults['border_color_active'] ) ?>;
 }
 
 .frmcal_day_name,
@@ -307,7 +377,7 @@ table.frmcal-calendar .frmcal-today .frmcal_date{
 }
 
 .frm_on_label{
-	color: #008ec2;
+	color: #3177c7;
 	padding:0 0 0 8px;
 }
 
@@ -349,11 +419,11 @@ table.frmcal-calendar .frmcal-today .frmcal_date{
 }
 
 input:checked + .frm_slider {
-	background-color: #008ec2;
+	background-color: #3177c7;
 }
 
 input:focus + .frm_slider {
-	box-shadow: 0 0 1px #008ec2;
+	box-shadow: 0 0 1px #3177c7;
 }
 
 input:checked + .frm_slider:before {
@@ -364,7 +434,7 @@ input:checked + .frm_slider:before {
 
 <?php
 $bg_color = '#ccc' . $important;
-$thumb_color = '#008ec2' . $important;
+$thumb_color = '#3177c7' . $important;
 $text_color = '#ffffff' . $important;
 ?>
 .with_frm_style .frm_range_value{
@@ -380,7 +450,7 @@ $text_color = '#ffffff' . $important;
 	background:transparent !important;
 	display: block;
 	width: 100%;
-	margin: 7px 0 10px;
+	margin: 7px 0 15px;
 	font-size:14px;
 }
 
@@ -397,11 +467,11 @@ $text_color = '#ffffff' . $important;
 
 .with_frm_style input[type=range]::-webkit-slider-runnable-track {
 	<?php
-	echo $border = 'border-radius: 0;
+	echo $border = 'border-radius: 25px;
 	border: none;
-	height: 4px;
+	height: 10px;
 	background-color: ' . esc_html( $bg_color ) . ';';
-	echo $track = 'animate: 0.2s;';
+	echo $track = 'animation: 0.2s;';
 	?>
 }
 .with_frm_style input[type=range]::-moz-range-track {
@@ -421,15 +491,15 @@ $text_color = '#ffffff' . $important;
 	-webkit-appearance: none;
 	-webkit-border-radius: 20px;
 	<?php
-	echo $thumb_size = 'height: 2em;
-	width: 2em;';
+	echo $thumb_size = 'height: 28px;
+	width: 28px;';
 	echo $thumb = 'border-radius: 20px;
-	border: 1px solid rgba(' . esc_html( FrmStylesHelper::hex2rgb( '#008ec2' ) ) . ',0.6);
-	color:'. esc_html( $text_color ) . ';
+	border: 1px solid rgba(' . esc_html( FrmStylesHelper::hex2rgb( '#3177c7' ) ) . ',0.6);
+	color:' . esc_html( $text_color ) . ';
 	background-color: ' . esc_html( $thumb_color ) . ';
 	cursor: pointer;';
 	?>
-	margin-top: -.9em;
+	margin-top: -10px;
 }
 
 .with_frm_style input[type=range]::-moz-range-thumb {
@@ -439,4 +509,108 @@ $text_color = '#ffffff' . $important;
 
 .with_frm_style input[type=range]::-ms-thumb {
 	<?php echo $thumb_size . $thumb; ?>
+}
+
+/**
+ * Password strength meter CSS
+ */
+
+@media screen and (max-width: 768px) {
+    .frm-pass-req, .frm-pass-verified {
+        width: 50% !important;
+        white-space: nowrap;
+    }
+}
+
+.frm-pass-req, .frm-pass-verified {
+    float: left;
+    width: 20%;
+    line-height: 20px;
+    font-size: 12px;
+    padding-top: 4px;
+    min-width: 175px;
+}
+
+.frm-pass-req:before, .frm-pass-verified:before {
+    padding-right: 4px;
+    font-size: 12px !important;
+    vertical-align: middle !important;
+}
+
+span.frm-pass-verified::before {
+    content: '\e606';
+}
+
+span.frm-pass-req::before {
+    content: '\e608';
+}
+
+div.frm-password-strength {
+    width: 100%;
+    float: left;
+}
+
+div.frm_repeat_grid:after, div.frm_repeat_inline:after, div.frm_repeat_sec:after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+.with_frm_style .frm-summary-page-wrapper {
+	padding: 50px;
+	margin: 25px 0 50px;
+	border: 1px solid <?php echo esc_html( $defaults['border_color'] ); ?>;
+	border-radius: <?php echo esc_html( $defaults['border_radius'] ); ?>;
+}
+
+.with_frm_style .frm-summary-page-wrapper .frm-edit-page-btn {
+	float: right;
+	margin: 0;
+	padding: 3px 10px;
+	font-size: 13px;
+}
+
+.frm-summary-page-wrapper .frm-line-table th {
+	width: 40%;
+}
+
+button .frm-icon {
+	display: inline-block;
+	color: inherit;
+	width: 12px;
+	height: 12px;
+	fill: currentColor;
+}
+
+.frm-line-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 0.5em;
+	font-size: <?php echo esc_html( $defaults['font_size'] ); ?>;
+}
+
+.frm-line-table tr {
+	background-color: transparent;
+	border-bottom: 1px solid rgba(<?php echo esc_html( FrmStylesHelper::hex2rgb( $defaults['border_color'] ) ); ?>,0.6);
+}
+
+.frm-line-table td,
+.frm-line-table th {
+	border: 0;
+	padding: 20px 15px;
+	background-color: transparent;
+	vertical-align: top;
+	color: <?php echo esc_html( $defaults['label_color'] ); ?>;
+}
+
+.frm-line-table th {
+	opacity: .7;
+	font-size: 1.1em;
+	font-weight: 500;
+}
+
+.frm-line-table h3 {
+	font-size: 21px;
+	font-weight: 500;
+	margin: 0;
 }

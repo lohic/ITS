@@ -1,6 +1,6 @@
 <?php
 
-class FrmProFormsHelper{
+class FrmProFormsHelper {
 
 	public static function setup_new_vars( $values ) {
 
@@ -12,11 +12,12 @@ class FrmProFormsHelper{
 
 	public static function setup_edit_vars( $values ) {
         $record = FrmForm::getOne($values['id']);
-        foreach ( array( 'logged_in' => $record->logged_in, 'editable' => $record->editable) as $var => $default)
+		foreach ( array( 'logged_in' => $record->logged_in, 'editable' => $record->editable ) as $var => $default ) {
 			$values[ $var ] = FrmAppHelper::get_param( $var, $default, 'get', 'sanitize_text_field' );
+		}
 
 		foreach ( self::get_default_opts() as $opt => $default ) {
-            if ( ! isset($values[$opt]) ) {
+			if ( ! isset( $values[ $opt ] ) ) {
 				$values[ $opt ] = ( $_POST && isset( $_POST['options'][ $opt ] ) ) ? sanitize_text_field( $_POST['options'][ $opt ] ) : $default;
             }
 
@@ -27,7 +28,7 @@ class FrmProFormsHelper{
     }
 
 	public static function load_chosen_js( $frm_vars ) {
-		if ( isset( $frm_vars['chosen_loaded' ] ) && $frm_vars['chosen_loaded'] ) {
+		if ( isset( $frm_vars['chosen_loaded'] ) && $frm_vars['chosen_loaded'] ) {
 			$original_js = 'allow_single_deselect:true';
 			$chosen_js = apply_filters( 'frm_chosen_js', $original_js );
 			if ( $original_js != $chosen_js ) {
@@ -59,7 +60,7 @@ class FrmProFormsHelper{
 		}
 
 		// Check dependent Dynamic fields
-		if ( isset( $frm_vars['dep_dynamic_fields'] )  && ! empty( $frm_vars['dep_dynamic_fields'] ) ) {
+		if ( isset( $frm_vars['dep_dynamic_fields'] ) && ! empty( $frm_vars['dep_dynamic_fields'] ) ) {
 			echo '__frmDepDynamicFields=' . json_encode( $frm_vars['dep_dynamic_fields'] ) . ';';
 		}
 	}
@@ -80,7 +81,7 @@ class FrmProFormsHelper{
 					continue;
 				}
 
-				if ( isset($frm_vars['prev_page'][ $form->id ]) || self::going_to_prev( $form->id ) || FrmProFormsHelper::saving_draft() ) {
+				if ( isset($frm_vars['prev_page'][ $form->id ]) || self::going_to_prev( $form->id ) || self::saving_draft() ) {
 					$initial_load = false;
 				} else {
 					$initial_load = true;
@@ -128,9 +129,9 @@ class FrmProFormsHelper{
 
             if ( strpos($date_field_id, '^') === 0 ) {
                 // this is a repeating field
-                $trigger_id = 'input[id^="'. str_replace('^', '', esc_attr( $date_field_id ) ) .'"]';
+				$trigger_id = 'input[id^="' . str_replace( '^', '', esc_attr( $date_field_id ) ) . '"]';
             } else {
-                $trigger_id = '#'. esc_attr( $date_field_id );
+				$trigger_id = '#' . esc_attr( $date_field_id );
             }
 
 			$custom_options = self::get_custom_date_js( $date_field_id, $options );
@@ -155,8 +156,8 @@ class FrmProFormsHelper{
 			} else if ( $date_field_id ) {
 				?>
 jQuery(document).ready(function($){
-$('<?php echo $trigger_id ?>').addClass('frm_custom_date');
-$(document).on('focusin','<?php echo $trigger_id ?>', function(){
+$('<?php echo $trigger_id; ?>').addClass('frm_custom_date');
+$(document).on('focusin','<?php echo $trigger_id; ?>', function(){
 $.datepicker.setDefaults($.datepicker.regional['']);
 $(this).datepicker($.extend($.datepicker.regional['<?php echo esc_js( $options['locale'] ) ?>'],{dateFormat:'<?php echo esc_js( $frmpro_settings->cal_date_format ) ?>',changeMonth:true,changeYear:true,yearRange:'<?php echo esc_js( $date_options['options']['yearRange'] ) ?>',defaultDate:'<?php echo esc_js( $date_options['options']['defaultDate'] ); ?>'<?php
 echo $custom_options;
@@ -169,7 +170,7 @@ echo $custom_options;
 			if ( ! empty( $options['locale'] ) && ! $load_lang ) {
 				$load_lang = true;
 				$base_url = FrmAppHelper::jquery_ui_base_url();
-				wp_enqueue_script( 'jquery-ui-i18n', $base_url . '/i18n/jquery-ui-i18n.min.js', array( 'jquery-ui-core', 'jquery-ui-datepicker' ) );
+				wp_enqueue_script( 'jquery-ui-i18n', $base_url . '/i18n/jquery-ui-i18n.min.js', array( 'jquery-ui-core', 'jquery-ui-datepicker' ), FrmAppHelper::plugin_version() );
 				// this was enqueued late, so make sure it gets printed
 				add_action( 'wp_footer', 'print_footer_scripts', 21 );
 				add_action( 'admin_print_footer_scripts', 'print_footer_scripts', 99 );
@@ -182,7 +183,7 @@ echo $custom_options;
 			echo 'else{__frmDatepicker=jQuery.extend(__frmDatepicker,frmDates);}';
 		}
 
-		FrmProTimeFieldsController::load_timepicker_js( $datepicker ) ;
+		FrmProTimeFieldsController::load_timepicker_js( $datepicker );
     }
 
 	private static function get_custom_date_js( $date_field_id, $options ) {
@@ -202,7 +203,7 @@ echo $custom_options;
 		FrmProTimeFieldsController::load_timepicker_js( $datepicker );
 	}
 
-    public static function load_calc_js($frm_vars) {
+	public static function load_calc_js( $frm_vars ) {
         if ( ! isset($frm_vars['calc_fields']) || empty($frm_vars['calc_fields']) ) {
             return;
         }
@@ -211,7 +212,7 @@ echo $custom_options;
             'fields'    => array(),
             'calc'      => array(),
             'fieldKeys' => array(),
-			'fieldsWithCalc'	=> array(),
+			'fieldsWithCalc' => array(),
         );
 
         $triggers = array();
@@ -227,17 +228,17 @@ echo $custom_options;
 
             foreach ( $matches[0] as $match_key => $val ) {
                 $val = trim(trim($val, '['), ']');
-                $calc_fields[$val] = FrmField::getOne($val);
-                if ( ! $calc_fields[$val] ) {
-                    unset($calc_fields[$val]);
-                    continue;
-                }
+				$calc_fields[ $val ] = FrmField::getOne( $val );
+				if ( ! $calc_fields[ $val ] ) {
+					unset( $calc_fields[ $val ] );
+					continue;
+				}
 
-				$field_keys[$calc_fields[$val]->id] = self::get_field_call_for_calc( $calc_fields[ $val ], $field['parent_form_id'] );
+				$field_keys[ $calc_fields[ $val ]->id ] = self::get_field_call_for_calc( $calc_fields[ $val ], $field['parent_form_id'] );
 
 				$calc_rules['fieldKeys'] = $calc_rules['fieldKeys'] + $field_keys;
 
-                $calc = str_replace($matches[0][$match_key], '['. $calc_fields[$val]->id .']', $calc);
+				$calc = str_replace( $matches[0][ $match_key ], '[' . $calc_fields[ $val ]->id . ']', $calc );
 
 				// Prevent invalid decrement error for -- in calcs
 				if ( $field['calc_type'] != 'text' ) {
@@ -260,20 +261,20 @@ echo $custom_options;
 			$calc_rules['calc'][ $result ]['fields'] = array();
 
             foreach ( $calc_fields as $calc_field ) {
-                $calc_rules['calc'][$result]['fields'][] = $calc_field->id;
-                if ( isset($calc_rules['fields'][$calc_field->id]) ) {
-                    $calc_rules['fields'][$calc_field->id]['total'][] = $result;
-                } else {
-                    $calc_rules['fields'][$calc_field->id] = array(
-                        'total' => array($result),
-                        'type'  => ( $calc_field->type == 'lookup' ) ? $calc_field->field_options['data_type'] : $calc_field->type,
-                        'key'   => $field_keys[$calc_field->id],
-                    );
-                }
+                $calc_rules['calc'][ $result ]['fields'][] = $calc_field->id;
+				if ( isset( $calc_rules['fields'][ $calc_field->id ] ) ) {
+					$calc_rules['fields'][ $calc_field->id ]['total'][] = $result;
+				} else {
+					$calc_rules['fields'][ $calc_field->id ] = array(
+						'total' => array( $result ),
+						'type'  => ( $calc_field->type == 'lookup' ) ? $calc_field->field_options['data_type'] : $calc_field->type,
+						'key'   => $field_keys[ $calc_field->id ],
+					);
+				}
 
                 if ( $calc_field->type == 'date' ) {
                     if ( ! isset($frmpro_settings) ) {
-                        $frmpro_settings = new FrmProSettings();
+						$frmpro_settings = FrmProAppHelper::get_settings();
                     }
                     $calc_rules['date'] = $frmpro_settings->cal_date_format;
                 }
@@ -286,21 +287,20 @@ echo $custom_options;
 			$calc_rules['triggers'] = array_values( $triggers );
         }
 
-		$var_name = '__FRMCALC';
 		echo 'var frmcalcs=' . json_encode( $calc_rules ) . ";\n";
-		echo 'if(typeof ' . $var_name . ' == "undefined"){' . $var_name . '=frmcalcs;}';
-		echo 'else{' . $var_name . '=jQuery.extend(true,{},' . $var_name . ',frmcalcs);}';
+		echo 'if(typeof __FRMCALC == "undefined"){__FRMCALC=frmcalcs;}';
+		echo 'else{__FRMCALC=jQuery.extend(true,{},__FRMCALC,frmcalcs);}';
     }
 
 	public static function get_calc_rule_for_field( $atts ) {
 		$field = $atts['field'];
 
 		$rule = array(
-			'calc'			=> isset( $atts['calc'] ) ? $atts['calc'] : $field['calc'],
-			'calc_dec'		=> $field['calc_dec'],
-			'calc_type'		=> $field['calc_type'],
-			'form_id'		=> $atts['form_id'],
-			'field_id'		=> isset( $atts['field_id'] ) ? $atts['field_id'] : $field['id'],
+			'calc'          => isset( $atts['calc'] ) ? $atts['calc'] : $field['calc'],
+			'calc_dec'      => $field['calc_dec'],
+			'calc_type'     => $field['calc_type'],
+			'form_id'       => $atts['form_id'],
+			'field_id'      => isset( $atts['field_id'] ) ? $atts['field_id'] : $field['id'],
 			'in_section'    => isset( $field['in_section'] ) ? $field['in_section'] : '0',
 			'in_embed_form' => isset( $field['in_embed_form'] ) ? $field['in_embed_form'] : '0',
 		);
@@ -325,22 +325,22 @@ echo $custom_options;
 	 * @return string $field_call
 	 */
 	private static function get_field_call_for_calc( $calc_field, $parent_form_id ) {
-		$html_field_id = '="field_'. $calc_field->field_key;
+		$html_field_id = '="field_' . $calc_field->field_key;
 
 		// If field is inside of repeating section/embedded form or it is a radio, scale, or checkbox field
 		$in_child_form = $parent_form_id != $calc_field->form_id;
 		if ( self::has_variable_html_id( $calc_field ) || $in_child_form ) {
-			$html_field_id = '^'. $html_field_id .'-';
+			$html_field_id = '^' . $html_field_id . '-';
 		} else if ( $calc_field->type == 'select' ) {
-			$is_multiselect = FrmField::get_option( $calc_field, 'multiselect' );
+			$is_multiselect = FrmField::get_option( $calc_field, 'multiple' );
 			if ( $is_multiselect ) {
-				$html_field_id = '^'. $html_field_id;
+				$html_field_id = '^' . $html_field_id;
 			}
 		} elseif ( $calc_field->type == 'time' && ! FrmField::is_option_true( $calc_field, 'single_time' ) ) {
-			$html_field_id = '^'. $html_field_id . '_';
+			$html_field_id = '^' . $html_field_id . '_';
 		}
 
-		$field_call = '[id'. $html_field_id .'"]';
+		$field_call = '[id' . $html_field_id . '"]';
 
 		return $field_call;
 	}
@@ -390,23 +390,50 @@ echo $custom_options;
     }
 
 	public static function get_default_opts() {
-        $frmpro_settings = new FrmProSettings();
+		$frmpro_settings = FrmProAppHelper::get_settings();
 
-        return array(
-            'edit_value' => $frmpro_settings->update_value, 'edit_msg' => $frmpro_settings->edit_msg,
-            'edit_action' => 'message', 'edit_url' => '', 'edit_page_id' => 0,
-            'logged_in' => 0, 'logged_in_role' => '', 'editable' => 0, 'save_draft' => 0,
-            'draft_msg' => __( 'Your draft has been saved.', 'formidable-pro' ),
-            'editable_role' => '', 'open_editable_role' => '-1',
-            'copy' => 0, 'single_entry' => 0, 'single_entry_type' => 'user',
-            'success_page_id' => '', 'success_url' => '', 'ajax_submit' => 0,
-            'cookie_expiration' => 8000, 'prev_value' => __( 'Previous', 'formidable-pro' ),
-			'submit_align' => '',
-			'protect_files' => 0, 'rootline' => '',
-			'rootline_titles_on' => 0, 'rootline_titles' => array(),
-			'rootline_lines_off' => 0, 'rootline_numbers_off' => 0,
-        );
-    }
+		return array(
+			'edit_value'           => $frmpro_settings->update_value,
+			'edit_msg'             => $frmpro_settings->edit_msg,
+			'edit_action'          => 'message',
+			'edit_url'             => '',
+			'edit_page_id'         => 0,
+			'logged_in'            => 0,
+			'logged_in_role'       => '',
+			'editable'             => 0,
+			'save_draft'           => 0,
+			'draft_msg'            => __( 'Your draft has been saved.', 'formidable-pro' ),
+			'editable_role'        => '',
+			'open_editable_role'   => '-1',
+			'copy'                 => 0,
+			'single_entry'         => 0,
+			'single_entry_type'    => 'user',
+			'success_page_id'      => '',
+			'success_url'          => '',
+			'ajax_submit'          => 0,
+			'cookie_expiration'    => 8000,
+			'prev_value'           => __( 'Previous', 'formidable-pro' ),
+			'submit_align'         => '',
+			'submit_conditions'    => array(
+				'show_hide'        => 'show',
+				'any_all'          => 'all',
+				'hide_field'       => array(),
+				'hide_opt'         => array(),
+				'hide_cond'        => array(),
+			),
+			'open_status'          => '',
+			'closed_msg'           => '<p>' . __( 'This form is currently closed for submissions.', 'formidable-pro' ) . '</p>',
+			'open_date'            => current_time( 'Y-m-d H:i' ),
+			'close_date'           => '',
+			'max_entries'          => '',
+			'protect_files'        => 0,
+			'rootline'             => '',
+			'rootline_titles_on'   => 0,
+			'rootline_titles'      => array(),
+			'rootline_lines_off'   => 0,
+			'rootline_numbers_off' => 0,
+		);
+	}
 
 	public static function get_taxonomy_count( $taxonomy, $post_categories, $tax_count = 0 ) {
 		if ( isset( $post_categories[ $taxonomy . $tax_count ] ) ) {
@@ -434,32 +461,86 @@ echo $custom_options;
 
 		$form = FrmForm::getOne( $values['form_id'] );
 
-		if ( isset( $form->options['single_entry'] ) && $form->options['single_entry'] ) {
-			if ( ! self::user_can_submit_form( $form ) ) {
-				$frmpro_settings = new FrmProSettings();
-				$k = is_numeric( $form->options['single_entry_type'] ) ? 'field' . $form->options['single_entry_type'] : 'single_entry';
-				$errors[ $k ] = $frmpro_settings->already_submitted;
-				self::stop_form_submit();
-				return $errors;
-			}
+		if ( self::visitor_already_submitted( $form, $errors ) || self::maybe_form_closed( $form, $errors ) ) {
+			self::stop_form_submit();
+			return $errors;
 		}
-
-		global $wpdb;
-		$user_ID = get_current_user_id();
 
 		if ( self::has_another_page( $values['form_id'] ) ) {
 			self::stop_submit_if_more_pages( $values, $errors );
-		} else if ( $form->editable && isset( $form->options['single_entry'] ) && $form->options['single_entry'] && $form->options['single_entry_type'] == 'user' && $user_ID && ! FrmAppHelper::is_admin() ) {
-			$meta = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'user_id' => $user_ID, 'form_id' => $form->id ) );
-
-			if ( $meta ) {
-				$frmpro_settings = new FrmProSettings();
-				$errors['single_entry'] = $frmpro_settings->already_submitted;
-				self::stop_form_submit();
-			}
+		} elseif ( self::user_allowed_one_editable_entry( $form, $errors ) ) {
+			self::stop_form_submit();
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @since 3.04
+	 *
+	 * @param object $form
+	 * @param array $errors
+	 *
+	 * @return bool and $errors by reference
+	 */
+	private static function visitor_already_submitted( $form, &$errors ) {
+		$has_error = false;
+		if ( isset( $form->options['single_entry'] ) && $form->options['single_entry'] ) {
+			if ( ! self::user_can_submit_form( $form ) ) {
+				$frmpro_settings = FrmProAppHelper::get_settings();
+				$k = is_numeric( $form->options['single_entry_type'] ) ? 'field' . $form->options['single_entry_type'] : 'single_entry';
+				$errors[ $k ] = $frmpro_settings->already_submitted;
+				$has_error = true;
+			}
+		}
+		return $has_error;
+	}
+
+	/**
+	 * @since 3.04
+	 *
+	 * @param object $form
+	 * @param array $errors
+	 *
+	 * @return bool and $errors by reference
+	 */
+	private static function user_allowed_one_editable_entry( $form, &$errors ) {
+		$has_error = false;
+		$user_ID = get_current_user_id();
+		$user_limited_entry = $user_ID && $form->editable && isset( $form->options['single_entry'] ) && $form->options['single_entry'] && $form->options['single_entry_type'] == 'user' && ! FrmAppHelper::is_admin();
+		if ( $user_limited_entry ) {
+			$entry_id = FrmDb::get_var(
+				'frm_items',
+				array(
+					'user_id' => $user_ID,
+					'form_id' => $form->id,
+				)
+			);
+
+			if ( $entry_id ) {
+				$frmpro_settings = FrmProAppHelper::get_settings();
+				$errors['single_entry'] = $frmpro_settings->already_submitted;
+				$has_error = true;
+			}
+		}
+		return $has_error;
+	}
+
+	/**
+	 * @since 3.04
+	 *
+	 * @param object $form
+	 * @param array $errors
+	 *
+	 * @return bool and $errors by reference
+	 */
+	private static function maybe_form_closed( $form, &$errors ) {
+		$has_error = false;
+		if ( ! FrmProForm::is_open( $form ) ) {
+			$errors['open_status'] = do_shortcode( $form->options['closed_msg'] );
+			$has_error = true;
+		}
+		return $has_error;
 	}
 
 	/**
@@ -486,10 +567,15 @@ echo $custom_options;
 	 * @return boolean
 	 */
 	public static function user_can_submit_form( $form ) {
+		$can_submit  = true;
 		$admin_entry = FrmAppHelper::is_admin();
 
-		$can_submit = true;
-		if ( $form->options['single_entry_type'] == 'cookie' && isset( $_COOKIE[ 'frm_form' . $form->id . '_' . COOKIEHASH ] ) ) {
+		if ( $admin_entry && current_user_can( 'frm_create_entries' ) ) {
+			return $can_submit;
+		}
+
+		$cookie_limit = $form->options['single_entry_type'] === 'cookie' && isset( $_COOKIE[ 'frm_form' . $form->id . '_' . COOKIEHASH ] );
+		if ( $cookie_limit ) {
 			$can_submit = $admin_entry ? true : false;
 		} else if ( $form->options['single_entry_type'] == 'ip' ) {
 			if ( ! $admin_entry ) {
@@ -626,7 +712,7 @@ echo $custom_options;
     }
 
 	/**
-	 * check if this entry is currently being saved as a draft
+	 * Check if this entry is currently being saved as a draft
 	 */
     public static function saving_draft() {
 		$saving_draft = FrmAppHelper::get_post_param( 'frm_saving_draft', '', 'sanitize_title' );
@@ -648,9 +734,9 @@ echo $custom_options;
         }
 
         $html = FrmProFormsController::replace_shortcodes($html, $form);
-        if ( strpos( $html, '[if '. $button_type .']') !== false ) {
-            $html = preg_replace('/(\[if\s+'. $button_type .'\])(.*?)(\[\/if\s+'. $button_type .'\])/mis', '', $html);
-        }
+		if ( strpos( $html, '[if ' . $button_type . ']') !== false ) {
+			$html = preg_replace( '/(\[if\s+' . $button_type . '\])(.*?)(\[\/if\s+' . $button_type . '\])/mis', '', $html );
+		}
         return $html;
     }
 
@@ -690,11 +776,11 @@ echo $custom_options;
 		return self::get_draft_button( $form, '', FrmFormsHelper::get_draft_link() );
     }
 
-    public static function is_show_data_field($field) {
+	public static function is_show_data_field( $field ) {
         return $field['type'] == 'data' && ( $field['data_type'] == '' || $field['data_type'] == 'data' );
     }
 
-    public static function has_field($type, $form_id, $single = true) {
+	public static function has_field( $type, $form_id, $single = true ) {
         if ( $single ) {
             $included = FrmDb::get_var( 'frm_fields', array( 'form_id' => $form_id, 'type' => $type ) );
             if ( $included ) {
@@ -711,7 +797,7 @@ echo $custom_options;
      * @since 2.0
      * @return array of repeatable section fields
      */
-    public static function has_repeat_field($form_id, $single = true) {
+	public static function has_repeat_field( $form_id, $single = true ) {
         $fields = self::has_field('divider', $form_id, $single);
         if ( ! $fields ) {
             return $fields;
@@ -736,7 +822,7 @@ echo $custom_options;
 		return ( isset( $form->options[ $atts['setting_name'] ] ) && $form->options[ $atts['setting_name'] ] == $atts['expected_setting'] );
 	}
 
-    public static function &post_type($form) {
+	public static function &post_type( $form ) {
         if ( is_numeric($form) ) {
             $form_id = $form;
         } else {
@@ -773,7 +859,7 @@ echo $custom_options;
 		return $form;
 	}
 
-	public static function get_sub_form($field_name, $field, $args = array()) {
+	public static function get_sub_form( $field_name, $field, $args = array() ) {
 		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
 		FrmProNestedFormsController::display_front_end_nested_form( $field, $field_name, $args );
 	}

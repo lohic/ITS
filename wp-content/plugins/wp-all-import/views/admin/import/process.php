@@ -9,7 +9,7 @@
 			<h2><?php _e('Import XML / CSV', 'wp_all_import_plugin'); ?></h2>					
 		</div>
 		<div class="wpallimport-links">
-			<a href="http://www.wpallimport.com/support/" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
+			<a href="http://www.wpallimport.com/support/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=premium-support" target="_blank"><?php _e('Support', 'wp_all_import_plugin'); ?></a> | <a href="http://www.wpallimport.com/documentation/?utm_source=import-plugin-free&utm_medium=help&utm_campaign=docs" target="_blank"><?php _e('Documentation', 'wp_all_import_plugin'); ?></a>
 		</div>
 
 		<div class="clear"></div>	
@@ -73,7 +73,7 @@
 				<h4><?php _e("Check out our guide on increasing import speed.", "wp_all_import_plugin"); ?></h4>
 			</div>		
 		</div>		
-		<a class="button button-primary button-hero wpallimport-large-button wpallimport-speed-up-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/slow-imports/" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+		<a class="button button-primary button-hero wpallimport-large-button wpallimport-speed-up-notify-read-more" href="http://www.wpallimport.com/documentation/troubleshooting/slow-imports/?utm_source=import-plugin-free&utm_medium=error&utm_campaign=slow-imports" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 		<span><?php _e('opens in new tab', 'wp_all_import_plugin'); ?></span>		
 	</div>
 
@@ -83,7 +83,7 @@
 			<div class="wpallimport-notify-wrapper">
 				<div class="found_records terminated">
 					<h3><?php _e('Your server terminated the import process', 'wp_all_import_plugin');?></h3>
-					<h4 style="width: 77%; line-height: 25px;"><?php printf(__("<a href='%s' target='_blank'>Read more</a> about how to prevent this from happening again.", "wp_all_import_plugin"), "http://www.wpallimport.com/documentation/troubleshooting/terminated-imports/"); ?></h4>
+					<h4 style="width: 77%; line-height: 25px;"><?php printf(__("<a href='%s' target='_blank'>Read more</a> about how to prevent this from happening again.", "wp_all_import_plugin"), "http://www.wpallimport.com/documentation/troubleshooting/terminated-imports/?utm_source=import-plugin-free&utm_medium=error&utm_campaign=termination"); ?></h4>
 				</div>		
 			</div>		
 			<input type="submit" id="wpallimport-try-again" style="position: absolute; top: 30%; right: 10px; display: block; padding-top: 1px;" value="<?php _e('Continue Import','wp_all_import_plugin');?>" class="button button-primary button-hero wpallimport-large-button">
@@ -107,7 +107,7 @@
 					<h4 style="width: 78%; line-height: 25px;"><?php _e("Ask your host to check your server's error log. They will be able to determine why your server is terminating the import process.", "wp_all_import_plugin"); ?></h4>
 				</div>
 			</div>		
-			<a style="position: absolute; top: 35%; right: 10px; display: block; padding-top: 1px;" class="button button-primary button-hero wpallimport-large-button" href="http://www.wpallimport.com/documentation/troubleshooting/terminated-imports/" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
+			<a style="position: absolute; top: 35%; right: 10px; display: block; padding-top: 1px;" class="button button-primary button-hero wpallimport-large-button" href="http://www.wpallimport.com/documentation/troubleshooting/terminated-imports/?utm_source=import-plugin-free&utm_medium=error&utm_campaign=docs" target="_blank"><?php _e('Read More', 'wp_all_import_plugin');?></a>		
 		</div>
 	</span>
 
@@ -209,7 +209,7 @@
 			
 			$.get('admin.php?page=pmxi-admin-import&action=process&id=' + import_id + '&failures=' + failures + '&_wpnonce=' + wp_all_import_security, {}, function (data) {								
 
-				// responce with error
+				// response with error
 				if (data != null && typeof data.created != "undefined"){
 
 					$('.wpallimport-modal-message').hide();
@@ -249,7 +249,6 @@
 								}
 							<?php endif; ?>
 
-
 							$('#import_finished').fadeIn();								
 							
 							if ( parseInt(data.errors) || parseInt(data.warnings)){			
@@ -273,18 +272,24 @@
 					count_failures++;
 					$('.count_failures').val(count_failures);
 
+					if (data != null && typeof data != 'undefined' && typeof data.log != 'undefined'){
+						$('#loglist').append(data.log);
+						write_log();
+					}
+
+					if (data != null && typeof data != 'undefined' && parseInt(data.records_per_request)){
+						records_per_request = data.records_per_request;
+					}
+
 					if (count_failures > 4 || records_per_request < 2){
 						$('#process_notice').hide();
-						//$('#wpallimport-try-again').hide();
-						//$('.wp_all_import_restart_import').hide();
 						$('.wpallimport-modal-message').html($('#wpallimport-error-terminated').html()).show();
-
-						if (data != null && typeof data != 'undefined'){
-							$('#status').html('Error ' + '<span class="pmxi_error_msg">' + data.responseText + '</span>');
+						var errorMessage = "Import failed, please check logs";
+						if (data != null && typeof data != 'undefined' && typeof data.responseText != 'undefined'){
+						    errorMessage = data.responseText;
 						}
-						else{
-							$('#status').html('Error');
-						}
+						$('#status').html('Error ' + '<span class="pmxi_error_msg">' + errorMessage + '</span>');
+						
 						clearInterval(update);					
 						window.onbeforeunload = false;
 

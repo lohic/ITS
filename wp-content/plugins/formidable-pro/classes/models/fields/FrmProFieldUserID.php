@@ -4,13 +4,13 @@
  * @since 3.0
  */
 class FrmProFieldUserID extends FrmFieldUserID {
-	
+
 	protected function field_settings_for_type() {
 		$settings = parent::field_settings_for_type();
 
 		$settings['autopopulate'] = true;
 		$settings['visibility'] = false;
-		$settings['default_value'] = true;
+		$settings['default'] = true;
 		$settings['logic'] = false;
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );

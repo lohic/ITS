@@ -9,7 +9,7 @@ function frmFrontFormJS(){
 	function maybeShowLabel(){
 		/*jshint validthis:true */
 		var $field = jQuery(this);
-		var $label = $field.closest('.frm_inside_container').find('label.frm_primary_label');
+		var $label = $field.closest('.frm_inside_container').find('.frm_primary_label');
 
 		if ( $field.val().length > 0 ) {
 			$label.addClass('frm_visible');
@@ -27,11 +27,19 @@ function frmFrontFormJS(){
 			fieldName = field.name;
 		}
 
+		if ( typeof fieldName === 'undefined' ) {
+			fieldName = '';
+		}
+
 		if ( fieldName === '' ) {
 			if ( field instanceof jQuery ) {
 				fieldName = field.data('name');
 			} else {
 				fieldName = field.getAttribute('data-name');
+			}
+
+			if ( typeof fieldName === 'undefined' ) {
+				fieldName = '';
 			}
 
 			if ( fieldName !== '' && fieldName ) {
@@ -151,8 +159,19 @@ function frmFrontFormJS(){
 	}
 
 	function maybeValidateChange( field_id, field ) {
+		if ( field.type === 'url' ) {
+			maybeAddHttpToUrl( field );
+		}
 		if ( jQuery(field).closest('form').hasClass('frm_js_validate') ) {
 			validateField( field_id, field );
+		}
+	}
+
+	function maybeAddHttpToUrl( field ) {
+		var url = field.value;
+		var matches = url.match( /^(https?|ftps?|mailto|news|feed|telnet):/ );
+		if ( field.value !== '' && matches === null ) {
+			field.value = 'http://' + url;
 		}
 	}
 
@@ -236,6 +255,11 @@ function frmFrontFormJS(){
 				// set id for time field
 				fieldID = fieldID.replace('-H', '').replace('-m', '');
 			}
+
+			var placeholder = field.getAttribute('data-frmplaceholder');
+			if ( placeholder !== null && val === placeholder ) {
+				val = '';
+			}
 		}
 
 		if ( val === '' ) {
@@ -317,7 +341,7 @@ function frmFrontFormJS(){
 	}
 
 	function hasInvisibleRecaptcha( object ) {
-		if ( typeof frmProForm === 'undefined' || frmProForm.goingToPreviousPage( object ) ) {
+		if ( isGoingToPrevPage( object ) ) {
 			return false;
 		}
 
@@ -408,7 +432,9 @@ function frmFrontFormJS(){
 					}
 					var formID = jQuery(object).find('input[name="form_id"]').val();
 					response.content = response.content.replace(/ frm_pro_form /g, ' frm_pro_form frm_no_hide ');
-					jQuery(object).closest( '.frm_forms' ).replaceWith( response.content );
+					var replaceContent = jQuery( object ).closest( '.frm_forms' );
+					removeAddedScripts( replaceContent, formID );
+					replaceContent.replaceWith( response.content );
 
 					addUrlParam(response);
 
@@ -508,6 +534,14 @@ function frmFrontFormJS(){
 		}
 	}
 
+	function removeAddedScripts( formContainer, formID ) {
+		var endReplace = jQuery( '.frm_end_ajax_' + formID );
+		if ( endReplace.length ) {
+			formContainer.nextUntil( '.frm_end_ajax_' + formID ).remove();
+			endReplace.remove();
+		}
+	}
+
 	function addUrlParam(response){
 		if ( history.pushState && typeof response.page !== 'undefined' ) {
 			var url = addQueryVar('frm_page', response.page);
@@ -541,18 +575,42 @@ function frmFrontFormJS(){
 	function addFieldError( $fieldCont, key, jsErrors ) {
 		if ( $fieldCont.length && $fieldCont.is(':visible') ) {
 			$fieldCont.addClass('frm_blank_field');
+			var input = $fieldCont.find( 'input, select, textarea' ),
+				id = 'frm_error_field_' + key,
+				describedBy = input.attr( 'aria-describedby' );
+
 			if ( typeof frmThemeOverride_frmPlaceError === 'function' ) {
 				frmThemeOverride_frmPlaceError( key, jsErrors );
 			} else {
-				$fieldCont.append( '<div class="frm_error">'+ jsErrors[key] +'</div>' );
+				$fieldCont.append( '<div class="frm_error" id="' + id + '">'+ jsErrors[key] +'</div>' );
+
+				if ( typeof describedBy === 'undefined' ) {
+					describedBy = id;
+				} else if ( describedBy.indexOf( id ) === -1 ) {
+					describedBy = describedBy + ' ' + id;
+				}
+				input.attr( 'aria-describedby', describedBy );
 			}
+			input.attr( 'aria-invalid', true );
+
 			jQuery(document).trigger('frmAddFieldError', [ $fieldCont, key, jsErrors ] );
 		}
 	}
 
 	function removeFieldError( $fieldCont ) {
+		var errorMessage = $fieldCont.find('.frm_error'),
+			errorId = errorMessage.attr('id'),
+			input = $fieldCont.find( 'input, select, textarea' ),
+			describedBy = input.attr( 'aria-describedby' );
+
 		$fieldCont.removeClass('frm_blank_field has-error');
-		$fieldCont.find('.frm_error').remove();
+		errorMessage.remove();
+		input.attr( 'aria-invalid', false );
+
+		if ( typeof describedBy !== 'undefined' ) {
+			describedBy = describedBy.replace( errorId, '' );
+			input.attr( 'aria-describedby', describedBy );
+		}
 	}
 
 	function removeAllErrors() {
@@ -569,13 +627,25 @@ function frmFrontFormJS(){
 	}
 
 	function showSubmitLoading( $object ) {
-		if ( !$object.hasClass('frm_loading_form') ) {
-			$object.addClass('frm_loading_form');
+		showLoadingIndicator( $object );
+		disableSubmitButton( $object );
+	}
 
+	function showLoadingIndicator( $object ) {
+		if ( ! $object.hasClass( 'frm_loading_form' ) && ! $object.hasClass( 'frm_loading_prev' ) ) {
+			addLoadingClass( $object );
 			$object.trigger( 'frmStartFormLoading' );
 		}
+	}
+	
+	function addLoadingClass( $object ) {
+		var loading_class = isGoingToPrevPage( $object ) ? 'frm_loading_prev' : 'frm_loading_form';
 
-		disableSubmitButton( $object );
+		$object.addClass( loading_class );
+	}
+
+	function isGoingToPrevPage( $object ) {
+		return ( typeof frmProForm !== 'undefined' && frmProForm.goingToPreviousPage( $object ) );
 	}
 
 	function removeSubmitLoading( $object, enable, processesRunning ) {
@@ -583,12 +653,14 @@ function frmFrontFormJS(){
 			return;
 		}
 
-		$object.removeClass('frm_loading_form');
+		var loadingForm = jQuery( '.frm_loading_form' );
+		loadingForm.removeClass('frm_loading_form');
+		loadingForm.removeClass( 'frm_loading_prev' );
 
-		$object.trigger( 'frmEndFormLoading' );
+		loadingForm.trigger( 'frmEndFormLoading' );
 
 		if ( enable === 'enable' ) {
-			enableSubmitButton( $object );
+			enableSubmitButton( loadingForm );
 		}
 	}
 
@@ -626,7 +698,7 @@ function frmFrontFormJS(){
 		/*jshint validthis:true */
 		toggleDefault(jQuery(this), 'replace');
 	}
-	
+
 	function toggleDefault($thisField, e){
 		// TODO: Fix this for a default value that is a number or array
 		var v = $thisField.data('frmval').replace(/(\n|\r\n)/g, '\r');
@@ -634,7 +706,7 @@ function frmFrontFormJS(){
 			return false;
 		}
 		var thisVal = $thisField.val().replace(/(\n|\r\n)/g, '\r');
-		
+
 		if ( 'replace' == e ) {
 			if ( thisVal === '' ) {
 				$thisField.addClass('frm_default').val(v);
@@ -646,15 +718,26 @@ function frmFrontFormJS(){
 
 	function resendEmail(){
 		/*jshint validthis:true */
-		var $link = jQuery(this);
-		var entry_id = $link.data('eid');
-		var form_id = $link.data('fid');
-		$link.append('<span class="spinner" style="display:inline"></span>');
+		var $link = jQuery(this),
+			entry_id = this.getAttribute( 'data-eid' ),
+			form_id = this.getAttribute( 'data-fid' ),
+			label = $link.find( '.frm_link_label' );
+		if ( label.length < 1 ) {
+			label = $link;
+		}
+		label.append('<span class="frm-wait"></span>');
+
 		jQuery.ajax({
-			type:'POST',url:frm_js.ajax_url,
-			data:{action:'frm_entries_send_email', entry_id:entry_id, form_id:form_id, nonce:frm_js.nonce},
+			type:'POST',
+			url:frm_js.ajax_url,
+			data:{
+				action:'frm_entries_send_email',
+				entry_id:entry_id,
+				form_id:form_id,
+				nonce:frm_js.nonce
+			},
 			success:function(msg){
-				$link.replaceWith(msg);
+				label.html(msg);
 			}
 		});
 		return false;
@@ -770,7 +853,7 @@ function frmFrontFormJS(){
 					jQuery( this ).blur();
 				}
 			} );
-			
+
 			jQuery(document).on('focus', '.frm_toggle_default', clearDefault);
 			jQuery(document).on('blur', '.frm_toggle_default', replaceDefault);
 			jQuery('.frm_toggle_default').blur();
@@ -795,14 +878,21 @@ function frmFrontFormJS(){
 		},
 
 		renderRecaptcha: function( captcha ) {
-			var size = captcha.getAttribute('data-size');
-			var params = {
-				'sitekey': captcha.getAttribute('data-sitekey'),
-				'size': size,
-				'theme': captcha.getAttribute('data-theme')
-			};
+			var size = captcha.getAttribute('data-size'),
+				rendered = captcha.getAttribute('data-rid') !== null,
+				params = {
+					'sitekey': captcha.getAttribute('data-sitekey'),
+					'size': size,
+					'theme': captcha.getAttribute('data-theme')
+				};
+
+			if ( rendered ) {
+				return;
+			}
+
 			if ( size === 'invisible' ) {
 				var formID = jQuery(captcha).closest('form').find('input[name="form_id"]').val();
+				jQuery(captcha).closest('.frm_form_field .frm_primary_label').hide();
 				params.callback = function(token) {
 					frmFrontForm.afterRecaptcha(token, formID);
 				};
@@ -838,13 +928,20 @@ function frmFrontFormJS(){
 				}
 			}
 
-			if ( jQuery('body').hasClass('wp-admin') ) {
+			if ( jQuery('body').hasClass('wp-admin') && jQuery(object).closest('.frmapi-form').length < 1 ) {
 				return;
 			}
 
 			e.preventDefault();
 
+			if ( typeof frmProForm !== 'undefined' && typeof frmProForm.submitAllowed === 'function' ) {
+				if ( ! frmProForm.submitAllowed( object ) ) {
+					return;
+				}
+			}
+
 			if ( invisibleRecaptcha.length ) {
+				showLoadingIndicator( jQuery(object) );
 				executeInvisibleRecaptcha( invisibleRecaptcha );
 			} else {
 
@@ -1059,7 +1156,7 @@ function frmFrontFormJS(){
 				frmProForm.removeUsedTimes();
 			}
 		},
-		
+
 		escapeHtml: function(text){
 			return text
 				.replace(/&/g, '&amp;')
@@ -1072,7 +1169,7 @@ function frmFrontFormJS(){
 		invisible: function(classes) {
 			jQuery(classes).css('visibility', 'hidden');
 		},
-		
+
 		visible: function(classes) {
 			jQuery(classes).css('visibility', 'visible');
 		}
@@ -1121,18 +1218,18 @@ function frmDeleteEntry(entry_id,prefix){
 				jQuery(document.getElementById(prefix+entry_id)).fadeOut('slow');
 			else
 				jQuery(document.getElementById('frm_delete_'+entry_id)).replaceWith(html);
-			
+
 		}
 	});
 }
 
 function frmOnSubmit(e){
-	console.warn('DEPRECATED: function frmOnSubmit in v2.0 use frmFrontForm.submitForm'); 
+	console.warn('DEPRECATED: function frmOnSubmit in v2.0 use frmFrontForm.submitForm');
 	frmFrontForm.submitForm(e, this);
 }
 
 function frm_resend_email(entry_id,form_id){
-	console.warn('DEPRECATED: function frm_resend_email in v2.0'); 
+	console.warn('DEPRECATED: function frm_resend_email in v2.0');
 	var $link = jQuery(document.getElementById('frm_resend_email'));
 	$link.append('<span class="spinner" style="display:inline"></span>');
 	jQuery.ajax({

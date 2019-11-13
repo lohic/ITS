@@ -1,7 +1,7 @@
 jQuery(document).ready(function(){
     var installLink = document.getElementById('frm_install_link');
     if(installLink !== null){
-        jQuery(installLink).click(frm_install_now);
+        jQuery(installLink).click(frmInstallPro);
     }
 
 	var deauthLink = jQuery('.frm_deauthorize_link');
@@ -15,12 +15,46 @@ jQuery(document).ready(function(){
 });
 
 function frm_install_now(){
-    var $msg = jQuery(document.getElementById('frm_install_message'));
+	var $msg = jQuery(document.getElementById('frm_install_message'));
 	$msg.html('<div class="frm_plugin_updating">'+frmGlobal.updating_msg+'<div class="spinner frm_spinner"></div></div>');
 	jQuery.ajax({
 		type:'POST',url:ajaxurl,
-        data:{action:'frm_install',nonce:frmGlobal.nonce},
+		data:{action:'frm_install',nonce:frmGlobal.nonce},
 		success:function(){$msg.fadeOut('slow');}
+	});
+	return false;
+}
+
+function frmInstallPro( e ){
+	var plugin = this.getAttribute('data-prourl');
+	if ( plugin === '' ) {
+		return true;
+	}
+
+	e.preventDefault();
+
+	var $msg = jQuery(document.getElementById('frm_install_message'));
+	$msg.html('<div class="frm_plugin_updating">'+frmGlobal.updating_msg+'<div class="spinner frm_spinner"></div></div>');
+	$msg.fadeIn('slow');
+
+	jQuery.ajax({
+		url: ajaxurl,
+		type: 'POST',
+		async: true,
+		cache: false,
+		dataType: 'json',
+		data: {
+			action: 'frm_install_addon',
+			nonce:  frmGlobal.nonce,
+			plugin: plugin
+		},
+		success: function() {
+			$msg.fadeOut('slow');
+			$msg.parent().fadeOut('slow');
+		},
+		error: function(xhr, textStatus, e) {
+			$msg.fadeOut('slow');
+		}
 	});
 	return false;
 }
@@ -44,16 +78,6 @@ function frmSelectSubnav(){
     jQuery('#toplevel_page_formidable a.wp-has-submenu').removeClass('wp-not-current-submenu').addClass('wp-has-current-submenu wp-menu-open');
 }
 
-function frmPrePop(opts){
-    jQuery(document.getElementById('frm_bulk_options')).val(opts.join("\n"));
-    return false;
-}
-
-function frmUpdateBulkOpts(fieldID) {
-    window.top.frmAdminBuild.updateOpts(fieldID,document.getElementById('frm_bulk_options').value);
-    window.top.tb_remove();
-}
-
 function frmCreatePostEntry(id,post_id){
     jQuery('#frm_create_entry p').replaceWith('<img src="'+ frmGlobal.url +'/images/wpspin_light.gif" alt="'+ frmGlobal.loading +'" />');
     jQuery.ajax({
@@ -68,14 +92,17 @@ function frmAdminPopupJS(){
         jQuery('.frm_switch_sc').removeClass( 'active' );
         jQuery(this).addClass( 'active' );
         toggleMenu();
-        jQuery('#frm_popup_content .media-frame-title h1').html(jQuery(this).children('.howto').text() +' <span class="spinner" style="float:left;"></span><span class="dashicons dashicons-arrow-down"></span>');
+        jQuery('#frm_popup_content .media-frame-title h1').html(jQuery(this).children('.howto').text() +' <span class="spinner" style="float:left;"></span>');
         var val = this.id.replace('sc-link-', '');
         populateOpts(val);
         return false;
     }
 
     function populateOpts(val){
-        document.getElementById('frm_complete_shortcode').value = '['+ val +']';
+		var sc = document.getElementById('frm_complete_shortcode');
+		if ( sc !== null) {
+			sc.value = '['+ val +']';
+		}
         jQuery('.frm_shortcode_option').hide();
 
         var $settings = document.getElementById('sc-opts-'+ val);

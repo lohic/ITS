@@ -42,8 +42,7 @@ class FrmProFieldValue extends FrmFieldValue {
 					$this->saved_value[ $child_entry_id ] = $current_field_value->get_saved_value();
 				}
 			}
-
-		} else if ( isset( $this->field->field_options['post_field'] ) && $this->field->field_options['post_field'] ){
+		} elseif ( isset( $this->field->field_options['post_field'] ) && $this->field->field_options['post_field'] ) {
 
 			$this->saved_value = $this->get_post_value( $entry );
 			$this->clean_saved_value();
@@ -81,6 +80,15 @@ class FrmProFieldValue extends FrmFieldValue {
 	}
 
 	protected function prepare_displayed_value_for_field_with_child_entries( $atts = array() ) {
+		if ( ! is_array( $this->saved_value ) ) {
+			return;
+		}
+
+		$atts['entry'] = false;
+		if ( is_object( $this->displayed_value ) ) {
+			$atts['entry'] = $this->displayed_value;
+		}
+
 		$this->displayed_value = array();
 
 		if ( isset( $atts['include_fields'] ) ) {
@@ -91,9 +99,16 @@ class FrmProFieldValue extends FrmFieldValue {
 			$atts['fields'] = '';
 		}
 
-		foreach ( $this->saved_value as $child_id ) {
-			$child_values = new FrmProEntryValues( $child_id, $atts );
-			$this->displayed_value[ $child_id ] = $child_values->get_field_values();
+		foreach ( $this->saved_value as $k => $child_id ) {
+			if ( is_numeric( $child_id ) ) {
+				$child_values = new FrmProEntryValues( $child_id, $atts );
+				$this->displayed_value[ $child_id ] = $child_values->get_field_values();
+			} elseif ( is_object( $child_id ) ) {
+				$atts['entry'] = $child_id;
+				$child_values = new FrmProEntryValues( 0, $atts );
+				$this->displayed_value[] = $child_values->get_field_values();
+				$atts['entry'] = false;
+			}
 		}
 	}
 
@@ -123,7 +138,7 @@ class FrmProFieldValue extends FrmFieldValue {
 	public function has_child_entries() {
 		$has_child_entries = false;
 
-		if ( $this->field->type === 'form' || FrmField::is_repeating_field( $this->field ) ) {
+		if ( $this->field->type === 'form' || $this->is_repeater() ) {
 
 			if ( FrmAppHelper::is_not_empty_value( $this->saved_value ) ) {
 				$has_child_entries = true;
@@ -132,6 +147,13 @@ class FrmProFieldValue extends FrmFieldValue {
 
 		return $has_child_entries;
 
+	}
+
+	/**
+	 * @since 3.06.01
+	 */
+	public function is_repeater() {
+		return FrmField::is_repeating_field( $this->field );
 	}
 
 	/**
@@ -145,7 +167,7 @@ class FrmProFieldValue extends FrmFieldValue {
 		if ( FrmField::is_option_true( $this->field, 'post_field' ) ) {
 			$entry = FrmEntry::getOne( $this->entry_id, true );
 			$this->displayed_value = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $this->field, array( 'truncate' => true ) );
-			$this->displayed_value = maybe_unserialize( $this->displayed_value );
+			FrmProAppHelper::unserialize_or_decode( $this->displayed_value );
 		}
 	}
 

@@ -15,8 +15,11 @@ class FrmProFileImport {
 		// Set up global vars to track uploaded files
 		self::setup_global_media_import_vars( $field );
 
+		// set the form id for the upload path
+		$_POST['form_id'] = $field->form_id;
+
 		global $wpdb, $frm_vars;
-    
+
 		$vals = self::convert_to_array( $val );
 
 		$new_val = array();
@@ -24,7 +27,7 @@ class FrmProFileImport {
 			$v = trim( $v );
 
 			//check to see if the attachment already exists on this site
-			$exists = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM '. $wpdb->posts .' WHERE guid = %s', $v ) );
+			$exists = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->posts . ' WHERE guid = %s', $v ) );
 			if ( $exists ) {
 				$new_val[] = $exists;
 			} else {
@@ -40,7 +43,7 @@ class FrmProFileImport {
 		}
 
 		$val = self::convert_to_string( $new_val );
-    
+
 		return $val;
 	}
 
@@ -54,7 +57,7 @@ class FrmProFileImport {
 		if ( ! isset( $frm_vars['media_id'] ) ) {
 			$frm_vars['media_id'] = array();
 		}
-		
+
 		// Clear out old values
 		$frm_vars['media_id'][ $field->id ] = array();
 	}
@@ -79,14 +82,18 @@ class FrmProFileImport {
 	}
 
 	private static function curl_image( $img_url ) {
-		$ch = curl_init( str_replace( array(' '), array( '%20' ), $img_url ) );
-		$uploads = wp_upload_dir();
+		$ch = curl_init( str_replace( array( ' ' ), array( '%20' ), $img_url ) );
+		$uploads = self::get_upload_dir();
 		$filename = wp_unique_filename( $uploads['path'], basename( $img_url ) );
-		$path =  trailingslashit( $uploads['path'] ); // dirname(__FILE__) . '/screenshots/';
+		$path = trailingslashit( $uploads['path'] );
+
 		$fp = fopen( $path . $filename, 'wb' );
-		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, TRUE );
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch, CURLOPT_FILE, $fp );
 		curl_setopt( $ch, CURLOPT_HEADER, 0 );
+		$user_agent = apply_filters( 'http_headers_useragent', 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) );
+		curl_setopt( $ch, CURLOPT_USERAGENT, $user_agent );
+		curl_setopt( $ch, CURLOPT_REFERER, FrmAppHelper::site_url() );
 		$result = curl_exec( $ch );
 		curl_close( $ch );
 		fclose( $fp );
@@ -99,19 +106,31 @@ class FrmProFileImport {
 		return $img_url;
 	}
 
+	/**
+	 * Get the upload directory for the current form
+	 *
+	 * @since 3.04.03
+	 */
+	private static function get_upload_dir() {
+		add_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
+		$uploads = wp_upload_dir();
+		remove_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
+		return $uploads;
+	}
+
 	private static function attach_existing_image( $filename ) {
 		$attachment = array();
 		self::prepare_attachment( $filename, $attachment );
 
-		$uploads = wp_upload_dir();
+		$uploads = self::get_upload_dir();
 		$file = $uploads['path'] . '/' . $filename;
 
 		$id = wp_insert_attachment( $attachment, $file );
-    
+
 		if ( ! function_exists('wp_generate_attachment_metadata') ) {
-			require_once( ABSPATH .'wp-admin/includes/image.php' );
+			require_once( ABSPATH . 'wp-admin/includes/image.php' );
 		}
-    
+
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
 
 		return $id;
@@ -121,7 +140,7 @@ class FrmProFileImport {
 	 * Construct the attachment array
 	 */
 	private static function prepare_attachment( $filename, &$attachment ) {
-		$uploads = wp_upload_dir();
+		$uploads = self::get_upload_dir();
 		$attachment = array(
 			'guid'           => $uploads['url'] . '/' . $filename,
 			'post_content'   => '',
@@ -146,7 +165,7 @@ class FrmProFileImport {
 	}
 
 	private static function get_attachment_name( $file, &$attachment ) {
-		$name_parts = pathinfo( $file ) ;
+		$name_parts = pathinfo( $file );
 		$name = trim( substr( $name_parts['basename'], 0, - ( 1 + strlen( $name_parts['extension'] ) ) ) );
 		$attachment['post_title'] = $name;
 	}

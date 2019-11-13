@@ -82,11 +82,9 @@ if(!class_exists('NewsletterSignUpWidget')) {
 			<p><input id="<?php echo $this->get_field_id('filter'); ?>" name="<?php echo $this->get_field_name('filter'); ?>" type="checkbox" <?php checked(isset($instance['filter']) ? $instance['filter'] : 0); ?> />&nbsp;<label for="<?php echo $this->get_field_id('filter'); ?>"><?php _e('Automatically add paragraphs'); ?></label></p>
 			
 			<p>
-				Configure the sign-up form at the <a href="admin.php?page=newsletter-sign-up-form-settings">Newsletter Sign-Up configuration page</a>.
+				Configure the sign-up form at the <a href="<?php admin_url( 'admin.php?page=newsletter-sign-up-form-settings'); ?>">Newsletter Sign-Up configuration page</a>.
 			</p>
-               
-            <p style="background:#222; color:#eee; padding:10px;">If you like this plugin, consider <a href="https://dannyvankooten.com/donate/">donating $10, $20 or $50</a> as a token of your appreciation.</p>
-			<?php 
+            <?php
 		}
 
 	}

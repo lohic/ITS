@@ -2,12 +2,12 @@
 
 class FrmListEntries extends WP_Widget {
 
-	function __construct() {
+	public function __construct() {
 		$widget_ops = array( 'description' => __( 'Display a list of Formidable entries', 'formidable-pro' ) );
 		parent::__construct( 'frm_list_items', __( 'Formidable Entries List', 'formidable-pro' ), $widget_ops );
 	}
 
-	function widget( $args, $instance ) {
+	public function widget( $args, $instance ) {
         global $wpdb;
 
         $display = FrmProDisplay::getOne($instance['display_id'], false, true);
@@ -36,7 +36,7 @@ class FrmListEntries extends WP_Widget {
 						//If ordering by a field
 
 						//Get all post IDs for this form
-                        $posts = FrmDb::get_results( $wpdb->prefix .'frm_items', array( 'form_id' => $display->frm_form_id, 'post_id >' => 1, 'is_draft' => 0), 'id, post_id' );
+						$posts = FrmDb::get_results( $wpdb->prefix . 'frm_items', array( 'form_id' => $display->frm_form_id, 'post_id >' => 1, 'is_draft' => 0 ), 'id, post_id' );
 			            $linked_posts = array();
 			           	foreach ( $posts as $post_meta ) {
 			            	$linked_posts[ $post_meta->post_id ] = $post_meta->id;
@@ -70,7 +70,7 @@ class FrmListEntries extends WP_Widget {
 							$where['em.field_id'] = $o_field->id;
 							FrmDb::get_where_clause_and_values( $where );
 
-							$query .= $wpdb->prefix . 'frm_item_metas em ON em.item_id=m.id ' . $where['where'] . ' ORDER BY CASE when em.meta_value IS NULL THEN 1 ELSE 0 END, em.meta_value' . ( $o_field->type == 'number' ? ' +0 ' : '' ) . ' '. $order;
+							$query .= $wpdb->prefix . 'frm_item_metas em ON em.item_id=m.id ' . $where['where'] . ' ORDER BY CASE when em.meta_value IS NULL THEN 1 ELSE 0 END, em.meta_value' . ( $o_field->type == 'number' ? ' +0 ' : '' ) . ' ' . $order;
 						}
 
 						//Get ordered values
@@ -90,7 +90,7 @@ class FrmListEntries extends WP_Widget {
 							$order_by = implode( ', ', $order_by_array );
 							unset( $order_by_array );
                         } else {
-                            $order_by .= 'it.created_at '. $order;
+							$order_by .= 'it.created_at ' . $order;
 						}
 						unset( $metas );
 					} else if ( ! empty( $order_field ) ) {
@@ -99,15 +99,17 @@ class FrmListEntries extends WP_Widget {
 					}
 
 					if ( ! empty( $order_by ) ) {
-                        $order_by = ' ORDER BY '. $order_by;
+						$order_by = ' ORDER BY ' . $order_by;
                     }
                 }
 
                 if ( isset($instance['cat_list']) && (int) $instance['cat_list'] == 1 && is_numeric($instance['cat_id']) ) {
-                    if ($cat_field = FrmField::getOne($instance['cat_id']))
-                        $categories = maybe_unserialize($cat_field->options);
+					$cat_field = FrmField::getOne( $instance['cat_id'] );
+					if ( $cat_field ) {
+						$categories = $cat_field->options;
+						FrmProAppHelper::unserialize_or_decode( $categories );
+					}
                 }
-
         }
 
 		echo $args['before_widget'];
@@ -115,7 +117,7 @@ class FrmListEntries extends WP_Widget {
 			echo $args['before_title'] . $title . $args['after_title'];
 		}
 
-        echo '<ul id="frm_entry_list'. ( $display ? $display->frm_form_id : '' ) .'">'. "\n";
+		echo '<ul id="frm_entry_list' . ( $display ? $display->frm_form_id : '' ) . '">' . "\n";
 
 		//if Listing entries by category
         if ( isset($instance['cat_list']) && (int) $instance['cat_list'] == 1 && isset($categories) && is_array($categories) ) {
@@ -132,12 +134,16 @@ class FrmListEntries extends WP_Widget {
                 echo esc_html( $cat );
 
                 if ( isset($instance['cat_count']) && (int) $instance['cat_count'] == 1 ) {
-					echo ' ('. FrmProStatisticsController::stats_shortcode( array( 'id' => $instance['cat_id'], 'type' => 'count', 'value' => $cat ) ) .')';
+					echo ' (' . FrmProStatisticsController::stats_shortcode( array(
+						'id'    => $instance['cat_id'],
+						'type'  => 'count',
+						'value' => $cat,
+					) ) . ')';
                 }
 
                 if ( isset($instance['cat_name']) && (int) $instance['cat_name'] == 1 ) {
                     echo '</a>';
-                }else{
+				} else {
                     $entry_ids = FrmEntryMeta::getEntryIds( array('meta_value like' => $cat, 'fi.id' => $instance['cat_id'] ) );
                     $items = false;
 					if ( $entry_ids ) {
@@ -183,11 +189,11 @@ class FrmListEntries extends WP_Widget {
 		  echo $args['after_widget'];
 	  }
 
-	  function update( $new_instance, $old_instance ) {
+	  public function update( $new_instance, $old_instance ) {
 		  return $new_instance;
 	  }
 
-	  function form( $instance ) {
+	  public function form( $instance ) {
 		  $pages = get_posts( array( 'post_type' => 'page', 'post_status' => 'publish', 'numberposts' => 999, 'order_by' => 'post_title', 'order' => 'ASC' ) );
 
 		  $displays = FrmProDisplay::getAll( array( 'meta_key' => 'frm_show_count', 'meta_value' => 'dynamic' ) );
@@ -205,10 +211,10 @@ class FrmListEntries extends WP_Widget {
 			  }
 		  }
 ?>
-	<p><label for="<?php echo esc_attr( $this->get_field_id('title') ); ?>"><?php _e( 'Title', 'formidable-pro' ) ?>:</label>
+	<p><label for="<?php echo esc_attr( $this->get_field_id( 'title' ) ); ?>"><?php esc_html_e( 'Title', 'formidable-pro' ); ?>:</label>
 	<input type="text" class="widefat" id="<?php echo esc_attr( $this->get_field_id('title') ); ?>" name="<?php echo esc_attr( $this->get_field_name('title') ); ?>" value="<?php echo esc_attr( stripslashes($instance['title']) ); ?>" /></p>
 
-	<p><label for="<?php echo esc_attr( $this->get_field_id('display_id') ); ?>"><?php _e( 'Use Settings from View', 'formidable-pro' ) ?>:</label>
+	<p><label for="<?php echo esc_attr( $this->get_field_id( 'display_id' ) ); ?>"><?php esc_html_e( 'Use Settings from View', 'formidable-pro' ); ?>:</label>
 	    <select name="<?php echo esc_attr( $this->get_field_name('display_id') ); ?>" id="<?php echo esc_attr( $this->get_field_id('display_id') ); ?>" class="widefat frm_list_items_display_id">
 	        <option value=""> </option>
             <?php
@@ -218,9 +224,9 @@ class FrmListEntries extends WP_Widget {
             ?>
         </select>
 	</p>
-	<p class="description"><?php _e( 'Views with a "Both (Dynamic)" format will show here.', 'formidable-pro' ) ?></p>
+	<p class="description"><?php esc_html_e( 'Views with a "Both (Dynamic)" format will show here.', 'formidable-pro' ); ?></p>
 
-	<p><label for="<?php echo esc_attr( $this->get_field_id('post_id') ); ?>"><?php _e( 'Page', 'formidable-pro' ) ?>:</label>
+	<p><label for="<?php echo esc_attr( $this->get_field_id( 'post_id' ) ); ?>"><?php esc_html_e( 'Page', 'formidable-pro' ); ?>:</label>
         <select name="<?php echo esc_attr( $this->get_field_name('post_id') ); ?>" id="<?php echo esc_attr( $this->get_field_id('post_id') ); ?>" class="widefat">
 	        <option value=""> </option>
             <?php
@@ -231,13 +237,14 @@ class FrmListEntries extends WP_Widget {
         </select>
     </p>
 
-    <p><label for="<?php echo esc_attr( $this->get_field_id('title_id') ); ?>"><?php _e( 'Title Field', 'formidable-pro' ) ?>:</label>
+    <p><label for="<?php echo esc_attr( $this->get_field_id( 'title_id' ) ); ?>"><?php esc_html_e( 'Title Field', 'formidable-pro' ); ?>:</label>
         <select name="<?php echo esc_attr( $this->get_field_name('title_id') ); ?>" id="<?php echo esc_attr( $this->get_field_id('title_id') ); ?>" class="widefat frm_list_items_title_id">
 	        <option value=""> </option>
             <?php
             if ( isset($title_opts) && $title_opts ) {
                 foreach ( $title_opts as $title_opt ) {
-                    if ( $title_opt->type != 'checkbox' ) { ?>
+					if ( $title_opt->type !== 'checkbox' ) {
+                    ?>
                         <option value="<?php echo absint( $title_opt->id ) ?>" <?php selected( $instance['title_id'], $title_opt->id ) ?>><?php echo esc_html( $title_opt->name ) ?></option>
                         <?php
                     }
@@ -248,10 +255,11 @@ class FrmListEntries extends WP_Widget {
 	</p>
 
     <p><label for="<?php echo esc_attr( $this->get_field_id('cat_list') ); ?>"><input class="checkbox frm_list_items_cat_list" type="checkbox" <?php checked($instance['cat_list'], true) ?> id="<?php echo esc_attr( $this->get_field_id('cat_list') ); ?>" name="<?php echo esc_attr( $this->get_field_name('cat_list') ); ?>" value="1" />
-	<?php _e( 'List Entries by Category', 'formidable-pro' ) ?></label></p>
+	<?php esc_html_e( 'List Entries by Category', 'formidable-pro' ); ?>
+	</label></p>
 
     <div id="<?php echo esc_attr( $this->get_field_id('hide_cat_opts') ); ?>" class="frm_list_items_hide_cat_opts <?php echo ( $instance['cat_list'] ) ? '' : 'frm_hidden'; ?>">
-    <p><label for="<?php echo esc_attr( $this->get_field_id('cat_id') ); ?>"><?php _e( 'Category Field', 'formidable-pro' ) ?>:</label>
+	<p><label for="<?php echo esc_attr( $this->get_field_id( 'cat_id' ) ); ?>"><?php esc_html_e( 'Category Field', 'formidable-pro' ); ?>:</label>
 	    <select name="<?php echo esc_attr( $this->get_field_name('cat_id') ); ?>" id="<?php echo esc_attr( $this->get_field_id('cat_id') ); ?>" class="widefat frm_list_items_cat_id">
 	        <option value=""> </option>
 	        <?php
@@ -267,17 +275,27 @@ class FrmListEntries extends WP_Widget {
 	</p>
 
 	<p><label for="<?php echo esc_attr( $this->get_field_id('cat_count') ); ?>"><input class="checkbox" type="checkbox" <?php checked($instance['cat_count'], true) ?> id="<?php echo esc_attr( $this->get_field_id('cat_count') ); ?>" name="<?php echo esc_attr( $this->get_field_name('cat_count') ); ?>" value="1" />
-	<?php _e( 'Show Entry Counts', 'formidable-pro' ) ?></label></p>
+		<?php esc_html_e( 'Show Entry Counts', 'formidable-pro' ); ?>
+	</label></p>
 
 	<p><input class="checkbox" type="radio" <?php checked($instance['cat_name'], 1) ?> id="<?php echo esc_attr( $this->get_field_id('cat_name') ); ?>" name="<?php echo esc_attr( $this->get_field_name('cat_name') ); ?>" value="1" />
-	<label for="<?php echo esc_attr( $this->get_field_id('cat_name') ); ?>"><?php _e( 'Show Only Category Name', 'formidable-pro' ) ?></label><br/>
+	<label for="<?php echo esc_attr( $this->get_field_id('cat_name') ); ?>">
+		<?php esc_html_e( 'Show Only Category Name', 'formidable-pro' ); ?>
+	</label><br/>
 
 	<input class="checkbox" type="radio" <?php checked($instance['cat_name'], 0) ?> id="<?php echo esc_attr( $this->get_field_id('cat_name') ); ?>" name="<?php echo esc_attr( $this->get_field_name('cat_name') ); ?>" value="0" />
-	<label for="<?php echo esc_attr( $this->get_field_id('cat_name') ); ?>"><?php _e( 'Show Entries Beneath Categories', 'formidable-pro' ) ?></label></p>
+	<label for="<?php echo esc_attr( $this->get_field_id( 'cat_name' ) ); ?>">
+		<?php esc_html_e( 'Show Entries Beneath Categories', 'formidable-pro' ); ?>
+	</label>
+	</p>
 	</div>
 
-	<p><label for="<?php echo esc_attr( $this->get_field_id('limit') ); ?>"><?php _e( 'Entry Limit (leave blank to list all)', 'formidable-pro' ) ?>:</label>
-	<input type="text" class="widefat" id="<?php echo esc_attr( $this->get_field_id('limit') ); ?>" name="<?php echo esc_attr( $this->get_field_name('limit') ); ?>" value="<?php echo esc_attr( $instance['limit'] ); ?>" /></p>
+	<p>
+		<label for="<?php echo esc_attr( $this->get_field_id( 'limit' ) ); ?>">
+			<?php esc_html_e( 'Entry Limit (leave blank to list all)', 'formidable-pro' ); ?>:
+		</label>
+		<input type="text" class="widefat" id="<?php echo esc_attr( $this->get_field_id( 'limit' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( 'limit' ) ); ?>" value="<?php echo esc_attr( $instance['limit'] ); ?>" />
+	</p>
 
 <?php
 	}

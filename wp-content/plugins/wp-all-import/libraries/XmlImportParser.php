@@ -50,7 +50,7 @@ class XmlImportParser {
 		$xml and $xml = preg_replace('%xmlns\s*=\s*([\'"]).*\1%sU', '', $xml);
 	
 		libxml_use_internal_errors(true);
-		try{ 
+		try{
 			$this->xml = new SimpleXMLElement($xml);
 		} catch (Exception $e){ 			
 			try{ 

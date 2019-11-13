@@ -1,5 +1,5 @@
 
-<h3><?php _e( 'Pagination', 'formidable-pro' ) ?></h3>
+<h3><?php esc_html_e( 'Pagination', 'formidable-pro' ); ?></h3>
 <table class="form-table">
 	<tr>
 		<td>
@@ -28,8 +28,10 @@
 					</label>
 					<input type="text" value="<?php echo esc_attr( isset( $values['rootline_titles'][0] ) ? $values['rootline_titles'][0] : sprintf( __( 'Page %d', 'formidable-pro' ), 1 ) ) ?>" name="options[rootline_titles][0]" class="large-text" placeholder="<?php echo esc_attr( sprintf( __( 'Page %d title', 'formidable-pro' ), $i ) ) ?>" id="page_title_<?php echo esc_attr( $i ) ?>" />
 				</p>
-				<?php foreach ( $page_fields as $page_field ) {
-					$i++; ?>
+				<?php
+				foreach ( $page_fields as $page_field ) {
+					$i++;
+					?>
 					<p>
 						<label class="screen-reader-text" for="page_title_<?php echo esc_attr( $i ) ?>"></label>
 						<input type="text" value="<?php echo esc_attr( isset( $values['rootline_titles'][ $page_field->id ] ) ? $values['rootline_titles'][ $page_field->id ] : $page_field->name ) ?>" name="options[rootline_titles][<?php echo esc_attr( $page_field->id ) ?>]" class="large-text" placeholder="<?php echo esc_attr( sprintf( __( 'Page %d title', 'formidable-pro' ), $i ) ) ?>" id="page_title_<?php echo esc_attr( $i ) ?>" />
